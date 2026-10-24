@@ -393,7 +393,7 @@ The concrete first sitting, in order. Nothing here needs Docker, a database, or 
 3. Build 10 nodes by hand across two domains you know best. Do not automate yet — the format's weaknesses only show up while writing by hand.
 4. Write `index.md` and keep it current manually. The descriptions are the product here; treat each as a search snippet you would want to see.
 5. Write the gateway skill. Test it by handing it to an agent with no other context and asking three questions.
-6. Build out to 50 nodes, adding aliases on every name variant you encounter. From node 11 the agent drafts nodes from what you tell it, and you check each one: writing by hand first exists to debug the format, not as a discipline to keep for its own sake.
+6. Build out to 50 nodes, adding aliases on every name variant you encounter. Aim for breadth and sharp index descriptions and links, not fact density; let facts accumulate as the brain is used (node-strength experiment, 2026-10-24: no large effect from depth, n=1 per question). From node 11 the agent drafts nodes from what you tell it, and you check each one: writing by hand first exists to debug the format, not as a discipline to keep for its own sake.
 7. Write the eval set against what now exists, including at least five negative cases.
 8. Run the eval. Fix the format, the index or the gateway skill, not the questions. A malformed question is a bug in the eval set, fixed before the set is frozen alongside the format. After the freeze, questions do not change.
 9. Freeze the node format. Record the freeze date in the register, since D-numbers now depend on it.

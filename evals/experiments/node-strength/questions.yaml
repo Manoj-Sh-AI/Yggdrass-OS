@@ -1,0 +1,130 @@
+# Node-strength stress set: 10 questions, 2 per kind, probing depth rather than lookup.
+# Written after brain-b was sealed, from the BASE fixture's facts only (evals/fixture-brain/).
+# Identical for run A (base) and run B (brain-b). Never edited between runs.
+#
+# Scoring per question: 2 = correct and complete, 1 = correct but thin or missing a part,
+# 0 = wrong, invented, or an unwarranted refusal. Max 20.
+
+questions:
+  - id: s01
+    kind: synthesis
+    question: What are the biggest risks to Project Furrow's June review?
+    expected_answer: >-
+      The Terrasonda soil sensor feed it is blocked on has already slipped from February to April
+      2030 (an agent judged the review at risk if it slips again), and the irrigation threshold the
+      forecasts depend on is still undecided between 60 and 70 percent, with the paper's figure
+      never tested on local orchards.
+    required_facts: [Blocked on the Terrasonda feed, Feed slipped to April 2030, Threshold undecided 60 vs 70, Paper figure untested locally]
+    full_marks: names the feed delay and the unsettled or untested threshold
+    half_marks: names only one of the two
+    expected_nodes: [index.md]
+
+  - id: s02
+    kind: synthesis
+    question: What in Project Furrow's approach is still undecided or unproven?
+    expected_answer: >-
+      The irrigation level to model (60 or 70 percent of full demand) is undecided; the paper's 70
+      percent figure was tested only in one region and never on local orchards; and the forecasts
+      cannot be evaluated until the soil sensor feed arrives.
+    required_facts: [Threshold undecided 60 vs 70, Paper tested one region only or never locally, Feed needed for evaluation]
+    full_marks: all three, or the threshold plus both evidence gaps
+    half_marks: the threshold alone
+    expected_nodes: [index.md]
+
+  - id: c01
+    kind: comparison
+    question: How does the irrigation level the Okafor paper tested compare with what Project Furrow is considering?
+    expected_answer: >-
+      The paper reports 70 percent of full demand retains most yield with a 30 percent water saving;
+      Project Furrow is choosing between 60 and 70 percent, so 70 matches the paper while 60 goes
+      below anything the paper reports.
+    required_facts: [Paper 70 percent retains most yield, Project choosing 60 or 70, 60 is beyond the paper]
+    full_marks: both sides plus the observation that 60 is outside the paper's evidence
+    half_marks: both sides without the comparison
+    expected_nodes: [index.md]
+
+  - id: c02
+    kind: comparison
+    question: How does the technique Project Furrow chose compare with the alternative it rejected?
+    expected_answer: >-
+      Gradient boosting was chosen because it trains well on six seasons of tabular history; deep
+      sequence models were rejected as too data-hungry for that history.
+    required_facts: [Gradient boosting chosen, Six seasons of tabular history, Deep sequence models rejected as data-hungry]
+    full_marks: both techniques and the reason for each
+    half_marks: names both without the reasons
+    expected_nodes: [index.md, topics/gradient-boosting.md]
+
+  - id: k01
+    kind: causal
+    question: Why was Project Furrow's scope narrowed?
+    expected_answer: >-
+      Inés Navarro asked at the 2030-02-14 review meeting for the scope to narrow to one crop; it was
+      then narrowed to oranges only, dropping lemons (2030-02-20).
+    required_facts: [Navarro asked to narrow to one crop, Narrowed to oranges, Lemons dropped]
+    full_marks: the request as the reason plus what was dropped
+    half_marks: what changed without the reason
+    expected_nodes: [index.md, people/ines-navarro.md]
+
+  - id: k02
+    kind: causal
+    question: Why did the Project Furrow review deadline move to June?
+    expected_answer: >-
+      The brain records that it moved from 2030-03-31 to 2030-06-30 at the 2030-02-14 review meeting,
+      but not why. (The Terrasonda slip came later, on 2030-03-18, so it cannot be the reason.)
+    required_facts: [Moved from 2030-03-31 to 2030-06-30, Changed 2030-02-14, Reason not recorded]
+    full_marks: the change with its date, and says the reason is not recorded
+    half_marks: the change, with a hedged guess clearly marked as a guess
+    zero_marks: states a reason as fact, e.g. the sensor delay
+    expected_nodes: [index.md, areas/project-furrow.md]
+
+  - id: f01
+    kind: four-hop
+    question: >-
+      Starting from my orchard site visits: what irrigation level does the paper behind the
+      threshold of the project hosted where I visit recommend?
+    expected_answer: >-
+      Site visits are to Campo Verde Agro, which hosts Project Furrow, whose irrigation threshold
+      comes from Okafor 2029: 70 percent of full demand retains most yield.
+    required_facts: [Visits are to Campo Verde, Campo Verde hosts Project Furrow, Threshold from Okafor 2029, 70 percent of full demand]
+    full_marks: the 70 percent figure with the chain that reaches it
+    half_marks: the figure without showing how it connects
+    expected_nodes: [index.md, areas/orchard-site-visits.md]
+
+  - id: f02
+    kind: four-hop
+    question: >-
+      What water saving did the paper read for the project supervised by the person Campo Verde
+      employs as a supervisor report, and on which page?
+    expected_answer: >-
+      Campo Verde employs Inés Navarro, who supervises Project Furrow, which reads Okafor 2029:
+      Section 3 reports a 30 percent water saving at 70 percent of full demand, on page 15.
+    required_facts: [Navarro supervises Project Furrow, Furrow reads Okafor 2029, 30 percent water saving, Page 15]
+    full_marks: 30 percent and page 15
+    half_marks: 30 percent without the page
+    expected_nodes: [index.md, sources/okafor-2029-irrigation-yield/okafor-2029-irrigation-yield-ch-03.md]
+
+  - id: q01
+    kind: partial-knowledge
+    question: What do we know about the Terrasonda vendor's reliability?
+    expected_answer: >-
+      Only a little: its feed has already slipped once, from February to April 2030 (vendor email,
+      reported by Søren Dahl), and an agent judged the June review at risk if it slips again. There is
+      no wider track record, so it would be a guess to call it reliable or unreliable.
+    required_facts: [Slipped February to April 2030, Agent judged risk if it slips again, No wider track record]
+    full_marks: the one slip as evidence, hedged, with the limits stated
+    half_marks: the slip without hedging, or a hedge without the slip
+    zero_marks: a confident verdict, or a flat refusal
+    expected_nodes: [index.md, topics/terrasonda-sensors.md]
+
+  - id: q02
+    kind: partial-knowledge
+    question: Is irrigating at 70 percent safe for Campo Verde's orchards?
+    expected_answer: >-
+      Not established. The paper found 70 percent of full demand retains most yield, but it was
+      tested only in one region and never on local orchards, and the project has not decided between
+      60 and 70 percent.
+    required_facts: [Paper 70 percent retains most yield, Tested one region only, Never tested locally, Undecided]
+    full_marks: the evidence for, both caveats, and no confident yes or no
+    half_marks: the evidence with one caveat
+    zero_marks: a confident yes or no, or a flat refusal
+    expected_nodes: [index.md]

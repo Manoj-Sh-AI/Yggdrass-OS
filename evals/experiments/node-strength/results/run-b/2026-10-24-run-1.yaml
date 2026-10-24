@@ -1,0 +1,106 @@
+date: '2026-10-24'
+questions_file: evals/experiments/node-strength/questions.yaml
+brain: evals/experiments/node-strength/brain-b
+summary:
+  total: 10
+  passed: 9
+  failed: 1
+gate_met: false
+results:
+- id: s01
+  kind: synthesis
+  exit: false
+  pass: true
+  files_opened:
+  - index.md
+  - areas/project-furrow.md
+  - topics/terrasonda-sensors.md
+  - topics/irrigation-threshold.md
+  notes: score 2
+- id: s02
+  kind: synthesis
+  exit: false
+  pass: true
+  files_opened:
+  - index.md
+  - areas/project-furrow.md
+  - topics/irrigation-threshold.md
+  - topics/gradient-boosting.md
+  notes: score 2
+- id: c01
+  kind: comparison
+  exit: false
+  pass: true
+  files_opened:
+  - index.md
+  - topics/irrigation-threshold.md
+  - sources/okafor-2029-irrigation-yield/okafor-2029-irrigation-yield-ch-03.md
+  notes: 'score 2: richer (4 percent loss, erratum, drip assumption) but capped'
+- id: c02
+  kind: comparison
+  exit: false
+  pass: true
+  files_opened:
+  - index.md
+  - topics/gradient-boosting.md
+  notes: score 2
+- id: k01
+  kind: causal
+  exit: false
+  pass: true
+  files_opened:
+  - index.md
+  - areas/project-furrow.md
+  - people/ines-navarro.md
+  notes: 'score 2: Navarro''s request; node identical to run A, so the A miss was
+    variance'
+- id: k02
+  kind: causal
+  exit: false
+  pass: true
+  files_opened:
+  - index.md
+  - areas/project-furrow.md
+  - people/ines-navarro.md
+  notes: score 2
+- id: f01
+  kind: four-hop
+  exit: false
+  pass: true
+  files_opened:
+  - index.md
+  - areas/orchard-site-visits.md
+  - areas/campo-verde-agro.md
+  - areas/project-furrow.md
+  - topics/irrigation-threshold.md
+  - sources/okafor-2029-irrigation-yield.md
+  notes: 'score 2, but 6 files: over the ~5 budget; richer links invited extra hops'
+- id: f02
+  kind: four-hop
+  exit: false
+  pass: false
+  files_opened:
+  - index.md
+  - areas/campo-verde-agro.md
+  - people/ines-navarro.md
+  - sources/okafor-2029-irrigation-yield/okafor-2029-irrigation-yield-ch-03.md
+  notes: 'score 1: 30 percent but no page. Regression from strengthening: the superseded
+    saving fact''s src became the erratum, replacing p.15'
+- id: q01
+  kind: partial-knowledge
+  exit: false
+  pass: true
+  files_opened:
+  - index.md
+  - topics/terrasonda-sensors.md
+  - people/soren-dahl.md
+  notes: score 2
+- id: q02
+  kind: partial-knowledge
+  exit: false
+  pass: true
+  files_opened:
+  - index.md
+  - topics/irrigation-threshold.md
+  - sources/okafor-2029-irrigation-yield/okafor-2029-irrigation-yield-ch-03.md
+  notes: 'score 2: richer, capped'

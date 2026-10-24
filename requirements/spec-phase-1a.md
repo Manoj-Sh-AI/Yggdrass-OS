@@ -33,7 +33,7 @@ Build the brain by hand: about 50 markdown nodes in the private brain repo, an `
 2. Write 10 nodes by hand across the two seed domains, at least 3–4 from the second domain, covering all five node types. Add each to `index.md` in the same sitting (step 3–4). Check criteria 1–9 on these by hand.
 3. Build the node validator (`validation/` in `app/`) from what the first 10 nodes taught, with tests. From here on it checks criteria 1–9.
 4. Write the gateway skill. Try it on a fresh agent with three questions (step 5). This is exploratory: record what went wrong and fix the skill or format. It is not a pass/fail gate.
-5. Grow to about 50 nodes, adding aliases on every name variant seen (step 6). From node 11 on, the agent drafts nodes from what Manoj tells it, and Manoj checks each one before it is committed. Manoj stays the source of every `[stated]` fact. Writing by hand first exists to debug the format, not as a rule to keep for its own sake.
+5. Grow to about 50 nodes, adding aliases on every name variant seen (step 6). Aim for breadth, sharp index descriptions and explicit links, not fact density: every miss in the fixture runs came from which node got opened, never from a thin node. Facts accumulate with use. From node 11 on, the agent drafts nodes from what Manoj tells it, and Manoj checks each one before it is committed. Manoj stays the source of every `[stated]` fact. Writing by hand first exists to debug the format, not as a rule to keep for its own sake.
 6. Write the eval set to the composition rules (step 7).
 7. Run the eval with the runner. Fix the format, the index or the gateway skill until every question passes in one recorded run (step 8).
 8. Freeze the format and the eval set; record the date in the register (step 9).
@@ -110,8 +110,9 @@ Graphiti, Docker and the graph database (1b). The connector, its tools and its v
 
 ## Parked until the first 10 real nodes exist
 
-Format candidates noted during the freeze. Each would be a register amendment, not an edit.
+Format candidates noted during the freeze. Each would be a register amendment, not an edit. **First on unfreeze: the superseded-fact fix.** It is a format bug, not a nice-to-have.
 
+- **Superseded facts lose their origin (fix first).** A fact has one `src` slot, so recording that a value changed (an erratum, a later meeting) replaces the original citation, such as a page. That breaks temporal and page-precise retrieval at the same time, and temporal tracking is Graphiti's main value in phase 1b. Found in the node-strength experiment (`evals/experiments/node-strength/`, question f02).
 - **Thin topic nodes.** Tool and concept nodes holding one fact that the area node already says. They may not earn their place.
 - **No organisation type.** Employers and vendors end up as aliases or as `area` nodes.
 - **Index id column.** Costs context on every lookup. Dropping it means changing the whole resolution chain together (D2, D02, criterion 7).
