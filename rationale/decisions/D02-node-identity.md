@@ -15,7 +15,15 @@ Identity is the part that is expensive to change later. If links point at file p
 
 **Identity.** Each node has a UUID v4 in frontmatter (`id`). It never changes and is never reused. The filename and `slug` are labels: renaming a node changes its slug and filename, and the old slug moves to `aliases`. Links resolve slug or alias → index → uuid → path, and `index.md` lists each node's aliases next to its description, so a renamed or merged-away slug keeps resolving.
 
-**Normalization.** Aliases are stored as written, for name matching. Resolution and uniqueness checks normalize both sides first: lowercase, spaces and underscores to hyphens, punctuation dropped. `Bank Work`, `bank work` and `bank_work` are all `bank-work`.
+**Normalization.** Aliases are stored as written, for name matching. Resolution and uniqueness checks normalize both sides first, in this order:
+
+1. Lowercase.
+2. Unicode NFKD, then strip combining marks (`ü` → `u`, `é` → `e`).
+3. Map the letters NFKD leaves alone: `ß` → `ss`, `ø` → `o`.
+4. Runs of spaces and underscores become one hyphen.
+5. Drop punctuation: anything that is not a letter, digit or hyphen.
+
+`Bank Work`, `bank work` and `bank_work` are all `bank-work`; `Universität` is `universitat`, `Straße` is `strasse`, `Master's thesis` is `masters-thesis`. No per-language transliteration (`ü` → `ue`): it breaks on the first non-German accent. Normalization is for matching only; the alias is displayed exactly as written.
 
 **One file per subject**, one subject per file, under about 50 lines. A node lives in exactly one folder: `people/`, `areas/`, `topics/` or `sources/`. Chunks live under their source folder.
 
