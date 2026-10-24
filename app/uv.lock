@@ -89,7 +89,7 @@ wheels = [
 ]
 
 [[package]]
-name = "yggdrass"
+name = "yggdras"
 version = "0.0.1"
 source = { editable = "." }
 

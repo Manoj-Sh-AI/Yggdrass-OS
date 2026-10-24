@@ -6,11 +6,11 @@ import pytest
 
 
 def test_package_imports():
-    import yggdrass
+    import yggdras
 
-    assert yggdrass.__version__
+    assert yggdras.__version__
 
 
 @pytest.mark.parametrize("layer", ["interface", "processing", "data"])
 def test_layer_exists(layer):
-    assert importlib.import_module(f"yggdrass.{layer}")
+    assert importlib.import_module(f"yggdras.{layer}")

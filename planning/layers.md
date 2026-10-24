@@ -4,9 +4,9 @@ Starting point from the skills plan. Confirm or change each line; this is a desi
 
 | Layer | Responsibility | Candidates | Code location |
 |---|---|---|---|
-| Interface | What the user sees and does | Notification layer, chat | `app/src/yggdrass/interface/` |
-| Processing | Rules and workflows | Agents, orchestrator (manager-worker) | `app/src/yggdrass/processing/` |
-| Data | Stored information | Graphiti, Supabase | `app/src/yggdrass/data/` |
+| Interface | What the user sees and does | Notification layer, chat | `app/src/yggdras/interface/` |
+| Processing | Rules and workflows | Agents, orchestrator (manager-worker) | `app/src/yggdras/processing/` |
+| Data | Stored information | Graphiti, Supabase | `app/src/yggdras/data/` |
 
 ## Agentic components (kept separate, so the model can be swapped)
 

@@ -1,4 +1,4 @@
-# Yggdrass-OS
+# Yggdras
 
 Second Brain.
 
