@@ -1,5 +1,6 @@
 ---
-id: 00000000-0000-4000-8000-000000000000   # UUID v4, set once, never changes
+# Strip every comment on copy; real nodes carry none (D02). Replace the placeholder id: it is rejected by name.
+id: 00000000-0000-4000-8000-000000000000   # generate a fresh UUID v4
 slug: example-subject                      # kebab-case, unique, matches the filename
 name: Example Subject                      # as you would say it aloud
 type: topic                                # person | area | topic | source | chunk (D29)

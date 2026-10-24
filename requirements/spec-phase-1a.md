@@ -42,15 +42,15 @@ Build the brain by hand: about 50 markdown nodes in the private brain repo, an `
 
 **Nodes and index**
 
-1. Given any node, when its frontmatter is read, then `id`, `slug`, `name`, `type`, `description`, `created` and `updated` are present and non-empty, `type` is one of the D29 values, and `id` is a UUID v4.
-2. Given any two nodes, when their `slug` and `id` are compared, then neither is shared.
+1. Given any node, when its frontmatter is read, then `id`, `slug`, `name`, `type`, `description`, `created` and `updated` are present and non-empty, `type` is one of the D29 values, and `id` is a UUID v4 that is not the template placeholder `00000000-0000-4000-8000-000000000000`. The validator rejects that string by name.
+2. Given any two nodes, when their `slug` and `id` are compared, then neither is shared; and when their aliases are normalized (lowercase, accents stripped, spaces and underscores to hyphens, punctuation dropped; see D02), no normalized alias appears on two nodes.
 3. Given any node, when its filename is read, then it equals `<slug>.md`, and the node sits in the folder matching its type.
-4. Given any fact line, when it is parsed, then it carries exactly one of `[stated]`, `[observed]`, `[derived]` and a `(src: <source>, <YYYY-MM-DD>)` suffix. `src: unknown` does not occur.
+4. Given any fact line, when it is parsed, then it carries exactly one of `[stated]`, `[observed]`, `[derived]` and a `(src: <source>, <YYYY-MM-DD>)` suffix. The source is always the final parenthetical group; earlier brackets belong to the fact. `src: unknown` does not occur.
 5. Given a fact that changed value, when its line is read, then it shows the new value, the old value and the change date.
 6. Given any link line, when it is parsed, then it has relation text and one `[[slug]]`.
 6a. Given any node body, when it is read, then it has a `## Facts` section followed by a `## Links` section, and `## Facts` holds at least one fact line. A node with no facts is invalid.
 7. Given `index.md` and the node folders, when compared, then every node has exactly one index entry, every entry points at an existing node, and each entry lists the same aliases as its node.
-7a. Given a link to a slug that is an alias of a node, when it is resolved through `index.md`, then it reaches that node.
+7a. Given a link `[[x]]` where `x` equals the normalized form of one of a node's aliases, when it is resolved through `index.md`, then it reaches that node. Given a name typed as written (for example `Bank Work`), when it is normalized, then it matches the same node.
 8. Given a chunk node, when its frontmatter is read, then `pages` is present.
 9. Given any node, when its lines are counted, then it is at most about 50 lines, or it has been split.
 
@@ -60,7 +60,7 @@ Build the brain by hand: about 50 markdown nodes in the private brain repo, an `
 
 **Validator**
 
-10a. Given the node validator and a brain path, when it runs, then it reports every violation of criteria 1–9, and its tests cover a valid node, a missing field, an empty facts section, a bad fact line, a duplicate slug and an index mismatch.
+10a. Given the node validator and a brain path, when it runs, then it reports every violation of criteria 1–9, and its tests cover a valid node, a missing field, an empty facts section, a bad fact line, a fact that itself ends in brackets, the template placeholder `id`, a duplicate slug, two aliases on different nodes that collide only after normalization, accented and special letters (`Universität`, `Straße`, `Søren`), and an index mismatch.
 
 **Eval set**
 
