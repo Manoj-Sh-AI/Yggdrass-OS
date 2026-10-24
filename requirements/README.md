@@ -14,4 +14,4 @@ The source of truth the agent builds from. Lifecycle steps 1 (requirements) and 
 - `_scoping-template.md`: the six scoping questions
 - `_spec-template.md`: spec skeleton
 
-First feature to scope: **memory system** (ingest, finalize, promote, retrieve).
+One scoping file and one spec per phase of `planning/locked-plan-v1.md`. First to scope: **phase 1a** (brain files, links, gateway skill), as `scoping-phase-1a.md`.
