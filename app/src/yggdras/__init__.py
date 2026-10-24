@@ -1,4 +1,4 @@
-"""Yggdrass-OS: personal second brain.
+"""Yggdras: personal second brain.
 
 Three layers, each depending only on the one below it:
 interface -> processing -> data

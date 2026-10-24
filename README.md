@@ -1,12 +1,14 @@
-# Yggdrass-OS
+# Yggdras
 
 Second Brain.
 
-A personal "second brain" that organizes thesis, work, German and job-prep through focused phone notifications. Built as a training ground for agentic software engineering: spec first, then agent-built, verified, versioned.
+A personal "second brain" that organizes projects, work, learning and job search through focused phone notifications. Built as a training ground for agentic software engineering: spec first, then agent-built, verified, versioned.
+
+The build plan is [`planning/locked-plan-v1.md`](planning/locked-plan-v1.md). It sets the phases, their exit tests and the decision register.
 
 ## Status
 
-Project setup only. Nothing is built yet. The first piece to build is the **memory system** (ingest a note, promote finalized facts to central memory).
+Project setup only. Nothing is built yet. Next up is **phase 1a**: brain nodes written by hand, an index and a gateway skill. The brain itself lives in a separate private repo, never in this one (D3).
 
 ## Repository map
 
@@ -17,13 +19,15 @@ Project setup only. Nothing is built yet. The first piece to build is the **memo
 | `planning/` | Layer design, task breakdowns, sequencing |
 | `rationale/` | Decision records: why things are the way they are |
 | `app/` | All code. Nothing else lives here |
+| `skills/` | Operating instructions for agents (gateway, per-agent skills). No personal data |
+| `evals/` | The eval set: questions with known answers, run as a gate on every change |
 | `local-data/` | Your personal inputs (notes, calendar, profile). Git-ignored, never hard-coded |
 | `constitution.md` | Binding rules for humans and agents |
 | `CLAUDE.md` | Working instructions for Claude Code |
 
 ## Architecture in one line
 
-Interface layer (notifications, chat) → Processing layer (agents, orchestrator) → Data layer (Graphiti, Supabase). Details live in `planning/`.
+Interface layer (notifications, chat) → Processing layer (agents, orchestrator) → Data layer (markdown brain as the source of truth, with Graphiti as a derived index; SQLite and a Supabase outbox come later). Details live in `planning/`.
 
 ## Quick start
 
