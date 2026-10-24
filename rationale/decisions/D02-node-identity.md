@@ -15,6 +15,8 @@ Identity is the part that is expensive to change later. If links point at file p
 
 **Identity.** Each node has a UUID v4 in frontmatter (`id`). It never changes and is never reused. The filename and `slug` are labels: renaming a node changes its slug and filename, and the old slug moves to `aliases`. Links resolve slug or alias → index → uuid → path, and `index.md` lists each node's aliases next to its description, so a renamed or merged-away slug keeps resolving.
 
+**Normalization.** Aliases are stored as written, for name matching. Resolution and uniqueness checks normalize both sides first: lowercase, spaces and underscores to hyphens, punctuation dropped. `Bank Work`, `bank work` and `bank_work` are all `bank-work`.
+
 **One file per subject**, one subject per file, under about 50 lines. A node lives in exactly one folder: `people/`, `areas/`, `topics/` or `sources/`. Chunks live under their source folder.
 
 **Frontmatter fields:**
@@ -28,7 +30,7 @@ Identity is the part that is expensive to change later. If links point at file p
 | `description` | one line | Yes | Written as a search snippet; copied into `index.md` |
 | `created` | ISO date | Yes | Set once |
 | `updated` | ISO date | Yes | Touched on every write |
-| `aliases` | list | No | Former slugs and other names |
+| `aliases` | list | No | Former slugs and other names, stored as written. Unique across the brain after normalization |
 | `pages` | range | Chunks only | Page span in the original |
 
 **Body.** Two required sections after the frontmatter, in this order: `## Facts`, then `## Links`. A node with no facts is invalid; `## Links` may be empty.
