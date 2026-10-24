@@ -60,7 +60,7 @@ Build the brain by hand: about 50 markdown nodes in the private brain repo, an `
 
 **Validator**
 
-10a. Given the node validator and a brain path, when it runs, then it reports every violation of criteria 1–9, and its tests cover a valid node, a missing field, an empty facts section, a bad fact line, a fact that itself ends in brackets, the template placeholder `id`, a duplicate slug, two aliases on different nodes that collide only after normalization, accented and special letters (`Universität`, `Straße`, `Søren`), and an index mismatch.
+10a. Given the node validator and a brain path, when it runs, then it reports every violation of criteria 1–9, and its tests cover a valid node, a missing field, an empty facts section, a bad fact line, a fact that itself ends in brackets, the template placeholder `id`, a duplicate slug, two aliases on different nodes that collide only after normalization, accented and special letters (`Universität`, `Straße`, `Søren`), a spaced dash and stray edges (`Power BI - Reports`, ` Bank Work .`), an alias that normalizes to empty, and an index mismatch.
 
 **Eval set**
 
