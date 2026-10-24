@@ -12,7 +12,7 @@ Source: `planning/locked-plan-v1.md`, sections "Phase 1a", "Node schema", "Merge
 |---|---|---|
 | Node types | `person`, `area`, `topic`, `source`, `chunk` | D29 |
 | Seed domains | Two domains for the first 10 nodes, named in the brain repo's private notes | 2026-10-24 |
-| Eval set location | `questions.yaml` lives in the brain repo. Public `evals/` holds only the runner and format, and reads the brain path at runtime | D30 |
+| Eval set location | `questions.yaml` lives in the brain repo. The runner lives in `app/` and reads the brain path at runtime; public `evals/` documents the format only | D30 |
 | Public vs private | This file stays generic; specifics go in the brain repo | 2026-10-24 |
 
 ## 1. What kind of software is this?
@@ -22,9 +22,10 @@ markdown files, an index over them, and one instruction file that tells an agent
 how to navigate them. There is no runtime, no service, no database and no
 dependency to install.
 
-The only executable artifact is the eval runner in the public `evals/` folder,
-which is a thin script that reads a question file and a brain path. It is
-tooling for this phase, not part of the system being built.
+The executable artifacts are two thin tools in `app/`: the eval runner, which
+reads a question file and a brain path, and a node validator (`validation/`),
+built after the first 10 nodes have been checked by hand. They are tooling for
+this phase, not part of the system being built.
 
 ## 2. Which tasks does it take on?
 
@@ -133,7 +134,7 @@ point are register amendments, not edits; questions do not change.
 | Case | Rule |
 |---|---|
 | Node over the size limit | Warn, never block. Split into two nodes and link them — a node that long is doing two jobs. |
-| Same subject under two names | Resolution chain, and never a silent merge. Merging forward: the older `id` survives, facts move across, the newer slug becomes an alias, a tombstone keeps old links resolving. |
+| Same subject under two names | Resolution chain, and never a silent merge. Merging forward: the older `id` survives, facts move across, the newer slug becomes an alias. |
 | Link to a node that doesn't exist | Not an error. Recorded as dangling and reviewed in batches — it is a signal that something is worth creating. |
 | Fact with no external source | Every fact has a source. Where no external source exists, the author and the date written are the source, and the fact is `[stated]`. No `src: unknown`. A fact with no traceable origin that the author won't stand behind stays out of the brain. |
 | Fact superseded by a newer one | Rewrite in place keeping the history: the new value, the old value, and the date it changed. Never a silent replacement. |
