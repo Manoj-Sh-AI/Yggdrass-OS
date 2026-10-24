@@ -114,5 +114,6 @@ Format candidates noted during the freeze. Each would be a register amendment, n
 
 - **Thin topic nodes.** Tool and concept nodes holding one fact that the area node already says. They may not earn their place.
 - **No organisation type.** Employers and vendors end up as aliases or as `area` nodes.
+- **Superseded facts lose their origin.** A fact has one `src` slot, so a value corrected by an erratum or later meeting can't keep the original citation (such as a page). Found in the node-strength experiment (`evals/experiments/node-strength/`).
 - **Index id column.** Costs context on every lookup. Dropping it means changing the whole resolution chain together (D2, D02, criterion 7).
 

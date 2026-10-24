@@ -1,0 +1,35 @@
+# Node strength rubric, fixture brain (evals/fixture-brain/), scored 2026-10-24 before any change.
+# Each dimension 0-2, max 12. density, provenance, temporal and links are measured by script;
+# specificity and description are judgment calls, with the reason noted.
+#   density:     0 = 1 fact, 1 = 2-3, 2 = 4+
+#   specificity: 0 = vague prose, 1 = some figures/dates/names, 2 = most facts carry one
+#   provenance:  0 = one source kind, 1 = two kinds, 2 = three or more incl. an external source
+#   temporal:    0 = no dated facts, 1 = dated facts, 2 = a superseded fact with its history
+#   links:       0 = 0-1 links, 1 = 2-3, 2 = 4+ pointing at different types
+#   description: 0 = names the subject only, 1 = hints at content, 2 = pickable from the index alone
+
+nodes:
+  project-furrow:      {density: 2, specificity: 2, provenance: 2, temporal: 2, links: 2, description: 2, total: 12}
+  terrasonda-sensors:  {density: 1, specificity: 1, provenance: 2, temporal: 2, links: 0, description: 2, total: 8,
+                        why: "only the delivery fact carries a figure"}
+  gradient-boosting:   {density: 1, specificity: 1, provenance: 1, temporal: 1, links: 1, description: 2, total: 7,
+                        why: "only 'six seasons' is specific"}
+  ines-navarro:        {density: 1, specificity: 1, provenance: 1, temporal: 1, links: 1, description: 2, total: 7,
+                        why: "names only, no figures or dates in facts"}
+  soren-dahl:          {density: 1, specificity: 1, provenance: 1, temporal: 1, links: 1, description: 2, total: 7,
+                        why: "names only"}
+  okafor-2029-irrigation-yield: {density: 1, specificity: 2, provenance: 0, temporal: 1, links: 1, description: 2, total: 7,
+                        why: "dates, page count and year in every fact"}
+  irrigation-threshold: {density: 1, specificity: 2, provenance: 0, temporal: 1, links: 1, description: 2, total: 7,
+                        why: "both facts carry percentages"}
+  orchard-site-visits: {density: 1, specificity: 2, provenance: 1, temporal: 1, links: 0, description: 2, total: 7,
+                        why: "days and times in both facts"}
+  campo-verde-agro:    {density: 1, specificity: 1, provenance: 0, temporal: 1, links: 1, description: 2, total: 6,
+                        why: "only 'Valencia' is specific"}
+  okafor-2029-irrigation-yield-ch-03: {density: 1, specificity: 2, provenance: 0, temporal: 1, links: 0, description: 2, total: 6,
+                        why: "every fact has a percentage and page; one source kind (the paper)"}
+
+weakest_three:
+  rule: "lowest total; ties broken by fewest facts, then fewest links"
+  picked: [campo-verde-agro, okafor-2029-irrigation-yield-ch-03, orchard-site-visits]
+  note: "orchard-site-visits wins the six-way tie at 7 with 2 facts and 1 link"
