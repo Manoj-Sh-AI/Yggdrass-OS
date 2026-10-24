@@ -173,7 +173,7 @@ Every architectural decision, with what would make us reverse it. A decision is 
 | D27 | LLM access | Model client behind an interface from day one, as D11 does for data | Honours constitution #7 (model-agnostic core) while provider switching stays out of scope; cheap now, expensive to retrofit | Never |
 | D28 | Code layout | **Open.** Layered (`app/src/yggdras/{interface,processing,data}`) now; layered vs service-oriented (`services/`) decided when there is code to arrange | Phase 1a produces almost no code, so restructuring empty folders gains nothing | Start of phase 2 |
 | D29 | Node type enum | `person`, `area`, `topic`, `source`, `chunk`. No `project` type: a project is an area. Concepts are topics, books are sources | Matches the folder structure, so there is one fewer mapping to maintain | A sixth type is genuinely needed — then amend this row, never decide it while writing a node |
-| D30 | Eval set location | `questions.yaml` in the brain repo; the runner lives in `app/` and reads the brain path at runtime; the public `evals/` documents the question format and holds a synthetic fixture brain (`evals/fixture-brain/`, invented content only) for testing the format and runner | Questions and answers about the brain are personal data, which D4 keeps out of the public repo; constitution #5 has data flow in at runtime | Trigger fired 2026-10-24: the fixture brain was added. Revisit if the fixture stops matching the real brain's shape |
+| D30 | Eval set location | `questions.yaml` in the brain repo's `evals/`, beside the `brain/` node root, never under it; the runner lives in `app/` and reads the brain path at runtime; the public `evals/` documents the question format and holds a synthetic fixture brain (`evals/fixture-brain/`, invented content only) for testing the format and runner | Questions and answers about the brain are personal data, which D4 keeps out of the public repo; constitution #5 has data flow in at runtime | Trigger fired 2026-10-24: the fixture brain was added. Revisit if the fixture stops matching the real brain's shape |
 
 **Decision records.** A record for a register row lives in `rationale/decisions/` as `Dnn-<slug>.md` (`D02-node-identity.md` is D2), so the mapping is visible in the filename. Records that predate the register keep their own `NNNN-` sequence (`0001-project-setup.md`). Nothing is renumbered.
 
@@ -218,17 +218,22 @@ docs/
 **`yggdras-brain/` — private**
 
 ```
-index.md              every node: slug, aliases, uuid, one-line description, type
-people/
-areas/
-topics/
-sources/              chunked books and documents, one folder per source
-  <source-slug>/
-    _meta.md            title, author, page count, ingest date
-    <source-slug>-ch-01.md  one chunk per file, page range in frontmatter; filename = slug
+brain/                the node root: an answering agent is given this folder and nothing above it
+  index.md              every node: slug, aliases, uuid, one-line description, type
+  people/
+  areas/
+  topics/
+  sources/              chunked books and documents
+    <source-slug>.md      the source node: title, author, page count, ingest date
+    <source-slug>/        its chunks, one per file
+      <source-slug>-ch-01.md  page range in frontmatter; filename = slug
+evals/                questions.yaml and results/, beside brain/ so no answer is in an agent's reach (D30)
 inbox/                raw captures awaiting filtering, deleted after 48h
+private/              notes that are not nodes
 .graphiti/            derived index, gitignored, rebuildable
 ```
+
+Path scoping is the control, not the folder name: an agent with a shell can walk up a directory. What makes the split safe is the combination of a scoped root, the owner grading, and the runner never reading the brain. The split removes the trivial failure mode where answers sit in the directory the agent was told to read.
 
 The `.graphiti/` directory is gitignored deliberately: D6 says the graph is derived, so committing it would create a second source of truth with its own merge conflicts.
 

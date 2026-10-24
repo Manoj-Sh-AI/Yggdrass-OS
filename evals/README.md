@@ -38,3 +38,9 @@ uv run --project app python -m yggdras.tooling.eval_runner record evals/fixture-
 ```
 
 Ask each question in a fresh session that has only `skills/gateway/SKILL.md` and the brain path. `record` prompts for each verdict and the files opened (or reads them with `--verdicts FILE`), then writes a dated result file. The runner never grades.
+
+## Known behaviour to watch
+
+- **Negatives check a node before refusing.** On "satellite imagery" (n04) the agent opened the closest node to check before saying "I don't have that", in both fixture runs, despite gateway step 2. It never answered from that node, so the question passed. This is arguably correct, but it means negative questions test the answer, not the retrieval path. Watch it; don't tune the skill to suppress it.
+- **Real brain layout.** The agent is given `yggdras-brain/brain/` as its root; `questions.yaml` sits in `yggdras-brain/evals/`, beside it. The scoped root, owner grading and a runner that never reads the brain are the actual controls.
+

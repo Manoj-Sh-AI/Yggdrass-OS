@@ -19,8 +19,8 @@ Build the brain by hand: about 50 markdown nodes in the private brain repo, an `
 
 | Output | Destination | Format |
 |---|---|---|
-| Nodes | `yggdras-brain/{people,areas,topics,sources}/` | One `.md` per subject |
-| Index | `yggdras-brain/index.md` | One line per node: slug, aliases, uuid, type, description |
+| Nodes | `yggdras-brain/brain/{people,areas,topics,sources}/` | One `.md` per subject |
+| Index | `yggdras-brain/brain/index.md` | One line per node: slug, aliases, uuid, type, description |
 | Gateway skill | `skills/gateway/` (public, no personal data, D23) | Markdown instructions |
 | Eval runner | `app/`, tests in `app/tests/` | Python script |
 | Node validator | `app/`, as `validation/`, tests in `app/tests/` | Python package, built after the first 10 nodes |
@@ -65,7 +65,7 @@ Build the brain by hand: about 50 markdown nodes in the private brain repo, an `
 **Eval set**
 
 11. Given `questions.yaml`, when it is counted, then it holds 20–30 questions, including at least 5 negative, 3 multi-hop, 2 page-precise and 2 temporal. The 10 exit questions are a subset of the set.
-12. Given each question, when it is read, then it records the expected answer, the required facts and the expected node list.
+12. Given each question, when it is read, then it records the expected answer, the required facts and the expected node list. The expected node list holds only the files every valid route must open; where two sound routes exist, it lists what they share.
 13. Given the runner and a question file, when it runs, then it prints each question with its expected answer, required facts and expected nodes, records Manoj's verdict and the files opened, and writes a dated result file. It does not grade.
 14. Given a non-negative question, when it passes, then all required facts are present, no facts are invented, and the expected nodes were opened.
 15. Given a negative question, when it passes, then the answer is an explicit "I don't have that", and no node was used as the basis for an answer.
