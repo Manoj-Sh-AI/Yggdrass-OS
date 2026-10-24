@@ -1,0 +1,180 @@
+date: '2026-10-24'
+questions_file: evals/fixture-questions.yaml
+brain: evals/fixture-brain
+summary:
+  total: 20
+  passed: 20
+  failed: 0
+gate_met: true
+results:
+- id: d01
+  kind: direct
+  exit: true
+  pass: true
+  files_opened:
+  - index.md
+  - areas/project-furrow.md
+  notes: ''
+- id: d02
+  kind: direct
+  exit: true
+  pass: true
+  files_opened:
+  - index.md
+  - areas/project-furrow.md
+  - people/ines-navarro.md
+  notes: ''
+- id: d03
+  kind: direct
+  exit: true
+  pass: true
+  files_opened:
+  - index.md
+  - areas/project-furrow.md
+  - topics/terrasonda-sensors.md
+  notes: flagged the derived fact
+- id: d04
+  kind: direct
+  exit: false
+  pass: true
+  files_opened:
+  - index.md
+  - topics/gradient-boosting.md
+  notes: ''
+- id: d05
+  kind: direct
+  exit: true
+  pass: true
+  files_opened:
+  - index.md
+  - people/soren-dahl.md
+  notes: ''
+- id: d06
+  kind: direct
+  exit: false
+  pass: true
+  files_opened:
+  - index.md
+  - areas/orchard-site-visits.md
+  notes: ''
+- id: d07
+  kind: direct
+  exit: false
+  pass: true
+  files_opened:
+  - index.md
+  - areas/project-furrow.md
+  - topics/terrasonda-sensors.md
+  notes: flagged as a [derived] inference
+- id: m01
+  kind: multi-hop
+  exit: true
+  pass: true
+  files_opened:
+  - index.md
+  - people/ines-navarro.md
+  - areas/campo-verde-agro.md
+  notes: ''
+- id: m02
+  kind: multi-hop
+  exit: true
+  pass: true
+  files_opened:
+  - index.md
+  - topics/terrasonda-sensors.md
+  - people/soren-dahl.md
+  notes: same route as run 1; passes under corrected expected_nodes
+- id: m03
+  kind: multi-hop
+  exit: false
+  pass: true
+  files_opened:
+  - index.md
+  - areas/orchard-site-visits.md
+  - areas/project-furrow.md
+  notes: ''
+- id: m04
+  kind: multi-hop
+  exit: false
+  pass: true
+  files_opened:
+  - index.md
+  - sources/okafor-2029-irrigation-yield.md
+  - sources/okafor-2029-irrigation-yield/okafor-2029-irrigation-yield-ch-03.md
+  - topics/irrigation-threshold.md
+  notes: ''
+- id: p01
+  kind: page-precise
+  exit: true
+  pass: true
+  files_opened:
+  - index.md
+  - sources/okafor-2029-irrigation-yield/okafor-2029-irrigation-yield-ch-03.md
+  notes: p.13, section 11-16
+- id: p02
+  kind: page-precise
+  exit: false
+  pass: true
+  files_opened:
+  - index.md
+  - sources/okafor-2029-irrigation-yield/okafor-2029-irrigation-yield-ch-03.md
+  notes: pages 11-16, limitation p.16
+- id: t01
+  kind: temporal
+  exit: true
+  pass: true
+  files_opened:
+  - index.md
+  - areas/project-furrow.md
+  notes: ''
+- id: t02
+  kind: temporal
+  exit: false
+  pass: true
+  files_opened:
+  - index.md
+  - topics/terrasonda-sensors.md
+  notes: ''
+- id: n01
+  kind: negative
+  exit: true
+  pass: true
+  files_opened:
+  - index.md
+  - areas/project-furrow.md
+  notes: ''
+- id: n02
+  kind: negative
+  exit: true
+  pass: true
+  files_opened:
+  - index.md
+  - people/ines-navarro.md
+  - sources/okafor-2029-irrigation-yield.md
+  notes: ''
+- id: n03
+  kind: negative
+  exit: false
+  pass: true
+  files_opened:
+  - index.md
+  - topics/terrasonda-sensors.md
+  - people/soren-dahl.md
+  notes: ''
+- id: n04
+  kind: negative
+  exit: false
+  pass: true
+  files_opened:
+  - index.md
+  - areas/project-furrow.md
+  notes: again opened a closest-match node despite skill step 2; did not answer from
+    it
+- id: n05
+  kind: negative
+  exit: false
+  pass: true
+  files_opened:
+  - index.md
+  - people/soren-dahl.md
+  notes: ''
