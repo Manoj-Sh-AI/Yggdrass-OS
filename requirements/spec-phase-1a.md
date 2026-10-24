@@ -44,7 +44,7 @@ Build the brain by hand: about 50 markdown nodes in the private brain repo, an `
 
 1. Given any node, when its frontmatter is read, then `id`, `slug`, `name`, `type`, `description`, `created` and `updated` are present and non-empty, `type` is one of the D29 values, and `id` is a UUID v4 that is not the template placeholder `00000000-0000-4000-8000-000000000000`. The validator rejects that string by name.
 2. Given any two nodes, when their `slug` and `id` are compared, then neither is shared; and when their aliases are normalized (lowercase, accents stripped, spaces and underscores to hyphens, punctuation dropped; see D02), no normalized alias appears on two nodes.
-3. Given any node, when its filename is read, then it equals `<slug>.md`, and the node sits in the folder matching its type.
+3. Given any node, when its filename is read, then it equals `<slug>.md`, and the node sits in the folder matching its type. A chunk sits in `sources/<source-slug>/` with slug `<source-slug>-ch-<nn>`.
 4. Given any fact line, when it is parsed, then it carries exactly one of `[stated]`, `[observed]`, `[derived]` and a `(src: <source>, <YYYY-MM-DD>)` suffix. The source is always the final parenthetical group; earlier brackets belong to the fact. `src: unknown` does not occur.
 5. Given a fact that changed value, when its line is read, then it shows the new value, the old value and the change date.
 6. Given any link line, when it is parsed, then it has relation text and one `[[slug]]`.
@@ -107,3 +107,12 @@ Graphiti, Docker and the graph database (1b). The connector, its tools and its v
 6. **Self-source label.** `src: self`.
 7. **Tombstones.** Removed from the plan entirely. Resolution is slug or alias → index → uuid → path, and `index.md` carries each node's aliases, so the alias does the tombstone's job (criterion 7a).
 8. **Gateway test.** Exploratory, not pass/fail (criterion 10).
+
+## Parked until the first 10 real nodes exist
+
+Format candidates noted during the freeze. Each would be a register amendment, not an edit.
+
+- **Thin topic nodes.** Tool and concept nodes holding one fact that the area node already says. They may not earn their place.
+- **No organisation type.** Employers and vendors end up as aliases or as `area` nodes.
+- **Index id column.** Costs context on every lookup. Dropping it means changing the whole resolution chain together (D2, D02, criterion 7).
+
