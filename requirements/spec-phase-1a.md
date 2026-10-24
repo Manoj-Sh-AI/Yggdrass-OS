@@ -42,10 +42,10 @@ Build the brain by hand: about 50 markdown nodes in the private brain repo, an `
 
 **Nodes and index**
 
-1. Given any node, when its frontmatter is read, then `id`, `slug`, `name`, `type`, `description`, `created` and `updated` are present and non-empty, `type` is one of the D29 values, and `id` is a UUID v4.
+1. Given any node, when its frontmatter is read, then `id`, `slug`, `name`, `type`, `description`, `created` and `updated` are present and non-empty, `type` is one of the D29 values, and `id` is a UUID v4 that is not the template placeholder `00000000-0000-4000-8000-000000000000`. The validator rejects that string by name.
 2. Given any two nodes, when their `slug` and `id` are compared, then neither is shared.
 3. Given any node, when its filename is read, then it equals `<slug>.md`, and the node sits in the folder matching its type.
-4. Given any fact line, when it is parsed, then it carries exactly one of `[stated]`, `[observed]`, `[derived]` and a `(src: <source>, <YYYY-MM-DD>)` suffix. `src: unknown` does not occur.
+4. Given any fact line, when it is parsed, then it carries exactly one of `[stated]`, `[observed]`, `[derived]` and a `(src: <source>, <YYYY-MM-DD>)` suffix. The source is always the final parenthetical group; earlier brackets belong to the fact. `src: unknown` does not occur.
 5. Given a fact that changed value, when its line is read, then it shows the new value, the old value and the change date.
 6. Given any link line, when it is parsed, then it has relation text and one `[[slug]]`.
 6a. Given any node body, when it is read, then it has a `## Facts` section followed by a `## Links` section, and `## Facts` holds at least one fact line. A node with no facts is invalid.
@@ -60,7 +60,7 @@ Build the brain by hand: about 50 markdown nodes in the private brain repo, an `
 
 **Validator**
 
-10a. Given the node validator and a brain path, when it runs, then it reports every violation of criteria 1–9, and its tests cover a valid node, a missing field, an empty facts section, a bad fact line, a duplicate slug and an index mismatch.
+10a. Given the node validator and a brain path, when it runs, then it reports every violation of criteria 1–9, and its tests cover a valid node, a missing field, an empty facts section, a bad fact line, a fact that itself ends in brackets, the template placeholder `id`, a duplicate slug and an index mismatch.
 
 **Eval set**
 
