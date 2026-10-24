@@ -1,0 +1,173 @@
+# Eval set for the synthetic fixture brain (evals/fixture-brain/). Invented content only.
+# Kept outside the brain folder so an agent answering questions cannot read the answers.
+# expected_nodes: files that must be opened, relative to the brain root.
+
+questions:
+  # Direct lookup
+  - id: d01
+    kind: direct
+    exit: true
+    question: When is the Project Furrow review deadline?
+    expected_answer: 2030-06-30.
+    required_facts: [Review deadline is 2030-06-30]
+    expected_nodes: [index.md, areas/project-furrow.md]
+
+  - id: d02
+    kind: direct
+    exit: true
+    question: Who supervises Project Furrow?
+    expected_answer: Dr. Inés Navarro.
+    required_facts: [Inés Navarro supervises Project Furrow]
+    expected_nodes: [index.md, areas/project-furrow.md]
+
+  - id: d03
+    kind: direct
+    exit: true
+    question: What is Project Furrow blocked on right now?
+    expected_answer: The soil sensor feed from the Terrasonda vendor.
+    required_facts: [Blocked on the Terrasonda soil sensor feed]
+    expected_nodes: [index.md, areas/project-furrow.md]
+
+  - id: d04
+    kind: direct
+    exit: false
+    question: Which modelling technique does Project Furrow use, and why was it chosen?
+    expected_answer: Gradient boosting, because it trains well on six seasons of tabular history.
+    required_facts: [Gradient boosting, Trains well on six seasons of tabular history]
+    expected_nodes: [index.md, topics/gradient-boosting.md]
+
+  - id: d05
+    kind: direct
+    exit: true
+    question: Who handles the relationship with the Terrasonda vendor?
+    expected_answer: Søren Dahl, a data engineer at Campo Verde Agro.
+    required_facts: [Søren Dahl handles the Terrasonda vendor relationship]
+    expected_nodes: [index.md, people/soren-dahl.md]
+
+  - id: d06
+    kind: direct
+    exit: false
+    question: Which days are the orchard site visits?
+    expected_answer: Tuesdays and Thursdays.
+    required_facts: [Tuesdays and Thursdays]
+    expected_nodes: [index.md, areas/orchard-site-visits.md]
+
+  - id: d07
+    kind: direct
+    exit: false
+    question: Is the June review at risk?
+    expected_answer: >-
+      An agent concluded it is at risk if the Terrasonda delivery slips again; this is a
+      derived inference, not a stated fact.
+    required_facts: [At risk if delivery slips again, Flagged as an agent's inference]
+    expected_nodes: [index.md, topics/terrasonda-sensors.md]
+
+  # Multi-hop
+  - id: m01
+    kind: multi-hop
+    exit: true
+    question: Which organisation employs the person who supervises Project Furrow, and where is it based?
+    expected_answer: Campo Verde Agro, a citrus farming cooperative near Valencia.
+    required_facts: [Inés Navarro supervises Project Furrow, Works at Campo Verde Agro, Based near Valencia]
+    expected_nodes: [index.md, people/ines-navarro.md, areas/campo-verde-agro.md]
+
+  - id: m02
+    kind: multi-hop
+    exit: true
+    question: Who should I talk to about the thing that is blocking Project Furrow?
+    expected_answer: Søren Dahl, who handles the Terrasonda vendor relationship.
+    required_facts: [Blocked on the Terrasonda feed, Søren Dahl handles the Terrasonda vendor relationship]
+    # Run 1 fix: the blocker can be reached via areas/project-furrow.md or topics/terrasonda-sensors.md
+    # (whose index row and links name it). Only the node every valid route needs is listed.
+    expected_nodes: [index.md, people/soren-dahl.md]
+
+  - id: m03
+    kind: multi-hop
+    exit: false
+    question: >-
+      On my orchard site-visit days, which project has its weekly check-in, and what is that
+      project blocked on?
+    expected_answer: >-
+      Project Furrow, whose weekly check-in is on Tuesday (a site-visit day); it is blocked on
+      the Terrasonda soil sensor feed.
+    required_facts: [Site visits Tuesdays and Thursdays, Project Furrow check-in every Tuesday, Blocked on the Terrasonda feed]
+    expected_nodes: [index.md, areas/orchard-site-visits.md, areas/project-furrow.md]
+
+  - id: m04
+    kind: multi-hop
+    exit: false
+    question: >-
+      What irrigation level does the paper behind Project Furrow's threshold recommend, and has
+      it been tested on local orchards?
+    expected_answer: >-
+      70 percent of full demand; it has not been tested on local orchards (the paper tested only
+      one region's orchards).
+    required_facts: [70 percent of full demand, Never tested on local orchards]
+    expected_nodes: [index.md, topics/irrigation-threshold.md]
+
+  # Page-precise
+  - id: p01
+    kind: page-precise
+    exit: true
+    question: What does Section 3 of Okafor 2029 report about yield at reduced irrigation, and on which page?
+    expected_answer: >-
+      Irrigating at 70 percent of full demand retains most yield, on page 13 (Section 3 spans
+      pages 11-16).
+    required_facts: [70 percent of full demand retains most yield, Page 13]
+    expected_nodes: [index.md, sources/okafor-2029-irrigation-yield/okafor-2029-irrigation-yield-ch-03.md]
+
+  - id: p02
+    kind: page-precise
+    exit: false
+    question: Which pages of Okafor 2029 cover deficit irrigation, and what limitation does that section state?
+    expected_answer: Pages 11-16; it was tested only on one region's orchards, not other climates (page 16).
+    required_facts: [Pages 11-16, Tested only on one region's orchards, Page 16]
+    expected_nodes: [index.md, sources/okafor-2029-irrigation-yield/okafor-2029-irrigation-yield-ch-03.md]
+
+  # Temporal
+  - id: t01
+    kind: temporal
+    exit: true
+    question: What was the Project Furrow review deadline before it moved, and when did it change?
+    expected_answer: It was 2030-03-31; it changed on 2030-02-14 to 2030-06-30.
+    required_facts: [Was 2030-03-31, Changed 2030-02-14, Now 2030-06-30]
+    expected_nodes: [index.md, areas/project-furrow.md]
+
+  - id: t02
+    kind: temporal
+    exit: false
+    question: When was the Terrasonda sensor feed originally due, and when is it due now?
+    expected_answer: Originally February 2030; now April 2030, changed on 2030-03-18.
+    required_facts: [Was February 2030, Now April 2030, Changed 2030-03-18]
+    expected_nodes: [index.md, topics/terrasonda-sensors.md]
+
+  # Negative: the brain holds nothing on these
+  - id: n01
+    kind: negative
+    exit: true
+    question: What is Project Furrow's budget?
+    expected_answer: I don't have that.
+
+  - id: n02
+    kind: negative
+    exit: true
+    question: What did Inés Navarro think of the Okafor paper?
+    expected_answer: I don't have that.
+
+  - id: n03
+    kind: negative
+    exit: false
+    question: Who is our account manager at Terrasonda?
+    expected_answer: I don't have that.
+
+  - id: n04
+    kind: negative
+    exit: false
+    question: What did I decide about using satellite imagery?
+    expected_answer: I don't have that.
+
+  - id: n05
+    kind: negative
+    exit: false
+    question: What is Søren Dahl's phone number?
+    expected_answer: I don't have that.
