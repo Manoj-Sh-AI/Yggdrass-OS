@@ -2,7 +2,7 @@
 
 Oct 24, 2026 · Manoj
 
-> Public copy. Personal examples are replaced with generic ones; the original lives in the private brain repo. Amended 2026-10-24: D13 reworded, D26–D28 added, ADR and layout notes added to match this repo.
+> Public copy. Personal examples are replaced with generic ones; the original lives in the private brain repo. Amended 2026-10-24: D13 reworded, D26–D29 added, decision-record naming and layout notes added to match this repo. Example facts and dates are invented.
 
 ## Scope and principles
 
@@ -22,7 +22,7 @@ Build 50 to 100 real nodes by hand, from things actually in use: current project
 
 **The node.** One markdown file per subject, one subject per file, under about 50 lines. Three parts:
 
-1. A header carrying name, a one-line description written like a search snippet, a type (project, person, concept, book, area), and a last-updated date.
+1. A header carrying name, a one-line description written like a search snippet, a type (`person`, `area`, `topic`, `source`, `chunk`, per D29), and a last-updated date.
 2. A body of short fact lines, one fact per line, each carrying its source and date.
 3. Links to other nodes in wiki form, each with a short reason attached, so the link reads as a labeled relationship rather than a bare pointer.
 
@@ -172,8 +172,9 @@ Every architectural decision, with what would make us reverse it. A decision is 
 | D26 | Brain repo location | Never inside a sync folder (OneDrive, Dropbox, iCloud) | Sync engines and git interact badly: file locks, partial syncs and corrupted `.git` objects | Never |
 | D27 | LLM access | Model client behind an interface from day one, as D11 does for data | Honours constitution #7 (model-agnostic core) while provider switching stays out of scope; cheap now, expensive to retrofit | Never |
 | D28 | Code layout | **Open.** Layered (`app/src/yggdras/{interface,processing,data}`) now; layered vs service-oriented (`services/`) decided when there is code to arrange | Phase 1a produces almost no code, so restructuring empty folders gains nothing | Start of phase 2 |
+| D29 | Node type enum | `person`, `area`, `topic`, `source`, `chunk`. No `project` type: a project is an area. Concepts are topics, books are sources | Matches the folder structure, so there is one fewer mapping to maintain | A sixth type is genuinely needed — then amend this row, never decide it while writing a node |
 
-**Decision records.** Each register row that gets a record lives in `rationale/decisions/`, with the file number equal to its D-number (`0002-node-identity.md` is D2). `0000-project-setup.md` predates the register.
+**Decision records.** A record for a register row lives in `rationale/decisions/` as `Dnn-<slug>.md` (`D02-node-identity.md` is D2), so the mapping is visible in the filename. Records that predate the register keep their own `NNNN-` sequence (`0001-project-setup.md`). Nothing is renumbered.
 
 ## Repository layout
 
@@ -251,8 +252,8 @@ The format the whole system depends on. It is designed so a model can parse it w
 **Body format.** Facts are one per line, each tagged with how it is known and where it came from:
 
 ```markdown
-- [stated] Project deadline moved to March 2027 (src: review meeting, 2026-10-14)
-- [derived] Data quality is the binding constraint (src: agent, 2026-10-20)
+- [stated] Project deadline moved to 2030-06-30 (src: review meeting, 2030-01-15)
+- [derived] Data quality is the binding constraint (src: agent, 2030-01-20)
 ```
 
 Three tags only. `stated` means you said it, `observed` means it came from a connected source such as the calendar, `derived` means an agent concluded it. The distinction exists so a wrong inference can be found and removed without touching anything you actually said.
@@ -340,7 +341,7 @@ The same subject arriving under three names is the hardest recurring problem in 
 
 When two nodes turn out to be the same subject, merge forward: the older `id` survives, the newer node's facts move across, the newer slug becomes an alias, and a tombstone file maps the dead slug so existing links still resolve.
 
-**History is kept, not overwritten.** A superseded fact becomes `Project deadline is March 2027 (was January 2027, changed 2026-10-14)` rather than a silent replacement, because knowing when something changed is often the thing you actually need.
+**History is kept, not overwritten.** A superseded fact becomes `Project deadline is 2030-06-30 (was 2030-03-31, changed 2030-01-15)` rather than a silent replacement, because knowing when something changed is often the thing you actually need.
 
 ### Eval set
 
@@ -382,7 +383,7 @@ What is most likely to go wrong, and what the plan already does about it.
 The concrete first sitting, in order. Nothing here needs Docker, a database, or a running service.
 
 1. Create both repos. Confirm the brain repo is private before the first commit touches it.
-2. Write the node schema down as `rationale/decisions/0002-node-identity.md` and a template file, before writing any node.
+2. Write the node schema down as `rationale/decisions/D02-node-identity.md` and a template file, before writing any node.
 3. Build 10 nodes by hand across two domains you know best. Do not automate yet — the format's weaknesses only show up while writing by hand.
 4. Write `index.md` and keep it current manually. The descriptions are the product here; treat each as a search snippet you would want to see.
 5. Write the gateway skill. Test it by handing it to an agent with no other context and asking three questions.
@@ -391,7 +392,7 @@ The concrete first sitting, in order. Nothing here needs Docker, a database, or 
 8. Run the eval. Fix the format or the index, not the questions.
 9. Freeze the node format. Record the freeze date in the register, since D-numbers now depend on it.
 
-**Open before step 2:** which domains seed the first 50 nodes, and whether `type` needs a value beyond the five listed. Both are quick to settle and both are cheaper to decide now than to migrate later.
+**Open before step 2:** which domains seed the first 50 nodes. It is quick to settle and cheaper to decide now than to migrate later. The `type` enum is settled by D29.
 
 ## Out of scope for the prototype
 

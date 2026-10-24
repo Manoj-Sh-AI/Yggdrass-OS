@@ -28,6 +28,6 @@ Layered vs service-oriented layout is open until phase 2 (D28).
 ## Decisions still open
 
 - Code layout: layered vs service-oriented (D28, at the start of phase 2)
-- Node `type` enum and seed domains (open before phase 1a, build order step 2)
+- Seed domains for the first nodes (open before phase 1a, build order step 2). The `type` enum is settled by D29
 
 Settled by the plan: the promotion rule (explicit save plus nightly suggestions, phase 3; the orchestrator confirms worker results, phase 4); consistency vs latency (files lead and the graph catches up nightly, D6 and D8); where each memory type is stored (table above).
