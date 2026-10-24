@@ -20,7 +20,7 @@ Build the brain by hand: about 50 markdown nodes in the private brain repo, an `
 | Output | Destination | Format |
 |---|---|---|
 | Nodes | `yggdras-brain/{people,areas,topics,sources}/` | One `.md` per subject |
-| Index | `yggdras-brain/index.md` | One line per node: slug, uuid, type, description |
+| Index | `yggdras-brain/index.md` | One line per node: slug, aliases, uuid, type, description |
 | Gateway skill | `skills/gateway/` (public, no personal data, D23) | Markdown instructions |
 | Eval runner | `app/`, tests in `app/tests/` | Python script |
 | Node validator | `app/`, as `validation/`, tests in `app/tests/` | Python package, built after the first 10 nodes |
@@ -49,7 +49,8 @@ Build the brain by hand: about 50 markdown nodes in the private brain repo, an `
 5. Given a fact that changed value, when its line is read, then it shows the new value, the old value and the change date.
 6. Given any link line, when it is parsed, then it has relation text and one `[[slug]]`.
 6a. Given any node body, when it is read, then it has a `## Facts` section followed by a `## Links` section, and `## Facts` holds at least one fact line. A node with no facts is invalid.
-7. Given `index.md` and the node folders, when compared, then every node has exactly one index entry and every entry points at an existing node.
+7. Given `index.md` and the node folders, when compared, then every node has exactly one index entry, every entry points at an existing node, and each entry lists the same aliases as its node.
+7a. Given a link to a slug that is an alias of a node, when it is resolved through `index.md`, then it reaches that node.
 8. Given a chunk node, when its frontmatter is read, then `pages` is present.
 9. Given any node, when its lines are counted, then it is at most about 50 lines, or it has been split.
 
@@ -78,7 +79,7 @@ Build the brain by hand: about 50 markdown nodes in the private brain repo, an `
 | Case | Expected behavior |
 |---|---|
 | Node over the size limit | Warned, not blocked; split into two linked nodes before the gate |
-| Same subject under two names | Resolution chain (slug, alias, fuzzy match with a human choice); never a silent merge. Merge forward: older `id` survives, facts move across, newer slug becomes an alias |
+| Same subject under two names | Resolution chain (slug, alias, fuzzy match with a human choice); never a silent merge. Merge forward: older `id` survives, facts move across, newer slug becomes an alias listed in `index.md`, so existing links still resolve |
 | Link to a missing node | Allowed; listed as dangling and reviewed in batches |
 | Fact with no external source | Author and date are the source, tagged `[stated]` |
 | Superseded fact | Rewritten in place with old value and change date |
@@ -104,5 +105,5 @@ Graphiti, Docker and the graph database (1b). The connector, its tools and its v
 4. **Empty nodes.** Invalid (criterion 6a).
 5. **Body headings.** `## Facts` and `## Links` are required, in that order (criterion 6a).
 6. **Self-source label.** `src: self`.
-7. **Tombstones.** Removed from the plan entirely. Merging forward makes the newer slug an alias.
+7. **Tombstones.** Removed from the plan entirely. Resolution is slug or alias → index → uuid → path, and `index.md` carries each node's aliases, so the alias does the tombstone's job (criterion 7a).
 8. **Gateway test.** Exploratory, not pass/fail (criterion 10).

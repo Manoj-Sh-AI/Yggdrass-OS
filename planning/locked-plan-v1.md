@@ -2,7 +2,7 @@
 
 Oct 24, 2026 · Manoj
 
-> Public copy. Personal examples are replaced with generic ones; the original lives in the private brain repo. Amended 2026-10-24: D13 reworded, D26–D30 added, decision-record naming and layout notes added to match this repo, provenance rule made explicit, build order steps 6 and 8 tightened, merge-forward simplified, runner moved to `app/`. Example facts and dates are invented.
+> Public copy. Personal examples are replaced with generic ones; the original lives in the private brain repo. Amended 2026-10-24: D13 reworded, D26–D30 added, decision-record naming and layout notes added to match this repo, provenance rule made explicit, build order steps 6 and 8 tightened, merge-forward simplified (aliases resolve old slugs), runner moved to `app/`. Example facts and dates are invented.
 
 ## Scope and principles
 
@@ -218,7 +218,7 @@ docs/
 **`yggdras-brain/` — private**
 
 ```
-index.md              every node: slug, uuid, one-line description, type
+index.md              every node: slug, aliases, uuid, one-line description, type
 people/
 areas/
 topics/
@@ -266,7 +266,7 @@ Three tags only. `stated` means you said it, `observed` means it came from a con
 - reviewed by [[person-name]]
 ```
 
-Resolution goes slug → index → uuid → path. A link to a slug that does not exist is not an error; it is a flag that something is worth creating, and the connector reports these rather than rejecting the write.
+Resolution goes slug or alias → index → uuid → path, and `index.md` carries each node's aliases alongside its description. That is what lets a merged or renamed slug keep resolving: the alias does the job a tombstone would. A link to a slug that does not exist is not an error; it is a flag that something is worth creating, and the connector reports these rather than rejecting the write.
 
 **Size limit is about 50 lines.** Past that, the node is doing two jobs and should be split, because retrieval precision falls off with file size.
 
