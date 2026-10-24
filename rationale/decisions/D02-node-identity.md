@@ -1,7 +1,7 @@
 # D02: Node identity and schema
 
 Date: 2026-10-24
-Status: accepted (2026-10-24)
+Status: accepted (2026-10-24), frozen 2026-10-24 (D31)
 
 Register row: D2 in `planning/locked-plan-v1.md`. Related: D1 (markdown is the source of truth), D29 (type enum), the provenance rule under "Node schema".
 
@@ -40,13 +40,13 @@ Identity is the part that is expensive to change later. If links point at file p
 | `created` | ISO date | Yes | Set once |
 | `updated` | ISO date | Yes | Touched on every write |
 | `aliases` | list | No | Former slugs and other names, stored as written. Unique across the brain after normalization |
-| `pages` | range | Chunks only | Page span in the original |
+| `pages` | range | Chunks only | Page span in the original, written `"<first> to <last>"` using the printed page labels (`"11 to 16"`, `"5-4 to 5-6"`); a single page is just its label |
 
 **Body.** Two required sections after the frontmatter, in this order: `## Facts`, then `## Links`. A node with no facts is invalid; `## Links` may be empty.
 
 - A fact line is `- [tag] <fact> (src: <source>, <YYYY-MM-DD>)`, where tag is `stated`, `observed` or `derived`. Every fact has a source; with no external source, the author and the date written are the source, written `(src: self, <date>)` and tagged `[stated]`.
 - The source is always the **final** parenthetical group on the line. Anything earlier in brackets belongs to the fact.
-- A superseded fact is rewritten in place with its history: `<new value> (was <old value>, changed <YYYY-MM-DD>) (src: <source>, <YYYY-MM-DD>)`.
+- A superseded fact is rewritten in place with its history: `<new value> (was <old value>, changed <YYYY-MM-DD>[ by <change source>]) (src: <source>, <YYYY-MM-DD>)`. The final group stays the **original** citation (a page, a meeting). When the change came from a different source (an erratum, a later meeting), that source goes inside the history as `by <change source>`, so neither citation is lost. Example: `Saves 30 percent of water (was 35 percent, changed 2030-02-04 by erratum) (src: Okafor 2029 p.15, 2030-02-02)`. Amended 2026-10-24 (f02 fix).
 - A link line is `- <relation> [[slug]]`, where the relation text is required.
 
 The template is `templates/node.md`, kept only in the public repo. Its YAML comments are stripped on copy, so real nodes carry none; the explanations live here. Its placeholder `id` (all zeros) must be replaced with a freshly generated UUID, and is rejected by name. Rules are checked by hand for the first 10 nodes, then by a validator in `app/` (`validation/`).

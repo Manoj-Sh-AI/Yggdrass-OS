@@ -1,6 +1,6 @@
 # Spec: Phase 1a — brain files, links, gateway skill
 
-Status: approved (rulings 2026-10-24)
+Status: implemented on demo data (2026-10-24): gate met 25/25 on a public-domain Apollo brain, format frozen (D31). The real brain's facts, questions and graded run are still Manoj's to do
 Scoping: [`scoping-phase-1a.md`](scoping-phase-1a.md)
 Plan: `planning/locked-plan-v1.md`, "Phase 1a" and "Build order for phase 1a"
 Format: [`rationale/decisions/D02-node-identity.md`](../rationale/decisions/D02-node-identity.md), [`templates/node.md`](../templates/node.md)
@@ -46,12 +46,12 @@ Build the brain by hand: about 50 markdown nodes in the private brain repo, an `
 2. Given any two nodes, when their `slug` and `id` are compared, then neither is shared; and when their aliases are normalized (lowercase, accents stripped, spaces and underscores to hyphens, punctuation dropped; see D02), no normalized alias appears on two nodes.
 3. Given any node, when its filename is read, then it equals `<slug>.md`, and the node sits in the folder matching its type. A chunk sits in `sources/<source-slug>/` with slug `<source-slug>-ch-<nn>`.
 4. Given any fact line, when it is parsed, then it carries exactly one of `[stated]`, `[observed]`, `[derived]` and a `(src: <source>, <YYYY-MM-DD>)` suffix. The source is always the final parenthetical group; earlier brackets belong to the fact. `src: unknown` does not occur.
-5. Given a fact that changed value, when its line is read, then it shows the new value, the old value and the change date.
+5. Given a fact that changed value, when its line is read, then it shows the new value, the old value and the change date. When the change came from a different source than the original fact, the history names it as `by <change source>`, and the final group still holds the original citation (for example a page).
 6. Given any link line, when it is parsed, then it has relation text and one `[[slug]]`.
 6a. Given any node body, when it is read, then it has a `## Facts` section followed by a `## Links` section, and `## Facts` holds at least one fact line. A node with no facts is invalid.
 7. Given `index.md` and the node folders, when compared, then every node has exactly one index entry, every entry points at an existing node, and each entry lists the same aliases as its node.
 7a. Given a link `[[x]]` where `x` equals the normalized form of one of a node's aliases, when it is resolved through `index.md`, then it reaches that node. Given a name typed as written (for example `Bank Work`), when it is normalized, then it matches the same node.
-8. Given a chunk node, when its frontmatter is read, then `pages` is present.
+8. Given a chunk node, when its frontmatter is read, then `pages` is present and reads `<first> to <last>` in the source's printed page labels (for example `11 to 16` or `5-4 to 5-6`), or a single label.
 9. Given any node, when its lines are counted, then it is at most about 50 lines, or it has been split.
 
 **Gateway skill**
@@ -112,7 +112,7 @@ Graphiti, Docker and the graph database (1b). The connector, its tools and its v
 
 Format candidates noted during the freeze. Each would be a register amendment, not an edit. **First on unfreeze: the superseded-fact fix.** It is a format bug, not a nice-to-have.
 
-- **Superseded facts lose their origin (fix first).** A fact has one `src` slot, so recording that a value changed (an erratum, a later meeting) replaces the original citation, such as a page. That breaks temporal and page-precise retrieval at the same time, and temporal tracking is Graphiti's main value in phase 1b. Found in the node-strength experiment (`evals/experiments/node-strength/`, question f02).
+- **Resolved 2026-10-24 (D02 amended): superseded facts lose their origin.** Fix: the change source goes inside the history as `by <source>`, and the final group keeps the original citation. Original note: a fact has one `src` slot, so recording that a value changed (an erratum, a later meeting) replaces the original citation, such as a page. That breaks temporal and page-precise retrieval at the same time, and temporal tracking is Graphiti's main value in phase 1b. Found in the node-strength experiment (`evals/experiments/node-strength/`, question f02).
 - **Thin topic nodes.** Tool and concept nodes holding one fact that the area node already says. They may not earn their place.
 - **No organisation type.** Employers and vendors end up as aliases or as `area` nodes.
 - **Index id column.** Costs context on every lookup. Dropping it means changing the whole resolution chain together (D2, D02, criterion 7).

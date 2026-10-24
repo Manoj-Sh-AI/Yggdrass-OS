@@ -174,6 +174,7 @@ Every architectural decision, with what would make us reverse it. A decision is 
 | D28 | Code layout | **Open.** Layered (`app/src/yggdras/{interface,processing,data}`) now; layered vs service-oriented (`services/`) decided when there is code to arrange | Phase 1a produces almost no code, so restructuring empty folders gains nothing | Start of phase 2 |
 | D29 | Node type enum | `person`, `area`, `topic`, `source`, `chunk`. No `project` type: a project is an area. Concepts are topics, books are sources | Matches the folder structure, so there is one fewer mapping to maintain | A sixth type is genuinely needed — then amend this row, never decide it while writing a node |
 | D30 | Eval set location | `questions.yaml` in the brain repo's `evals/`, beside the `brain/` node root, never under it; the runner lives in `app/` and reads the brain path at runtime; the public `evals/` documents the question format and holds a synthetic fixture brain (`evals/fixture-brain/`, invented content only) for testing the format and runner | Questions and answers about the brain are personal data, which D4 keeps out of the public repo; constitution #5 has data flow in at runtime | Trigger fired 2026-10-24: the fixture brain was added. Revisit if the fixture stops matching the real brain's shape |
+| D31 | Node format frozen | **Frozen 2026-10-24.** D02 as amended (f02 `by <source>` history; chunk `pages` as `"<first> to <last>"`) is the frozen format. Further changes are register amendments | The 25-question gate passed 25/25 in one recorded run (`yggdras-brain/evals/results/2026-10-24-run-1.yaml`) on a 42-node demo brain built from public-domain Apollo sources, graded by Claude at Manoj's direction. The real brain's own facts and questions are still to come | The real brain's first graded run fails a question for format reasons |
 
 **Decision records.** A record for a register row lives in `rationale/decisions/` as `Dnn-<slug>.md` (`D02-node-identity.md` is D2), so the mapping is visible in the filename. Records that predate the register keep their own `NNNN-` sequence (`0001-project-setup.md`). Nothing is renumbered.
 
@@ -251,7 +252,7 @@ The format the whole system depends on. It is designed so a model can parse it w
 | `created` | ISO date | Yes | Set once |
 | `updated` | ISO date | Yes | Touched on every write |
 | `aliases` | list | No | Former slugs and other names the subject goes by, so later mentions match one file |
-| `pages` | range | Chunks only | Page span in the original, captured at ingest because PDFs lose it |
+| `pages` | range | Chunks only | Page span in the original, captured at ingest because PDFs lose it; written `"<first> to <last>"` using the printed page labels (`"11 to 16"`, `"5-4 to 5-6"`); a single page is just its label |
 
 **Body format.** Facts are one per line, each tagged with how it is known and where it came from:
 
@@ -347,7 +348,7 @@ The same subject arriving under three names is the hardest recurring problem in 
 
 When two nodes turn out to be the same subject, merge forward: the older `id` survives, the newer node's facts move across, and the newer slug becomes an alias of the surviving node.
 
-**History is kept, not overwritten.** A superseded fact becomes `Project deadline is 2030-06-30 (was 2030-03-31, changed 2030-01-15)` rather than a silent replacement, because knowing when something changed is often the thing you actually need.
+**History is kept, not overwritten.** A superseded fact becomes `Project deadline is 2030-06-30 (was 2030-03-31, changed 2030-01-15 by review meeting) (src: kickoff plan, 2030-01-05)` rather than a silent replacement. The final group keeps the original citation, and `by <source>` inside the history names where the change came from, so neither is lost (D02, amended 2026-10-24), because knowing when something changed is often the thing you actually need.
 
 ### Eval set
 
@@ -396,7 +397,7 @@ The concrete first sitting, in order. Nothing here needs Docker, a database, or 
 6. Build out to 50 nodes, adding aliases on every name variant you encounter. Aim for breadth and sharp index descriptions and links, not fact density; let facts accumulate as the brain is used (node-strength experiment, 2026-10-24: no large effect from depth, n=1 per question). From node 11 the agent drafts nodes from what you tell it, and you check each one: writing by hand first exists to debug the format, not as a discipline to keep for its own sake.
 7. Write the eval set against what now exists, including at least five negative cases.
 8. Run the eval. Fix the format, the index or the gateway skill, not the questions. A malformed question is a bug in the eval set, fixed before the set is frozen alongside the format. After the freeze, questions do not change.
-9. Freeze the node format. Record the freeze date in the register, since D-numbers now depend on it.
+9. Freeze the node format. Record the freeze date in the register, since D-numbers now depend on it. Done 2026-10-24 (D31).
 
 **Open before step 2:** which domains seed the first 50 nodes. It is quick to settle and cheaper to decide now than to migrate later. The `type` enum is settled by D29.
 

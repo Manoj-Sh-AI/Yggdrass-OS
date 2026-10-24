@@ -7,7 +7,7 @@ description: Section arguing deficit irrigation keeps most yield while saving wa
 created: 2030-02-02
 updated: 2030-02-02
 aliases: []
-pages: 11-16
+pages: "11 to 16"
 ---
 
 ## Facts
