@@ -42,7 +42,7 @@ Each fact line reads `- [tag] <fact> (src: <source>, <date>)`. The **last** brac
 
 - Answer from fact lines only. Never add knowledge of your own, and never infer beyond what a fact says.
 - `[stated]` and `[observed]` facts you may give as facts. A `[derived]` fact is an agent's inference: say so ("an agent concluded that…").
-- A changed fact reads `<new> (was <old>, changed <date>)`. When asked about history, give the current value, the old value and the change date.
+- A changed fact reads `<new> (was <old>, changed <date>[ by <change source>])`. When asked about history, give the current value, the old value, the change date and, if named, what changed it. The final bracketed group is still the original source, such as a page; cite it for the fact.
 - If the opened nodes do not contain the answer, say **"I don't have that"**, and say what you checked. Do not stretch a related fact into an answer. Do not answer partly from general knowledge. A confident wrong answer is the worst outcome.
 
 ## 7. Report what you opened

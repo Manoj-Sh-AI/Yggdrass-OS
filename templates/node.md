@@ -8,7 +8,7 @@ description: One line, written as the search snippet you would want to see in in
 created: 2030-01-15
 updated: 2030-01-15
 aliases: []                                # former slugs and other names
-# pages: 12-18                             # chunks only: page span in the original
+# pages: "12 to 18"                        # chunks only: printed labels, "<first> to <last>"
 ---
 
 ## Facts
@@ -16,7 +16,7 @@ aliases: []                                # former slugs and other names
 - [stated] A fact you said or wrote down yourself (src: self, 2030-01-15)
 - [observed] A fact from a connected source such as the calendar (src: calendar, 2030-01-16)
 - [derived] A conclusion an agent drew (src: agent, 2030-01-17)
-- [stated] Deadline is 2030-06-30 (was 2030-03-31, changed 2030-01-15) (src: review meeting, 2030-01-15)
+- [stated] Deadline is 2030-06-30 (was 2030-03-31, changed 2030-01-15 by review meeting) (src: kickoff plan, 2030-01-05)
 
 ## Links
 
