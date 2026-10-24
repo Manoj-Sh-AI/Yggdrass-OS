@@ -1,4 +1,4 @@
-# 0001: Project setup
+# 0000: Project setup
 
 Date: 2026-10-23
 Status: accepted
