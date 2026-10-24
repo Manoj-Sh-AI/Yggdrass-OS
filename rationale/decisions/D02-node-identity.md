@@ -22,6 +22,7 @@ Identity is the part that is expensive to change later. If links point at file p
 3. Map the letters NFKD leaves alone: `ß` → `ss`, `ø` → `o`.
 4. Runs of spaces and underscores become one hyphen.
 5. Drop punctuation: anything that is not a letter, digit or hyphen.
+6. Collapse runs of hyphens into one, and trim hyphens from both ends (`Power BI - Reports` is `power-bi-reports`). An alias that normalizes to an empty string is invalid.
 
 `Bank Work`, `bank work` and `bank_work` are all `bank-work`; `Universität` is `universitat`, `Straße` is `strasse`, `Master's thesis` is `masters-thesis`. No per-language transliteration (`ü` → `ue`): it breaks on the first non-German accent. Normalization is for matching only; the alias is displayed exactly as written.
 
