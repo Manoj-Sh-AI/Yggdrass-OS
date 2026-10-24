@@ -27,6 +27,8 @@ Run 2026-10-24 on invented data only. The question it was meant to answer: shoul
 | q02 | partial | 2 | 2 | B gave a richer answer, but capped |
 | | | **19/20** | **19/20** | **Delta: 0** |
 
+**How to cite this:** with one trial per question, a 1-point gap is noise. The only supportable claim is *no large effect from node depth at this size*, not that depth doesn't matter.
+
 ## What it shows
 
 1. **No measurable gain from strength at this size.** Both runs scored 19/20, and neither loss came from a thin node. A's miss was a retrieval choice on an unchanged node; B's miss came from the strengthening itself. With ten nodes and multi-hop links, the base fixture already holds enough to answer these questions.
@@ -37,7 +39,7 @@ Run 2026-10-24 on invented data only. The question it was meant to answer: shoul
 
 ## What it means for the real brain
 
-Inconclusive. It does not support "twenty rich nodes over fifty thin ones", and it doesn't refute it. What it does support:
+Ruling (Manoj, 2026-10-24): **coverage beats depth.** Step 6 aims for breadth, good index descriptions and link structure, and lets facts accumulate with use. The evidence is inconclusive: it does not support "twenty rich nodes over fifty thin ones", and it doesn't refute it. What it does support:
 
 - **Coverage first.** Every miss so far (here and in the 20-question set) was about *which node* got opened, never about a node being too thin to answer.
 - **Put the reason in the same node as the fact it explains, or link the two explicitly.** k01 failed once because "scope narrowed" and "why" lived in different nodes.
