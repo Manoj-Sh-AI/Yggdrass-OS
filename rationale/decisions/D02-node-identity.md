@@ -26,7 +26,7 @@ Identity is the part that is expensive to change later. If links point at file p
 
 `Bank Work`, `bank work` and `bank_work` are all `bank-work`; `Universität` is `universitat`, `Straße` is `strasse`, `Master's thesis` is `masters-thesis`. No per-language transliteration (`ü` → `ue`): it breaks on the first non-German accent. Normalization is for matching only; the alias is displayed exactly as written.
 
-**One file per subject**, one subject per file, under about 50 lines. A node lives in exactly one folder: `people/`, `areas/`, `topics/` or `sources/`. Chunks live under their source folder.
+**One file per subject**, one subject per file, under about 50 lines. A node lives in exactly one folder: `people/`, `areas/`, `topics/` or `sources/`. Chunks live under their source folder (`sources/<source-slug>/`), with slug `<source-slug>-ch-<nn>`, so the filename still equals the slug and stays unique across sources.
 
 **Frontmatter fields:**
 
