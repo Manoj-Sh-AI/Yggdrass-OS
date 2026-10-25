@@ -104,3 +104,31 @@ Run 1 had a single batch, so C has nothing to add there; that is reported as suc
 **Judging new pairs.** A new pair is plausible if its reason sentence states a relation between the two nodes, and wrong if the name match is spurious or the sentence doesn't relate them.
 
 **Reported per arm:** recovered of 20, the noise between its two runs, the three buckets, whether each proposal carries a usable reason, cost and time. No threshold is set here; Manoj rules.
+
+## Follow-up results (2026-10-25)
+
+Scores are in `scores-arms.json`, written by `score_arms.py` (same matching rule as `score.py`; it re-scores the original runs identically). New pairs were judged by hand under the pre-registered rule.
+
+| Arm | Recovered of 20 (run 1 / run 2) | Noise: pair overlap, recovered flips | Plausible / wrong (per run) | Reason per proposal | Cost per run | Time per run |
+|---|---|---|---|---|---|---|
+| Original Graphify | 9 / 7 | 0.90, 4 flips | 0 / 0 and 1 / 0 | No (generic label) | ~$0.30–0.35 | 182–265 s |
+| **A, free baseline** | **11 / 11** | **1.00, 0 flips (identical output)** | **28 / 6** | **Yes (the fact line)** | **$0** | **~1 s** |
+| B, Graphify + roster, one batch | 9 / 6 | 0.93, 3 flips | 2 / 0 and 0 / 0 | No (generic label) | ~$0.28–0.29 | 183–229 s |
+| C, cross-batch pass alone | 5 / 5 | 0.90, 0 flips | 13 / 0 and 15 / 0 | Yes (quoted fact) | ~$0.08–0.09 | 22–25 s |
+| Original run 2 + C | 12 / 12 | 0.98, 0 flips | 14 / 0 and 16 / 0 | Only C's additions | ~$0.43–0.44 | ~290 s |
+
+**Arm A.** It recovered the same 11 pairs in both runs, with zero noise because it is deterministic. It also proposed 34 new pairs. 28 are plausible: the fact line states the relation, for example "One unit flew in the command module and one in the lunar module" for the guidance computer and the lunar module. 6 are wrong, and every one is a spurious name match visible in its own reason line:
+- "Cape Kennedy" and "Kennedy Space Center" matched John F. Kennedy (2).
+- "Apollo 11's" and "Apollo 13's" normalize to `apollo-11s`/`apollo-13s`, so only `apollo` matched, giving the Apollo program (3).
+- "Backup lunar module pilot" linked the lunar module to the rubella crew swap (1).
+
+**Arm B.** Every run stayed in one batch: no split, no truncation. Graphify read the roster and `index.md` but made no nodes from either (it warned about this), and it recovered no more than the original runs did. Its two new pairs are plausible: `apollo-11-mission-report`–`neil-armstrong` (*cites*) and `north-american-aviation`–`oxygen-tank-2`. Caveat: B changes two things at once, the roster and the output cap. But neither the original runs (where `index.md` already shared run 1's single batch) nor B suggests that a roster or a single batch is what limits recovery.
+
+**Arm C.** Both runs added the same 5 deleted pairs, all among the 11 that straddled run 2's batches: `apollo-11`–`lunar-module`, `apollo-11`–`neil-armstrong`, `apollo-13`–`ken-mattingly`, `apollo-13`–`rubella-crew-swap` and `apollo-13-review-board`–`apollo-13-review-board-report`. All of its new pairs are plausible; half are notes linked to the source they cite. Nothing was dropped by the validity filter.
+
+**Which pairs were found by what.** Across all arms, 15 of 20 were recovered at least once.
+- Only model arms found: `apollo-11-mission-report-ch-05`–`program-alarms-1201-1202`, `apollo-13-review-board`–`apollo-13-review-board-report`, `apollo-program`–`john-f-kennedy` and `beech-aircraft`–`oxygen-tank-2`.
+- Only A found: `fred-haise`–`lunar-module` and `command-service-module`–`michael-collins`.
+- Nothing found: `apollo-8`–`apollo-program`, `co2-scrubber-adapter`–`command-service-module`, `buzz-aldrin`–`lunar-orbit-rendezvous`, `apollo-11-mission-report-ch-05`–`neil-armstrong` and `buzz-aldrin`–`neil-armstrong`. A's scan found no name for the other note in either note's fact text.
+
+**Straight call.** A, which is free, beats B outright (11 vs 9 and 6) and beats C on its own (11 vs 5). Graphify plus C edges A by one pair (12 vs 11), at about $0.44 and 290 s per run against zero. A is perfectly repeatable, and every A proposal carries the sentence that justifies it. A's weakness is 6 spurious name matches out of 34 new pairs, each obvious from its reason line. Graphify's proposals carry no reason at all. No ruling is made here; Manoj rules.
