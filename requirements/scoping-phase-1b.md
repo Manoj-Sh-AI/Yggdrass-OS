@@ -27,7 +27,49 @@ Source: `planning/locked-plan-v1.md`, "Revision 2026-10-25" and "Phase 1b", and 
 
    Anything that doesn't match the plan's assumptions is a finding to bring back, not a detail to work around.
 
-<!-- Further open questions are added once question 1 is answered. -->
+### Findings for question 1 (read-only, 2026-10-25; nothing installed or vendored)
+
+Canonical project: [Graphify-Labs/graphify](https://github.com/Graphify-Labs/graphify) (`safishamsi/graphify` redirects there). Latest release v0.9.95 (2026-10-23). Very active, so any version used must be pinned. The PyPI package is `graphifyy` (double y).
+
+**1. Licence: the core is Apache 2.0, and there is a separate hosted/enterprise product.**
+- **Core:** GitHub reports Apache-2.0 for the repo. [LICENSE](https://github.com/Graphify-Labs/graphify/blob/HEAD/LICENSE) is the Apache 2.0 text. [NOTICE](https://github.com/Graphify-Labs/graphify/blob/HEAD/NOTICE) reads "Copyright 2026 Safi Shamsi and the Graphify contributors" and says portions contributed under MIT before the relicensing remain under those terms, with the text kept in [LICENSE-MIT](https://github.com/Graphify-Labs/graphify/blob/HEAD/LICENSE-MIT).
+- **Obligations if a public repo vendors part of it** (Apache 2.0 section 4; not legal advice):
+  - ship a copy of the Apache licence;
+  - keep the copyright, patent, trademark and attribution notices from the vendored files;
+  - include the attribution notices from Graphify's `NOTICE` in a `NOTICE` file shipped with Yggdras;
+  - mark every changed file with a prominent notice saying it was changed;
+  - also keep `LICENSE-MIT`, because the NOTICE says earlier portions remain MIT.
+- **No enterprise code in the repository.** A search of the file tree found no enterprise or commercial directory, and the README names no license other than Apache 2.0.
+- **Enterprise is a separate product**, per [graphify.com/llms-full.txt](https://graphify.com/llms-full.txt):
+  - Enterprise is self-hosted, early access, per seat, with custom pricing: legacy migration, SAML SSO, self-hosting, a GitHub App verification gate, Jira links.
+  - A hosted app at app.graphify.com has Free, Pro and Teams plans.
+  - The "free for open source" programme is for the hosted product, for non-commercial MIT/Apache projects. Yggdras has no licence, so it wouldn't qualify, but none of that is needed if only the CLI core is used.
+  - The vendor doc is inconsistent on whether `verify-edit` ships in the open-source package, so treat it as not available.
+
+**2. The two passes: no, not as the plan assumes.** This changes D7 and D8.
+- **The free, model-free pass is built for code.** Graphify's README says code is "parsed with tree-sitter AST: deterministic, no LLM", while "docs, PDFs, images" go to a model ([README](https://github.com/Graphify-Labs/graphify/blob/HEAD/README.md), Privacy section; [how-it-works](https://github.com/Graphify-Labs/graphify/blob/HEAD/docs/how-it-works.md), "The three passes").
+- **Markdown counts as a document, so it gets the paid pass.** `.md` is classed as `DOCUMENT`, not code ([detect.py](https://github.com/Graphify-Labs/graphify/blob/HEAD/graphify/detect.py), `DOC_EXTENSIONS`). Pass 3, the model, "runs in parallel over markdown". In the incremental update, any changed doc file switches on semantic extraction ([update reference](https://github.com/Graphify-Labs/graphify/blob/HEAD/graphify/skills/codex/references/update.md)).
+- **The model-free modes skip markdown.** `graphify update` re-extracts "code files" only, and `--code-only` skips doc files, markdown included.
+- **A deterministic markdown extractor does exist in the source, but can't be run on its own.** [extractors/markdown.py](https://github.com/Graphify-Labs/graphify/blob/HEAD/graphify/extractors/markdown.py) is registered for `.md` in the AST extractor map. It parses YAML frontmatter, headings and `[[wikilinks]]`, resolving them by filename across the folder. It emits `file --references--> file` and `heading --contains--> heading` edges tagged `EXTRACTED`. But no documented CLI mode runs it without the model. Using it model-free would mean calling it directly as a library, which means vendoring or wrapping, and that's unverified.
+- **Plain answer:** the "free structural pass over the markdown on every file change" is not something Graphify provides out of the box. Every documented path that reads our notes also calls a model. D7 and D8 as written assume otherwise.
+
+**3. Outputs and update mode.**
+- **Writes** `graphify-out/` next to the input (or `<DIR>/graphify-out/` with `--out DIR`): `graph.json` (NetworkX node-link format, with `schema_version` and `graphify_version`), `graph.html` and `GRAPH_REPORT.md`, plus `cache/`.
+- **Update mode is incremental:** an SHA256 content cache in `graphify-out/cache/` plus a manifest, so unchanged files are skipped. `--force` does a full re-scan. `graphify watch` and git hooks can trigger rebuilds. But a changed `.md` file still triggers the model pass, so "run it on every file change" means a paid call per changed note.
+- **Edges are tagged** `EXTRACTED`, `INFERRED` or `AMBIGUOUS`, which maps well onto the plan's "proposals tagged inferred".
+
+**4. Exports.**
+- **Confirmed as `/graphify` skill flags:** `--graphml`, `--svg` and `--neo4j` (Cypher file; `--neo4j-push` pushes), plus `--falkordb`, `--wiki` and `--mcp` ([exports reference](https://github.com/Graphify-Labs/graphify/blob/HEAD/graphify/skills/claude/references/exports.md)).
+- **`--obsidian` is not a skill flag.** Obsidian export exists as the CLI subcommand `graphify export obsidian` (notes plus canvas). The other exports also exist as `graphify export html|svg|graphml|neo4j|falkordb|wiki`.
+- **The HTML view is not fully self-contained.** The graph data is inlined, but the vis-network library loads from unpkg ([exporters/html.py](https://github.com/Graphify-Labs/graphify/blob/HEAD/graphify/exporters/html.py), with a subresource-integrity hash). It needs internet access to render.
+
+**5. Other findings that contradict or affect the revised Phase 1b**
+- **Link reasons are lost.** Every `[[wikilink]]` becomes a bare `references` edge, so the reason text on each link (the plan's "labelled relationship") doesn't survive. Our `aliases` aren't used either, since resolution is by filename only.
+- **The output folder doesn't match.** The plan says `.graphify/`, but Graphify writes `graphify-out/`. Configurable through `--out`, but it needs a decision and a `.gitignore` entry.
+- **Privacy: query logging is on by default.** Every query, path and explain call logs the question text to `~/.cache/graphify-queries.log`. That's brain content leaving the brain repo. Set `GRAPHIFY_QUERY_LOG_DISABLE=1`. One secondary source claimed logging is off by default since v0.9.28; the current README says otherwise.
+- **Privacy: model choice is automatic.** Without `--backend`, Graphify picks the first key it finds (Gemini, then Kimi, then Claude…). Kimi routes to servers in China. Pin `--backend claude`, or `GRAPHIFY_BACKEND`, explicitly.
+
+<!-- Further open questions are added once Manoj has read these findings. -->
 
 ## 1. What kind of software is this?
 
