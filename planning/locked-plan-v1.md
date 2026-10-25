@@ -66,7 +66,7 @@ Build 50 to 100 real nodes by hand, from things actually in use: current project
 
 Build a map of the brain from the corpus built in 1a: our own structural pass for the map, and Graphify for discovery. Its value here is link discovery: surfacing connections between notes that were never written by hand. Graphify replaced Graphiti after the 2026-10-24 spike, which found recording dates read as fact-start dates, unreliable supersession, lost page citations, and 17–20 different edges from identical input.
 
-**Storage.** No database. The map is our structural pass's derived `graph.json`, written to a separate gitignored folder in the brain repo, named in the spec and distinct from `.graphify/`, and rebuilt from the markdown at any time. Graphify's own output lives under `.graphify/` and is a proposal feed only, never the map itself (D32). Graphify is installed as a pinned package, not vendored or forked, so no Graphify code lives in the Yggdras repo; if any is ever vendored, its Apache 2.0 obligations apply (licence copy, NOTICE attributions, `LICENSE-MIT`, changed files marked).
+**Storage.** No database. The map is our structural pass's derived `graph.json`, written to `.map/` in the brain repo (gitignored, beside `.graphify/`), and rebuilt from the markdown at any time. Graphify's own output lives under `.graphify/` and is a proposal feed only, never the map itself (D32). Graphify is installed as a pinned package, not vendored or forked, so no Graphify code lives in the Yggdras repo; if any is ever vendored, its Apache 2.0 obligations apply (licence copy, NOTICE attributions, `LICENSE-MIT`, changed files marked).
 
 **Two passes.** The structural pass is ours, in the repo, not a fork of Graphify (amended 2026-10-25). It reads every markdown file in the brain, takes the frontmatter and every hand-written `[[link]]`, and writes `graph.json`: no model, free, identical every run, re-run on every file change. It preserves what Graphify drops: the reason text on each link and the aliases from frontmatter (D31). The discovery pass is Graphify with a paid Anthropic model; it proposes new links, tagged inferred with a one-line reason. It runs manually; its proposals go through the connector for accept or reject, and accepted ones become real links in the markdown.
 
@@ -186,7 +186,7 @@ Every architectural decision, with what would make us reverse it. A decision is 
 | D2 | Node identity | UUID in frontmatter, filename is a label | Rename anything without breaking links | Links prove stable enough that readable IDs are worth more |
 | D3 | Brain repo | Private from first commit, separate from code | Publishing cannot be undone; git history would carry personal life | Never |
 | D4 | Code repo | Public | Nothing personal in it once D3 holds | Commercial version starts — then a private fork |
-| D5 | Graph index | Our own structural map: `graph.json` derived from frontmatter and hand-written `[[links]]`, keeping link reasons and aliases; no model, no database (amended 2026-10-25; was FalkorDB in Docker, then briefly a Graphify map) | Graphiti spike failed (2026-10-24), and Graphify has no model-free pass over markdown and drops link reasons and aliases; written links already form the graph, so a file is enough | Map queries get too slow on a single file |
+| D5 | Graph index | Our own structural map: `graph.json` in `.map/` (brain repo, gitignored), derived from frontmatter and hand-written `[[links]]`, keeping link reasons and aliases; no model, no database (amended 2026-10-25; was FalkorDB in Docker, then briefly a Graphify map) | Graphiti spike failed (2026-10-24), and Graphify has no model-free pass over markdown and drops link reasons and aliases; written links already form the graph, so a file is enough | Map queries get too slow on a single file |
 | D6 | Graph is derived | Rebuildable from files, one-way ingest | Prevents two brains disagreeing | Never |
 | D7 | Extraction | Discovery pass is Graphify with a paid Anthropic model, provider pinned explicitly, run manually; proposals tagged inferred with a reason and accepted or rejected through the connector. The structural pass uses no model (amended 2026-10-25; was Graphiti with a paid API model) | Link discovery is the core value; review keeps model noise out of the brain; pinning the provider keeps brain text from going wherever a stray key points | Monthly cost exceeds its value, then local Ollama for bulk |
 | D8 | Ingest trigger | Our structural pass on every file change; Graphify discovery pass manual (amended 2026-10-25; was scheduled nightly) | The structural pass is free and deterministic; discovery costs money, since Graphify sends every changed note to the model, and needs review | Discovery proves reliable enough to schedule |
@@ -269,12 +269,13 @@ brain/                the node root: an answering agent is given this folder and
 evals/                questions.yaml and results/, beside brain/ so no answer is in an agent's reach (D30)
 inbox/                raw captures awaiting filtering, deleted after 48h
 private/              notes that are not nodes
-.graphify/            Graphify's output: a proposal feed, gitignored, never the map (D32); our map lives in its own gitignored folder
+.map/                 our structural map: graph.json and anything the map needs later; gitignored, rebuildable (D5)
+.graphify/            Graphify's output: a proposal feed, gitignored, never the map (D32)
 ```
 
 Path scoping is the control, not the folder name: an agent with a shell can walk up a directory. What makes the split safe is the combination of a scoped root, the owner grading, and the runner never reading the brain. The split removes the trivial failure mode where answers sit in the directory the agent was told to read.
 
-Both derived folders, `.graphify/` and our map's folder, are gitignored deliberately: D6 says the graph is derived, so committing it would create a second source of truth with its own merge conflicts.
+Both derived folders, `.map/` and `.graphify/`, are gitignored deliberately: D6 says the graph is derived, so committing it would create a second source of truth with its own merge conflicts.
 
 ## Node schema
 

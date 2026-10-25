@@ -76,7 +76,7 @@ Canonical project: [Graphify-Labs/graphify](https://github.com/Graphify-Labs/gra
    - **Outputs stay separate.** Our `graph.json` is the map and the source for the graph view. Graphify's output under `.graphify/` is a proposal feed only. Proposals are tagged inferred, carry a reason, and go through accept or reject in the connector; nothing reaches the brain unreviewed.
    - **Exact version pinned** (v0.9.95 or newer at adoption); upgrades are deliberate.
    - **Register:** D5, D7 and D8 amended, and D32 added (Graphify adopted whole, future uses anticipated, so the unused parts must not be cleaned up).
-   - **Still open:** the folder name for our `graph.json`, which must be distinct from `.graphify/`.
+   - **Folder (Manoj, 2026-10-25):** our structural output lives in `.map/` in the brain repo, beside `.graphify/`. Both are gitignored (D6).
    - **Next step, held until Manoj has seen the amended register:** build the structural pass, run it over the Apollo demo brain, and compare its edges against the hand-written links.
 
 <!-- Further open questions are added as they come up. -->
