@@ -22,7 +22,7 @@ Link discovery is now the core reason for the brain, and Graphify replaces Graph
 
 | Area | Was | Now |
 | --- | --- | --- |
-| Phase 1b | Graphiti + FalkorDB, nightly paid extraction | Graphify code inside the Yggdras repo; the map is built from written `[[links]]` (no model, deterministic), plus an occasional extraction pass that proposes links |
+| Phase 1b | Graphiti + FalkorDB, nightly paid extraction | Yggdras's own structural pass builds the map from written `[[links]]` (no model, deterministic, keeps link reasons and aliases); Graphify, installed whole, runs an occasional discovery pass that proposes links |
 | Discovered links | Graph edges treated as findings | Proposals tagged inferred with a reason; accepted ones become real links in the markdown |
 | D5, D7, D8 | Graphiti on FalkorDB, paid nightly extraction | Replaced (see the register): a derived map file, a reviewed discovery pass, structural rebuild on change. D6 is unchanged. The spike showed recording dates misread as fact dates, unreliable supersession, lost page citations, and 17–20 edges on identical input |
 | Gateway | A skill each agent reads | Logic moves into connector tools (find, open node, follow links, propose change); the skill shrinks to a tool guide |
@@ -64,11 +64,11 @@ Build 50 to 100 real nodes by hand, from things actually in use: current project
 
 ## Phase 1b — Graphify map and link discovery
 
-Build a map of the brain with Graphify code inside the Yggdras repo, from the corpus built in 1a. Its value here is link discovery: surfacing connections between notes that were never written by hand. Graphify replaced Graphiti after the 2026-10-24 spike, which found recording dates read as fact-start dates, unreliable supersession, lost page citations, and 17–20 different edges from identical input.
+Build a map of the brain from the corpus built in 1a: our own structural pass for the map, and Graphify for discovery. Its value here is link discovery: surfacing connections between notes that were never written by hand. Graphify replaced Graphiti after the 2026-10-24 spike, which found recording dates read as fact-start dates, unreliable supersession, lost page citations, and 17–20 different edges from identical input.
 
-**Storage.** No database. The map is a derived file (`graph.json`) plus a report, written to a gitignored folder in the brain repo (`.graphify/`) and rebuilt from the markdown at any time. Graphify's open-source core is Apache 2.0: keep its license notice and mark changed files.
+**Storage.** No database. The map is our structural pass's derived `graph.json`, written to `.map/` in the brain repo (gitignored, beside `.graphify/`), and rebuilt from the markdown at any time. Graphify's own output lives under `.graphify/` and is a proposal feed only, never the map itself (D32). Graphify is installed as a pinned package, not vendored or forked, so no Graphify code lives in the Yggdras repo; if any is ever vendored, its Apache 2.0 obligations apply (licence copy, NOTICE attributions, `LICENSE-MIT`, changed files marked).
 
-**Two passes.** The structural pass builds the map from written `[[links]]` and frontmatter: no model, free, identical every run, re-run on every file change. The discovery pass sends notes to a model and proposes new links, tagged inferred with a one-line reason. It runs manually; its proposals go through the connector for accept or reject, and accepted ones become real links in the markdown.
+**Two passes.** The structural pass is ours, in the repo, not a fork of Graphify (amended 2026-10-25). It reads every markdown file in the brain, takes the frontmatter and every hand-written `[[link]]`, and writes `graph.json`: no model, free, identical every run, re-run on every file change. It preserves what Graphify drops: the reason text on each link and the aliases from frontmatter (D31). The discovery pass is Graphify with a paid Anthropic model; it proposes new links, tagged inferred with a one-line reason. It runs manually; its proposals go through the connector for accept or reject, and accepted ones become real links in the markdown.
 
 **The free eval.** The links written by hand in 1a are ground truth. Delete a known set of links from the Apollo demo brain, run discovery, and count how many come back against how much junk arrives with them. Then rerun the Apollo eval with and without the map.
 
@@ -163,8 +163,8 @@ Everything runs locally except two things: the model the discovery pass calls wh
 | Layer | Choice | Where | Needs uptime | Phase |
 | --- | --- | --- | --- | --- |
 | Brain storage | Markdown files + git, private repo | Local | No | 1a |
-| Graph index | Graphify map file, no database | Local | No | 1b |
-| Extraction | Discovery pass with a paid API model; structural pass needs none | Local process, cloud model | No | 1b |
+| Graph index | Own structural map file (`graph.json`), no database | Local | No | 1b |
+| Extraction | Graphify discovery pass with a paid Anthropic model, provider pinned; structural pass needs none | Local process, cloud model | No | 1b |
 | Interface | MCP server in Python, Claude as client | Local | No | 2 |
 | Agents + orchestrator | Python processes | Local | No | 3–4 |
 | App data | SQLite | Local | No | 2–3 |
@@ -186,10 +186,10 @@ Every architectural decision, with what would make us reverse it. A decision is 
 | D2 | Node identity | UUID in frontmatter, filename is a label | Rename anything without breaking links | Links prove stable enough that readable IDs are worth more |
 | D3 | Brain repo | Private from first commit, separate from code | Publishing cannot be undone; git history would carry personal life | Never |
 | D4 | Code repo | Public | Nothing personal in it once D3 holds | Commercial version starts — then a private fork |
-| D5 | Graph index | Graphify map file, derived, no database (amended 2026-10-25; was FalkorDB in Docker) | Graphiti spike failed (2026-10-24); written links already form the graph, so a file is enough | Map queries get too slow on a single file |
+| D5 | Graph index | Our own structural map: `graph.json` in `.map/` (brain repo, gitignored), derived from frontmatter and hand-written `[[links]]`, keeping link reasons and aliases; no model, no database (amended 2026-10-25; was FalkorDB in Docker, then briefly a Graphify map) | Graphiti spike failed (2026-10-24), and Graphify has no model-free pass over markdown and drops link reasons and aliases; written links already form the graph, so a file is enough | Map queries get too slow on a single file |
 | D6 | Graph is derived | Rebuildable from files, one-way ingest | Prevents two brains disagreeing | Never |
-| D7 | Extraction | Discovery pass with a paid API model, proposals reviewed; structural pass uses no model (amended 2026-10-25; was Graphiti with a paid API model) | Link discovery is the core value; review keeps model noise out of the brain | Monthly cost exceeds its value, then local Ollama for bulk |
-| D8 | Ingest trigger | Structural pass on every file change; discovery pass manual (amended 2026-10-25; was scheduled nightly) | The structural pass is free and deterministic; discovery costs money and needs review | Discovery proves reliable enough to schedule |
+| D7 | Extraction | Discovery pass is Graphify with a paid Anthropic model, provider pinned explicitly, run manually; proposals tagged inferred with a reason and accepted or rejected through the connector. The structural pass uses no model (amended 2026-10-25; was Graphiti with a paid API model) | Link discovery is the core value; review keeps model noise out of the brain; pinning the provider keeps brain text from going wherever a stray key points | Monthly cost exceeds its value, then local Ollama for bulk |
+| D8 | Ingest trigger | Our structural pass on every file change; Graphify discovery pass manual (amended 2026-10-25; was scheduled nightly) | The structural pass is free and deterministic; discovery costs money, since Graphify sends every changed note to the model, and needs review | Discovery proves reliable enough to schedule |
 | D9 | Connector + agents language | Python | Graphify and LightRAG are Python; one language avoids a process boundary mid-pipeline | A component is provably bottlenecked by Python |
 | D10 | App shell | Tauri | Rust core over system webview, small bundles, low memory for an all-day tool | Mobile native becomes a requirement |
 | D11 | UI structure | Web frontend behind a data-access interface | Same components run on local files or Supabase, so the web client is not a rewrite | Never — this is cheap now and expensive later |
@@ -213,6 +213,7 @@ Every architectural decision, with what would make us reverse it. A decision is 
 | D29 | Node type enum | `person`, `area`, `topic`, `source`, `chunk`. No `project` type: a project is an area. Concepts are topics, books are sources | Matches the folder structure, so there is one fewer mapping to maintain | A sixth type is genuinely needed — then amend this row, never decide it while writing a node |
 | D30 | Eval set location | `questions.yaml` in the brain repo's `evals/`, beside the `brain/` node root, never under it; the runner lives in `app/` and reads the brain path at runtime; the public `evals/` documents the question format and holds a synthetic fixture brain (`evals/fixture-brain/`, invented content only) for testing the format and runner | Questions and answers about the brain are personal data, which D4 keeps out of the public repo; constitution #5 has data flow in at runtime | Trigger fired 2026-10-24: the fixture brain was added. Revisit if the fixture stops matching the real brain's shape |
 | D31 | Node format frozen | **Frozen 2026-10-24.** D02 as amended (f02 `by <source>` history; chunk `pages` as `"<first> to <last>"`) is the frozen format. Further changes are register amendments | The 25-question gate passed 25/25 in one recorded run (`yggdras-brain/demo-evals/results/2026-10-24-run-1.yaml`) on a 42-node demo brain (now `yggdras-brain/demo-brain/`) built from public-domain Apollo sources, graded by Claude at Manoj's direction. The real brain's own facts and questions are still to come | The real brain's first graded run fails a question for format reasons |
+| D32 | Graphify adoption | Installed whole at an exact pinned version (v0.9.95 or newer at adoption), upgraded only deliberately. Nothing stripped, forked, patched or narrowed: the code pass, model-based document extraction, HTML view and report, every export (GraphML, SVG, Neo4j, FalkorDB, Obsidian), update mode and git hooks, question answering and MCP mode all stay reachable. Only two settings, both for privacy and both configuration rather than code: the provider pinned to Anthropic (never auto-detected; no Kimi, no China routing), and question logging to the home folder off. Its output under `.graphify/` is a proposal feed, never the map; nothing it produces reaches the brain unreviewed | Phase 1b uses only discovery, but later uses are explicitly anticipated (mapping the Yggdras codebase itself, exports, MCP mode), so the unused parts are deliberate and must not be cleaned up. It is days old and moving fast, so versions are pinned | Its licence changes, it starts sending data anywhere unconfigured, or a pinned upgrade breaks the discovery pass |
 
 **Decision records.** A record for a register row lives in `rationale/decisions/` as `Dnn-<slug>.md` (`D02-node-identity.md` is D2), so the mapping is visible in the filename. Records that predate the register keep their own `NNNN-` sequence (`0001-project-setup.md`). Nothing is renumbered.
 
@@ -240,7 +241,7 @@ services/
     filter/             conversation filter (phase 3)
     ingest/             source chunking agent (phase 4)
     orchestrator/       extracted in phase 4, not before
-  graph/              Graphify code: structural build, discovery pass
+  graph/              our structural pass, and the Graphify discovery wrapper (Graphify itself is a pinned dependency, not vendored)
   outbox/             Supabase client, scheduled job, Telegram bot
 skills/
   gateway/            which connector tool to use when (phase 2); until then, how to navigate the brain
@@ -268,12 +269,13 @@ brain/                the node root: an answering agent is given this folder and
 evals/                questions.yaml and results/, beside brain/ so no answer is in an agent's reach (D30)
 inbox/                raw captures awaiting filtering, deleted after 48h
 private/              notes that are not nodes
-.graphify/            derived map, gitignored, rebuildable
+.map/                 our structural map: graph.json and anything the map needs later; gitignored, rebuildable (D5)
+.graphify/            Graphify's output: a proposal feed, gitignored, never the map (D32)
 ```
 
 Path scoping is the control, not the folder name: an agent with a shell can walk up a directory. What makes the split safe is the combination of a scoped root, the owner grading, and the runner never reading the brain. The split removes the trivial failure mode where answers sit in the directory the agent was told to read.
 
-The `.graphify/` directory is gitignored deliberately: D6 says the graph is derived, so committing it would create a second source of truth with its own merge conflicts.
+Both derived folders, `.map/` and `.graphify/`, are gitignored deliberately: D6 says the graph is derived, so committing it would create a second source of truth with its own merge conflicts.
 
 ## Node schema
 
