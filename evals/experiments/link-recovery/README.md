@@ -72,3 +72,35 @@ Two runs, identical input, `graphifyy 0.9.95`, `--backend claude --model claude-
 - **Misses include connections stated plainly in the text.** `apollo-13`–`ken-mattingly` was missed although apollo-13's facts say the pilot "was Ken Mattingly". Also missed: `apollo-11`–`lunar-module` (hub–hub), and `buzz-aldrin`–`neil-armstrong`.
 
 **No ruling is made here.** Whether recovery (9 and 7 of 20; 6 consistent, 4 flipping) clearly beats the run-to-run noise is Manoj's call under the kill criterion.
+
+## Follow-up: three arms (pre-registered 2026-10-25, before any arm ran)
+
+Same copy (`brain-stripped/`), same answer key, same 20 deleted pairs, same matching rule and buckets as above. Each arm runs twice on identical input; the difference is its noise floor.
+
+**Graphify issues, checked against the pinned 0.9.95 source and changelog.**
+- **#65 (no global linking pass across batches):** closed, but the fix (v0.3.17) only added skill-file guidance to group files by folder. 0.9.95 still has no cross-batch pass: `_pack_chunks_by_tokens` groups by directory and packs to a token budget, and an over-long answer splits the chunk in halves (`_extract_with_adaptive_retry`). **Still applies.**
+- **#3947:** open. **Still applies.**
+- **#4547:** open, reported on 0.9.92, fix only on a branch. **Still applies.**
+- **#3094:** closed 2026-10-04. The installed `dedup.py` has the `source_file` guards (line 239, lines 298–327). **Fixed at 0.9.95.**
+
+**What batching did in the original runs.** Run 1 was one batch of all 43 files. Run 2's answer was truncated and split into halves of 21 and 22; the halves were reconstructed by calling Graphify's own `detect` and `_pack_chunks_by_tokens`, read-only. 11 of the 20 deleted pairs straddled run 2's halves. Also, `index.md` lists every node's slug and aliases, so whenever it shared a batch with a note, that batch already had a roster in it. Run 1 had that throughout.
+
+**Arm A, free baseline (control).** `arm_a.py`, no model. Roster = every node's slug, name and aliases from the stripped copy's structural map. For each fact line, the fact text only (the trailing `(src: …)` group is provenance, not a link claim), normalized by the D02 rule. Roster names match at hyphen-token boundaries, longest first, without overlap. A match to another node gives a candidate link, with the fact line as its reason. Cost zero.
+
+**Arm B, Graphify with a roster in every batch.** No prompt or instruction option exists in 0.9.95: the system prompt is a fixed constant and `--prompt-file` only exists on the cache-check subcommand. Reachable from outside without editing Graphify:
+- a roster file (`_roster.md`: every node's name, slug and aliases) added to a second copy of the stripped corpus;
+- `GRAPHIFY_MAX_OUTPUT_TOKENS=21000`, Graphify's public output-cap variable (default 16,384), so that the answer is not truncated and the batch is not split, and every note shares the batch with the roster. 21,000 is the most the SDK allows without streaming.
+
+Everything else is as in the original runs. If a run still splits, that is recorded, not retried.
+
+**Arm C, cross-batch pass.** `arm_c.py`, one model call per run (`claude-sonnet-5-5`, Anthropic API, same key), over run 2, the only run with more than one batch.
+- **Input:** the roster tagged with run 2's batch for each note, run 2's proposal pairs (so it doesn't repeat them), and each note's fact lines. Fact lines are included because Graphify's output carries only labels and bare edges, and a pass given only those would be guessing.
+- **Asked for:** links only between notes in different batches, not already proposed, each with a reason that quotes the supporting fact.
+- **Kept:** only output pairs whose slugs both exist and that do cross batches; anything dropped is counted.
+- **Scored:** C's own additions alone, and run 2 plus C's additions combined.
+
+Run 1 had a single batch, so C has nothing to add there; that is reported as such.
+
+**Judging new pairs.** A new pair is plausible if its reason sentence states a relation between the two nodes, and wrong if the name match is spurious or the sentence doesn't relate them.
+
+**Reported per arm:** recovered of 20, the noise between its two runs, the three buckets, whether each proposal carries a usable reason, cost and time. No threshold is set here; Manoj rules.
