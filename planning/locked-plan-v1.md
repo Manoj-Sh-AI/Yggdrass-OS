@@ -328,6 +328,8 @@ The complete set, defined in phase 2 and extended later. Every write goes throug
 | `link` | from slug, to slug, relation text | Confirmation, plus a warning if the target does not exist | Yes | 2 |
 | `resolve` | a name or phrase | Candidate nodes it might refer to, for dedup | No | 2 |
 | `list_dangling` | none | Links pointing at nodes that do not exist yet | No | 2 |
+| `query_map` | slug or phrase, optional depth | Connected nodes from the Graphify map, with written and inferred links marked | No | 2 |
+| `propose_change` | change (link, fact or node edit) and a one-line reason | A proposal awaiting accept or reject | Only once accepted | 2 |
 | `ingest_source` | file path, title | Chunked nodes under `sources/` | Yes | 4 |
 | `schedule` | task slug, time | Updated schedule, collisions flagged | Yes | 5 |
 | `push_outbox` | pending notifications | Rows written to Supabase | Yes | 5 |
