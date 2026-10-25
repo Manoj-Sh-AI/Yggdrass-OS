@@ -69,7 +69,17 @@ Canonical project: [Graphify-Labs/graphify](https://github.com/Graphify-Labs/gra
 - **Privacy: query logging is on by default.** Every query, path and explain call logs the question text to `~/.cache/graphify-queries.log`. That's brain content leaving the brain repo. Set `GRAPHIFY_QUERY_LOG_DISABLE=1`. One secondary source claimed logging is off by default since v0.9.28; the current README says otherwise.
 - **Privacy: model choice is automatic.** Without `--backend`, Graphify picks the first key it finds (Gemini, then Kimi, then Claude…). Kimi routes to servers in China. Pin `--backend claude`, or `GRAPHIFY_BACKEND`, explicitly.
 
-<!-- Further open questions are added once Manoj has read these findings. -->
+2. **How to get a model-free map, given finding 2. Ruled (Manoj, 2026-10-25): our own structural pass, with Graphify installed whole.**
+   - **Our structural pass.** It reads every markdown file in the brain, takes the frontmatter and every hand-written `[[link]]`, and writes `graph.json`: no model, free, identical every run, re-run on every file change. It keeps what Graphify drops: each link's reason text and the frontmatter aliases (D31). It's ours, in the repo, not a fork of Graphify.
+   - **Graphify installed whole.** Nothing is stripped, forked, patched or narrowed. The code pass, document extraction, the HTML view and report, every export, update mode and git hooks, question answering and MCP mode all stay reachable. Only discovery is used now.
+   - **Two privacy settings, configuration only:** the provider is pinned to Anthropic and never auto-detected (no Kimi, no China routing), and question logging to the home folder is off. Nothing else is disabled.
+   - **Outputs stay separate.** Our `graph.json` is the map and the source for the graph view. Graphify's output under `.graphify/` is a proposal feed only. Proposals are tagged inferred, carry a reason, and go through accept or reject in the connector; nothing reaches the brain unreviewed.
+   - **Exact version pinned** (v0.9.95 or newer at adoption); upgrades are deliberate.
+   - **Register:** D5, D7 and D8 amended, and D32 added (Graphify adopted whole, future uses anticipated, so the unused parts must not be cleaned up).
+   - **Still open:** the folder name for our `graph.json`, which must be distinct from `.graphify/`.
+   - **Next step, held until Manoj has seen the amended register:** build the structural pass, run it over the Apollo demo brain, and compare its edges against the hand-written links.
+
+<!-- Further open questions are added as they come up. -->
 
 ## 1. What kind of software is this?
 
