@@ -1,0 +1,10 @@
+[graphify] chunk of 43 truncated at depth 0, splitting into halves of 21 and 22
+[graphify extract] --force: full re-scan, semantic cache reads skipped
+[graphify extract] scanning evals\experiments\link-recovery\brain-stripped
+[graphify extract] found 0 code, 43 docs, 0 papers, 0 images
+[graphify extract] semantic extraction on 43 files via claude...
+[graphify extract] chunk 1/1 done
+[graphify extract] wrote evals\experiments\link-recovery\run-2\graphify-out\graph.json: 72 nodes, 91 edges, 10 communities
+[graphify extract] wrote evals\experiments\link-recovery\run-2\graphify-out\.graphify_analysis.json
+[graphify extract] tokens: 25,402 in / 18,335 out, est. cost (~claude): $0.3512
+[graphify extract] next: run `graphify cluster-only evals\experiments\link-recovery\run-2` to generate GRAPH_REPORT.md and name communities

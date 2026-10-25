@@ -36,6 +36,39 @@ Every link line between a chosen pair is removed, in both directions: 36 lines. 
 
 **No threshold is set here.** Manoj rules on whether recovery clearly beats the noise once the numbers are in, the same discipline as the phase 1a gate.
 
-## Results
+## Results (2026-10-25)
 
-Not yet run.
+Two runs, identical input, `graphifyy 0.9.95`, `--backend claude --model claude-sonnet-5-5 --force`, separate output folders. Raw outputs: `run-1-graph.json`, `run-2-graph.json`, plus logs and timings. Scores: `scores.json`, written by `score.py` and reproduced identically on a re-run.
+
+| | Run 1 | Run 2 |
+|---|---|---|
+| Time | 182 s | 265 s |
+| Tokens (in / out) | 23,953 / 15,279 | 25,402 / 18,335 |
+| Cost (Graphify's estimate) | ~$0.30 | ~$0.35 |
+| Raw Graphify output | 43 nodes, 71 edges | 72 nodes, 91 edges |
+| Edges by origin | 71 model, 0 AST | 91 model, 0 AST |
+| Node pairs proposed | 68 | 69 |
+| Re-found (pair still written in the copy, of 61) | 59 | 61 |
+| **Recovered (of 20 deleted)** | **9** | **7** |
+| New pairs, never in the brain | 0 | 1 |
+
+**Noise between the two runs**
+- **Proposed pairs:** 65 in both runs, 3 only in run 1, 4 only in run 2, so overlap is 65/72 = **0.90**. The raw output varied far more (43 vs 72 nodes, 71 vs 91 edges), but most of that variation collapses once nodes are mapped onto the brain.
+- **Recovered pairs:** 6 in both runs. **4 flip** between runs (recovered once only): `apollo-11`–`neil-armstrong`, `apollo-13`–`rubella-crew-swap`, `apollo-program`–`john-f-kennedy` and `neil-armstrong`–`tranquility-base`. **10 of the 20 were never recovered.**
+
+**Recovered, by stratum.** Run 1: both leaves, 2 of 5 hub–mid, 5 of 12 mid, 0 of 1 hub–hub. Run 2: 1 leaf, 0 hub–mid, 6 mid, 0 hub–hub.
+
+**The three buckets**
+- **Recovered:** 9 in run 1, 7 in run 2, 10 across both. Every recovered pair is one whose connection is also stated in a fact line. For example, "Built the service module oxygen tanks under North American Aviation" recovers beech–NAA, and "Led the team that developed the Saturn V" recovers von Braun–Saturn V.
+- **Plausible:** 1, in run 2 only. `john-young` → `apollo-13-measles-article` (*cites*). It's real: John Young's facts cite that article as their source, so the model turned a source label into a link. Listed for Manoj to judge.
+- **Wrong:** 0. No proposal connected unrelated nodes or contradicted the corpus.
+
+**Reasons.** No proposal carries a reason. Each edge has only a generic relation label and a confidence tag. Across both runs' raw output (162 edges), the labels were `references` (145), `conceptually_related_to` (15) and `cites` (2). There is no per-link explanation of the kind the plan's review step relies on.
+
+**Other observations**
+- **No deterministic pass ran.** All 43 files were classed as documents and sent to the model (confirms open question 1). The model emitted mostly `references` edges, essentially re-reading the written `[[links]]`.
+- **`index.md` was included in the input**, since Graphify doesn't know it's an index. It became a node and stayed unmapped.
+- **The strict label rule left one source unmapped** in run 1: "NASA history: Apollo 13 and German Measles" doesn't exactly match the node's name. That was pre-registered, so it was not adjusted.
+- **Misses include connections stated plainly in the text.** `apollo-13`–`ken-mattingly` was missed although apollo-13's facts say the pilot "was Ken Mattingly". Also missed: `apollo-11`–`lunar-module` (hub–hub), and `buzz-aldrin`–`neil-armstrong`.
+
+**No ruling is made here.** Whether recovery (9 and 7 of 20; 6 consistent, 4 flipping) clearly beats the run-to-run noise is Manoj's call under the kill criterion.

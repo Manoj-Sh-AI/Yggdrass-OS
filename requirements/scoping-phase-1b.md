@@ -79,6 +79,25 @@ Canonical project: [Graphify-Labs/graphify](https://github.com/Graphify-Labs/gra
    - **Folder (Manoj, 2026-10-25):** our structural output lives in `.map/` in the brain repo, beside `.graphify/`. Both are gitignored (D6).
    - **Next step, held until Manoj has seen the amended register:** build the structural pass, run it over the Apollo demo brain, and compare its edges against the hand-written links.
 
+## Link-recovery experiment (2026-10-25)
+
+Full method and data: `evals/experiments/link-recovery/README.md`, pre-registered and committed before any run. 20 of the Apollo brain's 81 linked pairs were deleted from a copy (fixed seed, stratified, both leaves included), and Graphify discovery was run twice on the identical copy.
+
+| | Run 1 | Run 2 |
+|---|---|---|
+| **Recovered (of 20)** | **9** | **7** (6 in both runs; 4 flip between runs; 10 never) |
+| Plausible (never in the brain) | 0 | 1: `john-young` cites `apollo-13-measles-article`, a real source link |
+| Wrong | 0 | 0 |
+| Pairs proposed (overlap between runs) | 68 | 69 (65 shared, overlap 0.90) |
+| Raw output | 43 nodes, 71 edges | 72 nodes, 91 edges |
+| Time / cost | 182 s / ~$0.30 | 265 s / ~$0.35 |
+
+- **Reasons:** none. Proposals carry only generic labels (`references`, `conceptually_related_to`, `cites`) and a confidence tag, with no per-link reason for review.
+- **What "discovery" did:** it recovered connections already stated in fact lines, and re-found 59–61 of the 61 links still written. It proposed almost nothing new: 0 and 1 new pairs.
+- **Misses:** 10 of the 20 deleted pairs were never recovered, including one stated plainly in the text (`apollo-13`–`ken-mattingly`) and the one hub–hub pair.
+
+The register and plan are unchanged, pending Manoj's ruling on the kill criterion.
+
 ## Known gaps
 
 - **Alias resolution has no real-corpus coverage yet (2026-10-25).** Structural-pass criterion 4 is covered by unit tests only (`[[Mattingly]]` resolving to `ken-mattingly`). All 143 Apollo links resolved by slug, because none in that corpus are written as an alias. The Apollo brain is deliberately **not** edited to add alias links, since that would write the test's answer into the corpus. Real coverage comes when Manoj's own brain is in, since he writes links by alias.
