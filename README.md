@@ -27,7 +27,7 @@ Project setup only. Nothing is built yet. Next up is **phase 1a**: brain nodes w
 
 ## Architecture in one line
 
-Interface layer (notifications, chat) → Processing layer (agents, orchestrator) → Data layer (markdown brain as the source of truth, with Graphiti as a derived index; SQLite and a Supabase outbox come later). Details live in `planning/`.
+Interface layer (notifications, chat) → Processing layer (agents, orchestrator) → Data layer (markdown brain as the source of truth, with a derived Graphify map built from its links; SQLite and a Supabase outbox come later). Details live in `planning/`.
 
 ## Quick start
 

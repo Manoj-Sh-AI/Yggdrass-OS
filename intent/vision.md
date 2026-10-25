@@ -22,7 +22,7 @@ Markdown files are the source of truth. Everything else is a derived index.
 - An eval set with known answers, negative cases included
 
 **Out of scope for now**
-- Automated ingest and promotion of facts (later phases: Graphiti in 1b, the filter agent in 3)
+- Automated ingest and promotion of facts (later phases: Graphify link discovery in 1b, the filter agent in 3)
 - Everything after phase 1a in the locked plan
 
 ## Later (parked, not forgotten)

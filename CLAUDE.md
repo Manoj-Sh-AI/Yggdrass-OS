@@ -26,7 +26,7 @@ Yggdras is Manoj's personal second brain. It is also a learning project for agen
 
 - `app/src/yggdras/interface/`: notifications, chat (user-facing)
 - `app/src/yggdras/processing/`: agents, orchestrator, workflows
-- `app/src/yggdras/data/`: Graphiti, Supabase, storage access
+- `app/src/yggdras/data/`: Graphify map, SQLite, Supabase, storage access
 - `app/tests/`: tests mirror the package layout
 - `local-data/`: personal inputs, git-ignored, never read into code as constants
 
