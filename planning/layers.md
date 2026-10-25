@@ -6,7 +6,7 @@ Starting point from the skills plan, synced to `locked-plan-v1.md`. Confirm or c
 |---|---|---|---|
 | Interface | What the user sees and does | MCP connector (phase 2), Telegram notifications (5), Tauri app (6) | `app/src/yggdras/interface/` |
 | Processing | Rules and workflows | Filter agent (3), ingest agent and orchestrator (4) | `app/src/yggdras/processing/` |
-| Data | Stored information | Markdown brain (source of truth, D1); Graphiti on FalkorDB, derived (D5, D6); SQLite (D12); Supabase outbox (D14) | `app/src/yggdras/data/` |
+| Data | Stored information | Markdown brain (source of truth, D1); Graphify map file, derived, no database (D5, D6); SQLite (D12); Supabase outbox (D14) | `app/src/yggdras/data/` |
 
 Layered vs service-oriented layout is open until phase 2 (D28).
 

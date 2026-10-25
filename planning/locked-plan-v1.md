@@ -2,7 +2,7 @@
 
 Oct 24, 2026 · Manoj
 
-> Public copy. Personal examples are replaced with generic ones; the original lives in the private brain repo. Amended 2026-10-24: D13 reworded, D26–D30 added, decision-record naming and layout notes added to match this repo, provenance rule made explicit, build order steps 6 and 8 tightened, merge-forward simplified (aliases resolve old slugs), runner moved to `app/`. Example facts and dates are invented.
+> Public copy. Personal examples are replaced with generic ones; the original lives in the private brain repo. Amended 2026-10-24: D13 reworded, D26–D30 added, decision-record naming and layout notes added to match this repo, provenance rule made explicit, build order steps 6 and 8 tightened, merge-forward simplified (aliases resolve old slugs), runner moved to `app/`. Revised 2026-10-25: Graphify replaces Graphiti as the graph layer and link discovery becomes the core value (see Revision 2026-10-25). Example facts and dates are invented.
 
 ## Scope and principles
 
@@ -15,6 +15,34 @@ Four rules govern the whole build:
 - **One agent before any orchestration.** Coordination is extracted from observed repetition, never designed in advance for workers that do not exist.
 - **Daily use beats planning.** The connector lands early so the brain is exercised with real questions while its format can still change cheaply.
 - **Every decision is written down with a revisit trigger.** Flexibility comes from decisions being explicit and reversible on a stated condition, not from leaving them vague. The decision register is the authority: when something changes, the row changes and the reason is recorded there.
+
+## Revision 2026-10-25 — what changed after the Graphiti spike
+
+Link discovery is now the core reason for the brain, and Graphify replaces Graphiti as the graph layer. The sections below are updated to match; this table summarises what moved.
+
+| Area | Was | Now |
+| --- | --- | --- |
+| Phase 1b | Graphiti + FalkorDB, nightly paid extraction | Graphify code inside the Yggdras repo; the map is built from written `[[links]]` (no model, deterministic), plus an occasional extraction pass that proposes links |
+| Discovered links | Graph edges treated as findings | Proposals tagged inferred with a reason; accepted ones become real links in the markdown |
+| D5, D7, D8 | Graphiti on FalkorDB, paid nightly extraction | Replaced (see the register): a derived map file, a reviewed discovery pass, structural rebuild on change. D6 is unchanged. The spike showed recording dates misread as fact dates, unreliable supersession, lost page citations, and 17–20 edges on identical input |
+| Gateway | A skill each agent reads | Logic moves into connector tools (find, open node, follow links, propose change); the skill shrinks to a tool guide |
+| Tasks in SQLite | Phase 5 | A small task table starts in phase 2 or 3, so the first agent has something real to act on |
+
+**The tree.** Roots are the markdown brain plus the derived Graphify map. The trunk is the connector, the only door. Branches are the orchestrator, then team leads (one per life area), then short-lived workers. Leaves are the ingestion points: chats, calendar, Telegram, papers.
+
+**Where things live.** Agent and skill definitions are markdown in the code repo (`agents/`, `skills/`), run by one shared Python runner. The orchestrator is a manager agent: it picks agents from a registry built from those files and reaches the brain through the connector like everyone else. Run logs go to SQLite. Only lasting facts reach the brain, as checked proposals.
+
+**Self-improvement.** Agents never edit themselves. A review agent proposes skill edits from logged accept/reject outcomes; an edit goes live only after passing the eval set and Manoj's approval.
+
+**Library brain, later.** LightRAG (text) or RAG-Anything (papers with figures, tables and equations), kept in its own folder behind its own interface, with local embeddings. One connector tool, search library, returns passages with paper and page; Claude writes the answer. Each book or paper gets a source node, and findings enter the brain one way only, with citations.
+
+**Phone.** Telegram first; a native Android app via Firebase push is a later swap behind the same outbox.
+
+Open items from this revision:
+
+- [ ] Rerun the Apollo eval with and without the Graphify map
+- [ ] Link-recovery test: delete known links from the Apollo demo brain, run discovery, count recovered links and junk
+- [x] Amend D5, D7, D8 and the phase 1b text in the register (2026-10-25)
 
 ## Phase 1a — Brain files, links, gateway skill
 
@@ -34,23 +62,27 @@ Build 50 to 100 real nodes by hand, from things actually in use: current project
 
 **Exit test.** Ten real questions answered correctly by an agent reading only the index, the gateway skill, and the files it chooses from them.
 
-## Phase 1b — Graphiti layer
+## Phase 1b — Graphify map and link discovery
 
-Point Graphiti at the corpus built in 1a, once the node format has stopped moving. Graphiti reads text with an LLM, extracts entities and relations, and stores them with timestamps, so its real value here is temporal: it tracks when a fact became true and when it stopped being true, which suits shifting deadlines and statuses.
+Build a map of the brain with Graphify code inside the Yggdras repo, from the corpus built in 1a. Its value here is link discovery: surfacing connections between notes that were never written by hand. Graphify replaced Graphiti after the 2026-10-24 spike, which found recording dates read as fact-start dates, unreliable supersession, lost page citations, and 17–20 different edges from identical input.
 
-**Database.** FalkorDB, running locally in Docker. It is Redis-based, light, and ships bundled with Graphiti's MCP server in a single container, which matters because phase 2 goes that way anyway. Two alternatives stay open: [Kuzu](https://mintlify.com/getzep/graphiti/guides/graph-drivers) is embedded with no server at all, a file on disk, for a truly zero-infrastructure setup; [Neo4j Community](https://help.getzep.com/graphiti/configuration/graph-db-configuration) is heavier but ships a browser for inspecting the graph visually while learning. Graphiti supports all three plus Amazon Neptune through a unified driver interface.
+**Storage.** No database. The map is a derived file (`graph.json`) plus a report, written to a gitignored folder in the brain repo (`.graphify/`) and rebuilt from the markdown at any time. Graphify's open-source core is Apache 2.0: keep its license notice and mark changed files.
 
-**Ingest direction is one-way.** Files to graph, never the reverse. The graph must be droppable and rebuildable from the files at any moment.
+**Two passes.** The structural pass builds the map from written `[[links]]` and frontmatter: no model, free, identical every run, re-run on every file change. The discovery pass sends notes to a model and proposes new links, tagged inferred with a one-line reason. It runs manually; its proposals go through the connector for accept or reject, and accepted ones become real links in the markdown.
 
-**The free eval.** The links written by hand in 1a are ground truth. Compare them against what Graphiti extracts: where it agrees, the extraction is trustworthy; where it invents connections, its failure modes are now known before anything depends on them.
+**The free eval.** The links written by hand in 1a are ground truth. Delete a known set of links from the Apollo demo brain, run discovery, and count how many come back against how much junk arrives with them. Then rerun the Apollo eval with and without the map.
 
-**Exit test.** A full rebuild from files reproduces the graph, and extracted relations agree with hand-written links often enough to trust the ones it found independently.
+**Exit test.** A structural rebuild reproduces the map exactly, discovery recovers deleted links clearly above its own run-to-run noise, and the eval scores no worse with the map than without it.
 
 ## Phase 2 — The connector
 
 An MCP server exposing the brain, running locally, added to Claude Code once. From here on the brain is used daily in plain language, and a week of real use teaches more about what it needs than a month of further planning.
 
 **Tools it exposes:** search the brain, read a node, add a node, link two nodes, and one overview call that returns a compact digest — today's items, what changed since last time, the few nodes most recently touched. The digest is assembled by the connector and kept short, rather than dumping the brain into the context.
+
+**The gateway moves in here.** Navigation becomes connector tools: find a note, open a node, follow its links, query the map, propose a change. The rules are then enforced in code instead of trusted to each agent, and the gateway skill shrinks to a guide on which tool to use when.
+
+**A small task table starts here.** SQLite gets a minimal task table in phase 2 or 3, not phase 5, so the first agent has something real to act on. Tasks point to brain nodes by UUID; operational data stays in SQLite, lasting meaning stays in markdown.
 
 **It is also where rules get enforced.** The connector refuses a malformed write: a node with no description, a link to a node that does not exist, a fact with no source. Validation lives here rather than in every agent that writes.
 
@@ -74,6 +106,10 @@ Build a second agent with a different shape of job — a research or ingest agen
 
 **Then extract the orchestrator from what repeats** across the two agents. It coordinates rather than doing specialized work: it breaks a request into tasks, hands each to the right agent, tracks which finished or failed, and combines results.
 
+**Agents are text.** Each agent is a markdown definition in `agents/`: role, goal, skills, allowed connector tools, and the brain areas it owns. One shared Python runner loads a definition, gives it its tools, calls the model and logs the run. The orchestrator is the manager agent: it picks from a short registry built from those files, and reaches the brain through the connector like every other agent. Run logs go to SQLite, never the brain.
+
+**Self-improvement.** Agents never edit themselves. A review agent proposes skill edits from logged accept and reject outcomes; an edit goes live only after the eval set passes and Manoj approves it.
+
 Two rules it holds from the start:
 
 - A cap on how many workers run at once, so a bad loop cannot flood the machine or the bill.
@@ -88,6 +124,8 @@ Calendar, task manager and the notification layer, added one at a time, each as 
 **Shared source of truth.** The app and the connector read and write the same underlying data, so a change made through Claude appears in the interface and a change made by hand is visible to the agents. Structured app data — tasks, events, schedule state — lives in a local SQLite file, since a single-user desktop app needs no network hop and works offline. Three writers touch the brain here, so their scopes are kept disjoint: the app writes only task and schedule fields, Claude writes facts and links, and manual edits can touch anything. Git history is the backstop when they collide.
 
 **Notifications** are the designed payoff: six or seven a day, each pointing at one task with a brief, so attention lands somewhere specific instead of on a list. They reach the phone through a Telegram bot, which also opens a path back: a message to the bot becomes a capture straight into the inbox, which covers the capture requirement from a phone.
+
+**Phone.** Telegram first. A native Android app with Firebase push can replace it later behind the same outbox, without touching the brain or the connector.
 
 **Start with one capability** driven by task nodes already in the brain, and only then widen.
 
@@ -120,16 +158,16 @@ These start in phase 1a and run through every later phase. The eval set is the h
 
 ## Stack
 
-Everything runs locally except two things: the model Graphiti calls on every ingest, and the notification outbox. Nothing else needs to be reachable, and the brain never leaves the machine.
+Everything runs locally except two things: the model the discovery pass calls when it is run, and the notification outbox. Nothing else needs to be reachable, and the brain never leaves the machine.
 
 | Layer | Choice | Where | Needs uptime | Phase |
 | --- | --- | --- | --- | --- |
 | Brain storage | Markdown files + git, private repo | Local | No | 1a |
-| Graph index | FalkorDB via Docker | Local | Only during ingest and query | 1b |
-| Extraction | Graphiti + paid API model | Local process, cloud model | No | 1b |
+| Graph index | Graphify map file, no database | Local | No | 1b |
+| Extraction | Discovery pass with a paid API model; structural pass needs none | Local process, cloud model | No | 1b |
 | Interface | MCP server in Python, Claude as client | Local | No | 2 |
 | Agents + orchestrator | Python processes | Local | No | 3–4 |
-| App data | SQLite | Local | No | 5 |
+| App data | SQLite | Local | No | 2–3 |
 | Notification outbox | Supabase table + scheduled job | Cloud | Yes — the only one | 5 |
 | Notifications + phone capture | Telegram bot | Cloud | Yes | 5 |
 | Desktop shell | Tauri, Rust core + web frontend | Local | No | 6 |
@@ -148,11 +186,11 @@ Every architectural decision, with what would make us reverse it. A decision is 
 | D2 | Node identity | UUID in frontmatter, filename is a label | Rename anything without breaking links | Links prove stable enough that readable IDs are worth more |
 | D3 | Brain repo | Private from first commit, separate from code | Publishing cannot be undone; git history would carry personal life | Never |
 | D4 | Code repo | Public | Nothing personal in it once D3 holds | Commercial version starts — then a private fork |
-| D5 | Graph index | FalkorDB in Docker, local | Bundled with Graphiti's MCP server, light, Redis-based | Graph outgrows one machine, or Kuzu's embedded mode removes the Docker dependency |
+| D5 | Graph index | Graphify map file, derived, no database (amended 2026-10-25; was FalkorDB in Docker) | Graphiti spike failed (2026-10-24); written links already form the graph, so a file is enough | Map queries get too slow on a single file |
 | D6 | Graph is derived | Rebuildable from files, one-way ingest | Prevents two brains disagreeing | Never |
-| D7 | Extraction | Graphiti with a paid API model | Best quality on bulk material; conversational capture stays free via Claude | Monthly cost exceeds its value, then local Ollama for bulk |
-| D8 | Ingest trigger | Scheduled nightly, catch-up on wake | Batched and cheap; a stale graph costs nothing since files lead | Same-day accuracy matters, then add a manual command |
-| D9 | Connector + agents language | Python | Graphiti is Python, so ingest is fixed; one language avoids a process boundary mid-pipeline | A component is provably bottlenecked by Python |
+| D7 | Extraction | Discovery pass with a paid API model, proposals reviewed; structural pass uses no model (amended 2026-10-25; was Graphiti with a paid API model) | Link discovery is the core value; review keeps model noise out of the brain | Monthly cost exceeds its value, then local Ollama for bulk |
+| D8 | Ingest trigger | Structural pass on every file change; discovery pass manual (amended 2026-10-25; was scheduled nightly) | The structural pass is free and deterministic; discovery costs money and needs review | Discovery proves reliable enough to schedule |
+| D9 | Connector + agents language | Python | Graphify and LightRAG are Python; one language avoids a process boundary mid-pipeline | A component is provably bottlenecked by Python |
 | D10 | App shell | Tauri | Rust core over system webview, small bundles, low memory for an all-day tool | Mobile native becomes a requirement |
 | D11 | UI structure | Web frontend behind a data-access interface | Same components run on local files or Supabase, so the web client is not a rewrite | Never — this is cheap now and expensive later |
 | D12 | App data | SQLite, local | Single-user desktop app, offline, no network hop | Multiple devices need to write the same tasks |
@@ -174,7 +212,7 @@ Every architectural decision, with what would make us reverse it. A decision is 
 | D28 | Code layout | **Open.** Layered (`app/src/yggdras/{interface,processing,data}`) now; layered vs service-oriented (`services/`) decided when there is code to arrange | Phase 1a produces almost no code, so restructuring empty folders gains nothing | Start of phase 2 |
 | D29 | Node type enum | `person`, `area`, `topic`, `source`, `chunk`. No `project` type: a project is an area. Concepts are topics, books are sources | Matches the folder structure, so there is one fewer mapping to maintain | A sixth type is genuinely needed — then amend this row, never decide it while writing a node |
 | D30 | Eval set location | `questions.yaml` in the brain repo's `evals/`, beside the `brain/` node root, never under it; the runner lives in `app/` and reads the brain path at runtime; the public `evals/` documents the question format and holds a synthetic fixture brain (`evals/fixture-brain/`, invented content only) for testing the format and runner | Questions and answers about the brain are personal data, which D4 keeps out of the public repo; constitution #5 has data flow in at runtime | Trigger fired 2026-10-24: the fixture brain was added. Revisit if the fixture stops matching the real brain's shape |
-| D31 | Node format frozen | **Frozen 2026-10-24.** D02 as amended (f02 `by <source>` history; chunk `pages` as `"<first> to <last>"`) is the frozen format. Further changes are register amendments | The 25-question gate passed 25/25 in one recorded run (`yggdras-brain/evals/results/2026-10-24-run-1.yaml`) on a 42-node demo brain built from public-domain Apollo sources, graded by Claude at Manoj's direction. The real brain's own facts and questions are still to come | The real brain's first graded run fails a question for format reasons |
+| D31 | Node format frozen | **Frozen 2026-10-24.** D02 as amended (f02 `by <source>` history; chunk `pages` as `"<first> to <last>"`) is the frozen format. Further changes are register amendments | The 25-question gate passed 25/25 in one recorded run (`yggdras-brain/demo-evals/results/2026-10-24-run-1.yaml`) on a 42-node demo brain (now `yggdras-brain/demo-brain/`) built from public-domain Apollo sources, graded by Claude at Manoj's direction. The real brain's own facts and questions are still to come | The real brain's first graded run fails a question for format reasons |
 
 **Decision records.** A record for a register row lives in `rationale/decisions/` as `Dnn-<slug>.md` (`D02-node-identity.md` is D2), so the mapping is visible in the filename. Records that predate the register keep their own `NNNN-` sequence (`0001-project-setup.md`). Nothing is renumbered.
 
@@ -202,15 +240,14 @@ services/
     filter/             conversation filter (phase 3)
     ingest/             source chunking agent (phase 4)
     orchestrator/       extracted in phase 4, not before
-  graph/              Graphiti pipeline, nightly ingest, rebuild command
+  graph/              Graphify code: structural build, discovery pass
   outbox/             Supabase client, scheduled job, Telegram bot
 skills/
-  gateway/            how to navigate the brain
+  gateway/            which connector tool to use when (phase 2); until then, how to navigate the brain
   filter/             per-agent skills, loaded by their agent only
   ingest/
 evals/                question format only; questions.yaml lives in the brain repo (D30), the runner in app/
-docker/
-  falkordb.yml
+docker/               (empty — no graph database)
 docs/
   plan.md             this document
   adr/                one file per decision, numbered to match the register
@@ -231,12 +268,12 @@ brain/                the node root: an answering agent is given this folder and
 evals/                questions.yaml and results/, beside brain/ so no answer is in an agent's reach (D30)
 inbox/                raw captures awaiting filtering, deleted after 48h
 private/              notes that are not nodes
-.graphiti/            derived index, gitignored, rebuildable
+.graphify/            derived map, gitignored, rebuildable
 ```
 
 Path scoping is the control, not the folder name: an agent with a shell can walk up a directory. What makes the split safe is the combination of a scoped root, the owner grading, and the runner never reading the brain. The split removes the trivial failure mode where answers sit in the directory the agent was told to read.
 
-The `.graphiti/` directory is gitignored deliberately: D6 says the graph is derived, so committing it would create a second source of truth with its own merge conflicts.
+The `.graphify/` directory is gitignored deliberately: D6 says the graph is derived, so committing it would create a second source of truth with its own merge conflicts.
 
 ## Node schema
 
@@ -291,6 +328,8 @@ The complete set, defined in phase 2 and extended later. Every write goes throug
 | `link` | from slug, to slug, relation text | Confirmation, plus a warning if the target does not exist | Yes | 2 |
 | `resolve` | a name or phrase | Candidate nodes it might refer to, for dedup | No | 2 |
 | `list_dangling` | none | Links pointing at nodes that do not exist yet | No | 2 |
+| `query_map` | slug or phrase, optional depth | Connected nodes from the Graphify map, with written and inferred links marked | No | 2 |
+| `propose_change` | change (link, fact or node edit) and a one-line reason | A proposal awaiting accept or reject | Only once accepted | 2 |
 | `ingest_source` | file path, title | Chunked nodes under `sources/` | Yes | 4 |
 | `schedule` | task slug, time | Updated schedule, collisions flagged | Yes | 5 |
 | `push_outbox` | pending notifications | Rows written to Supabase | Yes | 5 |
@@ -304,7 +343,7 @@ The complete set, defined in phase 2 and extended later. Every write goes throug
 
 Two structured stores, both small. Neither holds brain content.
 
-**SQLite, local (phase 5).** The app's working data, derived from task nodes in the brain and reconciled back to them.
+**SQLite, local (task table from phase 2 or 3, the rest phase 5).** The app's working data, derived from task nodes in the brain and reconciled back to them.
 
 ```sql
 task        id, node_uuid, title, duration_min, due_date, status, priority
@@ -379,7 +418,7 @@ What is most likely to go wrong, and what the plan already does about it.
 | Extraction invents relationships | Derived facts pollute stated ones | `derived` tag on every inferred line, so they can be found and dropped wholesale |
 | Phase creep | Features arrive before the layer beneath is trusted | Exit test per phase, explicit out-of-scope list |
 | Schema churn forces re-ingest | Graph rebuilt repeatedly during 1b | Node format frozen at the end of 1a; graph is rebuildable by design (D6) |
-| Extraction cost surprises | Paid API on every ingest, bulk sources are large | Nightly batching (D8), revisit trigger on D7 names cost explicitly |
+| Extraction cost surprises | A paid model on every discovery run, bulk sources are large | Discovery runs only manually (D8), revisit trigger on D7 names cost explicitly |
 | Three writers collide | App, Claude and manual edits touch the same node | Disjoint field scopes (D21), git history as backstop |
 | Bot token leaks | Anyone who finds it can command the system | Chat ID allowlist (D17), token in environment variables, never the public repo |
 | Orchestrator built too early | Designed for workers that do not exist, then rewritten | D24: extracted after two agents, never before |
