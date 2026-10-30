@@ -26,12 +26,12 @@ Yggdras is built as a climb. Each rung rests on the one below. Never build a hig
 2. **A node** — one markdown file about one thing: a person, an area, a topic, a source. Frontmatter (name, aliases, one-line description, type), fact lines, and links.
 3. **A link** — a connection between two nodes, with a reason ("replaced by", "flew on"). Links are the knowledge. The hand-written ones are the real graph.
 4. **The map** — the whole graph of nodes and links, built by free deterministic code from the links in the files. Cheap, exact, rebuildable in seconds.
-5. **Answering** — ask the brain a question, get a true answer with its sources. This rung is built and proven (meaning-based pick → gather facts + neighbours → one cited answer). It is the foundation everything else stands on, so it has to be as close to never-wrong as we can measure.
+5. **Answering** — ask the brain a question, get a true answer with its sources. This rung works on easy questions but has not passed a hard eval yet. The whole-brain cached prompt is the current default; the librarian plan is how we aim to beat it. It is the foundation everything else stands on, so it has to be as close to never-wrong as we can measure.
 6. **Discovery** — the brain finds connections Manoj hasn't written yet, and surfaces the significant ones as a question: "your hardware note and your neural-network note both point at your thesis — interesting?" The obvious links form silently underneath; only the significant, non-obvious ones come up for approval. Not built yet. This is the next leap.
 7. **Frameworks** — reusable patterns for kinds of situations, ingested once and fetched when a matching situation arises. Case-based reasoning: store the shape of a problem and its options, recall it when life repeats the shape. Not built yet.
 8. **Managing situations** — the summit. From a little context (the time, and what Manoj is doing) the brain proactively offers the right possibility at the right moment: "leaving the office at 6pm — want to stop at the supermarket? the nearest is 400 m away." Not built yet; designed as a parallel experiment once discovery begins.
 
-The climb is the roadmap. Answering is solid. Everything above it is the work ahead.
+The climb is the roadmap. Answering works but is not yet proven on a hard eval. Everything above it is the work ahead.
 
 ## What makes a connection "significant"
 

@@ -1,6 +1,6 @@
 # Yggdras memory: the librarian plan
 
-Oct 27, 2026 · @Manoj Saligrama Harisha
+Oct 27, 2026 · Manoj
 
 Yggdras should answer like a good librarian: read a small cached manual, walk to the right shelves, open only the few notes it needs, and look wider when they aren't enough. Today the whole-brain prompt is the most accurate option (23 of 24 hard questions), so the librarian has to match it while reading far less. Memory is the only focus until that is proven.
 
