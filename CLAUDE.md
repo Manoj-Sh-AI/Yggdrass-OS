@@ -2,14 +2,19 @@
 
 Working instructions for Claude Code in this repo. Read `constitution.md` first. It is binding.
 
+**The big picture comes before everything.** `intent/big-picture.md` is the motivation for this project: why Yggdras exists, the ladder it climbs and the principles that protect it. It is imported below so it is in context every session. When a choice trades one thing against another, favour its principles; when they don't settle it, ask Manoj.
+
+@intent/big-picture.md
+
 ## What this project is
 
 Yggdras is Manoj's personal second brain. It is also a learning project for agentic software engineering, so process matters as much as output.
 
 ## Start of every session
 
-1. Read `constitution.md`.
-2. Read the relevant spec in `requirements/` and any plan in `planning/` for the task at hand.
+1. Re-read `intent/big-picture.md` and check the task serves its one line and the current rung of the ladder.
+2. Read `constitution.md`.
+3. Read the relevant spec in `requirements/` and any plan in `planning/` for the task at hand.
 3. Check `rationale/decisions/` before changing a design choice that was already decided.
 
 ## How to work here
