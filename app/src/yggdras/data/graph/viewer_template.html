@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yggdras brain map</title>
+<style>
+:root {
+  --bg: #f7f5f0; --panel: #ffffff; --text: #1d2026; --text-2: #5d6470; --line: #e3e0d8;
+  --accent: #2f6fdd; --chip: #f0ede6; --edge: #8a9099; --halo: rgba(247,245,240,0.9);
+  --veil: rgba(247,245,240,0.82); --tip: #ffffff; --shadow: 0 6px 24px rgba(20,24,32,0.14);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15171c; --panel: #1c1f26; --text: #e8eaee; --text-2: #9aa2ae; --line: #2c313b;
+    --accent: #6b9cf5; --chip: #262a33; --edge: #707885; --halo: rgba(21,23,28,0.9);
+    --veil: rgba(21,23,28,0.82); --tip: #232731; --shadow: 0 6px 24px rgba(0,0,0,0.5);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #15171c; --panel: #1c1f26; --text: #e8eaee; --text-2: #9aa2ae; --line: #2c313b;
+  --accent: #6b9cf5; --chip: #262a33; --edge: #707885; --halo: rgba(21,23,28,0.9);
+  --veil: rgba(21,23,28,0.82); --tip: #232731; --shadow: 0 6px 24px rgba(0,0,0,0.5);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: var(--bg); color: var(--text); font: 13px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; overflow: hidden; }
+#graph { position: absolute; inset: 0 360px 0 0; }
+#side { position: absolute; top: 0; right: 0; bottom: 0; width: 360px; background: var(--panel);
+  border-left: 1px solid var(--line); overflow-y: auto; padding: 14px 16px 24px; }
+h1 { font-size: 15px; margin: 0; letter-spacing: 0.01em; }
+h2 { font-size: 17px; margin: 0 0 4px; }
+h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-2); margin: 16px 0 6px; }
+h4 { font-size: 12px; margin: 10px 0 4px; color: var(--text-2); font-weight: 600; }
+.row { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+select, input[type="search"], button { font: inherit; color: var(--text); background: var(--chip);
+  border: 1px solid var(--line); border-radius: 7px; padding: 6px 8px; }
+button { cursor: pointer; }
+button:hover { border-color: var(--accent); }
+input[type="search"] { width: 100%; margin-top: 12px; }
+#results { list-style: none; margin: 4px 0 0; padding: 0; }
+#results li, .jump { cursor: pointer; padding: 4px 6px; border-radius: 6px; }
+#results li:hover, .jump:hover { background: var(--chip); }
+.toggles label, .filter label { display: flex; align-items: center; gap: 7px; padding: 2px 0; cursor: pointer; }
+details { border-top: 1px solid var(--line); padding: 6px 0; }
+summary { cursor: pointer; font-weight: 600; padding: 4px 0; }
+.filter { max-height: 220px; overflow-y: auto; padding-left: 2px; }
+.count { color: var(--text-2); margin-left: auto; font-variant-numeric: tabular-nums; }
+.swatch { width: 12px; height: 12px; border-radius: 3px; flex: none; }
+.chip { display: inline-block; background: var(--chip); border-radius: 999px; padding: 1px 8px; margin: 2px 4px 2px 0; font-size: 12px; }
+#info { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 10px; }
+#info .empty { color: var(--text-2); font-style: italic; }
+#info ul { margin: 4px 0; padding-left: 18px; }
+#info li { margin: 2px 0; }
+.muted { color: var(--text-2); }
+.hidden-note { background: var(--chip); border-radius: 8px; padding: 8px 10px; margin: 8px 0; }
+a { color: var(--accent); }
+.legend-item { display: flex; align-items: center; gap: 8px; padding: 2px 0; }
+.legend-item canvas, .legend-item svg { flex: none; }
+#tip { position: fixed; z-index: 10; max-width: 340px; background: var(--tip); color: var(--text);
+  border: 1px solid var(--line); border-radius: 9px; padding: 8px 10px; box-shadow: var(--shadow);
+  pointer-events: none; font-size: 12px; }
+#tip b { font-size: 13px; }
+#loading { position: absolute; left: 16px; bottom: 14px; color: var(--text-2); font-size: 12px; }
+#stats { color: var(--text-2); font-size: 11px; margin-top: 14px; }
+@media (max-width: 800px) {
+  #graph { inset: 0 0 45vh 0; }
+  #side { top: auto; height: 45vh; width: 100%; border-left: 0; border-top: 1px solid var(--line); }
+}
+</style>
+<script src="vis-network.min.js"></script>
+</head>
+<body>
+<div id="graph" aria-label="Brain map"></div>
+<div id="loading">Laying out…</div>
+<aside id="side">
+  <div class="row">
+    <h1>Yggdras brain map</h1>
+    <select id="theme" aria-label="Theme">
+      <option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option>
+    </select>
+  </div>
+  <input id="search" type="search" placeholder="Search notes, aliases…" autocomplete="off" aria-label="Search">
+  <ul id="results"></ul>
+  <div class="toggles">
+    <h3>View</h3>
+    <label><input type="checkbox" id="hide-hubs"> Hide hubs and their links</label>
+    <label><input type="checkbox" id="edge-labels"> Show link labels when zoomed in</label>
+    <label><input type="checkbox" id="show-mentions" checked> Show mentions</label>
+  </div>
+  <div id="info"><span class="empty">Click a note to see its details.</span></div>
+  <h3>Filters</h3>
+  <details><summary>Areas</summary><div class="filter" id="f-area"></div></details>
+  <details><summary>Types</summary><div class="filter" id="f-type"></div></details>
+  <details><summary>Link verbs</summary><div class="filter" id="f-verb"></div></details>
+  <h3>Legend</h3>
+  <details open><summary>Colours: areas</summary><div id="l-area"></div></details>
+  <details><summary>Shapes: types</summary><div id="l-type"></div></details>
+  <details><summary>Lines: links</summary><div id="l-line"></div></details>
+  <div id="stats"></div>
+</aside>
+<div id="tip" hidden></div>
+<script>
+"use strict";
+window.addEventListener("error", (e) => { document.body.dataset.error = String(e.message || e); });
+const DATA = /*__YGGDRAS_DATA__*/null;
+const T0 = performance.now();
+
+// ---------------------------------------------------------------- constants
+const AREA_NAMES = {
+  "01-health": "Health", "02-relationships": "Relationships", "03-work-career": "Work and career",
+  "04-learning": "Learning", "05-money": "Money", "06-purpose": "Purpose",
+  "07-home-admin": "Home and admin", "08-rest-joy": "Rest and joy", "cross": "Cross-area",
+};
+const PALETTE = {
+  light: { "01-health": "#1f9d55", "02-relationships": "#d23a8f", "03-work-career": "#2f6fdd",
+    "04-learning": "#d98a00", "05-money": "#0f9488", "06-purpose": "#7c4ddb",
+    "07-home-admin": "#8a5a2b", "08-rest-joy": "#d64545", "cross": "#5b6573" },
+  dark: { "01-health": "#3fbf75", "02-relationships": "#f06bb3", "03-work-career": "#6b9cf5",
+    "04-learning": "#f2b233", "05-money": "#2ec4b6", "06-purpose": "#a98bf0",
+    "07-home-admin": "#c08a55", "08-rest-joy": "#f07a7a", "cross": "#9aa5b4" },
+};
+const EXTRA = ["#4c78a8", "#f58518", "#54a24b", "#e45756", "#72b7b2", "#b279a2", "#9d755d", "#bab0ac"];
+const SHAPES = { person: "circle", place: "square", source: "triangle", concept: "diamond",
+  framework: "diamond", hub: "star", project: "hexagon", goal: "triangleDown",
+  decision: "octagon", event: "ring", topic: "roundSquare" };
+const TYPE_ORDER = ["hub", "person", "place", "project", "goal", "decision", "event", "topic",
+  "source", "concept", "framework", "journal"];
+const N = DATA.nodes.length;
+const BIG = N > 1000;
+const LABEL_PX = 12;
+
+// ---------------------------------------------------------------- indexes
+const byId = new Map(DATA.nodes.map((n) => [n.id, n]));
+const edgeById = new Map(DATA.edges.map((e) => [e.id, e]));
+const adj = new Map(DATA.nodes.map((n) => [n.id, new Set()]));
+const edgesOf = new Map(DATA.nodes.map((n) => [n.id, []]));
+for (const e of DATA.edges) {
+  adj.get(e.from).add(e.to); adj.get(e.to).add(e.from);
+  edgesOf.get(e.from).push(e); if (e.to !== e.from) edgesOf.get(e.to).push(e);
+}
+const colourKey = (n) => n.area || n.shelf;
+const keys = [...new Set(DATA.nodes.map(colourKey))].sort();
+const extraKeys = keys.filter((k) => !(k in PALETTE.light));
+const degrees = DATA.nodes.map((n) => n.degree).sort((a, b) => b - a);
+const ALWAYS_DEGREE = Math.max(4, degrees[Math.floor(N * 0.08)] || 0);
+const verbKey = (e) => (e.kind === "mention" ? "mentions" : e.label);
+
+// ---------------------------------------------------------------- state
+const state = { hideHubs: false, edgeLabels: false, mentions: true, areaOff: new Set(),
+  typeOff: new Set(), verbOff: new Set(), hover: null, selected: null, revealed: new Set(),
+  pinned: new Set(), theme: "system" };
+let visible = new Set(DATA.nodes.map((n) => n.id));
+
+function storeGet(k) { try { return localStorage.getItem(k); } catch (_) { return null; } }
+function storeSet(k, v) { try { localStorage.setItem(k, v); } catch (_) { /* private mode */ } }
+const hash = new URLSearchParams(location.hash.slice(1));
+
+function dark() {
+  if (state.theme === "dark") return true;
+  if (state.theme === "light") return false;
+  return matchMedia("(prefers-color-scheme: dark)").matches;
+}
+function colour(n) {
+  const k = colourKey(n);
+  const p = PALETTE[dark() ? "dark" : "light"];
+  return p[k] || EXTRA[extraKeys.indexOf(k) % EXTRA.length];
+}
+function css(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+// Theme colours, read once per theme change (reading CSS on every draw is too slow at scale).
+let C = {};
+function readColours() {
+  C = { panel: css("--panel"), accent: css("--accent"), text: css("--text"), text2: css("--text-2"),
+    halo: css("--halo"), veil: css("--veil"), edge: css("--edge") };
+}
+readColours();
+function radius(n) { return n.type === "hub" ? 17 : 6 + Math.min(n.degree, 24) * 0.75; }
+const show = (n) => !n.sensitive || state.revealed.has(n.id);
+
+// ---------------------------------------------------------------- shapes
+function path(ctx, shape, x, y, r) {
+  ctx.beginPath();
+  const poly = (k, rot) => {
+    for (let i = 0; i < k; i++) {
+      const a = rot + (i * 2 * Math.PI) / k;
+      i ? ctx.lineTo(x + r * Math.cos(a), y + r * Math.sin(a)) : ctx.moveTo(x + r * Math.cos(a), y + r * Math.sin(a));
+    }
+    ctx.closePath();
+  };
+  switch (shape) {
+    case "square": ctx.rect(x - r * 0.88, y - r * 0.88, r * 1.76, r * 1.76); break;
+    case "roundSquare": {
+      const s = r * 0.9, q = r * 0.35;
+      ctx.moveTo(x - s + q, y - s); ctx.arcTo(x + s, y - s, x + s, y + s, q); ctx.arcTo(x + s, y + s, x - s, y + s, q);
+      ctx.arcTo(x - s, y + s, x - s, y - s, q); ctx.arcTo(x - s, y - s, x + s, y - s, q); ctx.closePath(); break;
+    }
+    case "triangle": poly(3, -Math.PI / 2); break;
+    case "triangleDown": poly(3, Math.PI / 2); break;
+    case "diamond": poly(4, -Math.PI / 2); break;
+    case "hexagon": poly(6, 0); break;
+    case "octagon": poly(8, Math.PI / 8); break;
+    case "star": {
+      for (let i = 0; i < 10; i++) {
+        const rr = i % 2 ? r * 0.45 : r, a = -Math.PI / 2 + (i * Math.PI) / 5;
+        i ? ctx.lineTo(x + rr * Math.cos(a), y + rr * Math.sin(a)) : ctx.moveTo(x + rr * Math.cos(a), y + rr * Math.sin(a));
+      }
+      ctx.closePath(); break;
+    }
+    default: ctx.arc(x, y, r, 0, 2 * Math.PI);
+  }
+}
+function drawNode(ctx, n, x, y, opts = {}) {
+  const r = radius(n), c = colour(n), shape = SHAPES[n.type] || "circle";
+  ctx.save();
+  if (shape === "ring") {
+    ctx.beginPath(); ctx.arc(x, y, r * 0.78, 0, 2 * Math.PI);
+    ctx.lineWidth = r * 0.42; ctx.strokeStyle = c; ctx.stroke();
+  } else {
+    path(ctx, shape, x, y, r); ctx.fillStyle = c; ctx.fill();
+    ctx.lineWidth = Math.max(1, r * 0.12); ctx.strokeStyle = C.panel; ctx.stroke();
+  }
+  if (opts.selected || opts.hover) {
+    path(ctx, shape === "ring" ? "circle" : shape, x, y, r + 4);
+    ctx.lineWidth = 2.5; ctx.strokeStyle = C.accent; ctx.stroke();
+  }
+  if (state.pinned.has(n.id)) {
+    ctx.beginPath(); ctx.arc(x + r * 0.8, y - r * 0.8, 3, 0, 2 * Math.PI);
+    ctx.fillStyle = C.text; ctx.fill();
+  }
+  ctx.restore();
+}
+function renderer({ ctx, id, x, y, state: s }) {
+  const n = byId.get(id), r = radius(n);
+  return { drawNode() { drawNode(ctx, n, x, y, s); }, nodeDimensions: { width: 2 * r, height: 2 * r } };
+}
+
+// ---------------------------------------------------------------- data sets
+function edgeStyle(e) {
+  const base = C.edge;
+  if (e.kind === "mention") return { width: 0.8, dashes: [4, 4], color: { color: base, opacity: 0.5 }, arrows: { to: { enabled: false } } };
+  if (e.kind === "hub") return { width: 0.6, dashes: [1, 5], color: { color: base, opacity: 0.35 }, arrows: { to: { enabled: false } } };
+  return { width: 1.6, dashes: false, color: { color: base, opacity: 0.85 }, arrows: { to: { enabled: true, scaleFactor: 0.45 } } };
+}
+const nodesDS = new vis.DataSet(DATA.nodes.map((n) => ({ id: n.id, shape: "custom", ctxRenderer: renderer, size: radius(n) })));
+const edgesDS = new vis.DataSet(DATA.edges.map((e) => ({ id: e.id, from: e.from, to: e.to, ...edgeStyle(e) })));
+function nodeVisible(n) {
+  return !(state.hideHubs && n.type === "hub") && !state.areaOff.has(colourKey(n)) && !state.typeOff.has(n.type);
+}
+const nodesView = new vis.DataView(nodesDS, { filter: (item) => nodeVisible(byId.get(item.id)) });
+const edgesView = new vis.DataView(edgesDS, {
+  filter: (item) => {
+    const e = edgeById.get(item.id);
+    if (state.hideHubs && e.kind === "hub") return false;
+    if (!state.mentions && e.kind === "mention") return false;
+    if (state.verbOff.has(verbKey(e))) return false;
+    return visible.has(e.from) && visible.has(e.to);
+  },
+});
+function refresh() {
+  visible = new Set(DATA.nodes.filter(nodeVisible).map((n) => n.id));
+  nodesView.refresh(); edgesView.refresh();
+  if (state.selected && !visible.has(state.selected)) { state.selected = null; showInfo(null); }
+  network.redraw();
+}
+
+// ---------------------------------------------------------------- network
+const network = new vis.Network(document.getElementById("graph"), { nodes: nodesView, edges: edgesView }, {
+  layout: { improvedLayout: !BIG, randomSeed: 7 },
+  physics: {
+    solver: "forceAtlas2Based",
+    // Large brains: fewer iterations and no overlap pass, which is the costly part of the layout.
+    forceAtlas2Based: { gravitationalConstant: -70, centralGravity: 0.01, springLength: 110, springConstant: 0.06, damping: 0.55, avoidOverlap: BIG ? 0 : 0.7 },
+    stabilization: { enabled: true, iterations: BIG ? 120 : 500, updateInterval: BIG ? 40 : 25, fit: true },
+    minVelocity: 0.75, timestep: 0.45,
+  },
+  edges: { smooth: false, selectionWidth: 1, hoverWidth: 0.6 },
+  interaction: { hover: true, tooltipDelay: 3600000, hideEdgesOnDrag: BIG, hideEdgesOnZoom: BIG, zoomSpeed: 0.7, multiselect: false },
+});
+const bodyNodes = () => network.body.nodes;
+
+network.on("stabilizationProgress", (p) => {
+  document.getElementById("loading").textContent = `Laying out… ${Math.round((100 * p.iterations) / p.total)}%`;
+});
+network.once("stabilizationIterationsDone", () => {
+  network.setOptions({ physics: { enabled: false } });
+  document.getElementById("loading").hidden = true;
+  const ms = Math.round(performance.now() - T0);
+  document.body.dataset.ready = "1";
+  document.body.dataset.readyMs = String(ms);
+  document.getElementById("stats").textContent =
+    `${N} notes · ${DATA.edges.length} links · laid out in ${(ms / 1000).toFixed(1)} s · map ${DATA.schema}`;
+  const sel = hash.get("select");
+  if (sel) { const n = DATA.nodes.find((m) => m.slug === sel); if (n) goTo(n.id, false); }
+});
+
+// ---------------------------------------------------------------- drawing: focus veil and labels
+function viewBounds() {
+  const c = network.canvas.frame.canvas;
+  const a = network.DOMtoCanvas({ x: 0, y: 0 }), b = network.DOMtoCanvas({ x: c.clientWidth, y: c.clientHeight });
+  return { x0: a.x, y0: a.y, x1: b.x, y1: b.y };
+}
+function focusSet() {
+  const id = state.hover || state.selected;
+  if (!id || !visible.has(id)) return null;
+  const s = new Set([id]);
+  for (const e of edgesOf.get(id)) {
+    if (edgesView.get(e.id)) { s.add(e.from); s.add(e.to); }
+  }
+  return { id, nodes: s };
+}
+function placeLabel(ctx, text, x, y, scale, placed, colourText) {
+  const fs = LABEL_PX / scale;
+  ctx.font = `500 ${fs}px system-ui, -apple-system, "Segoe UI", sans-serif`;
+  const w = ctx.measureText(text).width, h = fs * 1.25;
+  const box = { x0: x - w / 2 - 2 / scale, y0: y, x1: x + w / 2 + 2 / scale, y1: y + h };
+  for (const p of placed) if (box.x0 < p.x1 && box.x1 > p.x0 && box.y0 < p.y1 && box.y1 > p.y0) return false;
+  placed.push(box);
+  ctx.lineWidth = 3 / scale; ctx.strokeStyle = C.halo; ctx.lineJoin = "round";
+  ctx.textAlign = "center"; ctx.textBaseline = "top";
+  ctx.strokeText(text, x, y); ctx.fillStyle = colourText; ctx.fillText(text, x, y);
+  return true;
+}
+const short = (s, k = 34) => (s.length > k ? s.slice(0, k - 1) + "…" : s);
+function drawLabels(ctx, ids, scale, b, placed, all) {
+  const bn = bodyNodes(), text = C.text;
+  const cand = [];
+  for (const id of ids) {
+    const p = bn[id]; if (!p) continue;
+    if (p.x < b.x0 || p.x > b.x1 || p.y < b.y0 || p.y > b.y1) continue;
+    const n = byId.get(id);
+    const important = n.type === "hub" || n.degree >= ALWAYS_DEGREE;
+    if (!all && !important && scale < 0.95) continue;
+    cand.push([important ? 1e6 + n.degree : n.degree, n, p]);
+  }
+  cand.sort((a, c) => c[0] - a[0]);
+  let drawn = 0;
+  for (const [, n, p] of cand) {
+    if (drawn > 450) break;
+    const gap = (n.id === state.selected || n.id === state.hover ? 8 : 3) / scale;
+    if (placeLabel(ctx, short(n.name), p.x, p.y + radius(n) + gap, scale, placed, text)) drawn++;
+  }
+}
+function drawEdgeLabels(ctx, scale, b, placed, onlyEdges) {
+  if (!state.edgeLabels || scale < 1.0) return;
+  const bn = bodyNodes(), col = C.text2;
+  let drawn = 0;
+  const list = onlyEdges || edgesView.get().map((item) => edgeById.get(item.id));
+  for (const e of list) {
+    if (drawn > 300) break;
+    const p = bn[e.from], q = bn[e.to]; if (!p || !q) continue;
+    const x = (p.x + q.x) / 2, y = (p.y + q.y) / 2;
+    if (x < b.x0 || x > b.x1 || y < b.y0 || y > b.y1) continue;
+    if (placeLabel(ctx, e.kind === "mention" ? "mentions" : e.label, x, y - 6 / scale, scale * 1.15, placed, col)) drawn++;
+  }
+}
+network.on("afterDrawing", (ctx) => {
+  const scale = network.getScale(), b = viewBounds(), placed = [];
+  const f = focusSet();
+  if (!f) {
+    drawLabels(ctx, visible, scale, b, placed, false);
+    drawEdgeLabels(ctx, scale, b, placed, null);
+    return;
+  }
+  ctx.save(); ctx.fillStyle = C.veil;
+  ctx.fillRect(b.x0 - 10, b.y0 - 10, b.x1 - b.x0 + 20, b.y1 - b.y0 + 20); ctx.restore();
+  const bn = bodyNodes();
+  for (const e of edgesOf.get(f.id)) {
+    if (!edgesView.get(e.id)) continue;
+    const p = bn[e.from], q = bn[e.to]; if (!p || !q) continue;
+    ctx.save(); ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y);
+    ctx.strokeStyle = colour(byId.get(f.id)); ctx.globalAlpha = e.kind === "link" ? 0.95 : 0.6;
+    ctx.lineWidth = (e.kind === "link" ? 2.2 : 1.2) / Math.max(scale, 0.4);
+    if (e.kind !== "link") ctx.setLineDash([5 / scale, 4 / scale]);
+    ctx.stroke(); ctx.restore();
+  }
+  for (const id of f.nodes) {
+    const p = bn[id]; if (p) drawNode(ctx, byId.get(id), p.x, p.y, { selected: id === f.id });
+  }
+  drawLabels(ctx, [f.id, ...[...f.nodes].filter((x) => x !== f.id)], scale, b, placed, true);
+  drawEdgeLabels(ctx, scale, b, placed, edgesOf.get(f.id).filter((e) => edgesView.get(e.id)));
+});
+
+// ---------------------------------------------------------------- tooltip
+const tip = document.getElementById("tip");
+function esc(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+function typeArea(n) { return `${esc(n.type)} · ${esc(AREA_NAMES[n.area] || n.area || n.shelf)}`; }
+function tipAt(html, dom) {
+  tip.innerHTML = html; tip.hidden = false;
+  const r = document.getElementById("graph").getBoundingClientRect();
+  let x = r.left + dom.x + 14, y = r.top + dom.y + 14;
+  if (x + 340 > innerWidth) x = Math.max(8, innerWidth - 350);
+  tip.style.left = `${x}px`; tip.style.top = `${Math.min(y, innerHeight - 160)}px`;
+}
+network.on("hoverNode", (p) => {
+  state.hover = p.node; const n = byId.get(p.node);
+  const body = show(n)
+    ? `${n.description ? `<div>${esc(n.description)}</div>` : ""}${n.aliases.length ? `<div class="muted">Also: ${esc(n.aliases.join(", "))}</div>` : ""}`
+    : `<div class="muted">Sensitive note: details hidden. Click it, then "Show".</div>`;
+  tipAt(`<b>${esc(n.name)}</b><div class="muted">${typeArea(n)}</div>${body}`, p.pointer.DOM);
+  network.redraw();
+});
+network.on("blurNode", () => { state.hover = null; tip.hidden = true; network.redraw(); });
+network.on("hoverEdge", (p) => {
+  const e = edgeById.get(p.edge), from = byId.get(e.from);
+  const verb = e.kind === "mention" ? "mentions" : e.label;
+  const line = show(from) ? (e.line ? `<div class="muted">${esc(e.line)}</div>` : "") : `<div class="muted">Line hidden: sensitive note.</div>`;
+  const kind = e.kind === "hub" ? " (hub link)" : e.kind === "mention" ? " (mention)" : "";
+  tipAt(`<b>${esc(e.fromName)}</b> ${esc(verb)} <b>${esc(e.toName)}</b>${esc(kind)}${line}`, p.pointer.DOM);
+});
+network.on("blurEdge", () => { tip.hidden = true; });
+network.on("dragStart", () => { tip.hidden = true; });
+
+// ---------------------------------------------------------------- side panel
+const info = document.getElementById("info");
+function linkGroups(id) {
+  const groups = new Map();
+  for (const e of edgesOf.get(id)) {
+    const out = e.from === id;
+    const verb = out ? (e.kind === "mention" ? "mentions" : e.label) : e.back || e.label;
+    const other = out ? e.to : e.from;
+    const key = e.kind === "hub" ? `${verb} (hub)` : verb;
+    if (!groups.has(key)) groups.set(key, new Map());
+    groups.get(key).set(other, byId.get(other).name);
+  }
+  return [...groups.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+}
+function showInfo(id) {
+  if (!id) { info.innerHTML = `<span class="empty">Click a note to see its details.</span>`; return; }
+  const n = byId.get(id);
+  let html = `<h2>${esc(n.name)}</h2><div><span class="chip">${esc(n.type)}</span>`
+    + `<span class="chip"><span class="swatch" style="display:inline-block;width:9px;height:9px;margin-right:5px;background:${colour(n)}"></span>${esc(AREA_NAMES[n.area] || n.area || n.shelf)}</span></div>`
+    + `<div class="muted" style="margin-top:4px">${esc(n.path)} · <a href="${esc(n.href)}" target="_blank" rel="noopener">open note</a></div>`;
+  if (!show(n)) {
+    html += `<div class="hidden-note">Sensitive note: description, aliases, summary and facts are hidden.<br>`
+      + `<button id="reveal" type="button" style="margin-top:6px">Show</button></div>`;
+  } else {
+    if (n.description) html += `<h3>Description</h3><div>${esc(n.description)}</div>`;
+    if (n.aliases.length) html += `<h3>Aliases</h3><div>${n.aliases.map((a) => `<span class="chip">${esc(a)}</span>`).join("")}</div>`;
+    if (n.summary) html += `<h3>Summary</h3><div>${esc(n.summary)}</div>`;
+    if (n.facts.length) html += `<h3>Facts (${n.facts.length})</h3><ul>${n.facts.map((f) => `<li>${esc(f)}</li>`).join("")}</ul>`;
+    if (n.sensitive) html += `<button id="conceal" type="button">Hide again</button>`;
+  }
+  const groups = linkGroups(id);
+  if (groups.length) {
+    html += `<h3>Links</h3>`;
+    for (const [verb, others] of groups) {
+      html += `<h4>${esc(verb)}</h4>` + [...others.entries()].map(([oid, name]) =>
+        `<div class="jump" data-id="${esc(oid)}">${esc(name)}</div>`).join("");
+    }
+  }
+  info.innerHTML = html;
+  info.querySelectorAll(".jump").forEach((el) => el.addEventListener("click", () => goTo(el.dataset.id, true)));
+  const rv = document.getElementById("reveal");
+  if (rv) rv.addEventListener("click", () => { state.revealed.add(id); showInfo(id); });
+  const cc = document.getElementById("conceal");
+  if (cc) cc.addEventListener("click", () => { state.revealed.delete(id); showInfo(id); });
+}
+network.on("selectNode", (p) => { state.selected = p.nodes[0]; showInfo(state.selected); network.redraw(); });
+network.on("deselectNode", () => { state.selected = null; showInfo(null); network.redraw(); });
+function goTo(id, animate) {
+  if (!visible.has(id)) {
+    state.hideHubs = false; state.areaOff.clear(); state.typeOff.clear();
+    document.getElementById("hide-hubs").checked = false;
+    document.querySelectorAll("#f-area input, #f-type input").forEach((cb) => { cb.checked = true; });
+    refresh();
+  }
+  network.selectNodes([id]); state.selected = id; showInfo(id);
+  network.focus(id, { scale: Math.max(network.getScale(), 1.3),
+    animation: animate ? { duration: 700, easingFunction: "easeInOutCubic" } : false });
+}
+
+// ---------------------------------------------------------------- physics: drag with springs, pin, unpin
+let settleTimer = null;
+network.on("dragStart", (p) => {
+  if (!p.nodes.length) return;
+  const id = p.nodes[0], near = adj.get(id);
+  clearTimeout(settleTimer);
+  nodesDS.update(DATA.nodes.map((n) => ({ id: n.id, fixed: n.id !== id && (!near.has(n.id) || state.pinned.has(n.id)) })));
+  network.setOptions({ physics: { enabled: true, stabilization: { enabled: false } } });
+});
+network.on("dragEnd", (p) => {
+  if (!p.nodes.length) return;
+  const id = p.nodes[0];
+  state.pinned.add(id);
+  nodesDS.update({ id, fixed: true });
+  settleTimer = setTimeout(() => {
+    network.setOptions({ physics: { enabled: false } });
+    nodesDS.update(DATA.nodes.map((n) => ({ id: n.id, fixed: state.pinned.has(n.id) })));
+  }, 1200);
+});
+network.on("doubleClick", (p) => {
+  if (!p.nodes.length) return;
+  const id = p.nodes[0];
+  state.pinned.delete(id); nodesDS.update({ id, fixed: false }); network.redraw();
+});
+
+// ---------------------------------------------------------------- search
+const search = document.getElementById("search"), results = document.getElementById("results");
+const norm = (s) => s.toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "");
+search.addEventListener("input", () => {
+  const q = norm(search.value.trim());
+  results.innerHTML = "";
+  if (!q) return;
+  const hits = DATA.nodes.filter((n) => norm(n.name).includes(q) || n.slug.includes(q)
+    || (show(n) && n.aliases.some((a) => norm(a).includes(q)))).slice(0, 12);
+  for (const n of hits) {
+    const li = document.createElement("li");
+    li.innerHTML = `${esc(n.name)} <span class="muted">· ${esc(n.type)}</span>`;
+    li.addEventListener("click", () => { goTo(n.id, true); results.innerHTML = ""; search.value = ""; });
+    results.appendChild(li);
+  }
+});
+search.addEventListener("keydown", (ev) => {
+  if (ev.key === "Enter" && results.firstChild) results.firstChild.click();
+  if (ev.key === "Escape") { search.value = ""; results.innerHTML = ""; }
+});
+
+// ---------------------------------------------------------------- toggles and filters
+document.getElementById("hide-hubs").addEventListener("change", (ev) => { state.hideHubs = ev.target.checked; refresh(); });
+document.getElementById("show-mentions").addEventListener("change", (ev) => { state.mentions = ev.target.checked; refresh(); });
+document.getElementById("edge-labels").addEventListener("change", (ev) => { state.edgeLabels = ev.target.checked; network.redraw(); });
+function count(arr, f) { const m = new Map(); for (const x of arr) m.set(f(x), (m.get(f(x)) || 0) + 1); return m; }
+function filterList(el, entries, set, swatch) {
+  el.innerHTML = "";
+  for (const [k, label, n] of entries) {
+    const l = document.createElement("label");
+    l.innerHTML = `<input type="checkbox" checked>${swatch ? `<span class="swatch" data-k="${esc(k)}"></span>` : ""}<span>${esc(label)}</span><span class="count">${n}</span>`;
+    l.querySelector("input").addEventListener("change", (ev) => { ev.target.checked ? set.delete(k) : set.add(k); refresh(); });
+    el.appendChild(l);
+  }
+}
+const areaCounts = count(DATA.nodes, colourKey);
+const typeCounts = count(DATA.nodes, (n) => n.type);
+const verbCounts = count(DATA.edges, verbKey);
+const typeKeys = [...typeCounts.keys()].sort((a, b) => (TYPE_ORDER.indexOf(a) + 99) % 99 - (TYPE_ORDER.indexOf(b) + 99) % 99 || a.localeCompare(b));
+filterList(document.getElementById("f-area"), keys.map((k) => [k, AREA_NAMES[k] || k, areaCounts.get(k)]), state.areaOff, true);
+filterList(document.getElementById("f-type"), typeKeys.map((k) => [k, k, typeCounts.get(k)]), state.typeOff, false);
+filterList(document.getElementById("f-verb"), [...verbCounts.keys()].sort().map((k) => [k, k, verbCounts.get(k)]), state.verbOff, false);
+
+// ---------------------------------------------------------------- legend
+function legend() {
+  const la = document.getElementById("l-area"); la.innerHTML = "";
+  for (const k of keys) {
+    const d = document.createElement("div"); d.className = "legend-item";
+    d.innerHTML = `<span class="swatch" style="background:${colour({ area: k, shelf: k })}"></span><span>${esc(AREA_NAMES[k] || k)}</span><span class="count">${areaCounts.get(k)}</span>`;
+    la.appendChild(d);
+  }
+  const lt = document.getElementById("l-type"); lt.innerHTML = "";
+  for (const t of typeKeys) {
+    const d = document.createElement("div"); d.className = "legend-item";
+    const c = document.createElement("canvas"); c.width = 22; c.height = 22;
+    drawNode(c.getContext("2d"), { id: "_", type: t, degree: 6, area: "cross", shelf: "cross" }, 11, 11);
+    d.appendChild(c); d.insertAdjacentHTML("beforeend", `<span>${esc(t)}</span><span class="count">${typeCounts.get(t)}</span>`);
+    lt.appendChild(d);
+  }
+  const edge = C.edge;
+  const line = (dash, w, op, label) => `<div class="legend-item"><svg width="34" height="10"><line x1="1" y1="5" x2="33" y2="5" stroke="${edge}" stroke-width="${w}" stroke-opacity="${op}" ${dash ? `stroke-dasharray="${dash}"` : ""}/></svg><span>${label}</span></div>`;
+  document.getElementById("l-line").innerHTML = line("", 2, 0.9, "Typed link (a verb from ## Links), arrow shows direction")
+    + line("4 4", 1, 0.6, "Mention: a [[link]] inside a note's text")
+    + line("1 5", 1, 0.5, "Hub link: a hub lists the note");
+  document.querySelectorAll(".swatch[data-k]").forEach((s) => { s.style.background = colour({ area: s.dataset.k, shelf: s.dataset.k }); });
+}
+
+// ---------------------------------------------------------------- theme
+const themeSel = document.getElementById("theme");
+function applyTheme(t) {
+  state.theme = t; themeSel.value = t;
+  if (t === "system") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.setAttribute("data-theme", t);
+  readColours();
+  edgesDS.update(DATA.edges.map((e) => ({ id: e.id, ...edgeStyle(e) })));
+  legend(); if (state.selected) showInfo(state.selected);
+  network.redraw();
+}
+themeSel.addEventListener("change", () => { storeSet("yggdras-theme", themeSel.value); applyTheme(themeSel.value); });
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if (state.theme === "system") applyTheme("system"); });
+applyTheme(hash.get("theme") || storeGet("yggdras-theme") || "system");
+if (hash.get("labels") === "1") { state.edgeLabels = true; document.getElementById("edge-labels").checked = true; }
+document.getElementById("stats").textContent = `${N} notes · ${DATA.edges.length} links`;
+</script>
+</body>
+</html>
