@@ -1,0 +1,60 @@
+{
+ "hard-v8-pipeline-1.json": {
+  "v08": [
+   "correct",
+   "hand-graded correct: paraphrase of the key term (circled the Moon in Columbia)"
+  ],
+  "v24": [
+   "correct",
+   "hand-graded correct: paraphrase of the key term (April 6, 1970)"
+  ]
+ },
+ "hard-v8-whole-1.json": {
+  "v03": [
+   "correct",
+   "hand-graded correct: paraphrase of the key term (12 September 1962)"
+  ]
+ },
+ "hard-v8-whole-2.json": {
+  "v05": [
+   "correct",
+   "hand-graded correct: paraphrase of the key term (first time two craft linked up in orbit)"
+  ]
+ },
+ "hard-v8-pipeline-3.json": {
+  "v07": [
+   "correct",
+   "hand-graded correct: paraphrase of the key term (a seat in Congress, the House)"
+  ]
+ },
+ "held-out-v8-pipeline-3.json": {
+  "y01": [
+   "correct",
+   "hand-graded correct: paraphrase of the key term (20 and 21 July 1969)"
+  ]
+ },
+ "held-out-v8-whole-3.json": {
+  "y01": [
+   "correct",
+   "hand-graded correct: paraphrase of the key term (20 July 1969)"
+  ]
+ },
+ "held-out-v8-whole-2.json": {
+  "y09": [
+   "correct",
+   "hand-graded correct: paraphrase of the key term (a lander with two stages)"
+  ]
+ },
+ "held-out-v8-pipeline-2.json": {
+  "y09": [
+   "correct",
+   "hand-graded correct: paraphrase of the key term (a lander with two stages)"
+  ]
+ },
+ "held-out-v8-pipeline-1.json": {
+  "y06": [
+   "correct",
+   "hand-graded correct: redesign and quick-opening hatch given; the model wrongly called the AS-204 alias general knowledge, but it is in apollo-1 frontmatter"
+  ]
+ }
+}

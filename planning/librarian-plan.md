@@ -80,6 +80,17 @@ The research matches our result: loading everything wins while the knowledge is 
 - **Note size:** builders aim for one idea per note, often about 256–512 tokens, with a label block on top ([Basic Memory](https://docs.basicmemory.com/concepts/knowledge-format), [Atomic Knowledge](https://github.com/Nimo1987/atomic-knowledge)).
 - **A warning:** [one memory project](https://github.com/tsantoso79/agentic-graphrag-memory) measured that most memories it pulled in weren't useful, which is why every change here gets tested.
 
+## Lessons from hard-v8
+
+34 new questions (24 hard, 10 held out), 3 runs each. The whole-brain prompt scored 23–24 of 24 and 9–10 of 10; the current pipeline scored 20–21 and 8–9. No question was missed by both. Details are in `evals/experiments/hard-v8-run/RESULTS.md`.
+
+1. **Whole-picture questions need several notes or shelves, not 1–2.** The pipeline missed all three whole-picture questions in every run (v21–v23), because picking 1–2 notes never reached the rest of the answer.
+2. **Look wider with new words when a term isn't in the notes.** The pipeline declined "mailbox" once, although the right note was open, because the word isn't in its fact lines.
+3. **Aliases and descriptions must be in what the librarian reads (the shelf map).** The whole-brain prompt declined "AS-204" twice: the alias sits in Apollo 1's frontmatter, which its prompt didn't include.
+4. **Answer rule: decide answer vs "not in the brain" first, then write.** Replies still opened with "NOT IN BRAIN" and then answered correctly.
+
+**Question y10 is ambiguous.** Duke and Kranz shared roles in both Apollo 11 and Apollo 13, so "Apollo 13" is also supported by the notes. Fix or replace it before the next frozen test.
+
 ## Roadmap
 
 Measure first, then build in small steps, each checked against the same hard test.
