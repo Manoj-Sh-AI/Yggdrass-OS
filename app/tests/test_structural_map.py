@@ -94,6 +94,8 @@ def test_input_nodes_match_frontmatter_and_skip_index(brain):
         "type": "topic",
         "path": "topics/oxygen-tank-2.md",
         "aliases": ["O2 tank 2"],
+        "area": "",
+        "description": "About oxygen-tank-2",
     }
 
 
@@ -102,7 +104,7 @@ def test_default_output_location_and_shape(brain):
     st.main([str(root), "--flat"])
     out = root.parent / ".map" / "graph.json"
     graph = json.loads(out.read_text(encoding="utf-8"))
-    assert graph["schema"] == "yggdras-map/2"
+    assert graph["schema"] == "yggdras-map/3"
     assert set(graph) == {"schema", "nodes", "edges", "dangling", "errors", "unknown_verbs"}
     assert set(graph["edges"][0]) == {
         "from",
@@ -289,7 +291,7 @@ def test_link_line_edge_cases(brain, line, reason, target):
 def test_empty_brain_gives_a_valid_empty_map(tmp_path):
     (tmp_path / "empty").mkdir()
     assert st.build_map(tmp_path / "empty") == {
-        "schema": "yggdras-map/2",
+        "schema": "yggdras-map/3",
         "nodes": [],
         "edges": [],
         "dangling": [],

@@ -116,7 +116,7 @@ Every experiment runs on the same expanded hard test, at least 3 runs per arm, w
 | D | A wide net improves the first pick | Top 20 notes by meaning + keywords (small embedding index), then the model picks | Same, plus shortlist recall | Shortlist holds the answer note in at least 95% of questions |
 | E | Wide net + loop together beat each alone | D first, then C's loop if needed | Same | Beats B, C and D |
 | F | The design holds as the brain grows | Add notes at 50, 150, 500 and 1,000 notes; rerun the current pipeline and the best librarian | Score and cost per size | The librarian keeps its lead over the pipeline as the brain grows |
-| G | Graphify can compete when given our map | Final benchmark only, bar written first | Same | Beats or matches the best librarian at lower cost |
+| G | Graphify can compete when given our map | A one-time benchmark at the end, after A–F, bar written first. Graphify stays viewer-only in the product (D32) whatever the result | Same | Only if Graphify beats the best librarian on accuracy, then on cost, is D32 reopened |
 
 **Your prediction to test in B (made against the whole-brain prompt, now retired):** about the same cost as whole brain at this size, similar accuracy, and possibly slower, since the librarian needs a pick step before the answer.
 

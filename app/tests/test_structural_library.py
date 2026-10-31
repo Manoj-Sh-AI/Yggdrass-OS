@@ -103,6 +103,7 @@ def test_maps_are_written_to_generated_and_nowhere_else(repo, tmp_path):
     assert added == [
         "brain-repo/library/00-manual/generated/map.json",
         "brain-repo/library/00-manual/generated/relationship-map.md",
+        "brain-repo/library/00-manual/generated/shelf-map.md",
     ]
     assert {k: v for k, v in after.items() if k in before} == before
 
@@ -149,3 +150,45 @@ def test_every_verb_round_trips_through_its_opposite(verb):
 
 def test_nineteen_verbs():
     assert len(st.VERBS) == 19
+
+
+def test_shelf_map_has_one_line_per_note_grouped_by_shelf(repo):
+    root, write = repo
+    write(
+        "library/07-projects/garden/garden-plan.md",
+        node("garden-plan", typ="project", aliases=["the plot", "veg | herbs"]).replace(
+            "type: project", "type: project\narea: projects"
+        ),
+    )
+    st.main([str(root)])
+    text = (root / "library/00-manual/generated/shelf-map.md").read_text(encoding="utf-8")
+    assert "3 notes on 3 shelves" in text
+    rows = [line for line in text.splitlines() if line.startswith("| ") and "---" not in line]
+    assert rows == [
+        "| slug | type | area | description | aliases |",
+        "| home-goals | goal |  | About home-goals |  |",
+        "| slug | type | area | description | aliases |",
+        "| garden-plan | project | projects | About garden-plan | the plot, veg \\| herbs |",
+        "| slug | type | area | description | aliases |",
+        "| ana | person |  | About ana |  |",
+    ]
+    shelves = [line for line in text.splitlines() if line.startswith("## ")]
+    assert shelves == ["## 06-purpose-meaning", "## 07-projects", "## 11-people"]
+
+
+def test_shelf_map_leaves_out_the_manual_inbox_and_everything_outside_library(repo):
+    root, write = repo
+    write("library/14-inbox/capture.md", node("capture"))
+    write("library/00-manual/stray-note.md", node("stray-note"))
+    st.main([str(root)])
+    text = (root / "library/00-manual/generated/shelf-map.md").read_text(encoding="utf-8")
+    for slug in ("capture", "stray-note", "old"):
+        assert f"| {slug} |" not in text
+
+
+def test_empty_library_gives_an_empty_shelf_map(tmp_path):
+    (tmp_path / "library").mkdir()
+    assert st.main([str(tmp_path)]) == 0
+    text = (tmp_path / "library/00-manual/generated/shelf-map.md").read_text(encoding="utf-8")
+    assert "0 notes on 0 shelves" in text
+    assert "| slug |" not in text

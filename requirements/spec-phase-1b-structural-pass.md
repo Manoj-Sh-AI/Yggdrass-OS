@@ -117,7 +117,7 @@ Approved by Manoj with D31 amendments A1–A8 (register D5, D29, D31; D02 record
 
 | Command | Reads | Writes |
 |---|---|---|
-| `structural BRAIN_REPO` | Only `BRAIN_REPO/library/`, and inside it only the numbered shelves in `SHELVES` minus `00-manual` and `14-inbox` | `library/00-manual/generated/map.json` and `relationship-map.md`. `--out` is refused, so a map never lands outside the brain repo |
+| `structural BRAIN_REPO` | Only `BRAIN_REPO/library/`, and inside it only the numbered shelves in `SHELVES` minus `00-manual` and `14-inbox` | `library/00-manual/generated/map.json`, `relationship-map.md` and `shelf-map.md`. `--out` is refused, so a map never lands outside the brain repo |
 | `structural BRAIN_ROOT --flat [--out PATH]` | Every node under a flat brain except `index.md`, as before (the archived Apollo demo, the fixture brain) | `.map/graph.json` beside the root, or `--out` |
 
 **Map shape, schema `yggdras-map/2`.** As above, plus:
@@ -135,4 +135,8 @@ Approved by Manoj with D31 amendments A1–A8 (register D5, D29, D31; D02 record
 13. **Opposites.** Given `- part of [[b]]` in note `a`, then the relationship map's section for `b` has `- contains [[a]] (added: opposite)`. Every verb's opposite's opposite is the verb.
 14. **Output stays in the brain repo.** Given library mode, the only files created are the two maps in `library/00-manual/generated/`, and `--out` is refused.
 
-**Code.** `SHELVES`, `NOT_MAPPED` and `VERBS` in `app/src/yggdras/data/graph/structural.py` are the only lists of shelf names and verbs in code. Tests: `app/tests/test_structural_map.py` (flat mode, criteria 1–9) and `app/tests/test_structural_library.py` (criteria 10–14).
+**Shelf map (added 2026-10-31).** `shelf-map.md` has one line per mapped note, grouped under a heading per shelf: `slug`, `type`, `area`, the one-line `description` and `aliases`, in a table sorted by slug. Pipes inside a value are escaped. It replaces the hand-kept `index.md` (D31 amendment A8). For this, map nodes gain `area` and `description` from frontmatter, and the schema is `yggdras-map/3`.
+
+15. **Shelf map.** Given notes on shelves, when the pass runs in library mode, then `shelf-map.md` has exactly one row per mapped note under its shelf's heading, with slug, type, area, description and aliases, and no row for anything in the manual, the inbox or outside `library/`.
+
+**Code.** `SHELVES`, `NOT_MAPPED` and `VERBS` in `app/src/yggdras/data/graph/structural.py` are the only lists of shelf names and verbs in code. Tests: `app/tests/test_structural_map.py` (flat mode, criteria 1–9) and `app/tests/test_structural_library.py` (criteria 10–15).
