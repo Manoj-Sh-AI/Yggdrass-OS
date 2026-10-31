@@ -102,7 +102,7 @@ def test_default_output_location_and_shape(brain):
     st.main([str(root), "--flat"])
     out = root.parent / ".map" / "graph.json"
     graph = json.loads(out.read_text(encoding="utf-8"))
-    assert graph["schema"] == "yggdras-map/2"
+    assert graph["schema"] == "yggdras-map/3"
     assert set(graph) == {"schema", "nodes", "edges", "dangling", "errors", "unknown_verbs"}
     assert set(graph["edges"][0]) == {
         "from",
@@ -226,7 +226,13 @@ def test_links_in_facts_become_mention_edges(brain):
         ),
     )
     raw = st.count_raw_links(root)
-    assert raw == {"total": 5, "inside_links": 4, "inside_facts": 1, "elsewhere": 0}
+    assert raw == {
+        "total": 5,
+        "in_links": 4,
+        "in_history": 0,
+        "in_sections": 1,
+        "elsewhere": 0,
+    }
     (edge,) = [e for e in st.build_map(root)["edges"] if e["from_slug"] == "stray"]
     assert (edge["kind"], edge["reason"], edge["to_slug"], edge["line"]) == (
         "mention",
@@ -253,14 +259,15 @@ def test_typed_verbs_come_only_from_links_section(brain):
     assert kinds == {("mention", "mentions"), ("link", "part of")}
 
 
-def test_links_outside_facts_and_links_are_counted_and_stop_the_run(brain, capsys):
+def test_links_outside_any_section_are_counted_and_stop_the_run(brain, capsys):
     root, write = brain
-    write("topics/stray.md", node("stray") + "\n## Notes\n\n- see [[apollo-13]]\n")
+    stray = node("stray").replace("\n## Facts", "\nSee [[apollo-13]]\n\n## Facts", 1)
+    write("topics/stray.md", stray)
     raw = st.count_raw_links(root)
     assert raw["elsewhere"] == 1
     assert not any(e["from_slug"] == "stray" for e in st.build_map(root)["edges"])
     assert st.main([str(root), "--flat"]) == 1
-    assert "STOP: links found outside ## Facts and ## Links" in capsys.readouterr().err
+    assert "STOP: links found outside any section" in capsys.readouterr().err
 
 
 def test_ambiguous_alias_is_an_error_not_a_guess(brain):
@@ -289,7 +296,7 @@ def test_link_line_edge_cases(brain, line, reason, target):
 def test_empty_brain_gives_a_valid_empty_map(tmp_path):
     (tmp_path / "empty").mkdir()
     assert st.build_map(tmp_path / "empty") == {
-        "schema": "yggdras-map/2",
+        "schema": "yggdras-map/3",
         "nodes": [],
         "edges": [],
         "dangling": [],
@@ -317,7 +324,7 @@ def test_fixture_brain_every_hand_link_becomes_an_edge():
     graph = st.build_map(FIXTURE)
     raw = st.count_raw_links(FIXTURE)
     assert raw["elsewhere"] == 0
-    assert len(graph["edges"]) == raw["inside_links"] + raw["inside_facts"]
-    assert raw["inside_links"] > 0
+    assert len(graph["edges"]) == raw["in_links"] + raw["in_sections"]
+    assert raw["in_links"] > 0
     assert graph["dangling"] == [] and graph["errors"] == []
     assert len(graph["nodes"]) == 10

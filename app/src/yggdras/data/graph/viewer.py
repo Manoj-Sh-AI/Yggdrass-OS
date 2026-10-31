@@ -53,9 +53,14 @@ def to_graphify(graph: dict) -> tuple[dict, dict[str, str]]:
     """Our map as Graphify's node-link graph.json, plus its community labels.
 
     Communities are shelves (each note's top-level folder), so the view colours by shelf.
+    A library folder keeps its place in the numbered folder list, so each folder keeps its
+    colour as the brain grows; other folders (a flat brain) follow after it, sorted.
     """
     shelves = sorted({shelf_of(n["path"]) for n in graph["nodes"]})
-    community = {s: i for i, s in enumerate(shelves)}
+    known = [s for s in structural.SHELVES if s in shelves]
+    others = [s for s in shelves if s not in structural.SHELVES]
+    community = {s: structural.SHELVES.index(s) for s in known}
+    community |= {s: len(structural.SHELVES) + i for i, s in enumerate(others)}
     data = {
         "directed": False,  # Graphify's own convention; direction travels in _src/_tgt
         "multigraph": True,  # keep two different links between the same pair

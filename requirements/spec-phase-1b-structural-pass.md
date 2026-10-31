@@ -1,6 +1,6 @@
 # Spec: Phase 1b — structural pass
 
-Status: approved (Manoj, 2026-10-25, with criterion 9 tightened); amended 2026-10-31 (library, mentions, opposites; see the last section)
+Status: approved (Manoj, 2026-10-25, with criterion 9 tightened); amended 2026-10-31 twice (library, mentions, opposites; then folders v3 and the note rules; see the last two sections)
 Scoping: [`scoping-phase-1b.md`](scoping-phase-1b.md), open question 2 (ruled 2026-10-25)
 Plan: `planning/locked-plan-v1.md`, Phase 1b and register rows D5, D6, D8, D31, D32
 Format: [`rationale/decisions/D02-node-identity.md`](../rationale/decisions/D02-node-identity.md) (frozen, D31)
@@ -129,10 +129,52 @@ Approved by Manoj with D31 amendments A1–A8 (register D5, D29, D31; D02 record
 
 **New acceptance criteria.**
 
-10. **Library scope.** Given a brain repo with notes in `library/` shelves, the manual, the inbox, and files outside `library/` (`README.md`, `life-evals/`, `archive/`, `private/`, `brain/`), when the pass runs, then only the shelf notes are nodes and there are no errors from anything else.
+10. **Library scope.** Given a brain repo with notes in `library/` shelves, the manual, the inbox, and files outside `library/` (`README.md`, `evals/`, `archive/`, `private/`, `brain/`), when the pass runs, then only the shelf notes are nodes and there are no errors from anything else.
 11. **Unknown shelf.** Given a folder in `library/` that is not in `SHELVES`, then it is reported in `errors` and not read.
 12. **Mentions.** Given `[[slug]]` in a fact line, then it is an edge with `kind` `mention` and reason `mentions`; a typed edge exists only for a `## Links` line.
 13. **Opposites.** Given `- part of [[b]]` in note `a`, then the relationship map's section for `b` has `- contains [[a]] (added: opposite)`. Every verb's opposite's opposite is the verb.
 14. **Output stays in the brain repo.** Given library mode, the only files created are the two maps in `library/00-manual/generated/`, and `--out` is refused.
 
 **Code.** `SHELVES`, `NOT_MAPPED` and `VERBS` in `app/src/yggdras/data/graph/structural.py` are the only lists of shelf names and verbs in code. Tests: `app/tests/test_structural_map.py` (flat mode, criteria 1–9) and `app/tests/test_structural_library.py` (criteria 10–14).
+
+## Amendment 2026-10-31, second round: folders v3 and note rules
+
+Approved with D31 amendments A9–A21. Map schema `yggdras-map/3`.
+
+**Folders.** `SHELVES` is the v3 list (`09` free); `NOT_MAPPED` stays `00-manual` and `14-inbox`. `15-journal` is read: journal entries are nodes.
+
+**Where a `[[link]]` counts.**
+
+| Where | Becomes |
+|---|---|
+| `## Links`, verb `lists` | an edge with `kind: hub` (a hub link) |
+| `## Links`, any other verb | an edge with `kind: link` |
+| `## Summary`, `## Facts`, any type section | a `mentions` edge (`kind: mention`) |
+| anywhere in a `type: journal` note | a `mentions` edge |
+| `## History` | nothing: history is never current |
+| outside any `## ` section in other notes | counted as `elsewhere`; the pass stops |
+
+Text after a link line's `[[slug]]` (for example `— since 2030-01`) is ignored for now.
+
+**Verbs.** 22 in `VERBS`: 21 content verbs plus `lists`, each with an inverse. The relationship map marks `lists` and `listed_in` lines as hub links.
+
+**Library rules** (library mode only; reported in `errors`):
+
+- `type` is one of the 9 content types or `hub` or `journal`;
+- `area` is present and one of `AREAS` (`01-health` … `08-rest-joy`) or `cross`; every `also:` value likewise;
+- a hub has no fact lines;
+- no alias matches another note's slug or alias after D02 normalization.
+
+Flat mode (`--flat`, the Apollo archive and the fixture brain) skips these rules.
+
+**Raw counts.** `count_raw_links` returns `total`, `in_links`, `in_history`, `in_sections` and `elsewhere`.
+
+**New acceptance criteria.**
+
+16. **Mentions and history.** Given links in Summary, Facts and a type section, then each is a `mentions` edge; given links in History, then none is an edge or dangling, and the pass still exits 0.
+17. **Hubs and journals.** Given a hub with `lists [[x]]`, then the edge has `kind: hub` and the relationship map marks both directions as hub links; a hub with a fact line is an error. Given a journal entry with links in free text, then they are mentions and the pass exits 0.
+18. **Note rules.** Given an unknown type, a missing or unknown area, or an unknown `also:` value, then each is an error; `cross` and the eight areas pass.
+19. **Duplicate aliases.** Given two notes whose aliases (or an alias and a slug) normalize to the same text, then each is reported.
+20. **Old folder names.** Given `07-projects/`, `10-mind/` or `04-learning-growth/` in `library/`, then each is reported as not a shelf.
+
+Tests: `app/tests/test_structural_library.py`.

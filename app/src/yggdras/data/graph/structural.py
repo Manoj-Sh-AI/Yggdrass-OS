@@ -7,9 +7,10 @@ Usage:
     python -m yggdras.data.graph.structural BRAIN_REPO
     python -m yggdras.data.graph.structural BRAIN_ROOT --flat [--out PATH]
 
-The first form reads only BRAIN_REPO/library/ (the numbered shelves, minus the manual and
-the inbox) and writes the map and the relationship map to library/00-manual/generated/.
-The second reads every node under a flat brain such as the archived Apollo demo brain.
+The first form reads only BRAIN_REPO/library/ (the numbered folders, minus the manual and
+the inbox), checks the library rules, and writes the map and the relationship map to
+library/00-manual/generated/. The second reads every node under a flat brain such as the
+archived Apollo demo brain, without the library rules.
 """
 
 from __future__ import annotations
@@ -24,62 +25,85 @@ from pathlib import Path
 
 import yaml
 
-SCHEMA = "yggdras-map/2"
+SCHEMA = "yggdras-map/3"
 LIBRARY = "library"
-# The library's folders, in order (D31 amendment A1). The only list of shelf names in code.
+# The library's folders, in order (D31 amendments A1, A17). The only list of folder names
+# in code. 09 is left free for a future area.
 SHELVES = (
     "00-manual",
     "01-health",
     "02-relationships",
     "03-work-career",
-    "04-learning-growth",
+    "04-learning",
     "05-money",
-    "06-purpose-meaning",
-    "07-projects",
-    "08-home-daily-life",
-    "09-rest-joy",
-    "10-mind",
+    "06-purpose",
+    "07-home-admin",
+    "08-rest-joy",
+    "10-ideas",
     "11-people",
     "12-places",
     "13-sources",
     "14-inbox",
+    "15-journal",
 )
 NOT_MAPPED = ("00-manual", "14-inbox")
+# Allowed values of a note's `area` and `also` (A18): the life-area folders, plus "cross".
+AREAS = tuple(s for s in SHELVES if "01" <= s[:2] <= "08")
+CROSS = "cross"
+CONTENT_TYPES = (
+    "person",
+    "place",
+    "project",
+    "goal",
+    "decision",
+    "event",
+    "source",
+    "framework",
+    "concept",
+)
+HUB, JOURNAL = "hub", "journal"  # structural types (A19, A20)
 GENERATED = Path("00-manual") / "generated"
 MAP_FILE = "map.json"
 RELATIONSHIP_MAP = "relationship-map.md"
 
 FACTS_HEADING = "## Facts"
 LINKS_HEADING = "## Links"
+HISTORY_HEADING = "## History"
 WIKILINK = re.compile(r"\[\[([^\]]+)\]\]")
+# Text after the [[slug]] (e.g. "— since 2026-01") is ignored for now.
 LINK_LINE = re.compile(r"^- (.*?)\[\[([^\]]+)\]\]")
 _NORM_EXTRA = {"ß": "ss", "ø": "o"}
 
-# The fixed link verbs and their opposites (D31 amendment A5). A link is written once,
-# in either form; the relationship map adds the other direction.
+# The fixed link verbs and their opposites (A5 as amended by A14 and A19). A link is
+# written once; the relationship map adds the other direction.
 VERBS = {
-    "part of": "contains",
-    "depends on": "needed by",
-    "blocks": "blocked by",
-    "advances": "advanced by",
-    "uses": "used by",
-    "replaces": "replaced by",
-    "causes": "caused by",
-    "learned from": "taught",
-    "recommended by": "recommended",
-    "introduced by": "introduced",
-    "supervised by": "supervises",
-    "works with": "works with",
-    "located at": "location of",
-    "attended": "attended by",
-    "cites": "cited by",
-    "about": "subject of",
-    "decided in": "decision on",
-    "applies": "applied in",
-    "conflicts with": "conflicts with",
+    "part_of": "has_part",
+    "broader": "narrower",
+    "related_to": "related_to",
+    "about": "subject_of",
+    "derived_from": "source_of",
+    "cites": "cited_by",
+    "supports": "supported_by",
+    "contradicts": "contradicts",
+    "supersedes": "superseded_by",
+    "depends_on": "needed_by",
+    "created_by": "created",
+    "knows": "knows",
+    "member_of": "has_member",
+    "works_on": "worked_on_by",
+    "took_part_in": "had_participant",
+    "located_in": "location_of",
+    "advances": "advanced_by",
+    "informed_by": "informed",
+    "uses": "used_in",
+    "led_to": "caused_by",
+    "precedes": "follows",
+    "lists": "listed_in",
 }
 OPPOSITE = {**VERBS, **{back: verb for verb, back in VERBS.items()}}
-# A [[link]] inside a fact line is a plain mention, never a typed link (amendment A6).
+# Hub links are kept apart so discovery can ignore them.
+HUB_VERBS = ("lists", "listed_in")
+# A [[link]] in a section other than Links or History is a plain mention (A6, A11).
 MENTION, MENTIONED_IN = "mentions", "mentioned in"
 
 
@@ -101,7 +125,10 @@ class Node:
     type: str
     path: str
     aliases: list[str]
-    # (kind, line, reason, written_as); kind is "link" or "mention"
+    area: str = ""
+    also: list[str] = field(default_factory=list)
+    fact_lines: int = 0
+    # (kind, line, reason, written_as); kind is "link", "hub" or "mention"
     links: list[tuple[str, int, str, str]] = field(default_factory=list)
 
 
@@ -132,6 +159,23 @@ def links_section(body: list[str], first_line: int) -> list[tuple[int, str]]:
     return section(body, first_line, LINKS_HEADING)
 
 
+def sections(body: list[str], first_line: int) -> list[tuple[str | None, int, str]]:
+    """Every body line as (heading it sits under, or None before the first one; number; text)."""
+    out, current = [], None
+    for offset, line in enumerate(body):
+        if line.startswith("## "):
+            current = line.strip()
+            continue
+        out.append((current, first_line + offset, line))
+    return out
+
+
+def _as_list(value) -> list[str]:
+    if value is None:
+        return []
+    return [str(v) for v in value] if isinstance(value, list) else [str(value)]
+
+
 def parse_node(path: Path, root: Path) -> tuple[Node | None, str | None]:
     rel = path.relative_to(root).as_posix()
     parts = _split(path.read_text(encoding="utf-8"))
@@ -151,15 +195,24 @@ def parse_node(path: Path, root: Path) -> tuple[Node | None, str | None]:
         name=str(fm["name"]),
         type=str(fm["type"]),
         path=rel,
-        aliases=[str(a) for a in fm.get("aliases") or []],
+        aliases=_as_list(fm.get("aliases")),
+        area=str(fm.get("area") or ""),
+        also=_as_list(fm.get("also")),
     )
-    for number, line in section(body, first_line, FACTS_HEADING):
-        for written in WIKILINK.findall(line):
-            node.links.append(("mention", number, MENTION, written))
-    for number, line in links_section(body, first_line):
-        m = LINK_LINE.match(line)
-        if m:
-            node.links.append(("link", number, m.group(1).strip(), m.group(2)))
+    for heading, number, line in sections(body, first_line):
+        if heading == LINKS_HEADING:
+            m = LINK_LINE.match(line)
+            if m:
+                reason = m.group(1).strip()
+                kind = "hub" if reason in HUB_VERBS else "link"
+                node.links.append((kind, number, reason, m.group(2)))
+        elif heading == HISTORY_HEADING:
+            continue  # history is never current: its links stay out of the map
+        elif heading is not None or node.type == JOURNAL:
+            if heading == FACTS_HEADING and line.startswith("- "):
+                node.fact_lines += 1
+            for written in WIKILINK.findall(line):
+                node.links.append(("mention", number, MENTION, written))
     return node, None
 
 
@@ -175,7 +228,7 @@ def node_files(root: Path, shelves: tuple[str, ...] | None = None) -> list[Path]
 
 
 def library_problems(root: Path) -> list[dict]:
-    """Anything at the top of the library that is not one of the numbered shelves."""
+    """Anything at the top of the library that is not one of the numbered folders."""
     return [
         {"path": p.name, "problem": "not a shelf: not in the numbered folder list"}
         for p in sorted(root.iterdir())
@@ -183,14 +236,54 @@ def library_problems(root: Path) -> list[dict]:
     ]
 
 
+def rule_problems(node: Node) -> list[str]:
+    """The library's note rules: type, area, also, and no facts in a hub (A9-A21)."""
+    problems = []
+    if node.type not in (*CONTENT_TYPES, HUB, JOURNAL):
+        problems.append(f"unknown type '{node.type}'")
+    allowed = (*AREAS, CROSS)
+    if not node.area:
+        problems.append("missing area")
+    elif node.area not in allowed:
+        problems.append(f"area '{node.area}' is not one of {', '.join(allowed)}")
+    bad_also = [a for a in node.also if a not in allowed]
+    if bad_also:
+        problems.append(f"also has unknown area(s): {', '.join(bad_also)}")
+    if node.type == HUB and node.fact_lines:
+        problems.append("a hub holds no facts of its own")
+    return problems
+
+
+def duplicate_aliases(nodes: dict[str, Node]) -> list[dict]:
+    """An alias that matches another note's slug or alias, after D02 normalization."""
+    owners: dict[str, set[str]] = {}
+    for node in nodes.values():
+        for name in (node.slug, *node.aliases):
+            owners.setdefault(normalize(name), set()).add(node.slug)
+    out = []
+    for node in nodes.values():
+        for alias in node.aliases:
+            others = sorted(owners.get(normalize(alias), set()) - {node.slug})
+            if others:
+                out.append(
+                    {
+                        "path": node.path,
+                        "problem": f"alias '{alias}' is also used by {', '.join(others)}",
+                    }
+                )
+    return out
+
+
 def build_map(root: Path, shelves: tuple[str, ...] | None = None) -> dict:
     """Build the map for the brain at *root*. Never writes to the brain.
 
-    With *shelves* (a library), only those top-level folders are read; without, every node
-    under *root* except `index.md` (a flat brain such as the Apollo demo).
+    With *shelves* (a library), only those top-level folders are read and the library's
+    note rules are checked; without, every node under *root* except `index.md` (a flat
+    brain such as the Apollo demo).
     """
+    library = shelves is not None
     nodes: dict[str, Node] = {}
-    errors: list[dict] = library_problems(root) if shelves is not None else []
+    errors: list[dict] = library_problems(root) if library else []
     for path in node_files(root, shelves):
         node, problem = parse_node(path, root)
         rel = path.relative_to(root).as_posix()
@@ -205,6 +298,10 @@ def build_map(root: Path, shelves: tuple[str, ...] | None = None) -> dict:
             )
         else:
             nodes[node.slug] = node
+            if library:
+                errors += [{"path": rel, "problem": p} for p in rule_problems(node)]
+    if library:
+        errors += duplicate_aliases(nodes)
 
     # Normalized key -> {node id: how it matched}
     keys: dict[str, dict[str, str]] = {}
@@ -217,7 +314,7 @@ def build_map(root: Path, shelves: tuple[str, ...] | None = None) -> dict:
     edges, dangling, unknown = [], [], []
     for node in nodes.values():
         for kind, line, reason, written in node.links:
-            if kind == "link" and reason not in OPPOSITE:
+            if kind != "mention" and reason not in OPPOSITE:
                 unknown.append({"path": node.path, "line": line, "verb": reason})
             if written in nodes:
                 target, via = nodes[written], "slug"
@@ -281,25 +378,38 @@ def build_map(root: Path, shelves: tuple[str, ...] | None = None) -> dict:
     }
 
 
+def _note_type(fm_text: str) -> str:
+    try:
+        return str((yaml.safe_load(fm_text) or {}).get("type") or "")
+    except yaml.YAMLError:
+        return ""
+
+
 def count_raw_links(root: Path, shelves: tuple[str, ...] | None = None) -> dict[str, int]:
-    """Count every [[...]] across whole files by plain text, independently of the parser."""
-    total = inside = facts = 0
+    """Count every [[...]] across whole files by plain text, by where it sits.
+
+    `in_links` and `in_history` are the Links and History sections; `in_sections` is every
+    other section (mentions); `elsewhere` is outside any section, which stops the pass.
+    """
+    counts = {"total": 0, "in_links": 0, "in_history": 0, "in_sections": 0, "elsewhere": 0}
     for path in node_files(root, shelves):
         text = path.read_text(encoding="utf-8")
-        total += len(WIKILINK.findall(text))
+        counts["total"] += len(WIKILINK.findall(text))
         parts = _split(text)
-        if parts:
-            body, first = parts[1], parts[2]
-            inside += sum(len(WIKILINK.findall(line)) for _, line in links_section(body, first))
-            facts += sum(
-                len(WIKILINK.findall(line)) for _, line in section(body, first, FACTS_HEADING)
-            )
-    return {
-        "total": total,
-        "inside_links": inside,
-        "inside_facts": facts,
-        "elsewhere": total - inside - facts,
-    }
+        if not parts:
+            continue
+        journal = _note_type(parts[0]) == JOURNAL
+        for heading, _, line in sections(parts[1], parts[2]):
+            n = len(WIKILINK.findall(line))
+            if heading == LINKS_HEADING:
+                counts["in_links"] += n
+            elif heading == HISTORY_HEADING:
+                counts["in_history"] += n
+            elif heading is not None or journal:
+                counts["in_sections"] += n
+            else:
+                counts["elsewhere"] += n
+    return counts
 
 
 def relationship_map(graph: dict) -> str:
@@ -307,10 +417,12 @@ def relationship_map(graph: dict) -> str:
     names = {n["slug"]: n["name"] for n in graph["nodes"]}
     rows: dict[str, set[str]] = {n["slug"]: set() for n in graph["nodes"]}
     for e in graph["edges"]:
-        rows[e["from_slug"]].add(f"- {e['reason']} [[{e['to_slug']}]]")
+        hub = " (hub link)" if e["kind"] == "hub" else ""
+        rows[e["from_slug"]].add(f"- {e['reason']} [[{e['to_slug']}]]{hub}")
         back = MENTIONED_IN if e["kind"] == "mention" else OPPOSITE.get(e["reason"])
         if back:
-            rows[e["to_slug"]].add(f"- {back} [[{e['from_slug']}]] (added: opposite)")
+            note = "added: opposite, hub link" if hub else "added: opposite"
+            rows[e["to_slug"]].add(f"- {back} [[{e['from_slug']}]] ({note})")
         else:
             rows[e["to_slug"]].add(
                 f"- [[{e['from_slug']}]] {e['reason']} this (no opposite: verb not in the list)"
@@ -322,7 +434,8 @@ def relationship_map(graph: dict) -> str:
         " hand; edits are overwritten on the next build.",
         "",
         "Each link is written once, in one note. Lines marked `(added: opposite)` are the other"
-        " direction, added here.",
+        " direction, added here. Lines marked `hub link` come from a hub's `lists`;"
+        " discovery ignores them.",
     ]
     for slug in sorted(rows):
         out += ["", f"## {names[slug]} (`{slug}`)", ""]
@@ -370,14 +483,15 @@ def main(argv: list[str] | None = None) -> int:
     counts = {k: len(graph[k]) for k in ("nodes", "edges", "dangling", "errors", "unknown_verbs")}
     print(", ".join(f"{k} {v}" for k, v in counts.items()))
     print(
-        f"[[...]] in whole files: {raw['total']} ({raw['inside_links']} in ## Links, "
-        f"{raw['inside_facts']} in ## Facts, {raw['elsewhere']} elsewhere)"
+        f"[[...]] in whole files: {raw['total']} ({raw['in_links']} in ## Links, "
+        f"{raw['in_sections']} as mentions, {raw['in_history']} in ## History, "
+        f"{raw['elsewhere']} outside any section)"
     )
     print(f"wrote {out}")
     if raw["elsewhere"]:
         print(
-            "STOP: links found outside ## Facts and ## Links. This is a node-format question "
-            "(D31), not a parser fix.",
+            "STOP: links found outside any section. This is a node-format question (D31), "
+            "not a parser fix.",
             file=sys.stderr,
         )
     return 1 if graph["errors"] or raw["elsewhere"] else 0
