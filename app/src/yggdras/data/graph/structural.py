@@ -60,6 +60,7 @@ CONTENT_TYPES = (
     "source",
     "framework",
     "concept",
+    "topic",  # A22: an ongoing matter tracked in an area
 )
 HUB, JOURNAL = "hub", "journal"  # structural types (A19, A20)
 GENERATED = Path("00-manual") / "generated"
@@ -237,7 +238,7 @@ def library_problems(root: Path) -> list[dict]:
 
 
 def rule_problems(node: Node) -> list[str]:
-    """The library's note rules: type, area, also, and no facts in a hub (A9-A21)."""
+    """The library's note rules: type, area, also, and no facts in a hub (A9-A22)."""
     problems = []
     if node.type not in (*CONTENT_TYPES, HUB, JOURNAL):
         problems.append(f"unknown type '{node.type}'")

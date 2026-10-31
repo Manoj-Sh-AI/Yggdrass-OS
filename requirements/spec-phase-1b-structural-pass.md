@@ -160,7 +160,7 @@ Text after a link line's `[[slug]]` (for example `— since 2030-01`) is ignored
 
 **Library rules** (library mode only; reported in `errors`):
 
-- `type` is one of the 9 content types or `hub` or `journal`;
+- `type` is one of the 10 content types (A22 added `topic`) or `hub` or `journal`;
 - `area` is present and one of `AREAS` (`01-health` … `08-rest-joy`) or `cross`; every `also:` value likewise;
 - a hub has no fact lines;
 - no alias matches another note's slug or alias after D02 normalization.

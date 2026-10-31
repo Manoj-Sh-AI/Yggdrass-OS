@@ -100,5 +100,6 @@ Approved by Manoj after the node-template and folder-structure research reports.
 - **A19, hub.** A structural type: one per area and for `10-ideas`, a summary plus `lists [[note]]` links (22nd verb, inverse `listed_in`, marked as hub links so discovery can ignore them). A hub holds no facts.
 - **A20, journal.** A structural type for dated entries in `15-journal/`: date slug, one-line description, free text; links in the free text are mentions.
 - **A21, sub-folders.** Created only when about 7 notes need one; never deeper than `area/sub-folder/note`.
+- **A22, topic.** A 10th content type: an ongoing matter tracked in an area, with no finish line (German learning, the residence permit, a job role, the gym, a phone contract). It lives in the area of the activity and needs no sections beyond the shared skeleton. Added after the first seed ingest, where 16 notes fit none of the 9 types.
 
 Why: the research reports found that self-contained, dated facts, a history that is moved rather than overwritten, sharp descriptions and aliases, and typed links give the measured gains; and that a shallow, type-first tree with hubs as searchable summaries avoids double homes.

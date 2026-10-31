@@ -291,7 +291,7 @@ def test_journal_free_text_links_are_mentions(repo):
 @pytest.mark.parametrize(
     "kwargs, problem",
     [
-        ({"typ": "topic"}, "unknown type 'topic'"),
+        ({"typ": "area"}, "unknown type 'area'"),
         ({"area": ""}, "missing area"),
         ({"area": "04-learning-growth"}, "area '04-learning-growth' is not one of"),
         ({"extra": "also: [03-work-career, 09-future]\n"}, "also has unknown area(s): 09-future"),
@@ -308,6 +308,7 @@ def test_note_rules_are_checked(repo, kwargs, problem):
     "kwargs",
     [
         {"typ": "concept", "area": "cross"},
+        {"typ": "topic"},
         {"extra": "also: [03-work-career]\n"},
         {"extra": "also: 04-learning\n"},
     ],
