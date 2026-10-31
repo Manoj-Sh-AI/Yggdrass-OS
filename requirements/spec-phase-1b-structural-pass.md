@@ -1,6 +1,6 @@
 # Spec: Phase 1b — structural pass
 
-Status: approved (Manoj, 2026-10-25, with criterion 9 tightened)
+Status: approved (Manoj, 2026-10-25, with criterion 9 tightened); amended 2026-10-31 (library, mentions, opposites; see the last section)
 Scoping: [`scoping-phase-1b.md`](scoping-phase-1b.md), open question 2 (ruled 2026-10-25)
 Plan: `planning/locked-plan-v1.md`, Phase 1b and register rows D5, D6, D8, D31, D32
 Format: [`rationale/decisions/D02-node-identity.md`](../rationale/decisions/D02-node-identity.md) (frozen, D31)
@@ -84,7 +84,7 @@ The default output path is `.map/` beside the brain root. For `yggdras-brain/dem
    - **143 occurrences inside `## Links` sections, and all 143 become edges** (0 dangling, 0 errors);
    - **0 occurrences outside `## Links` sections.**
 
-   This tests the assumption that links live only in `## Links`, rather than trusting it. If the second number is ever non-zero, the pass stops and reports it; the parser is **not** widened. Links in fact lines would be a node-format question (D31), not a parser fix.
+   This tests the assumption that links live only in `## Links`, rather than trusting it. If the second number is ever non-zero, the pass stops and reports it; the parser is **not** widened. Links in fact lines would be a node-format question (D31), not a parser fix. *(Superseded 2026-10-31: D31 amendment A6 made links in fact lines `mentions` edges. The pass still stops on a link outside both `## Facts` and `## Links`. The Apollo brain, run with `--flat`, still gives 143 edges, all from `## Links`.)*
 
 ## Edge cases
 
@@ -108,3 +108,31 @@ Graphify and the discovery pass (D7, D32). Triggering on file changes (D8; the p
 ## Code location
 
 `app/src/yggdras/data/graph/structural.py`, under the layered layout (D28 stays open until phase 2), with tests in `app/tests/`. The command line is `python -m yggdras.data.graph.structural <brain root> [--out PATH]`.
+
+## Amendment 2026-10-31: library, mentions, opposites
+
+Approved by Manoj with D31 amendments A1–A8 (register D5, D29, D31; D02 record).
+
+**Two modes.**
+
+| Command | Reads | Writes |
+|---|---|---|
+| `structural BRAIN_REPO` | Only `BRAIN_REPO/library/`, and inside it only the numbered shelves in `SHELVES` minus `00-manual` and `14-inbox` | `library/00-manual/generated/map.json` and `relationship-map.md`. `--out` is refused, so a map never lands outside the brain repo |
+| `structural BRAIN_ROOT --flat [--out PATH]` | Every node under a flat brain except `index.md`, as before (the archived Apollo demo, the fixture brain) | `.map/graph.json` beside the root, or `--out` |
+
+**Map shape, schema `yggdras-map/2`.** As above, plus:
+
+- each edge and dangling entry has `kind`: `link` (from `## Links`) or `mention` (a `[[slug]]` in `## Facts`, reason `mentions`);
+- a top-level `unknown_verbs` list of `{path, line, verb}` for link lines whose verb is not in `VERBS` or its opposites.
+
+**Relationship map.** For each node, every link as written, plus each incoming link's opposite marked `(added: opposite)`: `part of` adds `contains`, a mention adds `mentioned in`, and a symmetric verb adds itself. An unknown verb gets no opposite and is shown as written.
+
+**New acceptance criteria.**
+
+10. **Library scope.** Given a brain repo with notes in `library/` shelves, the manual, the inbox, and files outside `library/` (`README.md`, `life-evals/`, `archive/`, `private/`, `brain/`), when the pass runs, then only the shelf notes are nodes and there are no errors from anything else.
+11. **Unknown shelf.** Given a folder in `library/` that is not in `SHELVES`, then it is reported in `errors` and not read.
+12. **Mentions.** Given `[[slug]]` in a fact line, then it is an edge with `kind` `mention` and reason `mentions`; a typed edge exists only for a `## Links` line.
+13. **Opposites.** Given `- part of [[b]]` in note `a`, then the relationship map's section for `b` has `- contains [[a]] (added: opposite)`. Every verb's opposite's opposite is the verb.
+14. **Output stays in the brain repo.** Given library mode, the only files created are the two maps in `library/00-manual/generated/`, and `--out` is refused.
+
+**Code.** `SHELVES`, `NOT_MAPPED` and `VERBS` in `app/src/yggdras/data/graph/structural.py` are the only lists of shelf names and verbs in code. Tests: `app/tests/test_structural_map.py` (flat mode, criteria 1–9) and `app/tests/test_structural_library.py` (criteria 10–14).

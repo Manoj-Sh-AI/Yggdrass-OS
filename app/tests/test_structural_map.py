@@ -99,16 +99,17 @@ def test_input_nodes_match_frontmatter_and_skip_index(brain):
 
 def test_default_output_location_and_shape(brain):
     root, _ = brain
-    st.main([str(root)])
+    st.main([str(root), "--flat"])
     out = root.parent / ".map" / "graph.json"
     graph = json.loads(out.read_text(encoding="utf-8"))
-    assert graph["schema"] == "yggdras-map/1"
-    assert set(graph) == {"schema", "nodes", "edges", "dangling", "errors"}
+    assert graph["schema"] == "yggdras-map/2"
+    assert set(graph) == {"schema", "nodes", "edges", "dangling", "errors", "unknown_verbs"}
     assert set(graph["edges"][0]) == {
         "from",
         "to",
         "from_slug",
         "to_slug",
+        "kind",
         "reason",
         "written_as",
         "resolved_via",
@@ -151,8 +152,8 @@ def test_alias_resolves_to_the_right_node(brain):
 
 def test_output_is_byte_identical_across_runs(brain, tmp_path):
     root, _ = brain
-    st.main([str(root), "--out", str(tmp_path / "a.json")])
-    st.main([str(root), "--out", str(tmp_path / "b.json")])
+    st.main([str(root), "--flat", "--out", str(tmp_path / "a.json")])
+    st.main([str(root), "--flat", "--out", str(tmp_path / "b.json")])
     assert (tmp_path / "a.json").read_bytes() == (tmp_path / "b.json").read_bytes()
 
 
@@ -163,13 +164,14 @@ def test_dangling_links_are_reported_not_dropped(brain, capsys):
         {
             "from": "id-apollo-13",
             "from_slug": "apollo-13",
+            "kind": "link",
             "reason": "returned on",
             "written_as": "free-return",
             "line": 20,
         }
     ]
     assert all(e["written_as"] != "free-return" for e in graph["edges"])
-    st.main([str(root)])
+    st.main([str(root), "--flat"])
     assert "dangling 1" in capsys.readouterr().out
 
 
@@ -189,7 +191,7 @@ def test_errors_are_reported_and_the_rest_still_maps(brain):
         ]
     )
     assert {n["slug"] for n in graph["nodes"]} >= {"apollo-13", "ken-mattingly"}
-    assert st.main([str(root)]) == 1
+    assert st.main([str(root), "--flat"]) == 1
 
 
 def test_missing_required_field_is_an_error(brain):
@@ -211,11 +213,11 @@ def test_brain_is_never_modified(brain):
         }
 
     before = snapshot()
-    st.main([str(root)])
+    st.main([str(root), "--flat"])
     assert snapshot() == before
 
 
-def test_links_outside_links_section_are_counted_and_stop_the_run(brain, capsys):
+def test_links_in_facts_become_mention_edges(brain):
     root, write = brain
     write(
         "topics/stray.md",
@@ -224,11 +226,41 @@ def test_links_outside_links_section_are_counted_and_stop_the_run(brain, capsys)
         ),
     )
     raw = st.count_raw_links(root)
-    assert raw == {"total": 5, "inside_links": 4, "outside_links": 1}
-    graph = st.build_map(root)
-    assert not any(e["from_slug"] == "stray" for e in graph["edges"])
-    assert st.main([str(root)]) == 1
-    assert "STOP: links found outside ## Links" in capsys.readouterr().err
+    assert raw == {"total": 5, "inside_links": 4, "inside_facts": 1, "elsewhere": 0}
+    (edge,) = [e for e in st.build_map(root)["edges"] if e["from_slug"] == "stray"]
+    assert (edge["kind"], edge["reason"], edge["to_slug"], edge["line"]) == (
+        "mention",
+        "mentions",
+        "apollo-13",
+        14,
+    )
+    assert st.main([str(root), "--flat"]) == 0
+
+
+def test_typed_verbs_come_only_from_links_section(brain):
+    root, write = brain
+    write(
+        "topics/both.md",
+        node(
+            "both",
+            facts=["- [stated] Part of [[apollo-13]] (src: self, 2030-01-01)"],
+            links=["- part of [[apollo-13]]"],
+        ),
+    )
+    kinds = {
+        (e["kind"], e["reason"]) for e in st.build_map(root)["edges"] if e["from_slug"] == "both"
+    }
+    assert kinds == {("mention", "mentions"), ("link", "part of")}
+
+
+def test_links_outside_facts_and_links_are_counted_and_stop_the_run(brain, capsys):
+    root, write = brain
+    write("topics/stray.md", node("stray") + "\n## Notes\n\n- see [[apollo-13]]\n")
+    raw = st.count_raw_links(root)
+    assert raw["elsewhere"] == 1
+    assert not any(e["from_slug"] == "stray" for e in st.build_map(root)["edges"])
+    assert st.main([str(root), "--flat"]) == 1
+    assert "STOP: links found outside ## Facts and ## Links" in capsys.readouterr().err
 
 
 def test_ambiguous_alias_is_an_error_not_a_guess(brain):
@@ -257,11 +289,12 @@ def test_link_line_edge_cases(brain, line, reason, target):
 def test_empty_brain_gives_a_valid_empty_map(tmp_path):
     (tmp_path / "empty").mkdir()
     assert st.build_map(tmp_path / "empty") == {
-        "schema": "yggdras-map/1",
+        "schema": "yggdras-map/2",
         "nodes": [],
         "edges": [],
         "dangling": [],
         "errors": [],
+        "unknown_verbs": [],
     }
 
 
@@ -283,7 +316,8 @@ def test_normalize_follows_d02(text, expected):
 def test_fixture_brain_every_hand_link_becomes_an_edge():
     graph = st.build_map(FIXTURE)
     raw = st.count_raw_links(FIXTURE)
-    assert raw["outside_links"] == 0
-    assert len(graph["edges"]) == raw["inside_links"] > 0
+    assert raw["elsewhere"] == 0
+    assert len(graph["edges"]) == raw["inside_links"] + raw["inside_facts"]
+    assert raw["inside_links"] > 0
     assert graph["dangling"] == [] and graph["errors"] == []
     assert len(graph["nodes"]) == 10
