@@ -2,7 +2,7 @@
 
 Oct 27, 2026 · Manoj
 
-Yggdras should answer like a good librarian: read a small cached manual, walk to the right shelves, open only the few notes it needs, and look wider when they aren't enough. Today the whole-brain prompt is the most accurate option (23 of 24 hard questions), so the librarian has to match it while reading far less. Memory is the only focus until that is proven.
+Yggdras should answer like a good librarian: read a small cached manual, walk to the right shelves, open only the few notes it needs, and look wider when they aren't enough. On the Apollo demo the whole-brain prompt was the most accurate option (23 of 24 hard questions); it is now retired, and its scores stay as history. The bar to beat on Manoj's life questions is the current pipeline (variant C), which never loads the whole brain. Memory is the only focus until that is proven.
 
 ## The idea: an organised library and a librarian
 
@@ -106,25 +106,25 @@ Measure first, then build in small steps, each checked against the same hard tes
 
 ## Planned experiments
 
-Every experiment runs on the same expanded hard test, at least 3 runs per arm, with the whole-brain prompt as the reference score. Pass bars are written before running. Cap: $5 per experiment, about 2 cents per question.
+Every experiment runs on the same expanded hard test, at least 3 runs per arm, with the current pipeline (variant C) as the reference score on Manoj's life questions (`life-evals/` in the brain repo). The Apollo whole-brain scores stay as history, not as a bar. Pass bars are written before running. Cap: $5 per experiment, about 2 cents per question.
 
 | # | Hypothesis | Setup | Metrics | Pass bar |
 |---|---|---|---|---|
 | A | The structured library alone doesn't lower accuracy | Current pipeline on the restructured brain vs on the old brain | Score, $ per correct, tokens, seconds | Score not lower than before |
-| B | Caching the maps only, not the brain (two maps + template), lets the librarian match the whole-brain cache | Read manual, pick 2–3 shelves, open notes, follow links, answer | Same, plus notes opened per question | Within 1 question of whole brain, reading far less |
+| B | Caching the maps only, not the brain (two maps + template), lets the librarian beat the current pipeline | Read manual, pick 2–3 shelves, open notes, follow links, answer | Same, plus notes opened per question | Beats the current pipeline's score |
 | C | A look-wider loop fixes "not enough evidence" misses | B + up to 3 search rounds with new words when evidence is missing | Same, plus rounds used and misses fixed | Recovers at least half of B's evidence misses |
 | D | A wide net improves the first pick | Top 20 notes by meaning + keywords (small embedding index), then the model picks | Same, plus shortlist recall | Shortlist holds the answer note in at least 95% of questions |
-| E | Wide net + loop together beat each alone | D first, then C's loop if needed | Same | Beats B, C and D, or matches whole brain at lower reading |
-| F | The design holds as the brain grows | Add real decoy notes at 50, 150, 500 and 1,000 notes; rerun whole brain and the best librarian | Score and cost per size | Shows where whole brain falls and where the librarian should take over |
+| E | Wide net + loop together beat each alone | D first, then C's loop if needed | Same | Beats B, C and D |
+| F | The design holds as the brain grows | Add notes at 50, 150, 500 and 1,000 notes; rerun the current pipeline and the best librarian | Score and cost per size | The librarian keeps its lead over the pipeline as the brain grows |
 | G | Graphify can compete when given our map | Final benchmark only, bar written first | Same | Beats or matches the best librarian at lower cost |
 
-**Your prediction to test in B:** about the same cost as whole brain at this size, similar accuracy, and possibly slower, since the librarian needs a pick step before the answer.
+**Your prediction to test in B (made against the whole-brain prompt, now retired):** about the same cost as whole brain at this size, similar accuracy, and possibly slower, since the librarian needs a pick step before the answer.
 
 ## Rules that keep us honest
 
 1. **Write the bar before the test,** especially for ideas we like.
 2. **One change per round,** compared with the best version so far. Keep the winner, drop the loser.
-3. **Race a plain baseline.** The librarian must beat or match the whole-brain prompt on the same questions, or the idea waits.
+3. **Race a plain baseline.** The librarian must beat the current pipeline (variant C) on the same life questions, or the idea waits. The whole-brain prompt is retired as the bar (2026-10-31).
 4. **Label every miss:** wrong notes found, right notes but bad answer, or not enough notes. Fix only the step that failed.
 5. **Write the breaking cases first:** questions across three shelves, a note on the wrong shelf, a vague label.
 6. **Keep a held-out set** the system is never tuned on, and add fresh questions every few rounds.

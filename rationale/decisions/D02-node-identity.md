@@ -1,7 +1,7 @@
 # D02: Node identity and schema
 
 Date: 2026-10-24
-Status: accepted (2026-10-24), frozen 2026-10-24 (D31)
+Status: accepted (2026-10-24), frozen 2026-10-24 (D31), amended 2026-10-31 (A1–A8, below)
 
 Register row: D2 in `planning/locked-plan-v1.md`. Related: D1 (markdown is the source of truth), D29 (type enum), the provenance rule under "Node schema".
 
@@ -67,3 +67,19 @@ Gives up some **simplicity** (each node carries a UUID nobody reads, and the ind
 - Merging forward makes the newer slug an alias of the surviving node.
 - Harder: writing by hand needs a UUID generator, and `index.md` has to be kept in sync manually during phase 1a.
 - The format freezes at the end of phase 1a (build order step 9). After that, changes to this record are register amendments.
+
+## Amendments 2026-10-31 (A1–A8)
+
+Approved by Manoj and recorded against D29 and D31 in the register. Where a rule above conflicts with this section, this section wins.
+
+- **A1, shelves.** A node lives in exactly one numbered shelf inside the brain repo's `library/`. The shelf names are one list in code (`structural.SHELVES`). The structural pass reads only `library/`, minus `00-manual/` (the manual and the generated maps) and `14-inbox/` (rough captures that may skip the format). Nothing outside `library/` is read: evals, the archive and private notes stay out of every map.
+- **A2, types.** `person`, `place`, `project`, `goal`, `decision`, `event`, `source`, `concept`, `framework` (D29). `topic` became `concept`.
+- **Chunks are sources.** There is no `chunk` type. A chunk of a long source is a `source` note stored under its parent: `13-sources/<source-slug>/<source-slug>-ch-<nn>.md`, with `pages` set and a `part of [[<source-slug>]]` link. Facts cite the chunk with a page (`src: <source-slug>-ch-<nn> p.<page>`), so page citations keep working as before.
+- **A3, area.** A new `area` frontmatter field names the life area a note serves. On an area shelf it matches the folder without its number; on a shared shelf it is optional.
+- **A4, size.** One subject per file, soft limit about a page; a longer note is split and linked with `part of`.
+- **A5, verbs.** A link line's relation must be one of 19 verbs, each with an opposite (`structural.VERBS`). A link is written once, in either form; the generated relationship map adds the other direction. Any other verb is flagged in the map's `unknown_verbs`.
+- **A6, mentions.** `[[slug]]` may appear on first mention inside `## Facts`. The map records it as a plain `mentions` edge (`kind: mention`); typed verbs come only from `## Links`. A `[[link]]` anywhere else still stops the pass.
+- **A7, template.** The working template is the brain repo's `library/00-manual/node.md`. `templates/node.md` here stays as the generic, invented example.
+- **A8, index.** A generated shelf map in `library/00-manual/generated/` replaces the hand-kept `index.md`.
+
+Why: the real brain is organised by life area rather than by node kind, and the first life questions need places, goals, decisions and events as notes. Writing each link once removes a way for two notes to contradict each other.

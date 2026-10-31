@@ -26,7 +26,7 @@ Yggdras is built as a climb. Each rung rests on the one below. Never build a hig
 2. **A node** — one markdown file about one thing: a person, an area, a topic, a source. Frontmatter (name, aliases, one-line description, type), fact lines, and links.
 3. **A link** — a connection between two nodes, with a reason ("replaced by", "flew on"). Links are the knowledge. The hand-written ones are the real graph.
 4. **The map** — the whole graph of nodes and links, built by free deterministic code from the links in the files. Cheap, exact, rebuildable in seconds.
-5. **Answering** — ask the brain a question, get a true answer with its sources. This rung works on easy questions but has not passed a hard eval yet. The whole-brain cached prompt is the current default; the librarian plan is how we aim to beat it. It is the foundation everything else stands on, so it has to be as close to never-wrong as we can measure.
+5. **Answering** — ask the brain a question, get a true answer with its sources. This rung works on easy questions but has not passed a hard eval yet. The whole-brain cached prompt is retired (2026-10-31); the librarian plan is how we aim to beat the current pipeline on Manoj's own life questions. It is the foundation everything else stands on, so it has to be as close to never-wrong as we can measure.
 6. **Discovery** — the brain finds connections Manoj hasn't written yet, and surfaces the significant ones as a question: "your hardware note and your neural-network note both point at your thesis — interesting?" The obvious links form silently underneath; only the significant, non-obvious ones come up for approval. Not built yet. This is the next leap.
 7. **Frameworks** — reusable patterns for kinds of situations, ingested once and fetched when a matching situation arises. Case-based reasoning: store the shape of a problem and its options, recall it when life repeats the shape. Not built yet.
 8. **Managing situations** — the summit. From a little context (the time, and what Manoj is doing) the brain proactively offers the right possibility at the right moment: "leaving the office at 6pm — want to stop at the supermarket? the nearest is 400 m away." Not built yet; designed as a parallel experiment once discovery begins.
@@ -62,7 +62,7 @@ These are non-negotiable. They are how the climb stays honest.
 ## Where we are, so no one confuses the dream with the done
 
 - **Built and proven:** the node format (frozen) and the free map.
-- **Answering, current default:** the whole-brain cached prompt. It scores 23/24 on the hard held-out set, against 19/24 for the pipeline. On the original 35-question eval both score 34–35 of 35, but that eval is easy, so it is a ceiling, not a guarantee.
+- **Answering, whole-brain cached prompt: retired** (2026-10-31), as the answerer and as the bar. On Apollo it scored 23/24 on the hard held-out set, against 19/24 for the pipeline; those scores stay as history, and its scripts are kept so they can be re-run. On the original 35-question eval both score 34–35 of 35, but that eval is easy, so it is a ceiling, not a guarantee.
 - **Answering, plan for a larger brain:** the pipeline (meaning-based pick → gather facts + neighbours → one cited answer), growing into the librarian in `planning/librarian-plan.md`.
 - **Not yet proven:** nothing has passed a hard eval yet. Question x23 is missed by every option.
 - **Settled by the seven experiments:** the whole brain beats the current pipeline on hard questions, Graphify adds nothing to the brain path, and link verbs need a fixed list.
