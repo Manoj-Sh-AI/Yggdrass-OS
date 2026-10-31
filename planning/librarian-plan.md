@@ -95,14 +95,22 @@ The research matches our result: loading everything wins while the knowledge is 
 
 Measure first, then build in small steps, each checked against the same hard test.
 
-1. **Baseline (the "before" score).** Make one table from REPORT.md and existing results; rerun only the missing cells (cost per correct answer per option, warm and cold cache, run times). Add 20–30 hard questions, mostly ones that need notes from different shelves, plus a held-out set nobody tunes on.
-2. **Lock the node template v1.** Start from the frozen format (D31); add an area field, a soft size limit and a fixed list of 15–20 link verbs with their opposites. This amends D31, so it goes through the register.
-3. **Plan the library.** The agent proposes sections, shelves and labels for the Apollo brain in writing. Approve before any file moves.
-4. **Build the structure and the two maps** in parallel on top of the template. Code generates the maps and checks every note against the template.
-5. **Cache the manual** (instructions, template with an example, both maps), stable parts first.
-6. **Run the experiments** below, one change at a time.
-7. **Connector.** A local MCP server for the Claude desktop app so answers can be judged by hand; ratings feed the hard test.
-8. **Database** once the maps outgrow the prompt.
+**Done (2026-10-30 to 2026-10-31).** Baseline table and hard-v8 run; node template v1 (D31 amendments A1–A8); the numbered library in the brain repo, with the structural pass reading only `library/` and writing the relationship map.
+
+**Current checklist (2026-10-31):**
+
+1. **Fill the shelves with Manoj's notes, from scratch.**
+2. **Plan and build the two maps, only once the books are in.** No shelf map generator until then.
+3. **Chunking rules for long sources.** Split by heading, about a page per chunk. Each chunk is a source note with a one-line description, a page range, and links to its paper and its neighbouring sections. The rules live in the manual; chunks are lines in the same map.
+4. **Write the librarian skills.**
+5. **Give the librarian two tools:** open notes by name, several at once; and search when evidence is short.
+6. **Cache the handbook only:** skills, taxonomy, template, both maps. Never the notes.
+7. **Run the experiments** below, with the current pipeline (variant C) as the bar.
+
+**Later.**
+
+- **A connector menu:** outside sources land in the inbox for Manoj's approval.
+- From the previous roadmap, not yet re-confirmed: a local MCP connector for the Claude desktop app so answers can be judged by hand, and a database once the maps outgrow the prompt.
 
 ## Planned experiments
 
@@ -116,7 +124,7 @@ Every experiment runs on the same expanded hard test, at least 3 runs per arm, w
 | D | A wide net improves the first pick | Top 20 notes by meaning + keywords (small embedding index), then the model picks | Same, plus shortlist recall | Shortlist holds the answer note in at least 95% of questions |
 | E | Wide net + loop together beat each alone | D first, then C's loop if needed | Same | Beats B, C and D |
 | F | The design holds as the brain grows | Add notes at 50, 150, 500 and 1,000 notes; rerun the current pipeline and the best librarian | Score and cost per size | The librarian keeps its lead over the pipeline as the brain grows |
-| G | Graphify can compete when given our map | Final benchmark only, bar written first | Same | Beats or matches the best librarian at lower cost |
+| G (optional) | Graphify can compete when given our map | Run last, if at all, as a one-time benchmark with the bar written first. Graphify stays viewer-only in the product (D32) | Same | Beats the best librarian on accuracy, then on cost; only then is D32 reopened |
 
 **Your prediction to test in B (made against the whole-brain prompt, now retired):** about the same cost as whole brain at this size, similar accuracy, and possibly slower, since the librarian needs a pick step before the answer.
 
