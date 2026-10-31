@@ -117,11 +117,26 @@ def test_template_holds_the_data_token_once():
     assert viewer.TEMPLATE.read_text(encoding="utf-8").count(viewer.DATA_TOKEN) == 1
 
 
-def test_render_writes_page_and_local_script(library, tmp_path):
+def test_render_writes_page_script_and_fonts(library, tmp_path):
     graph = structural.build_map(library, structural.mapped_shelves())
     html = viewer.render(graph, library, tmp_path / "out")
     assert html.name == "graph.html"
     assert (tmp_path / "out" / "vis-network.min.js").read_bytes() == viewer.VIS_NETWORK.read_bytes()
+    page = html.read_text(encoding="utf-8")
+    for name in viewer.FONTS:
+        assert (tmp_path / "out" / name).read_bytes() == (viewer.VENDOR / name).read_bytes()
+        assert f'url("{name}")' in page
+
+
+def test_vendored_fonts_match_their_pinned_hashes():
+    for name, sha in viewer.FONTS.items():
+        assert viewer.checked(viewer.VENDOR / name, sha)[:4] == b"wOF2"
+
+
+def test_page_offers_the_three_styles():
+    template = viewer.TEMPLATE.read_text(encoding="utf-8")
+    for style in ("graphite", "muted", "clouds"):
+        assert f'<option value="{style}">' in template
 
 
 def test_local_vis_network_matches_the_pinned_hash():
@@ -151,13 +166,13 @@ def test_flat_brain_renders(tmp_path):
     assert '"schema": "yggdras-map/3"' in html
 
 
-def _dom(html: Path) -> str:
+def _dom(html: Path, fragment: str = "") -> str:
     with tempfile.TemporaryDirectory() as profile:
         out = subprocess.run(
             [
                 str(EDGE), "--headless=new", "--disable-gpu", "--virtual-time-budget=20000",
                 "--host-resolver-rules=MAP * ~NOTFOUND", f"--user-data-dir={profile}",
-                "--dump-dom", html.as_uri(),
+                "--dump-dom", html.as_uri() + (f"#{fragment}" if fragment else ""),
             ],
             capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120,
         )  # fmt: skip
@@ -165,11 +180,12 @@ def _dom(html: Path) -> str:
 
 
 @pytest.mark.skipif(not EDGE.exists(), reason="Microsoft Edge is not installed here")
-def test_page_runs_offline_without_errors_in_a_real_browser(library, tmp_path):
+@pytest.mark.parametrize("style", ["graphite", "muted", "clouds"])
+def test_page_runs_offline_without_errors_in_a_real_browser(library, tmp_path, style):
     html = viewer.render(
         structural.build_map(library, structural.mapped_shelves()), library, tmp_path
     )
-    body = re.search(r"<body[^>]*>", _dom(html)).group(0)
+    body = re.search(r"<body[^>]*>", _dom(html, f"style={style}&select=garden")).group(0)
     assert 'data-ready="1"' in body
     assert "data-error" not in body
     shutil.rmtree(tmp_path, ignore_errors=True)

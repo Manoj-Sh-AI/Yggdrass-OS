@@ -12,24 +12,34 @@ uv run python ../evals/experiments/viewer-perf/run.py 3000
 
 | Notes | Links | Page size | Layout time (page clock) | Browser run (wall) | Errors |
 |---|---|---|---|---|---|
-| 80 (real brain) | 171 | — | 0.7 s | — | none |
-| 300 | 900 | 0.4 MB | 0.7 s | 6.9 s | none |
-| 1,000 | 3,000 | 1.1 MB | 1.8 s | 10.3 s | none |
-| 3,000 | 9,000 | 3.4 MB | 5.9–7.3 s | 9.3 s | none |
+| 80 (real brain) | 171 | — | 0.5 s | — | none |
+| 300 | 900 | 0.4 MB | 0.6 s | 6.3 s | none |
+| 1,000 | 3,000 | 1.1 MB | 2.7 s | 15.4 s | none |
+| 3,000 | 9,000 | 3.4 MB | 10.0–10.6 s | 13.0–13.9 s | none |
+
+Timings vary with machine load. In one sitting (2026-10-31, after the restyle), the previous page took 11.6–14.0 s for 3,000 notes and the restyled page 10.0–10.6 s. An earlier, quieter run of the previous page measured 5.9–7.3 s.
 
 - **Layout time** is the page's own measure, from script start to the end of layout. Headless Edge ran with a virtual time budget, so treat it as indicative.
 - **Wall time** includes starting the browser.
-- **Above 1,000 notes** the page skips vis-network's improved initial layout, caps layout at 120 iterations, turns off the overlap pass, and hides edges while dragging or zooming.
+- **Above 1,000 notes** the page skips vis-network's improved initial layout, caps layout at 120 iterations, turns off the overlap pass, draws straight rather than curved links, and hides edges while dragging or zooming.
+- **Theme and style** are settled before the graph is created, so no link update restarts the layout.
 - **First measurement:** the 3,000-note run took 10.9 s of layout before this tuning.
 - **Not measured:** hover, drag and zoom smoothness. Headless runs can't measure them. The hover fade costs O(neighbours) per frame, and labels are culled to the viewport, with at most 450 drawn.
 
 ## Screenshots
 
+Three graph styles, switchable in the sidebar (Style) or with `#style=graphite|muted|clouds` in the address:
+
+- **Graphite:** brand colours (graphite, ivory), grey circles, one warm accent for focus, area colours only on hover, selection or area filter.
+- **Muted areas:** circles in area colours, all at the same low saturation and lightness.
+- **Area clouds:** Graphite plus a soft tinted region per area, labelled, with same-area notes gently pulled together.
+
 | | Light | Dark |
 |---|---|---|
 | Before (Graphify page; it ignores the system theme) | `screenshots/apollo-before-light.png` | `screenshots/apollo-before-dark.png` |
-| After (our page) | `screenshots/apollo-after-light.png` | `screenshots/apollo-after-dark.png` |
-| After, a note selected, link labels on | | `screenshots/apollo-after-select-dark.png` |
-| 3,000 synthetic notes | | `screenshots/perf-3000.png` |
+| Graphite | `screenshots/apollo-graphite-light.png` | `screenshots/apollo-graphite-dark.png` |
+| Muted areas | `screenshots/apollo-muted-light.png` | `screenshots/apollo-muted-dark.png` |
+| Area clouds | `screenshots/apollo-clouds-light.png` | `screenshots/apollo-clouds-dark.png` |
+| 3,000 synthetic notes (Graphite) | | `screenshots/perf-3000.png` |
 
-The Apollo brain uses the old D02 types and folders, so its colours follow its folders and every note is drawn as a circle or the default shape. The real brain uses one colour per area and one shape per type.
+The Apollo brain uses the old D02 folders, so its "areas" are its folders (areas, people, sources, topics).

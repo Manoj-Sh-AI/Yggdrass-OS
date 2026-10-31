@@ -32,6 +32,16 @@ VIS_NETWORK = Path(__file__).with_name("vendor") / "vis-network-9.1.6.min.js"
 # The integrity hash Graphify 0.9.95 pinned for vis-network 9.1.6 on unpkg.
 VIS_NETWORK_SHA384 = "Ux6phic9PEHJ38YtrijhkzyJ8yQlH8i/+buBR8s3mAZOJrP1gwyvAcIYl3GWtpX1"
 LOCAL_SCRIPT = "vis-network.min.js"
+VENDOR = Path(__file__).with_name("vendor")
+# Fonts for the labels (Inter, SIL OFL 1.1), copied next to the page: name -> sha384.
+FONTS = {
+    "inter-latin-400-normal.woff2": (
+        "fh/R5bWIGwMIs5kzn3aCWuUjbYvaxfc2SGWUTGTtkedhrySWrY8datYfSK2QcZHL"
+    ),
+    "inter-latin-600-normal.woff2": (
+        "lI+hrOImxNsIljMZ+LxBmjTPRJCqvHKeOmTiKCfLU1X6p6NCfvF38SRH8pIuu2XO"
+    ),
+}
 TEMPLATE = Path(__file__).with_name("viewer_template.html")
 DATA_TOKEN = "/*__YGGDRAS_DATA__*/null"
 SUMMARY_HEADING = "## Summary"
@@ -128,13 +138,17 @@ def build_view(graph: dict, root: Path, out_dir: Path) -> dict:
     return {"schema": graph["schema"], "nodes": nodes, "edges": edges}
 
 
-def vis_network_bytes() -> bytes:
-    """The local vis-network copy, refused unless its hash matches the pin."""
-    blob = VIS_NETWORK.read_bytes()
+def checked(path: Path, sha384: str) -> bytes:
+    """A vendored file's bytes, refused unless its hash matches the pin."""
+    blob = path.read_bytes()
     digest = base64.b64encode(hashlib.sha384(blob).digest()).decode()
-    if digest != VIS_NETWORK_SHA384:
-        raise ViewerError(f"{VIS_NETWORK.name}: sha384 {digest} does not match the pinned hash")
+    if digest != sha384:
+        raise ViewerError(f"{path.name}: sha384 {digest} does not match the pinned hash")
     return blob
+
+
+def vis_network_bytes() -> bytes:
+    return checked(VIS_NETWORK, VIS_NETWORK_SHA384)
 
 
 def page(view: dict) -> str:
@@ -147,12 +161,15 @@ def page(view: dict) -> str:
 
 
 def render(graph: dict, root: Path, out_dir: Path) -> Path:
-    """Write graph.html and the vis-network copy next to it."""
+    """Write graph.html, and the vis-network and font copies next to it."""
     script = vis_network_bytes()
+    fonts = {name: checked(VENDOR / name, sha) for name, sha in FONTS.items()}
     out_dir.mkdir(parents=True, exist_ok=True)
     html = out_dir / "graph.html"
     html.write_text(page(build_view(graph, root, out_dir)), encoding="utf-8", newline="\n")
     (out_dir / LOCAL_SCRIPT).write_bytes(script)
+    for name, blob in fonts.items():
+        (out_dir / name).write_bytes(blob)
     return html
 
 
