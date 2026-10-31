@@ -114,7 +114,7 @@ Measure first, then build in small steps, each checked against the same hard tes
 
 ## Planned experiments
 
-Every experiment runs on the same expanded hard test, at least 3 runs per arm, with the current pipeline (variant C) as the reference score on Manoj's life questions (`life-evals/` in the brain repo). The Apollo whole-brain scores stay as history, not as a bar. Pass bars are written before running. Cap: $5 per experiment, about 2 cents per question.
+Every experiment runs on the same expanded hard test, at least 3 runs per arm, with the current pipeline (variant C) as the reference score on Manoj's life questions (`evals/` in the brain repo). The Apollo whole-brain scores stay as history, not as a bar. Pass bars are written before running. Cap: $5 per experiment, about 2 cents per question.
 
 | # | Hypothesis | Setup | Metrics | Pass bar |
 |---|---|---|---|---|

@@ -132,3 +132,20 @@ def test_real_graphify_renders_the_fixture_offline(graph, tmp_path):
     assert '<script src="vis-network.min.js"></script>' in html
     assert "https://unpkg.com" not in html
     assert f"{len(graph['nodes'])} nodes" in html
+
+
+def test_library_folders_keep_their_colour_slot():
+    graph = {
+        "nodes": [
+            {"id": "a", "name": "A", "path": "11-people/a.md"},
+            {"id": "b", "name": "B", "path": "04-learning/b.md"},
+        ],
+        "edges": [],
+    }
+    data, labels = viewer.to_graphify(graph)
+    slots = {n["source_file"].split("/")[0]: n["community"] for n in data["nodes"]}
+    assert slots == {
+        "11-people": structural.SHELVES.index("11-people"),
+        "04-learning": structural.SHELVES.index("04-learning"),
+    }
+    assert labels[str(slots["11-people"])] == "11-people"
