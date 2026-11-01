@@ -170,12 +170,12 @@ def test_flat_brain_renders(tmp_path):
     assert '"schema": "yggdras-map/3"' in html
 
 
-def _dom(html: Path, fragment: str = "") -> str:
+def _dom(html: Path, fragment: str = "", flags: tuple = ()) -> str:
     with tempfile.TemporaryDirectory() as profile:
         out = subprocess.run(
             [
                 str(EDGE), "--headless=new", "--disable-gpu", "--virtual-time-budget=20000",
-                "--host-resolver-rules=MAP * ~NOTFOUND", f"--user-data-dir={profile}",
+                "--host-resolver-rules=MAP * ~NOTFOUND", f"--user-data-dir={profile}", *flags,
                 "--dump-dom", html.as_uri() + (f"#{fragment}" if fragment else ""),
             ],
             capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120,
@@ -245,3 +245,47 @@ def test_pure_note_stays_pure_and_bridge_note_is_blended(tmp_path):
     assert colours["home"]["shown"] != colours["home"]["pure"]
     assert colours["study"]["shown"] != colours["study"]["pure"]
     assert colours["home"]["shown"].startswith("#")
+
+
+def _body_json(dom: str, attr: str) -> dict:
+    raw = re.search(rf'data-{attr}="([^"]*)"', dom).group(1)
+    return json.loads(raw.replace("&quot;", '"').replace("&amp;", "&"))
+
+
+@pytest.mark.skipif(not EDGE.exists(), reason="Microsoft Edge is not installed here")
+def test_node_size_shrinks_as_the_brain_grows_with_a_floor(library, tmp_path):
+    html = viewer.render(
+        structural.build_map(library, structural.mapped_shelves()), library, tmp_path
+    )
+    sizes = _body_json(_dom(html, "debug=sizes"), "sizes")
+    assert sizes["80"] > sizes["320"] > sizes["5000"]
+    assert sizes["80"] == 1 and sizes["320"] == 0.5 and sizes["5000"] == 0.45
+
+
+@pytest.mark.skipif(not EDGE.exists(), reason="Microsoft Edge is not installed here")
+def test_grey_cross_area_notes_take_no_part_in_blending(tmp_path):
+    root = tmp_path / "brain" / "library"
+    links = "## Facts\n\n- A fact. (src: self, 2030-01-01)\n\n## Links\n\n"
+    files = {
+        # alone links only to a grey Cross-area note: it stays pure, and so does the grey note.
+        "08-rest-joy/alone.md": note("alone", body=links + "- related_to [[me]]\n"),
+        "11-people/me.md": note("me", typ="person", area="cross", body=links),
+    }
+    for rel, text in files.items():
+        (root / rel).parent.mkdir(parents=True, exist_ok=True)
+        (root / rel).write_text(text, encoding="utf-8")
+    graph = structural.build_map(root, structural.mapped_shelves())
+    html = viewer.render(graph, root, tmp_path / "out")
+    colours = _body_json(_dom(html, "colour=area&debug=colours"), "colours")
+    assert colours["alone"]["shown"] == colours["alone"]["pure"]
+    assert colours["me"]["shown"] == colours["me"]["pure"]
+
+
+@pytest.mark.skipif(not EDGE.exists(), reason="Microsoft Edge is not installed here")
+def test_reduced_motion_loads_without_animation_errors(library, tmp_path):
+    html = viewer.render(
+        structural.build_map(library, structural.mapped_shelves()), library, tmp_path
+    )
+    dom = _dom(html, "select=garden", flags=("--force-prefers-reduced-motion",))
+    body = re.search(r"<body[^>]*>", dom).group(0)
+    assert 'data-ready="1"' in body and "data-error" not in body

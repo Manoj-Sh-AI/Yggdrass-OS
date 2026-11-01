@@ -277,33 +277,56 @@ function fromOklab([L0, A, B]) {
     -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s2];
   return "#" + rgb.map((c) => Math.round(Math.min(1, Math.max(0, gam(c))) * 255).toString(16).padStart(2, "0")).join("");
 }
+// Blends are made in OKLCH: lightness mixes straight, hue turns the short way round, and
+// chroma stays at least the average of the two colours, so opposite hues (yellow and blue)
+// meet as a colour, not as grey. Grey notes (Cross-area, or the "Other" type group) take no
+// part: they are never blended and never tint or count as a foreign colour.
+const toLch = ([l, a, b]) => [l, Math.hypot(a, b), Math.atan2(b, a)];
+const fromLch = ([l, c, h]) => [l, c * Math.cos(h), c * Math.sin(h)];
+const isGrey = (n) => { const k = pureKey(n); return k === "cross" || k === "other"; };
+function mixLch(own, other, t) {
+  const dh = ((other[2] - own[2] + 3 * Math.PI) % (2 * Math.PI)) - Math.PI;
+  return [own[0] + (other[0] - own[0]) * t,
+    Math.max(own[1] + (other[1] - own[1]) * t, (own[1] + other[1]) / 2),
+    own[2] + dh * t];
+}
 let blended = new Map();
 function computeBlends() {
   blended = new Map();
   if (!classic()) return;
-  const lab = new Map(DATA.nodes.map((n) => [n.id, toOklab(toRgb(pureColour(n)))]));
+  const lch = new Map(DATA.nodes.map((n) => [n.id, toLch(toOklab(toRgb(pureColour(n))))]));
   for (const n of DATA.nodes) {
-    const k = pureKey(n), sum = [0, 0, 0];
-    let w = 0, cross = false;
+    if (isGrey(n)) { blended.set(n.id, pureColour(n)); continue; }
+    const k = pureKey(n);
+    let w = 0, cross = false, l = 0, c = 0, hx = 0, hy = 0;
     for (const e of edgesOf.get(n.id)) {
       if (e.kind === "hub") continue;
       const o = e.from === n.id ? e.to : e.from;
-      if (o === n.id) continue;
-      if (pureKey(byId.get(o)) !== k) cross = true;
-      const c = lab.get(o); sum[0] += c[0]; sum[1] += c[1]; sum[2] += c[2]; w++;
+      const m = byId.get(o);
+      if (o === n.id || isGrey(m)) continue;
+      if (pureKey(m) !== k) cross = true;
+      const v = lch.get(o);
+      l += v[0]; c += v[1]; hx += Math.cos(v[2]); hy += Math.sin(v[2]); w++;
     }
     if (!cross) { blended.set(n.id, pureColour(n)); continue; }
-    const own = lab.get(n.id);
-    blended.set(n.id, fromOklab(own.map((x, i) => (1 - BLEND) * x + (BLEND * sum[i]) / w)));
+    const avg = [l / w, c / w, Math.atan2(hy, hx)];
+    blended.set(n.id, fromOklab(fromLch(mixLch(lch.get(n.id), avg, BLEND))));
   }
 }
+// While "Colour by" changes, colours cross-fade: the animation sets these per frame.
+let colourOverride = null;
 function nodeColour(n, inFocus) {
-  if (classic()) return blended.get(n.id) || pureColour(n);
+  if (classic()) return (colourOverride && colourOverride.get(n.id)) || blended.get(n.id) || pureColour(n);
   if (state.style === "muted" || inFocus || state.areaOff.size) return areaColour(n);
   return n.type === "hub" ? L.hub : L.node;
 }
+// Classic node sizes: 40% bigger than the first demo viewer at today's size, then scaled by
+// s = clamp(sqrt(80 / visible notes), 0.45, 1), so a growing brain doesn't crowd and
+// filtering down makes notes bigger again. Labels and link widths don't scale.
+function sizeFactor(count) { return Math.min(1, Math.max(0.45, Math.sqrt(80 / Math.max(count, 1)))); }
+let SIZE = sizeFactor(DATA.nodes.length);
 function radius(n) {
-  if (classic()) return (4 + Math.sqrt(Math.min(n.degree, 40)) * 2.2) * (groupOf(n) === "chunk" ? 0.7 : 1);
+  if (classic()) return (4 + Math.sqrt(Math.min(n.degree, 40)) * 2.2) * (groupOf(n) === "chunk" ? 0.7 : 1) * 1.4 * SIZE;
   if (n.type === "hub") return 12;
   return 4 + 8.5 * Math.sqrt(Math.min(n.degree, 30) / 30);
 }
@@ -327,7 +350,7 @@ L = look();
 
 // ---------------------------------------------------------------- nodes: circles only
 function drawNode(ctx, n, x, y, opts = {}) {
-  const r = radius(n);
+  const r = radius(n) * (opts.grow || 1);
   ctx.save();
   if (n.type === "hub" && !classic()) {
     ctx.shadowColor = nodeColour(n, opts.focus); ctx.shadowBlur = 12;
@@ -382,6 +405,8 @@ const edgesView = new vis.DataView(edgesDS, {
 });
 function refresh() {
   visible = new Set(DATA.nodes.filter(nodeVisible).map((n) => n.id));
+  SIZE = sizeFactor(visible.size);
+  nodesDS.update(DATA.nodes.map((n) => ({ id: n.id, size: radius(n) })));
   nodesView.refresh(); edgesView.refresh();
   if (state.selected && !visible.has(state.selected)) { state.selected = null; showInfo(null); }
   network.redraw();
@@ -404,6 +429,72 @@ const network = new vis.Network(document.getElementById("graph"), { nodes: nodes
 });
 const bodyNodes = () => network.body.nodes;
 let firstLayout = true;
+
+// Address options that need the final positions (#zoom, #center, #select), applied once the
+// notes have settled in.
+function afterLoad() {
+  const zoom = Number(hash.get("zoom")), centreOn = DATA.nodes.find((m) => m.slug === hash.get("center"));
+  if (zoom > 0 || centreOn) {
+    network.moveTo({ scale: zoom > 0 ? zoom : network.getScale(),
+      position: centreOn ? network.getPositions([centreOn.id])[centreOn.id] : undefined });
+  }
+  const sel = hash.get("select");
+  if (sel) { const n = DATA.nodes.find((m) => m.slug === sel); if (n) goTo(n.id, false); }
+}
+
+// ---------------------------------------------------------------- motion (calm; nothing moves unless you act)
+const reduceMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+const easeOut = (t) => 1 - Math.pow(1 - t, 3);
+const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+let moving = null;
+// Glide notes from one set of positions to another; colours may cross-fade at the same time.
+function glide(from, to, ms, ease, colours, done) {
+  if (moving) cancelAnimationFrame(moving);
+  const ids = Object.keys(to), t0 = performance.now();
+  const step = (now) => {
+    const t = Math.min(1, (now - t0) / ms), e = ease(t);
+    for (const id of ids) {
+      const a = from[id] || to[id], b = to[id];
+      network.moveNode(id, a.x + (b.x - a.x) * e, a.y + (b.y - a.y) * e);
+    }
+    if (colours) {
+      colourOverride = new Map(ids.map((id) => [id, mixHex(colours.from.get(id), colours.to.get(id), e)]));
+      if (t >= 1) colourOverride = null;
+      nodesDS.update(ids.map((id) => ({ id, color: nodeColourOpt(byId.get(id)) })));
+    }
+    network.redraw();
+    if (t < 1) moving = requestAnimationFrame(step);
+    else { moving = null; if (done) done(); }
+  };
+  moving = requestAnimationFrame(step);
+}
+function mixHex(a, b, t) {
+  if (!a || !b || a === b) return b || a;
+  const x = toOklab(toRgb(a)), y = toOklab(toRgb(b));
+  return fromOklab(x.map((v, i) => v + (y[i] - v) * t));
+}
+const shownColours = () => new Map(DATA.nodes.map((n) => [n.id, nodeColour(n, false)]));
+// Re-run the layout off-screen, then glide from the old positions to the new ones.
+function relayoutGlide(fromColours) {
+  const before = network.getPositions();
+  colourOverride = null;
+  const colours = fromColours && { from: fromColours, to: shownColours() };
+  if (colours) colourOverride = fromColours;
+  if (reduceMotion() || BIG) {
+    colourOverride = null;
+    if (colours) nodesDS.update(DATA.nodes.map((n) => ({ id: n.id, color: nodeColourOpt(n) })));
+    relayout();
+    return;
+  }
+  network.setOptions({ physics: { enabled: true, stabilization: { fit: false } } });
+  network.once("stabilizationIterationsDone", () => {
+    const after = network.getPositions();
+    for (const id of Object.keys(before)) network.moveNode(id, before[id].x, before[id].y);
+    if (colours) colourOverride = colours.from;
+    glide(before, after, 1000, easeInOut, colours, () => network.setOptions({ physics: { stabilization: { fit: true } } }));
+  });
+  network.stabilize(BIG ? 120 : 300);
+}
 network.on("stabilizationProgress", (p) => {
   document.getElementById("loading").hidden = false;
   document.getElementById("loading").textContent = `Laying out… ${Math.round((100 * p.iterations) / p.total)}%`;
@@ -413,18 +504,34 @@ network.on("stabilizationIterationsDone", () => {
   document.getElementById("loading").hidden = true;
   if (!firstLayout) return;
   firstLayout = false;
+  // On load, notes glide from their group's centre to their place (skipped above 1,000 notes).
+  if (!reduceMotion() && !BIG) {
+    const to = network.getPositions(), centre = new Map();
+    for (const [id, p] of Object.entries(to)) {
+      const k = pureKey(byId.get(id)), c = centre.get(k) || { x: 0, y: 0, n: 0 };
+      c.x += p.x; c.y += p.y; c.n++; centre.set(k, c);
+    }
+    const from = {};
+    for (const [id, p] of Object.entries(to)) {
+      const c = centre.get(pureKey(byId.get(id)));
+      const cx = c.x / c.n, cy = c.y / c.n;
+      from[id] = { x: cx + (p.x - cx) * 0.08, y: cy + (p.y - cy) * 0.08 };
+      network.moveNode(id, from[id].x, from[id].y);
+    }
+    glide(from, to, 800, easeOut, null, afterLoad);
+  } else afterLoad();
   const ms = Math.round(performance.now() - T0);
   document.body.dataset.ready = "1";
   document.body.dataset.readyMs = String(ms);
   document.getElementById("stats").textContent =
     `${N} notes · ${DATA.edges.length} links · laid out in ${(ms / 1000).toFixed(1)} s · map ${DATA.schema}`;
+  if (hash.get("debug") === "sizes") {
+    document.body.dataset.sizes = JSON.stringify({ 80: sizeFactor(80), 320: sizeFactor(320), 5000: sizeFactor(5000) });
+  }
   if (hash.get("debug") === "colours") {
     document.body.dataset.colours = JSON.stringify(Object.fromEntries(DATA.nodes.map((n) => [n.slug, { pure: pureColour(n), shown: nodeColour(n, false) }])));
   }
-  const zoom = Number(hash.get("zoom"));
-  if (zoom > 0) network.moveTo({ scale: zoom });
-  const sel = hash.get("select");
-  if (sel) { const n = DATA.nodes.find((m) => m.slug === sel); if (n) goTo(n.id, false); }
+
 });
 function relayout() {
   network.setOptions({ physics: { enabled: true } });
@@ -439,7 +546,7 @@ function setFocus(id) {
   if (fade.to === target && (!id || fade.id === id)) { network.redraw(); return; }
   Object.assign(fade, { from: fade.a, to: target, t0: performance.now() });
   const step = () => {
-    const t = Math.min(1, (performance.now() - fade.t0) / 180);
+    const t = reduceMotion() ? 1 : Math.min(1, (performance.now() - fade.t0) / 180);
     fade.a = fade.from + (fade.to - fade.from) * (1 - Math.pow(1 - t, 3));
     if (t >= 1 && fade.to === 0) fade.id = null;
     network.redraw();
@@ -560,7 +667,7 @@ network.on("afterDrawing", (ctx) => {
   }
   ctx.save(); ctx.globalAlpha = a;
   for (const nid of near) {
-    const p = bn[nid]; if (p) drawNode(ctx, byId.get(nid), p.x, p.y, { focus: true, selected: nid === id });
+    const p = bn[nid]; if (p) drawNode(ctx, byId.get(nid), p.x, p.y, { focus: true, selected: nid === id, grow: 1 + 0.15 * a });
   }
   ctx.restore();
   drawLabels(ctx, [id, ...[...near].filter((x) => x !== id)], scale, b, placed, true, id);
@@ -643,7 +750,11 @@ function showInfo(id) {
   const cc = document.getElementById("conceal");
   if (cc) cc.addEventListener("click", () => { state.revealed.delete(id); showInfo(id); });
 }
-network.on("selectNode", (p) => { state.selected = p.nodes[0]; showInfo(state.selected); setFocus(focusId()); });
+network.on("selectNode", (p) => {
+  state.selected = p.nodes[0]; showInfo(state.selected); setFocus(focusId());
+  network.focus(state.selected, { scale: network.getScale(),
+    animation: reduceMotion() ? false : { duration: 500, easingFunction: "easeInOutQuad" } });
+});
 network.on("deselectNode", () => { state.selected = null; showInfo(null); setFocus(state.hover); });
 function goTo(id, animate) {
   if (!visible.has(id)) {
@@ -654,7 +765,7 @@ function goTo(id, animate) {
   }
   network.selectNodes([id]); state.selected = id; showInfo(id); setFocus(id);
   network.focus(id, { scale: Math.max(network.getScale(), 1.3),
-    animation: animate ? { duration: 700, easingFunction: "easeInOutCubic" } : false });
+    animation: animate && !reduceMotion() ? { duration: 500, easingFunction: "easeInOutQuad" } : false });
 }
 
 // ---------------------------------------------------------------- physics: drag with springs, pin, unpin
@@ -663,8 +774,10 @@ network.on("dragStart", (p) => {
   if (!p.nodes.length) return;
   const id = p.nodes[0], near = adj.get(id);
   clearTimeout(settleTimer);
+  if (reduceMotion()) return;
   nodesDS.update(DATA.nodes.map((n) => ({ id: n.id, fixed: n.id !== id && (!near.has(n.id) || state.pinned.has(n.id)) })));
-  network.setOptions({ physics: { enabled: true, stabilization: { enabled: false } } });
+  network.setOptions({ physics: { enabled: true, stabilization: { enabled: false }, maxVelocity: 18,
+    forceAtlas2Based: { damping: 0.9 } } });
 });
 network.on("dragEnd", (p) => {
   if (!p.nodes.length) return;
@@ -672,9 +785,9 @@ network.on("dragEnd", (p) => {
   state.pinned.add(id);
   nodesDS.update({ id, fixed: true });
   settleTimer = setTimeout(() => {
-    network.setOptions({ physics: { enabled: false } });
+    network.setOptions({ physics: { enabled: false, maxVelocity: 50, forceAtlas2Based: { damping: 0.55 } } });
     nodesDS.update(DATA.nodes.map((n) => ({ id: n.id, fixed: state.pinned.has(n.id) })));
-  }, 1200);
+  }, 1400);
 });
 network.on("doubleClick", (p) => {
   if (!p.nodes.length) return;
@@ -793,17 +906,26 @@ function applyStyle(s, initial) {
   edgesView.refresh(); network.setOptions({ edges: { smooth: smoothing() } });
   nodesDS.update(DATA.nodes.map((n) => ({ id: n.id, size: radius(n) })));
   applyLook();
-  if (!initial && was !== springSet()) relayout();
+  if (!initial && was !== springSet()) relayoutGlide(null);
 }
 themeSel.addEventListener("change", () => { storeSet("yggdras-theme", themeSel.value); applyTheme(themeSel.value); });
 styleSel.addEventListener("change", () => { storeSet("yggdras-style", styleSel.value); applyStyle(styleSel.value, false); });
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if (state.theme === "system") applyLook(); });
 const colourSel = document.getElementById("colour-by");
 colourSel.addEventListener("change", () => {
-  const was = springSet();
+  const was = springSet(), before = shownColours();
   state.colourBy = colourSel.value; storeSet("yggdras-colour-by", colourSel.value);
-  edgesView.refresh(); applyLook(false);
-  if (was !== springSet()) relayout();
+  edgesView.refresh();
+  if (classic() && !reduceMotion() && !BIG) colourOverride = before;
+  applyLook(false);
+  if (was !== springSet()) relayoutGlide(before);
+  else if (colourOverride) {
+    const pos = network.getPositions();
+    colourOverride = null;
+    const after = shownColours();
+    colourOverride = before;
+    glide(pos, pos, 1000, easeInOut, { from: before, to: after }, null);
+  }
 });
 themeSel.value = state.theme; styleSel.value = state.style; colourSel.value = state.colourBy;
 applyLook(false);
