@@ -46,3 +46,19 @@ Four graph styles, switchable in the sidebar (Style) or with `#style=classic|gra
 | 3,000 synthetic notes (Graphite) | | `screenshots/perf-3000.png` |
 
 The Apollo brain uses the old D02 folders, so its "areas" are its folders (areas, people, sources, topics).
+
+### Layouts
+
+Three layouts, in the sidebar (Layout) or `#layout=force|radial|circlepack`; the choice is remembered and notes glide between layouts. "Show ring and area names" (`#ring=1`, off by default) draws a faint outline and names.
+
+- **Force:** the force layout, as before (default).
+- **Radial sectors:** Cross-area notes (the owner, the Ideas hub) in the middle; each colour group gets a slice of the disc sized by its note count (7% floor), with the most-linked groups side by side; each group's hub at 55% of the radius, more-linked notes inward.
+- **Circlepack:** each colour group packed as its own circle, all inside one outer circle, Cross-area notes packed first so they sit near the middle.
+
+| Layout | Dark, ring on |
+|---|---|
+| Force | `screenshots/apollo-layout-force-dark.png` |
+| Radial sectors | `screenshots/apollo-layout-radial-dark.png` |
+| Circlepack | `screenshots/apollo-layout-circlepack-dark.png` |
+
+Tests check every note stays inside the disc and its own sector (radial, 10% allowed outside) or its own circle (circlepack).
