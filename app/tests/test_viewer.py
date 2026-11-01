@@ -1,6 +1,7 @@
 """Viewer: our own offline page over the structural map (D32 as amended 2026-10-31)."""
 
 import json
+import math
 import re
 import shutil
 import subprocess
@@ -289,3 +290,90 @@ def test_reduced_motion_loads_without_animation_errors(library, tmp_path):
     dom = _dom(html, "select=garden", flags=("--force-prefers-reduced-motion",))
     body = re.search(r"<body[^>]*>", dom).group(0)
     assert 'data-ready="1"' in body and "data-error" not in body
+
+
+def _layout(html: Path, fragment: str) -> dict:
+    # Reduced motion: the positions are the same, and headless Edge need not play the glide.
+    dom = _dom(html, fragment + "&debug=layout", flags=("--force-prefers-reduced-motion",))
+    return _body_json(dom, "layout")
+
+
+@pytest.fixture
+def areas_brain(tmp_path):
+    """Five life areas of different sizes, a hub each, links within and across, a centre note."""
+    root = tmp_path / "brain" / "library"
+    sizes = {
+        "01-health": 3,
+        "03-work-career": 12,
+        "04-learning": 9,
+        "05-money": 2,
+        "08-rest-joy": 4,
+    }
+    files = {"11-people/me.md": note("me", typ="person", area="cross", body="## Links\n\n")}
+    for area, count in sizes.items():
+        tag = area[3:]
+        files[f"{area}/{tag}-hub.md"] = note(
+            f"{tag}-hub", typ="hub", area=area, body="## Links\n\n"
+        )
+        for i in range(count):
+            links = f"- part_of [[{tag}-hub]]\n- related_to [[me]]\n"
+            if i:
+                links += f"- related_to [[{tag}-{i - 1}]]\n"
+            if i == 1 and area != "01-health":
+                links += "- related_to [[health-0]]\n"
+            body = f"## Facts\n\n- A fact. (src: self, 2030-01-01)\n\n## Links\n\n{links}"
+            files[f"{area}/{tag}-{i}.md"] = note(f"{tag}-{i}", area=area, body=body)
+    for rel, text in files.items():
+        (root / rel).parent.mkdir(parents=True, exist_ok=True)
+        (root / rel).write_text(text, encoding="utf-8")
+    return root
+
+
+@pytest.mark.skipif(not EDGE.exists(), reason="Microsoft Edge is not installed here")
+@pytest.mark.parametrize("colour", ["area", "group"])
+def test_radial_sectors_keep_every_note_in_the_disc_and_its_sector(areas_brain, tmp_path, colour):
+    graph = structural.build_map(areas_brain, structural.mapped_shelves())
+    html = viewer.render(graph, areas_brain, tmp_path / "out")
+    got = _layout(html, f"layout=radial&colour={colour}")
+    radius, sectors = got["info"]["R"], got["info"]["sectors"]
+    outside, stray, total = [], 0, 0
+    for slug, n in got["nodes"].items():
+        if math.hypot(n["x"], n["y"]) > radius * 1.001:
+            outside.append(slug)
+        if n["centre"]:
+            continue
+        total += 1
+        start, end = sectors[n["key"]]
+        angle = math.atan2(n["y"], n["x"])
+        while angle < start:
+            angle += 2 * math.pi
+        if angle > end:
+            stray += 1
+    assert len(sectors) == (5 if colour == "area" else 2)
+    assert outside == []
+    assert stray <= 0.1 * total
+
+
+@pytest.mark.skipif(not EDGE.exists(), reason="Microsoft Edge is not installed here")
+@pytest.mark.parametrize("colour", ["area", "group"])
+def test_circlepack_keeps_every_note_in_its_own_circle_inside_the_outer_one(
+    areas_brain, tmp_path, colour
+):
+    graph = structural.build_map(areas_brain, structural.mapped_shelves())
+    html = viewer.render(graph, areas_brain, tmp_path / "out")
+    got = _layout(html, f"layout=circlepack&colour={colour}")
+    radius, circles = got["info"]["R"], got["info"]["circles"]
+    for slug, n in got["nodes"].items():
+        assert math.hypot(n["x"], n["y"]) <= radius * 1.001, slug
+        c = circles["cross" if n["centre"] else n["key"]]
+        assert math.hypot(n["x"] - c["x"], n["y"] - c["y"]) <= c["r"] + 0.5, slug
+
+
+@pytest.mark.skipif(not EDGE.exists(), reason="Microsoft Edge is not installed here")
+def test_page_offers_three_layouts_with_force_as_the_default(library, tmp_path):
+    html = viewer.render(
+        structural.build_map(library, structural.mapped_shelves()), library, tmp_path
+    )
+    text = html.read_text(encoding="utf-8")
+    assert '<option value="force">Force</option><option value="radial">Radial sectors' in text
+    assert _layout(html, "")["layout"] == "force"
