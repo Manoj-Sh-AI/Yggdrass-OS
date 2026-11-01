@@ -1,0 +1,495 @@
+{
+  "seed": 20261025,
+  "hub_threshold": 7,
+  "quota": {
+    "leaf": 2,
+    "hub": 1,
+    "hub-mid": 5,
+    "mid": 12
+  },
+  "source_pairs": 81,
+  "strata_sizes": {
+    "hub": 4,
+    "hub-mid": 31,
+    "leaf": 2,
+    "mid": 44
+  },
+  "deleted_pairs": [
+    {
+      "pair": [
+        "grumman",
+        "lunar-module"
+      ],
+      "stratum": "leaf",
+      "neighbours": {
+        "grumman": 1,
+        "lunar-module": 7
+      },
+      "removed_links": [
+        {
+          "from": "grumman",
+          "to": "lunar-module",
+          "reason": "built",
+          "line": 18
+        },
+        {
+          "from": "lunar-module",
+          "to": "grumman",
+          "reason": "built by",
+          "line": 21
+        }
+      ]
+    },
+    {
+      "pair": [
+        "apollo-program",
+        "john-f-kennedy"
+      ],
+      "stratum": "leaf",
+      "neighbours": {
+        "apollo-program": 9,
+        "john-f-kennedy": 1
+      },
+      "removed_links": [
+        {
+          "from": "apollo-program",
+          "to": "john-f-kennedy",
+          "reason": "goal set by",
+          "line": 22
+        },
+        {
+          "from": "john-f-kennedy",
+          "to": "apollo-program",
+          "reason": "set the goal of",
+          "line": 19
+        }
+      ]
+    },
+    {
+      "pair": [
+        "apollo-11",
+        "lunar-module"
+      ],
+      "stratum": "hub",
+      "neighbours": {
+        "apollo-11": 10,
+        "lunar-module": 7
+      },
+      "removed_links": [
+        {
+          "from": "apollo-11",
+          "to": "lunar-module",
+          "reason": "flew",
+          "line": 26
+        },
+        {
+          "from": "lunar-module",
+          "to": "apollo-11",
+          "reason": "flown on",
+          "line": 22
+        }
+      ]
+    },
+    {
+      "pair": [
+        "apollo-11",
+        "neil-armstrong"
+      ],
+      "stratum": "hub-mid",
+      "neighbours": {
+        "apollo-11": 10,
+        "neil-armstrong": 5
+      },
+      "removed_links": [
+        {
+          "from": "apollo-11",
+          "to": "neil-armstrong",
+          "reason": "commanded by",
+          "line": 21
+        },
+        {
+          "from": "neil-armstrong",
+          "to": "apollo-11",
+          "reason": "commanded",
+          "line": 21
+        }
+      ]
+    },
+    {
+      "pair": [
+        "apollo-13",
+        "rubella-crew-swap"
+      ],
+      "stratum": "hub-mid",
+      "neighbours": {
+        "apollo-13": 15,
+        "rubella-crew-swap": 5
+      },
+      "removed_links": [
+        {
+          "from": "apollo-13",
+          "to": "rubella-crew-swap",
+          "reason": "affected by",
+          "line": 29
+        },
+        {
+          "from": "rubella-crew-swap",
+          "to": "apollo-13",
+          "reason": "affected",
+          "line": 24
+        }
+      ]
+    },
+    {
+      "pair": [
+        "apollo-8",
+        "apollo-program"
+      ],
+      "stratum": "hub-mid",
+      "neighbours": {
+        "apollo-8": 3,
+        "apollo-program": 9
+      },
+      "removed_links": [
+        {
+          "from": "apollo-8",
+          "to": "apollo-program",
+          "reason": "part of",
+          "line": 21
+        },
+        {
+          "from": "apollo-program",
+          "to": "apollo-8",
+          "reason": "includes",
+          "line": 25
+        }
+      ]
+    },
+    {
+      "pair": [
+        "apollo-13",
+        "ken-mattingly"
+      ],
+      "stratum": "hub-mid",
+      "neighbours": {
+        "apollo-13": 15,
+        "ken-mattingly": 5
+      },
+      "removed_links": [
+        {
+          "from": "ken-mattingly",
+          "to": "apollo-13",
+          "reason": "removed from",
+          "line": 22
+        }
+      ]
+    },
+    {
+      "pair": [
+        "fred-haise",
+        "lunar-module"
+      ],
+      "stratum": "hub-mid",
+      "neighbours": {
+        "fred-haise": 3,
+        "lunar-module": 7
+      },
+      "removed_links": [
+        {
+          "from": "fred-haise",
+          "to": "lunar-module",
+          "reason": "flew",
+          "line": 21
+        }
+      ]
+    },
+    {
+      "pair": [
+        "command-service-module",
+        "michael-collins"
+      ],
+      "stratum": "mid",
+      "neighbours": {
+        "command-service-module": 5,
+        "michael-collins": 3
+      },
+      "removed_links": [
+        {
+          "from": "command-service-module",
+          "to": "michael-collins",
+          "reason": "piloted by",
+          "line": 23
+        },
+        {
+          "from": "michael-collins",
+          "to": "command-service-module",
+          "reason": "piloted",
+          "line": 21
+        }
+      ]
+    },
+    {
+      "pair": [
+        "apollo-11-mission-report-ch-05",
+        "program-alarms-1201-1202"
+      ],
+      "stratum": "mid",
+      "neighbours": {
+        "apollo-11-mission-report-ch-05": 4,
+        "program-alarms-1201-1202": 4
+      },
+      "removed_links": [
+        {
+          "from": "apollo-11-mission-report-ch-05",
+          "to": "program-alarms-1201-1202",
+          "reason": "describes",
+          "line": 26
+        },
+        {
+          "from": "program-alarms-1201-1202",
+          "to": "apollo-11-mission-report-ch-05",
+          "reason": "described in",
+          "line": 23
+        }
+      ]
+    },
+    {
+      "pair": [
+        "co2-scrubber-adapter",
+        "command-service-module"
+      ],
+      "stratum": "mid",
+      "neighbours": {
+        "co2-scrubber-adapter": 4,
+        "command-service-module": 5
+      },
+      "removed_links": [
+        {
+          "from": "co2-scrubber-adapter",
+          "to": "command-service-module",
+          "reason": "fitted canisters from",
+          "line": 22
+        }
+      ]
+    },
+    {
+      "pair": [
+        "buzz-aldrin",
+        "lunar-orbit-rendezvous"
+      ],
+      "stratum": "mid",
+      "neighbours": {
+        "buzz-aldrin": 3,
+        "lunar-orbit-rendezvous": 3
+      },
+      "removed_links": [
+        {
+          "from": "buzz-aldrin",
+          "to": "lunar-orbit-rendezvous",
+          "reason": "studied",
+          "line": 22
+        },
+        {
+          "from": "lunar-orbit-rendezvous",
+          "to": "buzz-aldrin",
+          "reason": "studied by",
+          "line": 22
+        }
+      ]
+    },
+    {
+      "pair": [
+        "apollo-13-review-board",
+        "edgar-cortright"
+      ],
+      "stratum": "mid",
+      "neighbours": {
+        "apollo-13-review-board": 4,
+        "edgar-cortright": 2
+      },
+      "removed_links": [
+        {
+          "from": "apollo-13-review-board",
+          "to": "edgar-cortright",
+          "reason": "chaired by",
+          "line": 20
+        },
+        {
+          "from": "edgar-cortright",
+          "to": "apollo-13-review-board",
+          "reason": "chaired",
+          "line": 19
+        }
+      ]
+    },
+    {
+      "pair": [
+        "apollo-13-review-board",
+        "apollo-13-review-board-report"
+      ],
+      "stratum": "mid",
+      "neighbours": {
+        "apollo-13-review-board": 4,
+        "apollo-13-review-board-report": 3
+      },
+      "removed_links": [
+        {
+          "from": "apollo-13-review-board",
+          "to": "apollo-13-review-board-report",
+          "reason": "published",
+          "line": 23
+        },
+        {
+          "from": "apollo-13-review-board-report",
+          "to": "apollo-13-review-board",
+          "reason": "written by",
+          "line": 20
+        }
+      ]
+    },
+    {
+      "pair": [
+        "apollo-11-mission-report-ch-05",
+        "neil-armstrong"
+      ],
+      "stratum": "mid",
+      "neighbours": {
+        "apollo-11-mission-report-ch-05": 4,
+        "neil-armstrong": 5
+      },
+      "removed_links": [
+        {
+          "from": "apollo-11-mission-report-ch-05",
+          "to": "neil-armstrong",
+          "reason": "flown by",
+          "line": 28
+        }
+      ]
+    },
+    {
+      "pair": [
+        "beech-aircraft",
+        "north-american-aviation"
+      ],
+      "stratum": "mid",
+      "neighbours": {
+        "beech-aircraft": 2,
+        "north-american-aviation": 3
+      },
+      "removed_links": [
+        {
+          "from": "beech-aircraft",
+          "to": "north-american-aviation",
+          "reason": "worked for",
+          "line": 20
+        },
+        {
+          "from": "north-american-aviation",
+          "to": "beech-aircraft",
+          "reason": "subcontracted",
+          "line": 21
+        }
+      ]
+    },
+    {
+      "pair": [
+        "saturn-v",
+        "wernher-von-braun"
+      ],
+      "stratum": "mid",
+      "neighbours": {
+        "saturn-v": 3,
+        "wernher-von-braun": 2
+      },
+      "removed_links": [
+        {
+          "from": "saturn-v",
+          "to": "wernher-von-braun",
+          "reason": "developed by",
+          "line": 21
+        },
+        {
+          "from": "wernher-von-braun",
+          "to": "saturn-v",
+          "reason": "led",
+          "line": 19
+        }
+      ]
+    },
+    {
+      "pair": [
+        "buzz-aldrin",
+        "neil-armstrong"
+      ],
+      "stratum": "mid",
+      "neighbours": {
+        "buzz-aldrin": 3,
+        "neil-armstrong": 5
+      },
+      "removed_links": [
+        {
+          "from": "buzz-aldrin",
+          "to": "neil-armstrong",
+          "reason": "crewed with",
+          "line": 21
+        },
+        {
+          "from": "neil-armstrong",
+          "to": "buzz-aldrin",
+          "reason": "crewed with",
+          "line": 23
+        }
+      ]
+    },
+    {
+      "pair": [
+        "neil-armstrong",
+        "tranquility-base"
+      ],
+      "stratum": "mid",
+      "neighbours": {
+        "neil-armstrong": 5,
+        "tranquility-base": 3
+      },
+      "removed_links": [
+        {
+          "from": "neil-armstrong",
+          "to": "tranquility-base",
+          "reason": "landed at",
+          "line": 22
+        },
+        {
+          "from": "tranquility-base",
+          "to": "neil-armstrong",
+          "reason": "named by",
+          "line": 21
+        }
+      ]
+    },
+    {
+      "pair": [
+        "beech-aircraft",
+        "oxygen-tank-2"
+      ],
+      "stratum": "mid",
+      "neighbours": {
+        "beech-aircraft": 2,
+        "oxygen-tank-2": 5
+      },
+      "removed_links": [
+        {
+          "from": "beech-aircraft",
+          "to": "oxygen-tank-2",
+          "reason": "built",
+          "line": 19
+        },
+        {
+          "from": "oxygen-tank-2",
+          "to": "beech-aircraft",
+          "reason": "built by",
+          "line": 22
+        }
+      ]
+    }
+  ]
+}
