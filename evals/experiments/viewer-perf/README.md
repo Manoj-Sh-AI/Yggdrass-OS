@@ -28,14 +28,17 @@ Timings vary with machine load. In one sitting (2026-10-31, after the restyle), 
 
 ## Screenshots
 
-Three graph styles, switchable in the sidebar (Style) or with `#style=graphite|muted|clouds` in the address:
+Four graph styles, switchable in the sidebar (Style) or with `#style=classic|graphite|muted|clouds` in the address. **Classic is the default.**
 
+- **Classic:** the look of the first demo viewer: near-black background, flat solid circles sized by links, 1px straight grey links, no labels at rest, a legend card top-left. Colour by type group (hubs orange, people blue, knowledge green, sources purple, chunks pink, doings teal, places muted yellow) or by life area (`#colour=area`).
 - **Graphite:** brand colours (graphite, ivory), grey circles, one warm accent for focus, area colours only on hover, selection or area filter.
 - **Muted areas:** circles in area colours, all at the same low saturation and lightness.
 - **Area clouds:** Graphite plus a soft tinted region per area, labelled, with same-area notes gently pulled together.
 
 | | Light | Dark |
 |---|---|---|
+| The first demo viewer (reference for Classic) | | `screenshots/apollo-old-demo-dark.png` |
+| Classic | | `screenshots/apollo-classic-dark.png`, focused: `screenshots/apollo-classic-focus-dark.png` |
 | Before (Graphify page; it ignores the system theme) | `screenshots/apollo-before-light.png` | `screenshots/apollo-before-dark.png` |
 | Graphite | `screenshots/apollo-graphite-light.png` | `screenshots/apollo-graphite-dark.png` |
 | Muted areas | `screenshots/apollo-muted-light.png` | `screenshots/apollo-muted-dark.png` |

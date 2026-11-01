@@ -68,6 +68,11 @@ a { color: var(--accent); }
 #tip b { font-size: 13px; font-weight: 600; }
 #loading { position: absolute; left: 16px; bottom: 14px; color: var(--text-2); font-size: 12px; }
 #stats { color: var(--text-2); font-size: 11px; margin-top: 14px; }
+#legend-card { position: absolute; top: 12px; left: 12px; z-index: 5; border-radius: 8px; padding: 10px 12px; font-size: 13px; max-width: 520px; }
+#legend-card b { display: block; margin-bottom: 4px; }
+#legend-card .dot { display: inline-flex; align-items: center; gap: 6px; margin-right: 10px; }
+#legend-card i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+#legend-card .s { margin-top: 4px; }
 @media (max-width: 800px) {
   #graph { inset: 0 0 45vh 0; }
   #side { top: auto; height: 45vh; width: 100%; border-left: 0; border-top: 1px solid var(--line); }
@@ -77,6 +82,7 @@ a { color: var(--accent); }
 </head>
 <body>
 <div id="graph" aria-label="Brain map"></div>
+<div id="legend-card" hidden></div>
 <div id="loading">Laying out…</div>
 <aside id="side">
   <div class="row">
@@ -91,7 +97,12 @@ a { color: var(--accent); }
     <h3>View</h3>
     <div class="row"><span>Style</span>
       <select id="style" aria-label="Graph style">
-        <option value="graphite">Graphite</option><option value="muted">Muted areas</option><option value="clouds">Area clouds</option>
+        <option value="classic">Classic</option><option value="graphite">Graphite</option><option value="muted">Muted areas</option><option value="clouds">Area clouds</option>
+      </select>
+    </div>
+    <div class="row" id="colour-by-row"><span>Colour by</span>
+      <select id="colour-by" aria-label="Colour by">
+        <option value="group">Type group</option><option value="area">Life area</option>
       </select>
     </div>
     <label><input type="checkbox" id="hide-hubs"> Hide hubs and their links</label>
@@ -104,7 +115,7 @@ a { color: var(--accent); }
   <details><summary>Types</summary><div class="filter" id="f-type"></div></details>
   <details><summary>Link verbs</summary><div class="filter" id="f-verb"></div></details>
   <h3>Legend</h3>
-  <details open><summary>Colours: areas</summary><div id="l-area"></div></details>
+  <details open><summary id="l-area-title">Colours: areas</summary><div id="l-area"></div></details>
   <details><summary>Sizes and lines</summary><div id="l-line"></div></details>
   <div id="stats"></div>
 </aside>
@@ -133,7 +144,30 @@ const LOOK = {
     label: "#7a756c", strong: "#24221e", accent: "#b8692e", halo: "rgba(244,239,230,0.88)", veil: "rgba(244,239,230,0.80)",
     areaS: 32, areaL: 46, cloudA: 0.12 },
 };
-const STYLES = ["graphite", "muted", "clouds"];
+const STYLES = ["classic", "graphite", "muted", "clouds"];
+// Classic: the look of the first demo viewer (flat solid circles, thin straight grey links,
+// no labels at rest), coloured by type group or by life area.
+const CLASSIC = {
+  dark: { bg: "#151514", edge: "rgba(220,220,210,0.18)", focus: "rgba(245,245,240,0.92)", label: "#ececea", muted: "#9a9a94",
+    halo: "rgba(21,21,20,0.85)", veil: "rgba(21,21,20,0.82)", card: "#1f1f1d", cardLine: "#33332f", areaL: 55 },
+  light: { bg: "#fafaf7", edge: "rgba(60,60,55,0.22)", focus: "rgba(29,29,27,0.88)", label: "#1d1d1b", muted: "#6b6b66",
+    halo: "rgba(250,250,247,0.88)", veil: "rgba(250,250,247,0.82)", card: "#ffffff", cardLine: "#e3e2dc", areaL: 45 },
+};
+const GROUPS = {
+  hub: ["Hubs and areas", "#d9822b"], person: ["People", "#2f7ed8"], knowledge: ["Knowledge", "#3a9d5d"],
+  source: ["Sources", "#8e5cc4"], chunk: ["Chunks", "#c44d6b"], doing: ["Doings", "#2a9d8f"],
+  place: ["Places", "#c9a23a"], other: ["Other", "#8a8a85"],
+};
+function groupOf(n) {
+  if (n.type === "hub" || n.type === "area") return "hub";
+  if (n.type === "person") return "person";
+  if (["topic", "concept", "framework"].includes(n.type)) return "knowledge";
+  if (n.type === "chunk" || (n.type === "source" && n.path.split("/").length > 2)) return "chunk";
+  if (n.type === "source") return "source";
+  if (["project", "goal", "decision", "event", "journal"].includes(n.type)) return "doing";
+  if (n.type === "place") return "place";
+  return "other";
+}
 const N = DATA.nodes.length;
 const BIG = N > 1000;
 const LABEL_PX = 11.5;
@@ -174,7 +208,7 @@ for (const n of DATA.nodes) {
 // ---------------------------------------------------------------- state
 const state = { hideHubs: false, edgeLabels: false, mentions: true, areaOff: new Set(),
   typeOff: new Set(), verbOff: new Set(), hover: null, selected: null, revealed: new Set(),
-  pinned: new Set(), theme: "system", style: "graphite" };
+  pinned: new Set(), theme: "dark", style: "classic", colourBy: "group" };
 let visible = new Set(DATA.nodes.map((n) => n.id));
 
 function storeGet(k) { try { return localStorage.getItem(k); } catch (_) { return null; } }
@@ -193,11 +227,19 @@ function areaColour(n, alpha = 1) {
   const s = k === "cross" ? 8 : L.areaS;
   return `hsla(${hue}, ${s}%, ${L.areaL}%, ${alpha})`;
 }
+const classic = () => state.style === "classic";
+function classicArea(k) {
+  const hue = k in AREA_HUE ? AREA_HUE[k] : (extraKeys.indexOf(k) * 47 + 90) % 360;
+  return `hsl(${hue}, ${k === "cross" ? 6 : 55}%, ${L.areaL}%)`;
+}
+function swatch(k) { return classic() ? classicArea(k) : areaColour({ area: k, shelf: k }); }
 function nodeColour(n, inFocus) {
+  if (classic()) return state.colourBy === "area" ? classicArea(colourKey(n)) : GROUPS[groupOf(n)][1];
   if (state.style === "muted" || inFocus || state.areaOff.size) return areaColour(n);
   return n.type === "hub" ? L.hub : L.node;
 }
 function radius(n) {
+  if (classic()) return (4 + Math.sqrt(Math.min(n.degree, 40)) * 2.2) * (groupOf(n) === "chunk" ? 0.7 : 1);
   if (n.type === "hub") return 12;
   return 4 + 8.5 * Math.sqrt(Math.min(n.degree, 30) / 30);
 }
@@ -205,22 +247,31 @@ const show = (n) => !n.sensitive || state.revealed.has(n.id);
 
 // Theme and style are settled before the graph exists: updating every link after the
 // network starts would restart its layout.
-state.style = STYLES.includes(hash.get("style")) ? hash.get("style") : (STYLES.includes(storeGet("yggdras-style")) ? storeGet("yggdras-style") : "graphite");
-state.theme = hash.get("theme") || storeGet("yggdras-theme") || "system";
+state.style = STYLES.includes(hash.get("style")) ? hash.get("style") : (STYLES.includes(storeGet("yggdras-style")) ? storeGet("yggdras-style") : "classic");
+state.theme = hash.get("theme") || storeGet("yggdras-theme") || "dark";
+state.colourBy = (hash.get("colour") || storeGet("yggdras-colour-by")) === "area" ? "area" : "group";
 if (state.theme !== "system") document.documentElement.setAttribute("data-theme", state.theme);
-L = LOOK[dark() ? "dark" : "light"];
+// The graph's colours: the current style's look for the current theme.
+function look() {
+  const t = dark() ? "dark" : "light", base = LOOK[t];
+  if (!classic()) return base;
+  const c = CLASSIC[t];
+  return { ...base, bg: c.bg, edge: c.edge, hubEdge: c.edge, label: c.label, strong: c.label, accent: c.focus,
+    halo: c.halo, veil: c.veil, areaL: c.areaL, card: c.card, cardLine: c.cardLine, muted: c.muted };
+}
+L = look();
 
 // ---------------------------------------------------------------- nodes: circles only
 function drawNode(ctx, n, x, y, opts = {}) {
   const r = radius(n);
   ctx.save();
-  if (n.type === "hub") {
+  if (n.type === "hub" && !classic()) {
     ctx.shadowColor = nodeColour(n, opts.focus); ctx.shadowBlur = 12;
   }
   ctx.beginPath(); ctx.arc(x, y, r, 0, 2 * Math.PI);
   ctx.fillStyle = nodeColour(n, opts.focus); ctx.fill();
   ctx.shadowBlur = 0;
-  if (opts.selected) {
+  if (opts.selected && !classic()) {
     ctx.beginPath(); ctx.arc(x, y, r + 3.5, 0, 2 * Math.PI);
     ctx.lineWidth = 1.5; ctx.strokeStyle = L.accent; ctx.stroke();
   }
@@ -239,6 +290,7 @@ function renderer({ ctx, id, x, y, state: s }) {
 function edgeStyle(e) {
   const c = e.kind === "hub" ? L.hubEdge : L.edge;
   const col = { color: c, highlight: c, hover: c, inherit: false, opacity: 1 };
+  if (classic()) return { width: 1, dashes: false, color: col };
   if (e.kind === "mention") return { width: 0.6, dashes: [2, 3], color: col };
   return { width: e.kind === "hub" ? 0.6 : 0.8, dashes: false, color: col };
 }
@@ -269,6 +321,8 @@ function refresh() {
 }
 
 // ---------------------------------------------------------------- network
+// Slight curves, except in Classic and above 1,000 notes, where curves slow the layout.
+function smoothing() { return BIG || classic() ? false : { enabled: true, type: "curvedCW", roundness: 0.08 }; }
 const network = new vis.Network(document.getElementById("graph"), { nodes: nodesView, edges: edgesView }, {
   layout: { improvedLayout: !BIG, randomSeed: 7 },
   physics: {
@@ -278,8 +332,7 @@ const network = new vis.Network(document.getElementById("graph"), { nodes: nodes
     stabilization: { enabled: true, iterations: BIG ? 120 : 500, updateInterval: BIG ? 40 : 25, fit: true },
     minVelocity: 0.75, timestep: 0.45,
   },
-  // Slight curves; straight lines above 1,000 notes, where curves slow the layout.
-  edges: { smooth: BIG ? false : { enabled: true, type: "curvedCW", roundness: 0.08 }, selectionWidth: 0, hoverWidth: 0, arrows: { to: { enabled: false } } },
+  edges: { smooth: smoothing(), selectionWidth: 0, hoverWidth: 0, arrows: { to: { enabled: false } } },
   interaction: { hover: true, tooltipDelay: 3600000, hideEdgesOnDrag: BIG, hideEdgesOnZoom: BIG, zoomSpeed: 0.7, multiselect: false },
 });
 const bodyNodes = () => network.body.nodes;
@@ -351,6 +404,7 @@ function drawLabels(ctx, ids, scale, b, placed, all, strongId) {
     if (p.x < b.x0 || p.x > b.x1 || p.y < b.y0 || p.y > b.y1) continue;
     const n = byId.get(id);
     const important = n.type === "hub" || n.degree >= ALWAYS_DEGREE;
+    if (!all && classic() && !((n.type === "hub" || n.type === "area") && scale >= 1.3)) continue;
     if (!all && !important && scale < 1.1) continue;
     cand.push([id === strongId ? 1e9 : (important ? 1e6 : 0) + n.degree, n, p]);
   }
@@ -420,12 +474,17 @@ network.on("afterDrawing", (ctx) => {
   for (const e of mine) {
     near.add(e.from); near.add(e.to);
     const p = bn[e.from], q = bn[e.to]; if (!p || !q) continue;
-    ctx.save(); ctx.globalAlpha = a * (e.kind === "link" ? 0.9 : 0.55);
+    ctx.save(); ctx.globalAlpha = a * (classic() || e.kind === "link" ? 0.9 : 0.55);
     ctx.beginPath(); ctx.moveTo(p.x, p.y);
-    const mx = (p.x + q.x) / 2 + (q.y - p.y) * 0.08, my = (p.y + q.y) / 2 - (q.x - p.x) * 0.08;
-    ctx.quadraticCurveTo(mx, my, q.x, q.y);
-    ctx.strokeStyle = linkColour; ctx.lineWidth = (e.kind === "link" ? 1.4 : 0.9) / Math.max(scale, 0.5);
-    if (e.kind !== "link") ctx.setLineDash([3 / scale, 3 / scale]);
+    if (classic()) {
+      ctx.lineTo(q.x, q.y);
+      ctx.strokeStyle = linkColour; ctx.lineWidth = 1.5 / Math.max(scale, 0.5);
+    } else {
+      const mx = (p.x + q.x) / 2 + (q.y - p.y) * 0.08, my = (p.y + q.y) / 2 - (q.x - p.x) * 0.08;
+      ctx.quadraticCurveTo(mx, my, q.x, q.y);
+      ctx.strokeStyle = linkColour; ctx.lineWidth = (e.kind === "link" ? 1.4 : 0.9) / Math.max(scale, 0.5);
+      if (e.kind !== "link") ctx.setLineDash([3 / scale, 3 / scale]);
+    }
     ctx.stroke(); ctx.restore();
   }
   ctx.save(); ctx.globalAlpha = a;
@@ -597,8 +656,37 @@ filterList(document.getElementById("f-type"), typeKeys.map((k) => [k, k, typeCou
 filterList(document.getElementById("f-verb"), [...verbCounts.keys()].sort().map((k) => [k, k, verbCounts.get(k)]), state.verbOff, false);
 
 // ---------------------------------------------------------------- legend
+const groupCounts = count(DATA.nodes, groupOf);
+const groupKeys = Object.keys(GROUPS).filter((g) => groupCounts.get(g));
+function legendCard() {
+  const card = document.getElementById("legend-card");
+  card.hidden = !classic();
+  if (!classic()) return;
+  card.style.background = L.card; card.style.border = `1px solid ${L.cardLine}`; card.style.color = L.label;
+  const dots = state.colourBy === "area"
+    ? keys.map((k) => [AREA_NAMES[k] || k, classicArea(k)])
+    : groupKeys.map((g) => [GROUPS[g][0], GROUPS[g][1]]);
+  card.innerHTML = `<b>Brain map</b><div>${dots.map(([name, c]) => `<span class="dot" style="color:${L.muted}"><i style="background:${c}"></i>${esc(name)}</span>`).join("")}</div>`
+    + `<div class="s" style="color:${L.muted}">${N} notes, ${DATA.edges.length} links. Drag to pan, wheel to zoom, drag a note to move it.</div>`;
+}
 function legend() {
+  legendCard();
   const la = document.getElementById("l-area"); la.innerHTML = "";
+  document.getElementById("l-area-title").textContent = classic() && state.colourBy === "group" ? "Colours: type groups" : "Colours: areas";
+  if (classic()) {
+    const rows = state.colourBy === "area"
+      ? keys.map((k) => [AREA_NAMES[k] || k, classicArea(k), areaCounts.get(k)])
+      : groupKeys.map((g) => [GROUPS[g][0], GROUPS[g][1], groupCounts.get(g)]);
+    for (const [name, c, n] of rows) {
+      la.insertAdjacentHTML("beforeend", `<div class="legend-item"><span class="swatch" style="background:${c}"></span><span>${esc(name)}</span><span class="count">${n}</span></div>`);
+    }
+    const dot = (r) => `<svg width="34" height="28"><circle cx="17" cy="14" r="${r}" fill="${L.muted}"/></svg>`;
+    const ln = (colour, label) => `<div class="legend-item"><svg width="34" height="10"><line x1="1" y1="5" x2="33" y2="5" stroke="${colour}" stroke-width="1.4"/></svg><span>${label}</span></div>`;
+    document.getElementById("l-line").innerHTML = `<div class="legend-item">${dot(4)}${dot(8)}${dot(12)}<span>Size: number of links</span></div>`
+      + ln(L.edge.replace(/[\d.]+\)$/, "0.6)"), "Link") + ln(L.accent, "Links of the focused note");
+    document.querySelectorAll(".swatch[data-k]").forEach((s) => { s.style.background = swatch(s.dataset.k); });
+    return;
+  }
   if (state.style !== "muted") la.insertAdjacentHTML("beforeend", `<div class="muted" style="margin-bottom:4px">Shown on hover, on a selected note, and when filtering by area.</div>`);
   for (const k of keys) {
     const d = document.createElement("div"); d.className = "legend-item";
@@ -620,7 +708,9 @@ function legend() {
 // ---------------------------------------------------------------- theme and style
 const themeSel = document.getElementById("theme"), styleSel = document.getElementById("style");
 function applyLook(edges = true) {
-  L = LOOK[dark() ? "dark" : "light"];
+  L = look();
+  document.getElementById("colour-by").disabled = !classic();
+  document.getElementById("colour-by-row").title = classic() ? "" : "Colour by applies to the Classic style";
   document.getElementById("graph").style.background = L.bg;
   if (edges) edgesDS.update(DATA.edges.map((e) => ({ id: e.id, ...edgeStyle(e) })));
   legend(); if (state.selected) showInfo(state.selected);
@@ -634,14 +724,18 @@ function applyTheme(t) {
 }
 function applyStyle(s, initial) {
   const was = state.style;
-  state.style = STYLES.includes(s) ? s : "graphite"; styleSel.value = state.style;
-  edgesView.refresh(); applyLook();
+  state.style = STYLES.includes(s) ? s : "classic"; styleSel.value = state.style;
+  edgesView.refresh(); network.setOptions({ edges: { smooth: smoothing() } });
+  nodesDS.update(DATA.nodes.map((n) => ({ id: n.id, size: radius(n) })));
+  applyLook();
   if (!initial && (was === "clouds") !== (state.style === "clouds")) relayout();
 }
 themeSel.addEventListener("change", () => { storeSet("yggdras-theme", themeSel.value); applyTheme(themeSel.value); });
 styleSel.addEventListener("change", () => { storeSet("yggdras-style", styleSel.value); applyStyle(styleSel.value, false); });
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if (state.theme === "system") applyLook(); });
-themeSel.value = state.theme; styleSel.value = state.style;
+const colourSel = document.getElementById("colour-by");
+colourSel.addEventListener("change", () => { state.colourBy = colourSel.value; storeSet("yggdras-colour-by", colourSel.value); applyLook(false); });
+themeSel.value = state.theme; styleSel.value = state.style; colourSel.value = state.colourBy;
 applyLook(false);
 if (hash.get("labels") === "1") { state.edgeLabels = true; document.getElementById("edge-labels").checked = true; }
 if (document.fonts) document.fonts.load(`400 12px "Inter"`).then(() => network.redraw()).catch(() => {});

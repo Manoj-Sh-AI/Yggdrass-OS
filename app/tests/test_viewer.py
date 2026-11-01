@@ -133,10 +133,14 @@ def test_vendored_fonts_match_their_pinned_hashes():
         assert viewer.checked(viewer.VENDOR / name, sha)[:4] == b"wOF2"
 
 
-def test_page_offers_the_three_styles():
+def test_page_offers_four_styles_with_classic_first_and_default():
     template = viewer.TEMPLATE.read_text(encoding="utf-8")
-    for style in ("graphite", "muted", "clouds"):
+    for style in ("classic", "graphite", "muted", "clouds"):
         assert f'<option value="{style}">' in template
+    assert template.index('<option value="classic">') < template.index('<option value="graphite">')
+    assert 'style: "classic"' in template
+    for colour_by in ("group", "area"):
+        assert f'<option value="{colour_by}">' in template
 
 
 def test_local_vis_network_matches_the_pinned_hash():
@@ -180,7 +184,7 @@ def _dom(html: Path, fragment: str = "") -> str:
 
 
 @pytest.mark.skipif(not EDGE.exists(), reason="Microsoft Edge is not installed here")
-@pytest.mark.parametrize("style", ["graphite", "muted", "clouds"])
+@pytest.mark.parametrize("style", ["classic", "graphite", "muted", "clouds"])
 def test_page_runs_offline_without_errors_in_a_real_browser(library, tmp_path, style):
     html = viewer.render(
         structural.build_map(library, structural.mapped_shelves()), library, tmp_path
@@ -189,3 +193,16 @@ def test_page_runs_offline_without_errors_in_a_real_browser(library, tmp_path, s
     assert 'data-ready="1"' in body
     assert "data-error" not in body
     shutil.rmtree(tmp_path, ignore_errors=True)
+
+
+@pytest.mark.skipif(not EDGE.exists(), reason="Microsoft Edge is not installed here")
+def test_classic_is_the_default_with_its_legend_card(library, tmp_path):
+    html = viewer.render(
+        structural.build_map(library, structural.mapped_shelves()), library, tmp_path
+    )
+    dom = _dom(html, "colour=area")
+    body = re.search(r"<body[^>]*>", dom).group(0)
+    assert 'data-ready="1"' in body and "data-error" not in body
+    card = re.search(r'<div id="legend-card"[^>]*>(.*?)</div>\s*<div id="loading"', dom, re.S)
+    assert card and "Brain map" in card.group(1) and "notes," in card.group(1)
+    assert 'id="legend-card" hidden' not in dom
