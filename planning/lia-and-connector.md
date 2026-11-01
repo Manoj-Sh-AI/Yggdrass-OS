@@ -81,10 +81,10 @@ So the **cached manual is about 17k tokens**. Prices are from Anthropic's model 
 | Model | Input $/MTok | Output $/MTok | Cache read $/MTok |
 |---|---|---|---|
 | Opus 5.5 | 4.00 | 20.00 | 0.20 |
-| Sonnet 5.5 | 2.00 | 10.00 | 0.20 |
-| Haiku 5.5 | 0.10 | 0.50 | about 0.01 (assumed 10%) |
+| Sonnet 5.5 | 2.00 | 10.00 | 0.10 |
+| Haiku 5.5 | 0.10 | 0.50 | 0.01 |
 
-Cache writes cost 1.25× input (5 minutes) or 2× (1 hour). Batch is 50% off. Thinking is billed as output. Token counts are estimates, measured in the first build step.
+Cache reads are 0.05× input on Opus 5.5 and Sonnet 5.5 and 0.1× on Haiku 5.5 (corrected 2026-11-01 from the prompt-caching docs; Sonnet 5.5 was wrongly given as $0.20). The rounded estimates below don't change. Cache writes cost 1.25× input (5 minutes) or 2× (1 hour). Batch is 50% off. Thinking is billed as output. Token counts are estimates, measured in the first build step.
 
 | Job | Assumptions | Opus 5.5 | Sonnet 5.5 | Haiku 5.5 |
 |---|---|---|---|---|
