@@ -2,8 +2,8 @@
 
 > Status: **plan, nothing built.** Drafted by Claude on 2026-11-01 from Manoj's brief and revised the same day for the button-first flow.
 > - **Decided 2026-11-01 (Manoj):** the ten open decisions and the pass bars, listed in "Decisions" at the end.
-> - **Approved amendments:** D22 and D23 are applied to the register.
-> - **Waiting for approval:** the D8, D12 and D27 amendments and decision record D33.
+> - **Approved amendments:** D8, D12, D22, D23 and D27, and the new D33, all applied to the register; the record is `rationale/decisions/D33-button-first-approval.md`.
+> - **The plan is done.** The next step is the spec in `requirements/` (roadmap step 0).
 
 Goal: add knowledge to the brain by talking to it from any app (Claude desktop and web, Claude Code, Codex, later the phone), including uploaded markdown files ("put this in the brain and connect it"). Nothing enters the brain unless Manoj presses Approve.
 
@@ -422,44 +422,44 @@ Approved row:
 
 | D23 | Skills location | **Amended 2026-11-01 (was: outside the brain, versioned with code):** Lia's skills live in the private brain repo under `skills/` (outside `library/`, so they are never mapped or cited as knowledge) and are loaded at runtime from the brain path. The public code repo holds generic code only: the loader, the generic chat instructions the connector sends, and a synthetic sample skill for tests | Lia's skills name Manoj's areas, people and placement habits, which D4 keeps out of the public repo; constitution #5 has personal inputs flow in at runtime; skills still never hold knowledge, which stays in `library/` | A skill is needed by someone other than Manoj, or must be versioned with a code release |
 
-**Waiting for Manoj's approval: D8, D12, D27 and the new D33.**
+**D8, D12, D27 and the new D33: approved by Manoj 2026-11-01** and applied to `locked-plan-v1.md`. The D33 record is `rationale/decisions/D33-button-first-approval.md` (status: accepted).
 
-**D8, Ingest trigger.** Current row:
+**D8, Ingest trigger.** Previous row:
 
 | D8 | Ingest trigger | Our structural pass on every file change; Graphify discovery pass manual (amended 2026-10-25; was scheduled nightly) | The structural pass is free and deterministic; discovery costs money, since Graphify sends every changed note to the model, and needs review | Discovery proves reliable enough to schedule |
 
-Proposed row:
+Approved row:
 
 | D8 | Ingest trigger | **Amended 2026-11-01:** our structural pass on every file change, including every Lia commit and every Undo, so the maps match the notes before the next question. No model runs on a file change. Ingest itself is triggered only by Manoj's Approve on a candidate card (D33). Discovery (rung 6) has no trigger until it is built and passes its gate. (Was: a manual Graphify discovery pass as well; Graphify left the product under D32 as amended 2026-10-31. Amended 2026-10-25; was scheduled nightly) | The structural pass is free and deterministic; ingest and discovery cost money and need approval | Discovery is built, passes its gate, and proves reliable enough to schedule |
 
 This also removes D8's stale Graphify clause, which D32 made obsolete.
 
-**D12, App data.** Current row:
+**D12, App data.** Previous row:
 
 | D12 | App data | SQLite, local | Single-user desktop app, offline, no network hop | Multiple devices need to write the same tasks |
 
-Proposed row:
+Approved row:
 
 | D12 | App data | SQLite, local. **Amended 2026-11-01:** it also holds the connector's operational state: candidates waiting on a card, the reject log, Lia's paused drafts (second cards) and the episode queue for long uploads. This is operational state, never knowledge; nothing in it is the source of truth (D1). It stays out of git and lives in `local-data/` | Single-user desktop app, offline, no network hop; candidates and rejected text are personal and must stay local and out of every repo | Multiple devices need to write the same tasks, or the phone needs the candidate store (D13) |
 
-**D27, LLM access.** Current row:
+**D27, LLM access.** Previous row:
 
 | D27 | LLM access | Model client behind an interface from day one, as D11 does for data | Honours constitution #7 (model-agnostic core) while provider switching stays out of scope; cheap now, expensive to retrofit | Never |
 
-Proposed row:
+Approved row:
 
 | D27 | LLM access | Model client behind an interface from day one, as D11 does for data. **Amended 2026-11-01:** Lia (answering and writing) and every other model caller go through it. The model is a setting, chosen per job by eval results with accuracy first; cost decides only between equally accurate models. The client sets prompt caching (1-hour TTL) and reports cost per call | Honours constitution #7 (model-agnostic core) while provider switching stays out of scope; cheap now, expensive to retrofit; keeps the model choice a measured setting, not a code change | Never |
 
-**D33, Button-first approval (new).** Proposed register row:
+**D33, Button-first approval (new).** Approved register row:
 
 | D33 | Write approval | Button first: every candidate (a fact, text or file) is shown on a card with Approve / Reject before any model call. Reject is logged locally at no cost. Approve is the only path to Lia's write side; it covers the candidate, while Lia's placement and links are shown after the write on a summary card with Undo (git revert). Lia stops and asks with a second card instead of writing on a checker failure, a likely duplicate, a conflicting fact or an unsure placement. Approve, answers and Undo are never callable by a model | Nothing enters without Manoj's approval (principle 4) at the lowest cost: rejects are free, and the risky cases still stop before a write | Undo is used often enough to show that approving the candidate alone lets too many wrong links through |
 
-**Proposed record `rationale/decisions/D33-button-first-approval.md`** (to be added when approved):
+**Record `rationale/decisions/D33-button-first-approval.md`** (added, status: accepted):
 
 > # D33: Button-first approval
 >
 > Date: 2026-11-01
-> Status: proposed
+> Status: accepted (Manoj, 2026-11-01)
 >
 > ## Context
 >
@@ -601,8 +601,8 @@ What it buys and costs:
    - more than one plausible shelf, or a failed placement rule, asks.
 8. **Phone:** offer only, never approve; the option is chosen later with D13.
 9. **Pass bars** accepted, with changes: T5's clean-candidate question rate ≤ 10%; T9 blocked until the life hard eval's answer key exists; T12 added (sensitive notes).
-10. **Register:** D22 and D23 approved as worded (applied in this PR). D8, D12, D27 and D33 are drafted above, waiting for approval.
+10. **Register:** D8, D12, D22, D23, D27 and the new D33 approved as worded (applied in this PR).
 
 Also accepted: Approve covers the candidate; placement and links are shown after the write, with Undo.
 
-**Still open:** approval of D8, D12, D27 and D33; the phone option (with D13).
+**Still open:** the phone option (with D13).
