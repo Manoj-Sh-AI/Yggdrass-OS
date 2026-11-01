@@ -213,3 +213,35 @@ def test_classic_springs_follow_the_colouring():
     template = viewer.TEMPLATE.read_text(encoding="utf-8")
     assert 'if (state.style === "clouds") return "a";' in template
     assert 'return state.colourBy === "area" ? "b" : "g";' in template
+
+
+@pytest.mark.skipif(not EDGE.exists(), reason="Microsoft Edge is not installed here")
+def test_pure_note_stays_pure_and_bridge_note_is_blended(tmp_path):
+    root = tmp_path / "brain" / "library"
+    links = "## Facts\n\n- A fact. (src: self, 2030-01-01)\n\n## Links\n\n"
+    files = {
+        # alone links only to its own area: pure. home links to alone (same area) and to
+        # study (another area): a bridge, so blended. The hub link must not count.
+        "08-rest-joy/alone.md": note("alone", body=links + "- related_to [[home]]\n"),
+        "08-rest-joy/home.md": note("home", body=links + "- related_to [[study]]\n"),
+        "04-learning/study.md": note("study", area="04-learning", body=links),
+        "04-learning/hub-learning.md": note(
+            "hub-learning",
+            typ="hub",
+            area="04-learning",
+            body="## Summary\n\nHub.\n\n## Links\n\n- lists [[alone]]\n",
+        ),
+    }
+    for rel, text in files.items():
+        (root / rel).parent.mkdir(parents=True, exist_ok=True)
+        (root / rel).write_text(text, encoding="utf-8")
+    html = viewer.render(
+        structural.build_map(root, structural.mapped_shelves()), root, tmp_path / "out"
+    )
+    dom = _dom(html, "colour=area&debug=colours")
+    raw = re.search(r'data-colours="([^"]*)"', dom).group(1)
+    colours = json.loads(raw.replace("&quot;", '"').replace("&amp;", "&"))
+    assert colours["alone"]["shown"] == colours["alone"]["pure"]
+    assert colours["home"]["shown"] != colours["home"]["pure"]
+    assert colours["study"]["shown"] != colours["study"]["pure"]
+    assert colours["home"]["shown"].startswith("#")
