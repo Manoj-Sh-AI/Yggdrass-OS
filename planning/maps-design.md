@@ -6,7 +6,21 @@
 > - `planning/lia-and-connector.md` (PR #28);
 > - the brain's `taxonomy.md`, `node.md` and current `generated/` maps.
 >
-> **Provisional decisions (Manoj, 2026-11-01):** maps route and notes answer; three files; hub links out and chunk chains compressed; L0 and neighbour stubs behind switches, default off; the report's draft pass bars. Every change below that touches those decisions is marked **Changed** or **Decide**.
+> **Decisions (Manoj, 2026-11-01), first round:** maps route and notes answer; three files; hub links out and chunk chains compressed; L0 and neighbour stubs behind switches, default off; the report's draft pass bars.
+>
+> **Second round (after this review):**
+> 1. Header: `map_version` only.
+> 2. One description rewrite batch, as a proposal (section 4.1).
+> 3. Mentions kept.
+> 4. Split by measured tokens.
+> 5. Atlas generated from `taxonomy.md`.
+> 6. L0 on unique, non-stoplist aliases only.
+> 7. D34 drafted.
+> 8. Size log in the brain's `generated/`.
+> 9. PR #28's cost table fixed.
+> 10. A:, P: and review-date flags; no `|`; list verbs only.
+>
+> **Waiting for approval:** the D31 amendment and D34 wording (section 10), and the rewrite batch (section 4.1). Build order: section 12.
 
 ## 1. Review of the report
 
@@ -61,13 +75,13 @@ What the measurements show:
    - On the real brain: 55 of 80 descriptions are over 15 words; 42 of 80 contain digits (dates, sizes, amounts); and the 23 sensitive notes' descriptions name exactly what is sensitive.
    - Adopting the rules means rewriting most descriptions (a brain change through the approval path) and amending `node.md` (D31). See section 3.
 3. **Chunk descriptions can't follow both rules.** `node.md` asks for "Chapter 3 (pp. 41–58) of <Book>: …", and the report forbids figures. **Changed:** page labels move out of the description into a `P:` flag, taken from the existing `pages` field.
-4. **Plain `[[mentions]]` are dropped.** Section 5.3 keeps typed links only, which loses 52 of the 97 non-hub links: which people, places and projects a note mentions. **Decide:** keep them (+1.5k tokens). The proposal is to keep them, accuracy first, and let E2 test dropping them.
+4. **Plain `[[mentions]]` are dropped.** Section 5.3 keeps typed links only, which loses 52 of the 97 non-hub links: which people, places and projects a note mentions. **Decided:** kept (+1.5k tokens); E2 tests dropping them.
 5. **`also` is missing.** A note filed under 04 with `also: [03-work-career]` doesn't appear under 03, so routing by area misses it. **Changed:** an `A:03` flag (from `maps-proposal.md`).
 6. **The "review due" flag can't say "due"** without today's date, which would break determinism. **Changed:** the flag is "R:<date> = review date". Overdue is judged only in `lint.md`, as `maps-proposal.md` already ruled.
 7. **The pipe format needs a guard.** A `|` inside a title, alias or description breaks the row. The checker forbids `|` and line breaks in those fields; the generator never escapes.
 8. **The example relationship lines use verbs outside the fixed list** (`built_with`, `supervised_by`). The generator emits only the 22 verbs and their inverses, plus `mentions` / `mentioned_in` if kept.
-9. **The atlas mostly repeats `taxonomy.md`,** which is already cached at breakpoint 1. It is small (559 tokens) and adds hub slugs and counts, so keeping it costs little. Merging it into the shelf map's area headings would save a file. Not proposed, since Manoj chose three files; just noted.
-10. **L0's exact alias match will fire on generic aliases.** Real aliases include everyday words ("work", "visa", "thesis", "health"). E3 must test L0 with a minimum-specificity rule: no single common word, and at least two words or one rare token.
+9. **The atlas mostly repeats `taxonomy.md`,** which is already cached at breakpoint 1. **Decided:** it stays its own file. It is always loaded, a cheap router can read it alone, and it rarely changes. It is generated from `taxonomy.md`, so there is one source.
+10. **L0's exact alias match will fire on generic aliases.** Real aliases include everyday words ("work", "visa", "thesis", "health"). **Decided:** L0 fires only on a name or alias that belongs to exactly one note and is not on a common-word stoplist. It stays default off until E3.
 11. **No free code can judge whether a sensitive note's description "reveals" too much.** The checker can enforce the shape (short, no digits). Whether the wording is safe has to be a human review list.
 
 ## 2. One design: the report plus `maps-proposal.md`
@@ -103,7 +117,10 @@ code|area|hub|notes|belongs here|not here|key aliases
 registries|ideas 10 (9) · people 11 (3) · places 12 (8) · sources 13 (15) · journal 15 (0) · cross-area 4
 ```
 
-`belongs here` and `not here` are copied from `taxonomy.md`'s area table. `key aliases` are the hub's aliases.
+- **Generated from `taxonomy.md`:** the area table's "Holds" and "Not here" columns become `belongs here` and `not here`, so the taxonomy stays the one source. `key aliases` are the area hub's aliases.
+- **Always loaded,** first.
+- **A cheap router** (E6's small-model arm) can read the atlas alone to pick areas.
+- **Rarely changes:** only when the taxonomy, a hub or an area's note count changes. The count makes it change on additions, which is accepted, since it is 559 tokens.
 
 ### 3.3 `00-manual/generated/shelf-map.md`
 
@@ -134,7 +151,8 @@ chain garden-book: -ch-01 > -ch-02 > -ch-03
 
 - **The incident layout:** one line per note with all of its links, inverses written out by code, sorted by verb then target.
 - **Chunk `part_of` and `precedes` links** are folded into the `chain` line.
-- **`mentions` / `mentioned_in`** are kept, pending E2 (**Decide**, 1.3 #4).
+- **`mentions` / `mentioned_in`** are kept (decided); E2 tests dropping them.
+- **Verbs:** only the 22 fixed verbs, their inverses, and `mentions` / `mentioned_in`, in examples as in output.
 
 ### 3.5 `open_notes` return format
 
@@ -166,15 +184,28 @@ These are added to the write path from PR #28 (D22). **Hard rules block a write;
 | Rule | Hard or warning | Why |
 |---|---|---|
 | `description` present, one line, no `|` | Hard | The pipe format |
-| No `|` or line breaks in `name` or aliases | Hard | The pipe format |
-| No digits in `description`, except digits that are also in the note's `name` or an alias (for example, "Job search 2027") | Hard | Maps route, notes answer |
-| Chunk page ranges only in `pages`, not in the description | Hard | Same; shown as the `P:` flag |
-| Description length ≤ 15 words | **Decide:** hard now, or a warning until E5 (which tests 10 / 15 / 25 words). The proposal is a warning until E5: a hard rule now would flag 55 of 80 notes, and block any edit to them until they are rewritten | Tokens and routing |
-| Sensitive notes: description ≤ 8 words and no digits; every sensitive note's description is listed in `lint.md` for Manoj to read after any change | Hard for the shape; human review for the meaning | Free code can't judge "reveals" |
+| No `|` or line breaks in `name` (the title) or aliases | Hard | The pipe format |
+| No dates or figures in `description`. Digits are allowed only when they are part of the note's `name` or an alias (for example, "Job search 2027" or "Resume-3") | Hard (decided) | Maps route, notes answer |
+| Chunk page ranges only in `pages`, never in the description; shown as the `P:` flag | Hard (decided) | Same |
+| Description length ≤ 15 words | Warning until E5 (decided) | Tokens and routing |
+| Sensitive notes (`sensitivity: high`): description ≤ 8 words, no digits, and never naming the sensitive detail. Every sensitive description is listed in `lint.md` for Manoj to read after any change | Hard (decided): free code checks the length and digits; whether it names the detail is Manoj's review, since code can't judge meaning | Privacy in the always-loaded map |
+| A framework's definition, or a concept's or decision's claim, is in `## Summary`, not in the description | Hard where checkable: a warning when a framework, concept or decision has an empty Summary | Maps route, notes answer |
 | Unique slugs; aliases unique across the brain | Hard (already in the structural pass) | Routing by name |
 | Only the 22 verbs (and `mentions`) appear in maps | Hard (already) | — |
 
-**Migration:** the rules can't go live until the existing descriptions comply. That means one approved batch of description rewrites through Lia's write path, or by hand. It is a brain change, so it needs Manoj's approval, and it comes with a `node.md` amendment (D31, "description" rule) before the generator ships.
+### 4.1 The description rewrite batch (decided: one batch, as a proposal)
+
+The rules go live only after the existing descriptions comply. Claude prepares **one rewrite batch** covering every note, as a before → after list. Nothing is written until Manoj approves it.
+- **Order:** Work and career (23 notes) first, so Manoj can judge the style, then the other areas.
+- **Each row shows:** slug, type, sensitive or not, the old description, the new one, its word count, and what was removed.
+- **Where removed details go:**
+  - **Already in Facts:** a removed date or figure that is already a fact line is simply dropped from the description.
+  - **Not in Facts:** it is listed as a fact line to add (with its source).
+  - **Full claims:** a concept, framework or decision's claim moves into `## Summary`.
+  - **Chunks:** a page range is checked against the chunk's `pages` field.
+- **Privacy:** the batch itself is personal data, so it is shown in chat or a local file, never committed to this repo.
+- **After approval:** it is applied as one brain commit (by hand or by the write path once built), followed by a map rebuild.
+- **The amendment** to `node.md`'s description rules (D31, section 10) is approved before the batch is applied.
 
 ## 5. The generator
 
@@ -188,7 +219,10 @@ These are added to the write path from PR #28 (D22). **Hard rules block a write;
   The same input always gives the same version. Lia's answers record it, so an answer can be traced to the maps it saw (and L6's answer cache keys on it).
 - **When:** after every Lia commit and every Undo, inside the same commit (D8 as amended). Also from the CLI: `yggdras maps build`.
 - **Budget warning:** the generator counts tokens with a local estimate: characters ÷ 2.35, calibrated against today's `count_tokens` result of 9,857 tokens for 23,189 characters. Slugs and pipes make map text denser than prose. The estimate is recalibrated with `count_tokens` at each monthly log. It warns in `lint.md` above 20k tokens.
-- **Map-size log:** `yggdras maps stats --log` appends one dated line (notes, tokens per file, total) to `00-manual/map-size-log.md`. It runs on the first commit of each month, or by hand. It is the one map file that isn't deterministic, so it is excluded from the determinism test. **Decide:** keep the log in the brain (proposed) or in `local-data/`.
+- **Map-size log (decided):** `yggdras maps stats --log` appends one dated line (notes, tokens per file, total) to `00-manual/generated/map-size-log.md` in the brain repo.
+  - It runs on the first commit of each month, or by hand.
+  - It is never loaded into Lia's prompt.
+  - It is the one generated file that isn't deterministic, so it is excluded from the determinism test.
 
 ## 6. Citation check
 
@@ -199,7 +233,7 @@ These are added to the write path from PR #28 (D22). **Hard rules block a write;
 - **On a failure:** the answer goes back to Lia once, with the failing citation named. If it fails again, the claim is marked "unverified" in the reply. The check never silently drops a claim.
 - **Logging:** each answer's check result is logged with `map_version`, for the experiments.
 
-## 7. Scaling triggers
+## 7. Scaling triggers (decided: by measured tokens, warn 20k, split 25k)
 
 Measured today: about 120 map tokens per note.
 
@@ -226,7 +260,7 @@ Any arm that doesn't beat the simpler one on accuracy is dropped.
 |---|---|---|
 | E1 | Format: pipe rows vs JSON vs prose | Generator with three output modes |
 | E2 | Relationship map worth its tokens? Also with vs without `mentions` | Shelf-only mode; mentions switch |
-| E3 | L0 pre-pass | L0 with the specificity rule (1.3 #10); switch |
+| E3 | L0 pre-pass | L0 firing only on a name or alias unique to one note and not on the common-word stoplist (the stoplist is a fixed file in the code repo, generic words only); switch, default off |
 | E4 | Inverses written out vs outgoing only | Generator mode |
 | E5 | Description length 10 / 15 / 25 words | Three description sets, which are brain changes. Run on copies of the brain, never the real one |
 | E6 | Same model for routing and answering vs a small-routes / large-answers cascade | Model client per role (D27) |
@@ -262,20 +296,50 @@ Any arm that doesn't beat the simpler one on accuracy is dropped.
 
 All of these run on Apollo and synthetic fixtures only (D23).
 
-## 10. Register changes needed
+## 10. Register changes (wording for Manoj's approval)
 
-- **D31 (node format):** amend the `description` rule (≤ 15 words or per E5; no figures; sensitive shape; page ranges in `pages` only). This also needs a brain change: one approved batch of rewrites.
-- **D6 (derived, one-way):** no change. The maps are derived and droppable. Confirm the size log is the one non-deterministic generated file.
-- **D8:** already amended in PR #28 (rebuild on every commit and Undo). No further change.
-- **New D34, "Maps route, notes answer":** the maps hold no facts; answers cite fact lines in opened notes, checked word for word by code. **Decide:** a register row, or leave it to this plan.
+**D31 amendment A23, description rules.** It appends to D31's amendment list, in the same style as A1–A22:
 
-## 11. Disagreements with the report (summary)
+> **A23 (2026-11-01): description rules.**
+> - **What it says:** `description` is one line saying what the note is about, in the words you would search with. It holds no dates, figures or other facts; digits appear only where they are part of the note's `name` or an alias.
+> - **Length:** at most 15 words. This is a warning until experiment E5 sets the limit.
+> - **Sensitive notes:** for a note with `sensitivity: high`, at most 8 words, no digits, and it never names the sensitive detail.
+> - **Format:** no `|` and no line break in `description`, `name` or aliases.
+> - **Claims and definitions:** a concept's or decision's claim and a framework's definition live in `## Summary`, not in the description.
+> - **Chunks:** a chunk's page range lives only in `pages`. Its description names the section and its parent source in words.
+> - **Applying it:** existing descriptions are brought into line by one approved rewrite batch.
 
-1. **Size:** 9.9k tokens today, not 5–6k, and the split comes at about 200 notes, not about 300.
-2. **Header:** no timestamp or commit id.
-3. **Description rules:** ≤ 15 words as a warning until E5, not a hard rule now; it would flag 55 of 80 notes. "No figures" and the sensitive shape should be hard rules, after one approved rewrite batch.
-4. **Mentions:** keep them in the relationship map unless E2 says otherwise.
-5. **Chunk pages** go to a `P:` flag; **`also`** becomes an `A:` flag; **"review due"** becomes "review date".
-6. **L0** needs a specificity rule for generic aliases.
-7. **Sensitive descriptions** need a human review list; code can't judge meaning.
-8. **The triples study and the GraphRAG pairing** don't support what the report uses them for.
+**`node.md` edits that A23 implies** (brain repo; applied with the rewrite batch, after approval):
+- **Frontmatter table, `description` row:** replace "One line: who or what the note is about, what it covers, and what it can answer. … For a concept, framework or decision, write it as a full claim" with: "One line, at most 15 words: who or what the note is about and what it covers, in the words you would search with. No dates, figures or other facts. Sensitive notes: at most 8 words, no digits, never the sensitive detail. A concept's or decision's claim, or a framework's definition, goes in `## Summary`."
+- **"Sections per type", framework row:** "one-line definition (in `description`)" becomes "one-line definition (in `## Summary`)".
+- **"Long sources":** the chunk description example "Chapter 3 (pp. 41–58) of <Book>: how X handles Y" becomes "Chapter on how X handles Y, in <Book>", with the page range kept in `pages`.
+
+**D34, maps route and notes answer (new register row):**
+
+| D34 | Maps and answers | Maps route, notes answer. The generated maps (atlas, shelf map, relationship map) hold names, descriptions, types, last-updated dates, flags and links, never facts. Every answer comes from fact lines in notes Lia opened, cited as `[[slug]] "exact fact line"`, and a free code check confirms each quoted line exists word for word in that note before the answer is shown; a failed citation goes back to Lia once, then is marked unverified | A fact in a derived, compressed map is a second copy that can drift from the notes (D1, D6), and it invites answers without evidence (principle 2) | An experiment shows answering from the maps alone beats opened notes on accuracy |
+
+**No change needed:**
+- **D6 (derived, one-way):** the maps are derived and droppable. The size log is the one non-deterministic generated file, and it is never loaded.
+- **D8:** already amended in PR #28 (rebuild on every commit and Undo).
+
+## 11. Disagreements with the report (all resolved by Manoj, 2026-11-01)
+
+1. **Size:** 9.9k tokens today, not 5–6k, and the split comes at about 200 notes. Split by measured tokens.
+2. **Header:** no timestamp or commit id. `map_version` only.
+3. **Description rules:** "no figures" and the sensitive shape are hard; ≤ 15 words is a warning until E5; one rewrite batch.
+4. **Mentions:** kept; E2 tests dropping them.
+5. **Flags:** chunk pages become `P:`, `also` becomes `A:`, "review due" becomes "review date".
+6. **L0:** unique, non-stoplist aliases only.
+7. **Sensitive descriptions:** checked for shape by code and for meaning by Manoj.
+8. **The triples study and the GraphRAG pairing** don't support what the report uses them for. Recorded; no design change.
+
+## 12. Build order (after Manoj approves this plan, A23 and D34)
+
+Each step ships with its tests (section 9) and stops for review.
+
+1. **Atlas**, generated from `taxonomy.md` plus the hubs and counts. Tests: determinism, `map_version`.
+2. **Shelf map**, with all flags (S, H, R, A, C, P). Tests: every note once, sensitive flag, pipe safety, token budget warning.
+3. **Relationship map** (incident layout, inverses, mentions, chains, no hub links). Test: every link with its inverse.
+4. **Checks:** the citation check (section 6) and the description rules in the checker (section 4), including the no-facts rule. Tests: citation fixtures, no facts in maps.
+
+The description rewrite batch (4.1) must be applied before the step-4 hard rules are switched on in the brain. Otherwise every existing note would fail them.
