@@ -68,11 +68,6 @@ a { color: var(--accent); }
 #tip b { font-size: 13px; font-weight: 600; }
 #loading { position: absolute; left: 16px; bottom: 14px; color: var(--text-2); font-size: 12px; }
 #stats { color: var(--text-2); font-size: 11px; margin-top: 14px; }
-#legend-card { position: absolute; top: 12px; left: 12px; z-index: 5; border-radius: 8px; padding: 10px 12px; font-size: 13px; max-width: 520px; }
-#legend-card b { display: block; margin-bottom: 4px; }
-#legend-card .dot { display: inline-flex; align-items: center; gap: 6px; margin-right: 10px; }
-#legend-card i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-#legend-card .s { margin-top: 4px; }
 @media (max-width: 800px) {
   #graph { inset: 0 0 45vh 0; }
   #side { top: auto; height: 45vh; width: 100%; border-left: 0; border-top: 1px solid var(--line); }
@@ -82,7 +77,6 @@ a { color: var(--accent); }
 </head>
 <body>
 <div id="graph" aria-label="Brain map"></div>
-<div id="legend-card" hidden></div>
 <div id="loading">Laying out…</div>
 <aside id="side">
   <div class="row">
@@ -109,6 +103,7 @@ a { color: var(--accent); }
     <label><input type="checkbox" id="edge-labels"> Show link labels when zoomed in</label>
     <label><input type="checkbox" id="show-mentions" checked> Show mentions</label>
   </div>
+  <div id="counts" class="muted" style="margin-top:10px"></div>
   <div id="info"><span class="empty">Click a note to see its details.</span></div>
   <h3>Filters</h3>
   <details><summary>Areas</summary><div class="filter" id="f-area"></div></details>
@@ -189,20 +184,36 @@ const degrees = DATA.nodes.filter((n) => n.type !== "hub").map((n) => n.degree).
 const ALWAYS_DEGREE = Math.max(5, degrees[Math.floor(degrees.length * 0.06)] || 0);
 const verbKey = (e) => (e.kind === "mention" ? "mentions" : e.label);
 
-// Area clouds: hidden springs pull each note gently towards its area's anchor (its hub, or
-// its most-linked note). Hidden edges are not drawn but take part in the layout.
-const anchors = new Map();
-for (const n of DATA.nodes) {
-  const k = colourKey(n);
-  if (!k || k === "cross") continue;
-  const cur = anchors.get(k);
+// Colour neighbourhoods: hidden springs pull each note towards the anchor of its colour
+// group (the group's hub, or its most-linked note), so notes of one colour sit together.
+// Hidden edges are not drawn but take part in the layout. "a" springs (long, gentle) group
+// by life area for Area clouds; "b" (short, firm) by life area and "g" by type group for Classic.
+function springs(prefix, keyOf) {
+  const anchors = new Map();
   const rank = (m) => (m.type === "hub" ? 1e6 : 0) + m.degree;
-  if (!cur || rank(n) > rank(cur)) anchors.set(k, n);
+  for (const n of DATA.nodes) {
+    const k = keyOf(n);
+    if (!k || k === "cross") continue;
+    const cur = anchors.get(k);
+    if (!cur || rank(n) > rank(cur)) anchors.set(k, n);
+  }
+  const out = [];
+  for (const n of DATA.nodes) {
+    const a = anchors.get(keyOf(n));
+    if (a && a.id !== n.id) out.push({ id: `${prefix}${out.length}`, from: n.id, to: a.id });
+  }
+  return out;
 }
-const CLOUD_EDGES = [];
-for (const n of DATA.nodes) {
-  const a = anchors.get(colourKey(n));
-  if (a && a.id !== n.id) CLOUD_EDGES.push({ id: `c${CLOUD_EDGES.length}`, from: n.id, to: a.id });
+const CLOUD_EDGES = [
+  ...springs("a", colourKey).map((e) => ({ ...e, length: 150 })),
+  ...springs("b", colourKey).map((e) => ({ ...e, length: 40 })),
+  ...springs("g", (n) => groupOf(n)).map((e) => ({ ...e, length: 40 })),
+];
+// Which springs the current style and colouring use: "a", "g" or none.
+function springSet() {
+  if (state.style === "clouds") return "a";
+  if (state.style === "classic") return state.colourBy === "area" ? "b" : "g";
+  return "";
 }
 
 // ---------------------------------------------------------------- state
@@ -256,7 +267,7 @@ function look() {
   const t = dark() ? "dark" : "light", base = LOOK[t];
   if (!classic()) return base;
   const c = CLASSIC[t];
-  return { ...base, bg: c.bg, edge: c.edge, hubEdge: c.edge, label: c.label, strong: c.label, accent: c.focus,
+  return { ...base, bg: c.bg, edge: c.edge, hubEdge: c.edge, label: c.muted, strong: c.label, accent: c.focus,
     halo: c.halo, veil: c.veil, areaL: c.areaL, card: c.card, cardLine: c.cardLine, muted: c.muted };
 }
 L = look();
@@ -297,7 +308,7 @@ function edgeStyle(e) {
 const nodesDS = new vis.DataSet(DATA.nodes.map((n) => ({ id: n.id, shape: "custom", ctxRenderer: renderer, size: radius(n) })));
 const edgesDS = new vis.DataSet([
   ...DATA.edges.map((e) => ({ id: e.id, from: e.from, to: e.to, ...edgeStyle(e) })),
-  ...CLOUD_EDGES.map((c) => ({ ...c, hidden: true, length: 150 })),
+  ...CLOUD_EDGES.map((c) => ({ ...c, hidden: true })),
 ]);
 function nodeVisible(n) {
   return !(state.hideHubs && n.type === "hub") && !state.areaOff.has(colourKey(n)) && !state.typeOff.has(n.type);
@@ -305,7 +316,7 @@ function nodeVisible(n) {
 const nodesView = new vis.DataView(nodesDS, { filter: (item) => nodeVisible(byId.get(item.id)) });
 const edgesView = new vis.DataView(edgesDS, {
   filter: (item) => {
-    if (typeof item.id === "string") return state.style === "clouds" && visible.has(item.from) && visible.has(item.to);
+    if (typeof item.id === "string") return item.id[0] === springSet() && visible.has(item.from) && visible.has(item.to);
     const e = edgeById.get(item.id);
     if (state.hideHubs && e.kind === "hub") return false;
     if (!state.mentions && e.kind === "mention") return false;
@@ -404,7 +415,6 @@ function drawLabels(ctx, ids, scale, b, placed, all, strongId) {
     if (p.x < b.x0 || p.x > b.x1 || p.y < b.y0 || p.y > b.y1) continue;
     const n = byId.get(id);
     const important = n.type === "hub" || n.degree >= ALWAYS_DEGREE;
-    if (!all && classic() && !((n.type === "hub" || n.type === "area") && scale >= 1.3)) continue;
     if (!all && !important && scale < 1.1) continue;
     cand.push([id === strongId ? 1e9 : (important ? 1e6 : 0) + n.degree, n, p]);
   }
@@ -658,19 +668,7 @@ filterList(document.getElementById("f-verb"), [...verbCounts.keys()].sort().map(
 // ---------------------------------------------------------------- legend
 const groupCounts = count(DATA.nodes, groupOf);
 const groupKeys = Object.keys(GROUPS).filter((g) => groupCounts.get(g));
-function legendCard() {
-  const card = document.getElementById("legend-card");
-  card.hidden = !classic();
-  if (!classic()) return;
-  card.style.background = L.card; card.style.border = `1px solid ${L.cardLine}`; card.style.color = L.label;
-  const dots = state.colourBy === "area"
-    ? keys.map((k) => [AREA_NAMES[k] || k, classicArea(k)])
-    : groupKeys.map((g) => [GROUPS[g][0], GROUPS[g][1]]);
-  card.innerHTML = `<b>Brain map</b><div>${dots.map(([name, c]) => `<span class="dot" style="color:${L.muted}"><i style="background:${c}"></i>${esc(name)}</span>`).join("")}</div>`
-    + `<div class="s" style="color:${L.muted}">${N} notes, ${DATA.edges.length} links. Drag to pan, wheel to zoom, drag a note to move it.</div>`;
-}
 function legend() {
-  legendCard();
   const la = document.getElementById("l-area"); la.innerHTML = "";
   document.getElementById("l-area-title").textContent = classic() && state.colourBy === "group" ? "Colours: type groups" : "Colours: areas";
   if (classic()) {
@@ -723,23 +721,30 @@ function applyTheme(t) {
   applyLook();
 }
 function applyStyle(s, initial) {
-  const was = state.style;
+  const was = springSet();
   state.style = STYLES.includes(s) ? s : "classic"; styleSel.value = state.style;
   edgesView.refresh(); network.setOptions({ edges: { smooth: smoothing() } });
   nodesDS.update(DATA.nodes.map((n) => ({ id: n.id, size: radius(n) })));
   applyLook();
-  if (!initial && (was === "clouds") !== (state.style === "clouds")) relayout();
+  if (!initial && was !== springSet()) relayout();
 }
 themeSel.addEventListener("change", () => { storeSet("yggdras-theme", themeSel.value); applyTheme(themeSel.value); });
 styleSel.addEventListener("change", () => { storeSet("yggdras-style", styleSel.value); applyStyle(styleSel.value, false); });
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if (state.theme === "system") applyLook(); });
 const colourSel = document.getElementById("colour-by");
-colourSel.addEventListener("change", () => { state.colourBy = colourSel.value; storeSet("yggdras-colour-by", colourSel.value); applyLook(false); });
+colourSel.addEventListener("change", () => {
+  const was = springSet();
+  state.colourBy = colourSel.value; storeSet("yggdras-colour-by", colourSel.value);
+  edgesView.refresh(); applyLook(false);
+  if (was !== springSet()) relayout();
+});
 themeSel.value = state.theme; styleSel.value = state.style; colourSel.value = state.colourBy;
 applyLook(false);
 if (hash.get("labels") === "1") { state.edgeLabels = true; document.getElementById("edge-labels").checked = true; }
 if (document.fonts) document.fonts.load(`400 12px "Inter"`).then(() => network.redraw()).catch(() => {});
 document.getElementById("stats").textContent = `${N} notes · ${DATA.edges.length} links`;
+document.getElementById("counts").textContent =
+  `${N} notes, ${DATA.edges.length} links. Drag to pan, wheel to zoom, drag a note to move it.`;
 </script>
 </body>
 </html>

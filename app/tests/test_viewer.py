@@ -196,13 +196,20 @@ def test_page_runs_offline_without_errors_in_a_real_browser(library, tmp_path, s
 
 
 @pytest.mark.skipif(not EDGE.exists(), reason="Microsoft Edge is not installed here")
-def test_classic_is_the_default_with_its_legend_card(library, tmp_path):
+@pytest.mark.parametrize("colour", ["group", "area"])
+def test_classic_is_the_default_with_counts_in_the_sidebar(library, tmp_path, colour):
     html = viewer.render(
         structural.build_map(library, structural.mapped_shelves()), library, tmp_path
     )
-    dom = _dom(html, "colour=area")
+    dom = _dom(html, f"colour={colour}")
     body = re.search(r"<body[^>]*>", dom).group(0)
     assert 'data-ready="1"' in body and "data-error" not in body
-    card = re.search(r'<div id="legend-card"[^>]*>(.*?)</div>\s*<div id="loading"', dom, re.S)
-    assert card and "Brain map" in card.group(1) and "notes," in card.group(1)
-    assert 'id="legend-card" hidden' not in dom
+    counts = re.search(r'<div id="counts"[^>]*>(.*?)</div>', dom, re.S)
+    assert counts and "4 notes, " in counts.group(1) and "Drag to pan" in counts.group(1)
+    assert "legend-card" not in dom
+
+
+def test_classic_springs_follow_the_colouring():
+    template = viewer.TEMPLATE.read_text(encoding="utf-8")
+    assert 'if (state.style === "clouds") return "a";' in template
+    assert 'return state.colourBy === "area" ? "b" : "g";' in template
