@@ -286,7 +286,9 @@ function fromOklab([L0, A, B]) {
 // Blends are made in OKLCH: lightness mixes straight, hue turns the short way round, and
 // chroma stays at least the average of the two colours, so opposite hues (yellow and blue)
 // meet as a colour, not as grey. Grey notes (Cross-area, or the "Other" type group) take no
-// part: they are never blended and never tint or count as a foreign colour.
+// part: they are never blended and never tint or count as a foreign colour. The hue turns at
+// most 20°, so a bridge keeps its own colour family (yellow toward blue must not read as green).
+const MAX_HUE_SHIFT = (20 * Math.PI) / 180;
 const toLch = ([l, a, b]) => [l, Math.hypot(a, b), Math.atan2(b, a)];
 const fromLch = ([l, c, h]) => [l, c * Math.cos(h), c * Math.sin(h)];
 const isGrey = (n) => { const k = pureKey(n); return k === "cross" || k === "other"; };
@@ -294,7 +296,7 @@ function mixLch(own, other, t) {
   const dh = ((other[2] - own[2] + 3 * Math.PI) % (2 * Math.PI)) - Math.PI;
   return [own[0] + (other[0] - own[0]) * t,
     Math.max(own[1] + (other[1] - own[1]) * t, (own[1] + other[1]) / 2),
-    own[2] + dh * t];
+    own[2] + Math.max(-MAX_HUE_SHIFT, Math.min(MAX_HUE_SHIFT, dh * t))];
 }
 let blended = new Map();
 function computeBlends() {

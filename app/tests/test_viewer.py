@@ -1,5 +1,6 @@
 """Viewer: our own offline page over the structural map (D32 as amended 2026-10-31)."""
 
+import colorsys
 import json
 import math
 import re
@@ -377,3 +378,49 @@ def test_page_offers_three_layouts_with_force_as_the_default(library, tmp_path):
     text = html.read_text(encoding="utf-8")
     assert '<option value="force">Force</option><option value="radial">Radial sectors' in text
     assert _layout(html, "")["layout"] == "force"
+
+
+def _oklch_hue(hex_colour: str) -> float:
+    def lin(c):
+        return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+
+    if hex_colour.startswith("#"):
+        rgb = [int(hex_colour[i : i + 2], 16) / 255 for i in (1, 3, 5)]
+    else:  # hsl(h, s%, l%)
+        h, s, li = (float(x) for x in re.findall(r"[\d.]+", hex_colour))
+        rgb = colorsys.hls_to_rgb(h / 360, li / 100, s / 100)
+    r, g, b = (lin(c) for c in rgb)
+    lm = (0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b) ** (1 / 3)
+    mm = (0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b) ** (1 / 3)
+    sm = (0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b) ** (1 / 3)
+    a = 1.9779984951 * lm - 2.428592205 * mm + 0.4505937099 * sm
+    bb = 0.0259040371 * lm + 0.7827717662 * mm - 0.808675766 * sm
+    return math.degrees(math.atan2(bb, a))
+
+
+@pytest.mark.skipif(not EDGE.exists(), reason="Microsoft Edge is not installed here")
+def test_bridge_hue_turns_at_most_twenty_degrees(tmp_path):
+    root = tmp_path / "brain" / "library"
+    links = "## Facts\n\n- A fact. (src: self, 2030-01-01)\n\n## Links\n\n"
+    # A Learning (yellow) note linked only to Work (blue) notes: uncapped, its hue would turn
+    # about 60 degrees and read as green.
+    files = {
+        "04-learning/study.md": note(
+            "study",
+            area="04-learning",
+            body=links + "- related_to [[job]]\n- related_to [[team]]\n",
+        ),
+        "03-work-career/job.md": note("job", area="03-work-career", body=links),
+        "03-work-career/team.md": note("team", area="03-work-career", body=links),
+    }
+    for rel, text in files.items():
+        (root / rel).parent.mkdir(parents=True, exist_ok=True)
+        (root / rel).write_text(text, encoding="utf-8")
+    graph = structural.build_map(root, structural.mapped_shelves())
+    html = viewer.render(graph, root, tmp_path / "out")
+    colours = _body_json(_dom(html, "colour=area&debug=colours"), "colours")
+    study = colours["study"]
+    turn = abs(_oklch_hue(study["shown"]) - _oklch_hue(study["pure"]))
+    turn = min(turn, 360 - turn)
+    assert study["shown"] != study["pure"]
+    assert turn <= 21  # 20 degrees, plus rounding to hex
