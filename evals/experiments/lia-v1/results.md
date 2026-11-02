@@ -116,3 +116,26 @@ $5.06 of the $15 cap, judge included: 252 calls in the last session, and the led
    - on "what did X say" questions, give every fact about X's advice and the user's own position from the same note, plus what's missing.
 
 A rerun must be pre-registered again, with fresh held-out questions, because these fixes are tuned on the gate's failures.
+
+## v2 validation (Apollo hard-v8 only, Haiku 5.5, 3 runs; a check, not a gate)
+
+The fixes are in `prereg.md` under "v2 changes": the citation check runs on every answer; one quote unit (text before " (src:", tags included) inside «»; search before abstaining; the completeness and type-word rules; the shelf map only.
+
+| | v1 final | v2 final |
+|---|---|---|
+| Score per run (of 24) | 22, 23, 21 (mean 22.0) | 23, 23, 22 (mean 22.67) |
+| Partly correct | 2, 1, 3 | 1, 1, 2 |
+| Apollo traps (v13–v16) abstained or declined correctly | all | all (12 of 12) |
+| Shown citations, fresh re-check | 473 across three sets; 18 invented, all in unchecked abstains | 213 shown: 211 verified, 2 marked `[unverified]`, **0 invented** |
+| Citations in abstain answers | not checked | 13 checked; 0 failed after the retry |
+| Abstains sent back to search first | — | 2 of 11; both still abstained after the search (both traps) |
+| Routing recall | 0.97 | 0.97 |
+| $ / question | 0.0011 | 0.0013 |
+| p50 / p90 latency | 5.3 / 9.9 s | 5.9 / 8.3 s (no-search p50 6.0 s) |
+
+**Reading it:**
+- **The score:** +0.67 per run is within run-to-run noise (v1's range was 2). The fixes did not cost accuracy.
+- **Citations:** the citation failure mode is gone on this set. Both failing quotes were caught and marked: one dropped a `[stated]` tag, and one quoted a link line, not a fact.
+- **Not shown yet:** the life-specific failures (type-word routing, completeness on Q11-like questions) can only be shown on life hard-v2, which isn't written yet.
+
+**Tooling fix found during validation:** the `recheck` command still looked for the old `"` delimiter before `[unverified]`. Fixed. v1's count is unaffected, because v1's marks used `"`.

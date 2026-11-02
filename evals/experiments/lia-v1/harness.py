@@ -484,7 +484,7 @@ def recheck(arm: str, model: str) -> None:
                 opened = {s: library.note_text(s) for s in row.get("opened", [])}
                 for c in checks.check_citations(answer.replace(" [unverified]", ""), opened):
                     shown += 1
-                    tag = f'{c.quote}" [unverified]' in answer or f"{c.quote} [unverified]" in answer
+                    tag = any(f"{c.quote}{end} [unverified]" in answer for end in ('"', "»", ""))
                     if c.ok:
                         verified += 1
                     elif tag:
