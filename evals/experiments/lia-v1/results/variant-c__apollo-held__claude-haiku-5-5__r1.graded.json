@@ -1,0 +1,369 @@
+{
+ "arm": "variant-c",
+ "set": "apollo-held",
+ "model": "claude-haiku-5-5",
+ "run": 1,
+ "config": {
+  "variant": "C",
+  "model": "claude-haiku-5-5"
+ },
+ "pin": "f6fe26a",
+ "spent_after": 4.960262894999999,
+ "rows": [
+  {
+   "id": "apollo-held/y01",
+   "question": "How far apart, by date, were the first lunar touchdown and the first step onto the surface?",
+   "answer": "The gap was one calendar day. Touchdown came on 20 July 1969, and the first footfall followed on 21 July 1969 UTC. The lunar module Eagle set down in the Sea of Tranquility on 1969-07-20, and Neil Armstrong's first step onto the lunar surface is dated 1969-07-21 UTC.",
+   "abstain": false,
+   "opened": [
+    "apollo-11",
+    "apollo-11-mission-report",
+    "apollo-11-mission-report-ch-05",
+    "apollo-program",
+    "buzz-aldrin",
+    "charlie-duke",
+    "gene-kranz",
+    "lunar-module",
+    "michael-collins",
+    "neil-armstrong",
+    "program-alarms-1201-1202",
+    "tranquility-base"
+   ],
+   "picked": [
+    "apollo-11",
+    "tranquility-base"
+   ],
+   "citations": [],
+   "citation_check": null,
+   "searches": 0,
+   "cost_usd": 0.001251925,
+   "latency_ms": 5471.8,
+   "qid": "y01",
+   "set": "apollo-held",
+   "run": 1,
+   "arm": "variant-c",
+   "grade_terms": "correct",
+   "grade_judge": "correct",
+   "gold": [
+    "apollo-11",
+    "neil-armstrong"
+   ],
+   "recall": 1.0
+  },
+  {
+   "id": "apollo-held/y02",
+   "question": "The flight surgeon's worry led to an astronaut being removed from a crew. Which mission did that astronaut later fly, and who commanded it?",
+   "answer": "Ken Mattingly is the astronaut who was pulled from a crew, and he later flew Apollo 16, which John Young commanded. The results don't name a flight surgeon, but they tie Mattingly's removal to his rubella status: he was the only one of the five prime and backup crew members tested without rubella antibodies. Records show that his Apollo 13 command module pilot role was changed on 1970-04-10 at a KSC management meeting, and he was assigned to Apollo 16 as command module pilot.\n\nThe Apollo 16 entry lists John Young, Ken Mattingly and Charlie Duke as its crew, and Young was its commander.",
+   "abstain": false,
+   "opened": [
+    "apollo-13",
+    "apollo-16",
+    "apollo-program",
+    "charlie-duke",
+    "john-young",
+    "ken-mattingly"
+   ],
+   "picked": [
+    "apollo-16",
+    "john-young"
+   ],
+   "citations": [],
+   "citation_check": null,
+   "searches": 0,
+   "cost_usd": 0.00080073,
+   "latency_ms": 5234.3,
+   "qid": "y02",
+   "set": "apollo-held",
+   "run": 1,
+   "arm": "variant-c",
+   "grade_terms": "correct",
+   "grade_judge": "correct",
+   "gold": [
+    "rubella-crew-swap",
+    "ken-mattingly",
+    "apollo-16"
+   ],
+   "recall": 0.6666666666666666
+  },
+  {
+   "id": "apollo-held/y03",
+   "question": "Which was earlier, Buzz Aldrin's Gemini flight or the first Saturn V launch?",
+   "answer": "Buzz Aldrin's Gemini flight came first. His Gemini 12 mission took place in 1966 Flew Gemini 12 in 1966. The Saturn V's debut was later: its first launch was the uncrewed Apollo 4 mission on November 9, 1967 First launched uncrewed on Apollo 4 on 1967-11-09. That makes the Gemini flight about a year and a half earlier.",
+   "abstain": false,
+   "opened": [
+    "apollo-11",
+    "apollo-8",
+    "apollo-program",
+    "buzz-aldrin",
+    "lunar-orbit-rendezvous",
+    "neil-armstrong",
+    "saturn-v",
+    "wernher-von-braun"
+   ],
+   "picked": [
+    "buzz-aldrin",
+    "saturn-v"
+   ],
+   "citations": [],
+   "citation_check": null,
+   "searches": 0,
+   "cost_usd": 0.00070453,
+   "latency_ms": 4592.7,
+   "qid": "y03",
+   "set": "apollo-held",
+   "run": 1,
+   "arm": "variant-c",
+   "grade_terms": "correct",
+   "grade_judge": "correct",
+   "gold": [
+    "buzz-aldrin",
+    "saturn-v"
+   ],
+   "recall": 1.0
+  },
+  {
+   "id": "apollo-held/y04",
+   "question": "From which launch pad did Apollo 13 lift off?",
+   "answer": "NOT IN BRAIN\n\nThe search results do not say which launch pad Apollo 13 lifted off from. They give the launch date, 1970-04-11, but not the pad.",
+   "abstain": true,
+   "opened": [
+    "apollo-13",
+    "apollo-13-review-board",
+    "apollo-program",
+    "charlie-duke",
+    "co2-scrubber-adapter",
+    "fred-haise",
+    "free-return-trajectory",
+    "gene-kranz",
+    "jack-swigert",
+    "jim-lovell",
+    "john-young",
+    "ken-mattingly",
+    "lunar-module",
+    "mission-control-houston",
+    "oxygen-tank-2",
+    "rubella-crew-swap"
+   ],
+   "picked": [
+    "apollo-13"
+   ],
+   "citations": [],
+   "citation_check": null,
+   "searches": 0,
+   "cost_usd": 0.0008844300000000001,
+   "latency_ms": 3193.9,
+   "qid": "y04",
+   "set": "apollo-held",
+   "run": 1,
+   "arm": "variant-c",
+   "grade_terms": "correct_abstain",
+   "grade_judge": "correct_abstain",
+   "gold": [],
+   "recall": null
+  },
+  {
+   "id": "apollo-held/y05",
+   "question": "How many orbits of the Moon did Apollo 11 make?",
+   "answer": "NOT IN BRAIN\n\nThe search results don't say how many times Apollo 11 orbited the Moon. They cover the launch and splashdown dates, the landing, the crew roles, and some alarms during descent, but not the number of lunar orbits.",
+   "abstain": true,
+   "opened": [
+    "apollo-11",
+    "apollo-11-mission-report",
+    "apollo-program",
+    "buzz-aldrin",
+    "charlie-duke",
+    "gene-kranz",
+    "lunar-module",
+    "michael-collins",
+    "neil-armstrong",
+    "program-alarms-1201-1202",
+    "tranquility-base"
+   ],
+   "picked": [
+    "apollo-11"
+   ],
+   "citations": [],
+   "citation_check": null,
+   "searches": 0,
+   "cost_usd": 0.00065813,
+   "latency_ms": 3249.3,
+   "qid": "y05",
+   "set": "apollo-held",
+   "run": 1,
+   "arm": "variant-c",
+   "grade_terms": "correct_abstain",
+   "grade_judge": "correct_abstain",
+   "gold": [],
+   "recall": null
+  },
+  {
+   "id": "apollo-held/y06",
+   "question": "What did the AS-204 tragedy lead to?",
+   "answer": "NOT IN BRAIN\n\nThe search results never mention \"AS-204,\" so I can't confirm what it led to. The closest match is the Apollo 1 cabin fire, which may be the same event, but the results don't say so. Within that event, the results report that a cabin fire during a launch rehearsal test on 1967-01-27 claimed three astronauts. The results also say the disaster prompted a design change: the command module was reworked and gained a hatch that opens quickly.",
+   "abstain": true,
+   "opened": [
+    "apollo-1",
+    "apollo-program",
+    "command-service-module",
+    "north-american-aviation"
+   ],
+   "picked": [
+    "apollo-1"
+   ],
+   "citations": [],
+   "citation_check": null,
+   "searches": 0,
+   "cost_usd": 0.00065993,
+   "latency_ms": 6163.4,
+   "qid": "y06",
+   "set": "apollo-held",
+   "run": 1,
+   "arm": "variant-c",
+   "grade_terms": "wrong_abstain",
+   "grade_judge": "correct",
+   "gold": [
+    "apollo-1"
+   ],
+   "recall": 1.0
+  },
+  {
+   "id": "apollo-held/y07",
+   "question": "What is MSC-00171's other report number, and how many pages does the copy read for the brain have?",
+   "answer": "The Apollo 11 Mission Report's other report number is NASA-TM-X-62633. Report numbers MSC-00171 and NASA-TM-X-62633 (src: NTRS record 19700008096, 2026-10-24), so the NTRS record lists it alongside MSC-00171.\n\nThe copy read for this brain has 325 pages. The source notes that The PDF read for this brain has 325 pages (src: self, 2026-10-24).",
+   "abstain": false,
+   "opened": [
+    "apollo-11",
+    "apollo-11-mission-report",
+    "apollo-11-mission-report-ch-05"
+   ],
+   "picked": [
+    "apollo-11-mission-report"
+   ],
+   "citations": [],
+   "citation_check": null,
+   "searches": 0,
+   "cost_usd": 0.00046143000000000003,
+   "latency_ms": 3073.8,
+   "qid": "y07",
+   "set": "apollo-held",
+   "run": 1,
+   "arm": "variant-c",
+   "grade_terms": "correct",
+   "grade_judge": "correct",
+   "gold": [
+    "apollo-11-mission-report"
+   ],
+   "recall": 1.0
+  },
+  {
+   "id": "apollo-held/y08",
+   "question": "Who does the brain record as having a part in the Apollo 13 crew swap, and what was each person's part?",
+   "answer": "The search results name three people tied to the swap.\n\n- **Charlie Duke** started it. As backup lunar module pilot, he caught German measles and exposed the crews, which led to the change.\n- **Ken Mattingly** was the crew member removed. Tests showed he lacked protection against the virus: blood tests from the 1970-04-06 physicals showed he had no rubella immunity. He was then moved to Apollo 16 as command module pilot, per his reassignment to that mission.\n- **Jack Swigert** replaced him. He moved into the prime command module pilot role, having been the backup, and his immunity to rubella made him eligible to fly.\n\nThe decision itself was made at a KSC management meeting and announced at a press conference on 1970-04-10, according to the NASA history article on the measles episode.",
+   "abstain": false,
+   "opened": [
+    "apollo-11",
+    "apollo-13",
+    "apollo-13-measles-article",
+    "apollo-16",
+    "charlie-duke",
+    "jack-swigert",
+    "ken-mattingly",
+    "rubella-crew-swap"
+   ],
+   "picked": [
+    "rubella-crew-swap",
+    "charlie-duke"
+   ],
+   "citations": [],
+   "citation_check": null,
+   "searches": 0,
+   "cost_usd": 0.0009254300000000001,
+   "latency_ms": 7343.9,
+   "qid": "y08",
+   "set": "apollo-held",
+   "run": 1,
+   "arm": "variant-c",
+   "grade_terms": "partly_correct",
+   "grade_judge": "partly_correct",
+   "gold": [
+    "rubella-crew-swap",
+    "charlie-duke",
+    "ken-mattingly",
+    "jack-swigert"
+   ],
+   "recall": 1.0
+  },
+  {
+   "id": "apollo-held/y09",
+   "question": "The craft whose engine put Apollo 13 back on its loop around the Moon was built by which company, and what kind of lander was it?",
+   "answer": "The craft is the lunar module. Its descent engine handled the return to the loop: its descent engine burn put Apollo 13 back on a free-return path, which the free-return trajectory entry describes as Apollo 13 regained it with a lunar module descent engine burn after the explosion.\n\nThe manufacturer was Grumman, which is credited with having fabricated the vehicle for NASA's Apollo program. The company's entry notes that it Built the Apollo lunar module.\n\nAs for its type, the lunar module is described as a two-stage lander.",
+   "abstain": false,
+   "opened": [
+    "apollo-11",
+    "apollo-13",
+    "co2-scrubber-adapter",
+    "fred-haise",
+    "free-return-trajectory",
+    "grumman",
+    "lunar-module",
+    "lunar-orbit-rendezvous"
+   ],
+   "picked": [
+    "lunar-module",
+    "grumman"
+   ],
+   "citations": [],
+   "citation_check": null,
+   "searches": 0,
+   "cost_usd": 0.00083303,
+   "latency_ms": 5699.6,
+   "qid": "y09",
+   "set": "apollo-held",
+   "run": 1,
+   "arm": "variant-c",
+   "grade_terms": "correct",
+   "grade_judge": "correct",
+   "gold": [
+    "free-return-trajectory",
+    "lunar-module",
+    "grumman"
+   ],
+   "recall": 1.0
+  },
+  {
+   "id": "apollo-held/y10",
+   "question": "Charlie Duke and Gene Kranz both had a role in the same event. Which event, and what was each one's role?",
+   "answer": "Both men were involved with **Apollo 13**. Charlie Duke was its backup lunar module pilot, and Gene Kranz's team handled Mission Control during the mission.\n\n**Charlie Duke:** His illness set off the crew change. Duke, who was the backup, picked up German measles from a friend's child, and that exposure put the crews at risk. Blood tests then showed that Ken Mattingly lacked rubella immunity. The search results also link Duke to starting the crew swap, though that link gives no further detail.\n\n**Gene Kranz:** His role was as flight director. His team was at the console when Apollo 13's oxygen tank failed. The results also say he directed Apollo 13, but that appears only in a brief link entry without elaboration.\n\nThe results don't say whether Kranz had any role in the crew swap itself.",
+   "abstain": false,
+   "opened": [
+    "apollo-11",
+    "apollo-13",
+    "apollo-16",
+    "charlie-duke",
+    "gene-kranz",
+    "mission-control-houston",
+    "rubella-crew-swap"
+   ],
+   "picked": [
+    "charlie-duke",
+    "gene-kranz"
+   ],
+   "citations": [],
+   "citation_check": null,
+   "searches": 0,
+   "cost_usd": 0.00080333,
+   "latency_ms": 5643.4,
+   "qid": "y10",
+   "set": "apollo-held",
+   "run": 1,
+   "arm": "variant-c",
+   "grade_terms": "partly_correct",
+   "grade_judge": "wrong",
+   "gold": [
+    "charlie-duke",
+    "gene-kranz"
+   ],
+   "recall": 1.0
+  }
+ ]
+}

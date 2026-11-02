@@ -1,0 +1,1071 @@
+{
+ "arm": "final",
+ "set": "apollo-held",
+ "model": "claude-haiku-5-5",
+ "run": 2,
+ "config": {
+  "model": "claude-haiku-5-5",
+  "effort": "low",
+  "l0": false,
+  "neighbours": false,
+  "answer_model": null,
+  "maps": {
+   "format": "pipe",
+   "relationship": false,
+   "inverses": false,
+   "mentions": true,
+   "about_words": 25
+  }
+ },
+ "pin": "f6fe26a",
+ "spent_after": 4.874728059999996,
+ "rows": [
+  {
+   "id": "apollo-held/y01",
+   "question": "How far apart, by date, were the first lunar touchdown and the first step onto the surface?",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    }
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "apollo-11",
+       "neil-armstrong",
+       "tranquility-base",
+       "apollo-11-mission-report",
+       "apollo-11-mission-report-ch-05",
+       "lunar-module"
+      ]
+     },
+     "returned": [
+      "apollo-11",
+      "neil-armstrong",
+      "tranquility-base",
+      "apollo-11-mission-report",
+      "apollo-11-mission-report-ch-05",
+      "lunar-module"
+     ]
+    }
+   ],
+   "opened": [
+    "apollo-11",
+    "apollo-11-mission-report",
+    "apollo-11-mission-report-ch-05",
+    "lunar-module",
+    "neil-armstrong",
+    "tranquility-base"
+   ],
+   "answer": "The first lunar touchdown and the first step onto the surface were one day apart, by date.\n\n- Touchdown: Eagle landed on 1969-07-20 in the Sea of Tranquility. [[apollo-11]] \"[stated] Lunar module Eagle landed on 1969-07-20 in the Sea of Tranquility (src: NASA Apollo 11 mission page, 2026-10-24)\"\n- First step: Armstrong was the first person to step onto the lunar surface on 1969-07-21 UTC. [[neil-armstrong]] \"[stated] First person to step onto the lunar surface on 1969-07-21 UTC (src: NASA Apollo 11 mission page, 2026-10-24)\"\n\nThe notes give only dates, not touchdown or step times, so I can't say how many hours separated the two events.",
+   "abstain": false,
+   "citations": [
+    {
+     "slug": "apollo-11",
+     "quote": "[stated] Lunar module Eagle landed on 1969-07-20 in the Sea of Tranquility (src: NASA Apollo 11 mission page, 2026-10-24)",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "neil-armstrong",
+     "quote": "[stated] First person to step onto the lunar surface on 1969-07-21 UTC (src: NASA Apollo 11 mission page, 2026-10-24)",
+     "ok": true,
+     "reason": ""
+    }
+   ],
+   "citation_check": {
+    "total": 2,
+    "failed": 0,
+    "retried": true
+   },
+   "searches": 0,
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 107,
+     "cache_write": 0,
+     "cache_read": 5411,
+     "output_tokens": 227,
+     "cost_usd": 0.00017831,
+     "latency_ms": 1799.7
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 3465,
+     "cache_write": 0,
+     "cache_read": 5411,
+     "output_tokens": 396,
+     "cost_usd": 0.00059861,
+     "latency_ms": 2358.7
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 4113,
+     "cache_write": 0,
+     "cache_read": 5411,
+     "output_tokens": 465,
+     "cost_usd": 0.00069791,
+     "latency_ms": 2150.0
+    }
+   ],
+   "cost_usd": 0.0014748299999999999,
+   "latency_ms": 6309.8,
+   "qid": "y01",
+   "set": "apollo-held",
+   "run": 2,
+   "arm": "final"
+  },
+  {
+   "id": "apollo-held/y02",
+   "question": "The flight surgeon's worry led to an astronaut being removed from a crew. Which mission did that astronaut later fly, and who commanded it?",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    }
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "ken-mattingly",
+       "apollo-16",
+       "john-young",
+       "rubella-crew-swap"
+      ]
+     },
+     "returned": [
+      "ken-mattingly",
+      "apollo-16",
+      "john-young",
+      "rubella-crew-swap"
+     ]
+    }
+   ],
+   "opened": [
+    "apollo-16",
+    "john-young",
+    "ken-mattingly",
+    "rubella-crew-swap"
+   ],
+   "answer": "The astronaut was Ken Mattingly. The flight surgeon, Charles Berry, worried that Mattingly could fall ill alone in the command module in lunar orbit, and that led to his removal from Apollo 13 [[rubella-crew-swap]] \"[stated] Flight surgeon Charles Berry worried Mattingly could fall ill alone in the command module in lunar orbit (src: NASA history Apollo 13 measles article, 2026-10-24)\".\n\nHe later flew Apollo 16 as command module pilot [[ken-mattingly]] \"[stated] Assigned to Apollo 16 as command module pilot (was Apollo 13 command module pilot, changed 1970-04-10 by KSC management meeting) (src: NASA history Apollo 13 measles article, 2026-10-24)\".\n\nApollo 16 was commanded by John Young [[apollo-16]] \"[stated] Crew was John Young, Ken Mattingly and Charlie Duke (src: NASA history, 2026-10-24)\"; [[john-young]] \"[stated] Commander of Apollo 16 (src: NASA biography, 2026-10-24)\".",
+   "abstain": false,
+   "citations": [
+    {
+     "slug": "rubella-crew-swap",
+     "quote": "[stated] Flight surgeon Charles Berry worried Mattingly could fall ill alone in the command module in lunar orbit (src: NASA history Apollo 13 measles article, 2026-10-24)",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "ken-mattingly",
+     "quote": "[stated] Assigned to Apollo 16 as command module pilot (was Apollo 13 command module pilot, changed 1970-04-10 by KSC management meeting) (src: NASA history Apollo 13 measles article, 2026-10-24)",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "apollo-16",
+     "quote": "[stated] Crew was John Young, Ken Mattingly and Charlie Duke (src: NASA history, 2026-10-24)",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "john-young",
+     "quote": "[stated] Commander of Apollo 16 (src: NASA biography, 2026-10-24)",
+     "ok": true,
+     "reason": ""
+    }
+   ],
+   "citation_check": {
+    "total": 4,
+    "failed": 0,
+    "retried": true
+   },
+   "searches": 0,
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 125,
+     "cache_write": 0,
+     "cache_read": 5411,
+     "output_tokens": 224,
+     "cost_usd": 0.00017861000000000003,
+     "latency_ms": 1373.1
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 2104,
+     "cache_write": 0,
+     "cache_read": 5411,
+     "output_tokens": 353,
+     "cost_usd": 0.00044101,
+     "latency_ms": 1624.9
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 2866,
+     "cache_write": 0,
+     "cache_read": 5411,
+     "output_tokens": 775,
+     "cost_usd": 0.0007282100000000001,
+     "latency_ms": 3101.7
+    }
+   ],
+   "cost_usd": 0.0013478300000000002,
+   "latency_ms": 6101.1,
+   "qid": "y02",
+   "set": "apollo-held",
+   "run": 2,
+   "arm": "final"
+  },
+  {
+   "id": "apollo-held/y03",
+   "question": "Which was earlier, Buzz Aldrin's Gemini flight or the first Saturn V launch?",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    }
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "buzz-aldrin",
+       "saturn-v"
+      ]
+     },
+     "returned": [
+      "buzz-aldrin",
+      "saturn-v"
+     ]
+    },
+    {
+     "tool": "search_notes",
+     "input": {
+      "query": "Gemini Aldrin",
+      "k": 10
+     },
+     "returned": [
+      "buzz-aldrin | 6.8 | name: \"Buzz Aldrin\"",
+      "neil-armstrong | 4.35 | - [stated] Earlier commanded Gemini 8 in 1966, the first docking of two spacecraft in orbit (src: NASA biography, 2026-10-24)",
+      "apollo-11 | 3.44 | description: \"July 1969 first crewed lunar landing: Armstrong, Aldrin and Collins, Eagle landed at Tranquility Base\"",
+      "jim-lovell | 3.13 | - [stated] Flew Gemini 7 and Gemini 12 before Apollo (src: NASA biography, 2026-10-24)",
+      "michael-collins | 2.46 | - [stated] Earlier flew Gemini 10 in 1966 (src: NASA biography, 2026-10-24)",
+      "lunar-orbit-rendezvous | 2.36 | - studied by [[buzz-aldrin]]"
+     ]
+    }
+   ],
+   "opened": [
+    "buzz-aldrin",
+    "saturn-v"
+   ],
+   "answer": "Buzz Aldrin's Gemini flight was earlier. His note says he \"Flew Gemini 12 in 1966\" (src: NASA biography, 2026-10-24) [[buzz-aldrin]] \"- [stated] Flew Gemini 12 in 1966 (src: NASA biography, 2026-10-24)\".\n\nThe first Saturn V launch was Apollo 4 on 9 November 1967: [[saturn-v]] \"- [stated] First launched uncrewed on Apollo 4 on 1967-11-09 (src: NASA history, 2026-10-24)\".\n\nThe Gemini note gives only the year, so 1966 falls before 1967. The brain does not give the exact Gemini 12 date.",
+   "abstain": false,
+   "citations": [
+    {
+     "slug": "buzz-aldrin",
+     "quote": "- [stated] Flew Gemini 12 in 1966 (src: NASA biography, 2026-10-24)",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "saturn-v",
+     "quote": "- [stated] First launched uncrewed on Apollo 4 on 1967-11-09 (src: NASA history, 2026-10-24)",
+     "ok": true,
+     "reason": ""
+    }
+   ],
+   "citation_check": {
+    "total": 2,
+    "failed": 0,
+    "retried": false
+   },
+   "searches": 1,
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 113,
+     "cache_write": 0,
+     "cache_read": 5411,
+     "output_tokens": 293,
+     "cost_usd": 0.00021191000000000002,
+     "latency_ms": 1740.9
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 1570,
+     "cache_write": 0,
+     "cache_read": 5411,
+     "output_tokens": 401,
+     "cost_usd": 0.00041161,
+     "latency_ms": 2199.0
+    }
+   ],
+   "cost_usd": 0.00062352,
+   "latency_ms": 3942.4,
+   "qid": "y03",
+   "set": "apollo-held",
+   "run": 2,
+   "arm": "final"
+  },
+  {
+   "id": "apollo-held/y04",
+   "question": "From which launch pad did Apollo 13 lift off?",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    }
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "apollo-13",
+       "saturn-v",
+       "apollo-program",
+       "command-service-module"
+      ]
+     },
+     "returned": [
+      "apollo-13",
+      "saturn-v",
+      "apollo-program",
+      "command-service-module"
+     ]
+    },
+    {
+     "tool": "search_notes",
+     "input": {
+      "query": "launch pad launch complex 39",
+      "k": 5
+     },
+     "returned": [
+      "apollo-1 | 5.71 | description: 1967 launch-rehearsal cabin fire that killed three astronauts and forced a command module redesign",
+      "apollo-11 | 4.22 | - [stated] Launched 1969-07-16 from Kennedy Space Center Launch Complex 39A (src: NASA Apollo 11 mission page, 2026-10-24)",
+      "jack-swigert | 2.21 | description: Backup pilot who replaced Ken Mattingly as Apollo 13 command module pilot one day before launch",
+      "saturn-v | 1.68 | - [stated] Three-stage launch vehicle about 110 metres tall (src: NASA history, 2026-10-24)",
+      "mission-control-houston | 1.65 | - [stated] Controlled Apollo flights after launch (src: NASA history, 2026-10-24)"
+     ]
+    }
+   ],
+   "opened": [
+    "apollo-13",
+    "apollo-program",
+    "command-service-module",
+    "saturn-v"
+   ],
+   "answer": "Not in your brain. The Apollo 13 note records its launch date (1970-04-11) but not the launch pad. The only launch-pad fact I found is for Apollo 11, which lifted off from Launch Complex 39A ([[apollo-11]] \"Launched 1969-07-16 from Kennedy Space Center Launch Complex 39A (src: NASA Apollo 11 mission page, 2026-10-24)\"). That does not establish Apollo 13's pad, so I can't answer from the brain. A note on Apollo 13's launch or the Kennedy launch complexes would be needed.",
+   "abstain": true,
+   "citations": [],
+   "citation_check": {
+    "total": 0,
+    "failed": 0,
+    "retried": false
+   },
+   "searches": 1,
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 97,
+     "cache_write": 0,
+     "cache_read": 5411,
+     "output_tokens": 218,
+     "cost_usd": 0.00017281,
+     "latency_ms": 1743.9
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 2248,
+     "cache_write": 0,
+     "cache_read": 5411,
+     "output_tokens": 133,
+     "cost_usd": 0.00034541000000000004,
+     "latency_ms": 1138.2
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 2663,
+     "cache_write": 0,
+     "cache_read": 5411,
+     "output_tokens": 197,
+     "cost_usd": 0.00041891000000000004,
+     "latency_ms": 1490.6
+    }
+   ],
+   "cost_usd": 0.0009371300000000001,
+   "latency_ms": 4375.8,
+   "qid": "y04",
+   "set": "apollo-held",
+   "run": 2,
+   "arm": "final"
+  },
+  {
+   "id": "apollo-held/y05",
+   "question": "How many orbits of the Moon did Apollo 11 make?",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    }
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "apollo-11",
+       "apollo-11-mission-report",
+       "apollo-11-mission-report-ch-05",
+       "command-service-module",
+       "michael-collins"
+      ]
+     },
+     "returned": [
+      "apollo-11",
+      "apollo-11-mission-report",
+      "apollo-11-mission-report-ch-05",
+      "command-service-module",
+      "michael-collins"
+     ]
+    },
+    {
+     "tool": "search_notes",
+     "input": {
+      "query": "Apollo 11 revolutions orbits around the Moon Columbia",
+      "k": 5
+     },
+     "returned": [
+      "free-return-trajectory | 8.2 | description: Path that swings a spacecraft around the Moon and back to Earth without a major engine burn",
+      "michael-collins | 5.91 | description: Apollo 11 command module pilot who stayed in lunar orbit aboard Columbia",
+      "command-service-module | 5.52 | description: \"North American's crew capsule plus service module: Columbia on Apollo 11, Odyssey on Apollo 13\"",
+      "apollo-8 | 5.22 | name: \"Apollo 8\"",
+      "apollo-11 | 4.22 | name: \"Apollo 11\""
+     ]
+    }
+   ],
+   "opened": [
+    "apollo-11",
+    "apollo-11-mission-report",
+    "apollo-11-mission-report-ch-05",
+    "command-service-module",
+    "michael-collins"
+   ],
+   "answer": "Not in your brain. The notes on Apollo 11 (apollo-11, the Apollo 11 Mission Report and its powered-descent chunk, command-service-module, michael-collins) say Collins stayed in lunar orbit aboard Columbia, but none gives the number of lunar orbits.",
+   "abstain": true,
+   "citations": [],
+   "citation_check": {
+    "total": 0,
+    "failed": 0,
+    "retried": false
+   },
+   "searches": 1,
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 99,
+     "cache_write": 0,
+     "cache_read": 5411,
+     "output_tokens": 206,
+     "cost_usd": 0.00016701,
+     "latency_ms": 1725.5
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 2815,
+     "cache_write": 0,
+     "cache_read": 5411,
+     "output_tokens": 134,
+     "cost_usd": 0.00040261,
+     "latency_ms": 1126.1
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 3147,
+     "cache_write": 0,
+     "cache_read": 5411,
+     "output_tokens": 99,
+     "cost_usd": 0.0004183100000000001,
+     "latency_ms": 1066.0
+    }
+   ],
+   "cost_usd": 0.0009879300000000001,
+   "latency_ms": 3931.3,
+   "qid": "y05",
+   "set": "apollo-held",
+   "run": 2,
+   "arm": "final"
+  },
+  {
+   "id": "apollo-held/y06",
+   "question": "What did the AS-204 tragedy lead to?",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    }
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "apollo-1"
+      ]
+     },
+     "returned": [
+      "apollo-1"
+     ]
+    }
+   ],
+   "opened": [
+    "apollo-1"
+   ],
+   "answer": "The AS-204 tragedy, the Apollo 1 cabin fire, led to a command module redesign that included a quick-opening hatch. [[apollo-1]] \"[stated] Led to a command module redesign that included a quick-opening hatch (src: NASA history, 2026-10-24)\"",
+   "abstain": false,
+   "citations": [
+    {
+     "slug": "apollo-1",
+     "quote": "[stated] Led to a command module redesign that included a quick-opening hatch (src: NASA history, 2026-10-24)",
+     "ok": true,
+     "reason": ""
+    }
+   ],
+   "citation_check": {
+    "total": 1,
+    "failed": 0,
+    "retried": true
+   },
+   "searches": 0,
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 95,
+     "cache_write": 0,
+     "cache_read": 5411,
+     "output_tokens": 131,
+     "cost_usd": 0.00012911000000000002,
+     "latency_ms": 1354.0
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 605,
+     "cache_write": 0,
+     "cache_read": 5411,
+     "output_tokens": 233,
+     "cost_usd": 0.00023111,
+     "latency_ms": 1513.4
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 1083,
+     "cache_write": 0,
+     "cache_read": 5411,
+     "output_tokens": 195,
+     "cost_usd": 0.00025991,
+     "latency_ms": 1500.1
+    }
+   ],
+   "cost_usd": 0.00062013,
+   "latency_ms": 4368.2,
+   "qid": "y06",
+   "set": "apollo-held",
+   "run": 2,
+   "arm": "final"
+  },
+  {
+   "id": "apollo-held/y07",
+   "question": "What is MSC-00171's other report number, and how many pages does the copy read for the brain have?",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    }
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "apollo-11-mission-report",
+       "apollo-11-mission-report-ch-05"
+      ]
+     },
+     "returned": [
+      "apollo-11-mission-report",
+      "apollo-11-mission-report-ch-05"
+     ]
+    }
+   ],
+   "opened": [
+    "apollo-11-mission-report",
+    "apollo-11-mission-report-ch-05"
+   ],
+   "answer": "The other report number for MSC-00171 is NASA-TM-X-62633. The report's fact line reads \"Report numbers MSC-00171 and NASA-TM-X-62633 (src: NTRS record 19700008096, 2026-10-24)\" [[apollo-11-mission-report]].\n\nThe copy the brain holds has 325 pages. The fact line reads \"The PDF read for this brain has 325 pages (src: self, 2026-10-24)\" [[apollo-11-mission-report]].",
+   "abstain": false,
+   "citations": [],
+   "citation_check": {
+    "total": 0,
+    "failed": 0,
+    "retried": false
+   },
+   "searches": 0,
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 108,
+     "cache_write": 0,
+     "cache_read": 5411,
+     "output_tokens": 178,
+     "cost_usd": 0.00015391000000000002,
+     "latency_ms": 2852.0
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 1534,
+     "cache_write": 0,
+     "cache_read": 5411,
+     "output_tokens": 164,
+     "cost_usd": 0.00028951,
+     "latency_ms": 2341.0
+    }
+   ],
+   "cost_usd": 0.00044342000000000003,
+   "latency_ms": 5193.3,
+   "qid": "y07",
+   "set": "apollo-held",
+   "run": 2,
+   "arm": "final"
+  },
+  {
+   "id": "apollo-held/y08",
+   "question": "Who does the brain record as having a part in the Apollo 13 crew swap, and what was each person's part?",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    }
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "rubella-crew-swap",
+       "charlie-duke",
+       "ken-mattingly",
+       "jack-swigert",
+       "apollo-13-measles-article",
+       "jim-lovell"
+      ]
+     },
+     "returned": [
+      "rubella-crew-swap",
+      "charlie-duke",
+      "ken-mattingly",
+      "jack-swigert",
+      "apollo-13-measles-article",
+      "jim-lovell"
+     ]
+    }
+   ],
+   "opened": [
+    "apollo-13-measles-article",
+    "charlie-duke",
+    "jack-swigert",
+    "jim-lovell",
+    "ken-mattingly",
+    "rubella-crew-swap"
+   ],
+   "answer": "The brain names four parties to the Apollo 13 crew swap.\n\n- **Charlie Duke**, backup lunar module pilot, caught German measles and started the swap. [[rubella-crew-swap]] \"[stated] Backup lunar module pilot Charlie Duke caught German measles and exposed the crews (src: NASA history Apollo 13 measles article, 2026-10-24)\"; [[charlie-duke]] \"[stated] Caught German measles from a friend's 3-year-old son about three weeks before the Apollo 13 launch (src: NASA history Apollo 13 measles article, 2026-10-24)\"\n- **Ken Mattingly**, the Apollo 13 command module pilot, was removed. Blood tests showed he had no rubella immunity, and he never contracted German measles. [[rubella-crew-swap]] \"[stated] Blood tests from the 1970-04-06 physicals showed Ken Mattingly had no rubella immunity (src: NASA history Apollo 13 measles article, 2026-10-24)\"; [[ken-mattingly]] \"[stated] Never contracted German measles (src: NASA history Apollo 13 measles article, 2026-10-24)\"\n- **Jack Swigert**, the backup command module pilot, replaced Mattingly because he was immune to rubella and so eligible to fly. [[jack-swigert]] \"[stated] Was immune to rubella, which made him eligible to fly (src: NASA history Apollo 13 measles article, 2026-10-24)\"\n- **Charles Berry**, a flight surgeon, worried that Mattingly could fall ill alone in the command module in lunar orbit. The brain records this only in the topic note. [[rubella-crew-swap]] \"[stated] Flight surgeon Charles Berry worried Mattingly could fall ill alone in the command module in lunar orbit (src: NASA history Apollo 13 measles article, 2026-10-24)\"\n\nThe swap was decided at a KSC management meeting and announced on 1970-04-10. [[rubella-crew-swap]] \"[stated] The swap was decided at a KSC management meeting and announced at a press conference on 1970-04-10 (src: NASA history Apollo 13 measles article, 2026-10-24)\"",
+   "abstain": false,
+   "citations": [
+    {
+     "slug": "rubella-crew-swap",
+     "quote": "[stated] Backup lunar module pilot Charlie Duke caught German measles and exposed the crews (src: NASA history Apollo 13 measles article, 2026-10-24)",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "charlie-duke",
+     "quote": "[stated] Caught German measles from a friend's 3-year-old son about three weeks before the Apollo 13 launch (src: NASA history Apollo 13 measles article, 2026-10-24)",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "rubella-crew-swap",
+     "quote": "[stated] Blood tests from the 1970-04-06 physicals showed Ken Mattingly had no rubella immunity (src: NASA history Apollo 13 measles article, 2026-10-24)",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "ken-mattingly",
+     "quote": "[stated] Never contracted German measles (src: NASA history Apollo 13 measles article, 2026-10-24)",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "jack-swigert",
+     "quote": "[stated] Was immune to rubella, which made him eligible to fly (src: NASA history Apollo 13 measles article, 2026-10-24)",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "rubella-crew-swap",
+     "quote": "[stated] Flight surgeon Charles Berry worried Mattingly could fall ill alone in the command module in lunar orbit (src: NASA history Apollo 13 measles article, 2026-10-24)",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "rubella-crew-swap",
+     "quote": "[stated] The swap was decided at a KSC management meeting and announced at a press conference on 1970-04-10 (src: NASA history Apollo 13 measles article, 2026-10-24)",
+     "ok": true,
+     "reason": ""
+    }
+   ],
+   "citation_check": {
+    "total": 7,
+    "failed": 0,
+    "retried": true
+   },
+   "searches": 0,
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 112,
+     "cache_write": 0,
+     "cache_read": 5411,
+     "output_tokens": 173,
+     "cost_usd": 0.00015181,
+     "latency_ms": 1265.7
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 3078,
+     "cache_write": 0,
+     "cache_read": 5411,
+     "output_tokens": 875,
+     "cost_usd": 0.0007994100000000001,
+     "latency_ms": 3790.0
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 4620,
+     "cache_write": 0,
+     "cache_read": 5411,
+     "output_tokens": 1486,
+     "cost_usd": 0.0012591100000000001,
+     "latency_ms": 5119.9
+    }
+   ],
+   "cost_usd": 0.0022103300000000004,
+   "latency_ms": 10178.5,
+   "qid": "y08",
+   "set": "apollo-held",
+   "run": 2,
+   "arm": "final"
+  },
+  {
+   "id": "apollo-held/y09",
+   "question": "The craft whose engine put Apollo 13 back on its loop around the Moon was built by which company, and what kind of lander was it?",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    }
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "lunar-module",
+       "grumman",
+       "apollo-13"
+      ]
+     },
+     "returned": [
+      "lunar-module",
+      "grumman",
+      "apollo-13"
+     ]
+    }
+   ],
+   "opened": [
+    "apollo-13",
+    "grumman",
+    "lunar-module"
+   ],
+   "answer": "The craft was the lunar module Aquarius, and its descent engine burn put Apollo 13 back on a free-return path [[lunar-module]] \"[stated] Its descent engine burn put Apollo 13 back on a free-return path (src: NASA Apollo 13 mission page, 2026-10-24)\". The lunar module was built by Grumman [[lunar-module]] \"[stated] Two-stage lander built by Grumman (src: NASA history, 2026-10-24)\". It is a two-stage lander [[lunar-module]] \"[stated] Two-stage lander built by Grumman (src: NASA history, 2026-10-24)\". The Grumman note also confirms it [[grumman]] \"[stated] Built the Apollo lunar module (src: NASA history, 2026-10-24)\".",
+   "abstain": false,
+   "citations": [
+    {
+     "slug": "lunar-module",
+     "quote": "[stated] Its descent engine burn put Apollo 13 back on a free-return path (src: NASA Apollo 13 mission page, 2026-10-24)",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "lunar-module",
+     "quote": "[stated] Two-stage lander built by Grumman (src: NASA history, 2026-10-24)",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "lunar-module",
+     "quote": "[stated] Two-stage lander built by Grumman (src: NASA history, 2026-10-24)",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "grumman",
+     "quote": "[stated] Built the Apollo lunar module (src: NASA history, 2026-10-24)",
+     "ok": true,
+     "reason": ""
+    }
+   ],
+   "citation_check": {
+    "total": 4,
+    "failed": 0,
+    "retried": true
+   },
+   "searches": 0,
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 120,
+     "cache_write": 0,
+     "cache_read": 5411,
+     "output_tokens": 333,
+     "cost_usd": 0.00023261,
+     "latency_ms": 1979.9
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 1791,
+     "cache_write": 0,
+     "cache_read": 5411,
+     "output_tokens": 201,
+     "cost_usd": 0.00033371000000000003,
+     "latency_ms": 1304.6
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 2268,
+     "cache_write": 0,
+     "cache_read": 5411,
+     "output_tokens": 434,
+     "cost_usd": 0.0004979100000000001,
+     "latency_ms": 2175.8
+    }
+   ],
+   "cost_usd": 0.0010642300000000002,
+   "latency_ms": 5461.9,
+   "qid": "y09",
+   "set": "apollo-held",
+   "run": 2,
+   "arm": "final"
+  },
+  {
+   "id": "apollo-held/y10",
+   "question": "Charlie Duke and Gene Kranz both had a role in the same event. Which event, and what was each one's role?",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    }
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "charlie-duke",
+       "gene-kranz",
+       "apollo-11",
+       "apollo-13"
+      ]
+     },
+     "returned": [
+      "charlie-duke",
+      "gene-kranz",
+      "apollo-11",
+      "apollo-13"
+     ]
+    }
+   ],
+   "opened": [
+    "apollo-11",
+    "apollo-13",
+    "charlie-duke",
+    "gene-kranz"
+   ],
+   "answer": "Both men had roles in the Apollo 11 landing, and both also appear in Apollo 13.\n\n**Apollo 11 (July 1969 lunar landing):**\n- **Charlie Duke** was capsule communicator (CAPCOM) during the landing. [[charlie-duke]] \"[stated] Was capsule communicator during the Apollo 11 landing (src: NASA Apollo 11 mission page, 2026-10-24)\"\n- **Gene Kranz** was flight director for the landing. [[gene-kranz]] \"[stated] Flight director for the Apollo 11 lunar landing (src: NASA history, 2026-10-24)\"\n\n**Apollo 13 (April 1970):** The notes also link both men to this mission, with different roles.\n- Duke was the backup lunar module pilot, and he caught German measles, which started the crew swap. [[charlie-duke]] \"[stated] Backup lunar module pilot for Apollo 13 (src: NASA history Apollo 13 measles article, 2026-10-24)\"\n- Kranz's team was on console when the oxygen tank failed. [[gene-kranz]] \"[stated] His team was on console when Apollo 13's oxygen tank failed (src: NASA history, 2026-10-24)\"\n\nThe Apollo 11 note is the one where both had a role in the same event, so that is the most direct answer.",
+   "abstain": false,
+   "citations": [
+    {
+     "slug": "charlie-duke",
+     "quote": "[stated] Was capsule communicator during the Apollo 11 landing (src: NASA Apollo 11 mission page, 2026-10-24)",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "gene-kranz",
+     "quote": "[stated] Flight director for the Apollo 11 lunar landing (src: NASA history, 2026-10-24)",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "charlie-duke",
+     "quote": "[stated] Backup lunar module pilot for Apollo 13 (src: NASA history Apollo 13 measles article, 2026-10-24)",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "gene-kranz",
+     "quote": "[stated] His team was on console when Apollo 13's oxygen tank failed (src: NASA history, 2026-10-24)",
+     "ok": true,
+     "reason": ""
+    }
+   ],
+   "citation_check": {
+    "total": 4,
+    "failed": 0,
+    "retried": true
+   },
+   "searches": 0,
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 115,
+     "cache_write": 0,
+     "cache_read": 5411,
+     "output_tokens": 235,
+     "cost_usd": 0.00018311,
+     "latency_ms": 1440.5
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 2389,
+     "cache_write": 0,
+     "cache_read": 5411,
+     "output_tokens": 757,
+     "cost_usd": 0.0006715099999999999,
+     "latency_ms": 3594.5
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 3504,
+     "cache_write": 0,
+     "cache_read": 5411,
+     "output_tokens": 711,
+     "cost_usd": 0.00076001,
+     "latency_ms": 2758.0
+    }
+   ],
+   "cost_usd": 0.00161463,
+   "latency_ms": 7794.9,
+   "qid": "y10",
+   "set": "apollo-held",
+   "run": 2,
+   "arm": "final"
+  }
+ ]
+}
