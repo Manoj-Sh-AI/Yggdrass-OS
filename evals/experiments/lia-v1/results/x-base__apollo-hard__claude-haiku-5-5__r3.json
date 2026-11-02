@@ -1,0 +1,3402 @@
+{
+ "arm": "x-base",
+ "set": "apollo-hard",
+ "model": "claude-haiku-5-5",
+ "run": 3,
+ "config": {
+  "model": "claude-haiku-5-5",
+  "effort": "low",
+  "l0": false,
+  "neighbours": false,
+  "answer_model": null,
+  "maps": {
+   "format": "pipe",
+   "relationship": false,
+   "inverses": false,
+   "mentions": true,
+   "about_words": 25
+  },
+  "owner_names": [],
+  "plan": false,
+  "coverage": false,
+  "siblings": false,
+  "verdict": false,
+  "capability": false,
+  "upcoming": false,
+  "escalate": null,
+  "today": "2026-11-02",
+  "horizon_days": 120
+ },
+ "pin": "f6fe26a",
+ "spent_after": 0.09901232000000004,
+ "rows": [
+  {
+   "id": "apollo-hard/v01",
+   "question": "Which company built the spacecraft Michael Collins stayed in while the first Moon landing took place?",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    },
+    "owner_names": [],
+    "plan": false,
+    "coverage": false,
+    "siblings": false,
+    "verdict": false,
+    "capability": false,
+    "upcoming": false,
+    "escalate": null,
+    "today": "2026-11-02",
+    "horizon_days": 120
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "michael-collins",
+       "command-service-module",
+       "north-american-aviation"
+      ]
+     },
+     "returned": [
+      "michael-collins",
+      "command-service-module",
+      "north-american-aviation"
+     ]
+    }
+   ],
+   "opened": [
+    "command-service-module",
+    "michael-collins",
+    "north-american-aviation"
+   ],
+   "answer": "You're right, I quoted those without their `[stated]` tags. Michael Collins stayed in lunar orbit aboard the command module Columbia during the landing [1]. Columbia belonged to the command and service module, which North American Aviation built [2]. North American was the prime contractor for that module [3].\n\n[1] [[michael-collins]] «[stated] Stayed in lunar orbit aboard the command module Columbia during the landing»\n[2] [[command-service-module]] «[stated] Built by North American Aviation»\n[3] [[north-american-aviation]] «[stated] Prime contractor for the Apollo command and service module»",
+   "abstain": false,
+   "third_person": [],
+   "citations": [
+    {
+     "slug": "michael-collins",
+     "quote": "[stated] Stayed in lunar orbit aboard the command module Columbia during the landing",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "command-service-module",
+     "quote": "[stated] Built by North American Aviation",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "north-american-aviation",
+     "quote": "[stated] Prime contractor for the Apollo command and service module",
+     "ok": true,
+     "reason": ""
+    }
+   ],
+   "citation_check": {
+    "total": 3,
+    "failed": 0,
+    "retried": true
+   },
+   "searches": 0,
+   "abstain_search": false,
+   "plan": null,
+   "effort": null,
+   "escalated": false,
+   "coverage": [],
+   "verdict": null,
+   "siblings": {
+    "phrases": [],
+    "lines": []
+   },
+   "upcoming_loaded": false,
+   "write_offers": [],
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 110,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 201,
+     "cost_usd": 0.00017296,
+     "latency_ms": 1328.8
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 1422,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 189,
+     "cost_usd": 0.00029816,
+     "latency_ms": 1318.5
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 1902,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 373,
+     "cost_usd": 0.00043816000000000005,
+     "latency_ms": 1945.1
+    }
+   ],
+   "cost_usd": 0.00090928,
+   "latency_ms": 4593.1,
+   "qid": "v01",
+   "set": "apollo-hard",
+   "run": 3,
+   "arm": "x-base"
+  },
+  {
+   "id": "apollo-hard/v02",
+   "question": "For about how long were the heaters of the tank that later exploded on Apollo 13 run on ground power before launch, and what did the investigating board say started the explosion?",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    },
+    "owner_names": [],
+    "plan": false,
+    "coverage": false,
+    "siblings": false,
+    "verdict": false,
+    "capability": false,
+    "upcoming": false,
+    "escalate": null,
+    "today": "2026-11-02",
+    "horizon_days": 120
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "oxygen-tank-2",
+       "apollo-13-review-board-report",
+       "apollo-13-review-board",
+       "beech-aircraft",
+       "north-american-aviation",
+       "apollo-13"
+      ]
+     },
+     "returned": [
+      "oxygen-tank-2",
+      "apollo-13-review-board-report",
+      "apollo-13-review-board",
+      "beech-aircraft",
+      "north-american-aviation",
+      "apollo-13"
+     ]
+    }
+   ],
+   "opened": [
+    "apollo-13",
+    "apollo-13-review-board",
+    "apollo-13-review-board-report",
+    "beech-aircraft",
+    "north-american-aviation",
+    "oxygen-tank-2"
+   ],
+   "answer": "The heaters in oxygen tank No. 2 ran on 65-volt ground power for about eight hours before launch [1]. The Apollo 13 Review Board traced the explosion to an electrically started fire in that tank [2]. The board's report called the switch failure a serious oversight that all parties share [3].\n\n[1] [[oxygen-tank-2]] «[stated] Before launch it was emptied by running its heaters on 65-volt ground power for about eight hours»\n[2] [[apollo-13-review-board]] «[stated] Traced the explosion to an electrically started fire in oxygen tank No. 2»\n[3] [[apollo-13-review-board-report]] «[stated] Called the switch failure a serious oversight in which all parties share»",
+   "abstain": false,
+   "third_person": [],
+   "citations": [
+    {
+     "slug": "oxygen-tank-2",
+     "quote": "[stated] Before launch it was emptied by running its heaters on 65-volt ground power for about eight hours",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "apollo-13-review-board",
+     "quote": "[stated] Traced the explosion to an electrically started fire in oxygen tank No. 2",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "apollo-13-review-board-report",
+     "quote": "[stated] Called the switch failure a serious oversight in which all parties share",
+     "ok": true,
+     "reason": ""
+    }
+   ],
+   "citation_check": {
+    "total": 3,
+    "failed": 0,
+    "retried": true
+   },
+   "searches": 0,
+   "abstain_search": false,
+   "plan": null,
+   "effort": null,
+   "escalated": false,
+   "coverage": [],
+   "verdict": null,
+   "siblings": {
+    "phrases": [],
+    "lines": []
+   },
+   "upcoming_loaded": false,
+   "write_offers": [],
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 129,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 217,
+     "cost_usd": 0.00018286000000000002,
+     "latency_ms": 6145.6
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 3057,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 401,
+     "cost_usd": 0.00056766,
+     "latency_ms": 2348.6
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 3786,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 626,
+     "cost_usd": 0.0007530600000000001,
+     "latency_ms": 2969.9
+    }
+   ],
+   "cost_usd": 0.00150358,
+   "latency_ms": 11465.0,
+   "qid": "v02",
+   "set": "apollo-hard",
+   "run": 3,
+   "arm": "x-base"
+  },
+  {
+   "id": "apollo-hard/v03",
+   "question": "How long before Kennedy's speech at Rice University did NASA announce its Apollo mission mode?",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    },
+    "owner_names": [],
+    "plan": false,
+    "coverage": false,
+    "siblings": false,
+    "verdict": false,
+    "capability": false,
+    "upcoming": false,
+    "escalate": null,
+    "today": "2026-11-02",
+    "horizon_days": 120
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "john-f-kennedy",
+       "lunar-orbit-rendezvous",
+       "nasa"
+      ]
+     },
+     "returned": [
+      "john-f-kennedy",
+      "lunar-orbit-rendezvous",
+      "nasa"
+     ]
+    }
+   ],
+   "opened": [
+    "john-f-kennedy",
+    "lunar-orbit-rendezvous",
+    "nasa"
+   ],
+   "answer": "The NASA announcement came about two months before the speech. NASA announced lunar orbit rendezvous as the Apollo mission mode on 11 July 1962 [1], and you gave the Rice University speech on 12 September 1962 [2]. That is 63 days, or nine weeks.\n\n[1] [[lunar-orbit-rendezvous]] «[stated] NASA announced it as the Apollo mission mode on 1962-07-11»\n[2] [[john-f-kennedy]] «[stated] Gave the 'We choose to go to the Moon' speech at Rice University on 1962-09-12»",
+   "abstain": false,
+   "third_person": [],
+   "citations": [
+    {
+     "slug": "lunar-orbit-rendezvous",
+     "quote": "[stated] NASA announced it as the Apollo mission mode on 1962-07-11",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "john-f-kennedy",
+     "quote": "[stated] Gave the 'We choose to go to the Moon' speech at Rice University on 1962-09-12",
+     "ok": true,
+     "reason": ""
+    }
+   ],
+   "citation_check": {
+    "total": 2,
+    "failed": 0,
+    "retried": true
+   },
+   "searches": 0,
+   "abstain_search": false,
+   "plan": null,
+   "effort": null,
+   "escalated": false,
+   "coverage": [],
+   "verdict": null,
+   "siblings": {
+    "phrases": [],
+    "lines": []
+   },
+   "upcoming_loaded": false,
+   "write_offers": [],
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 111,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 206,
+     "cost_usd": 0.00017556,
+     "latency_ms": 6845.1
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 1281,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 303,
+     "cost_usd": 0.00034106,
+     "latency_ms": 1651.0
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 1898,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 337,
+     "cost_usd": 0.00041976,
+     "latency_ms": 1941.5
+    }
+   ],
+   "cost_usd": 0.00093638,
+   "latency_ms": 10438.3,
+   "qid": "v03",
+   "set": "apollo-hard",
+   "run": 3,
+   "arm": "x-base"
+  },
+  {
+   "id": "apollo-hard/v04",
+   "question": "Which Apollo 11 crew member earned a doctorate on the kind of rendezvous Apollo relied on, and in which year?",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    },
+    "owner_names": [],
+    "plan": false,
+    "coverage": false,
+    "siblings": false,
+    "verdict": false,
+    "capability": false,
+    "upcoming": false,
+    "escalate": null,
+    "today": "2026-11-02",
+    "horizon_days": 120
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "buzz-aldrin",
+       "lunar-orbit-rendezvous"
+      ]
+     },
+     "returned": [
+      "buzz-aldrin",
+      "lunar-orbit-rendezvous"
+     ]
+    }
+   ],
+   "opened": [
+    "buzz-aldrin",
+    "lunar-orbit-rendezvous"
+   ],
+   "answer": "Buzz Aldrin, the Apollo 11 lunar module pilot, earned his MIT doctorate in 1963 with a thesis on manned orbital rendezvous [1]. That fits the method Apollo used, since NASA announced lunar orbit rendezvous as the Apollo mission mode in 1962 [2].\n\n[1] [[buzz-aldrin]] «[stated] Earned an MIT doctorate in 1963 with a thesis on manned orbital rendezvous»\n[2] [[lunar-orbit-rendezvous]] «[stated] NASA announced it as the Apollo mission mode on 1962-07-11»",
+   "abstain": false,
+   "third_person": [],
+   "citations": [
+    {
+     "slug": "buzz-aldrin",
+     "quote": "[stated] Earned an MIT doctorate in 1963 with a thesis on manned orbital rendezvous",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "lunar-orbit-rendezvous",
+     "quote": "[stated] NASA announced it as the Apollo mission mode on 1962-07-11",
+     "ok": true,
+     "reason": ""
+    }
+   ],
+   "citation_check": {
+    "total": 2,
+    "failed": 0,
+    "retried": true
+   },
+   "searches": 0,
+   "abstain_search": false,
+   "plan": null,
+   "effort": null,
+   "escalated": false,
+   "coverage": [],
+   "verdict": null,
+   "siblings": {
+    "phrases": [],
+    "lines": []
+   },
+   "upcoming_loaded": false,
+   "write_offers": [],
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 121,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 199,
+     "cost_usd": 0.00017306,
+     "latency_ms": 6137.8
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 1120,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 206,
+     "cost_usd": 0.00027646,
+     "latency_ms": 1257.8
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 1606,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 331,
+     "cost_usd": 0.00038756000000000006,
+     "latency_ms": 1809.8
+    }
+   ],
+   "cost_usd": 0.00083708,
+   "latency_ms": 9206.8,
+   "qid": "v04",
+   "set": "apollo-hard",
+   "run": 3,
+   "arm": "x-base"
+  },
+  {
+   "id": "apollo-hard/v05",
+   "question": "The landing site described in the Apollo 11 Mission Report's powered-descent section was named by an astronaut. What was first about the Gemini flight he commanded, and when was it?",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    },
+    "owner_names": [],
+    "plan": false,
+    "coverage": false,
+    "siblings": false,
+    "verdict": false,
+    "capability": false,
+    "upcoming": false,
+    "escalate": null,
+    "today": "2026-11-02",
+    "horizon_days": 120
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "apollo-11-mission-report-ch-05",
+       "tranquility-base",
+       "neil-armstrong"
+      ]
+     },
+     "returned": [
+      "apollo-11-mission-report-ch-05",
+      "tranquility-base",
+      "neil-armstrong"
+     ]
+    }
+   ],
+   "opened": [
+    "apollo-11-mission-report-ch-05",
+    "neil-armstrong",
+    "tranquility-base"
+   ],
+   "answer": "The powered-descent section of the Apollo 11 Mission Report describes the landing, which the Tranquility Base note places at the Sea of Tranquility site [1][2]. Neil Armstrong named it at touchdown [3]. He earlier commanded Gemini 8 in 1966, whose first was the first docking of two spacecraft in orbit [4]. Your notes give the year but not the month or day.\n\nWant me to look for the exact Gemini 8 launch date?\n\n[1] [[apollo-11-mission-report-ch-05]] «[stated] Manual control began at about 600 feet and the craft landed about 1100 feet downrange of the initial aim point»\n[2] [[tranquility-base]] «[stated] Lies in Mare Tranquillitatis, the Sea of Tranquility»\n[3] [[tranquility-base]] «[stated] Named by Neil Armstrong at touchdown: Houston, Tranquility Base here, the Eagle has landed»\n[4] [[neil-armstrong]] «[stated] Earlier commanded Gemini 8 in 1966, the first docking of two spacecraft in orbit»",
+   "abstain": false,
+   "third_person": [],
+   "citations": [
+    {
+     "slug": "apollo-11-mission-report-ch-05",
+     "quote": "[stated] Manual control began at about 600 feet and the craft landed about 1100 feet downrange of the initial aim point",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "tranquility-base",
+     "quote": "[stated] Lies in Mare Tranquillitatis, the Sea of Tranquility",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "tranquility-base",
+     "quote": "[stated] Named by Neil Armstrong at touchdown: Houston, Tranquility Base here, the Eagle has landed",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "neil-armstrong",
+     "quote": "[stated] Earlier commanded Gemini 8 in 1966, the first docking of two spacecraft in orbit",
+     "ok": true,
+     "reason": ""
+    }
+   ],
+   "citation_check": {
+    "total": 4,
+    "failed": 0,
+    "retried": true
+   },
+   "searches": 0,
+   "abstain_search": false,
+   "plan": null,
+   "effort": null,
+   "escalated": false,
+   "coverage": [],
+   "verdict": null,
+   "siblings": {
+    "phrases": [],
+    "lines": []
+   },
+   "upcoming_loaded": false,
+   "write_offers": [],
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 135,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 232,
+     "cost_usd": 0.00019096,
+     "latency_ms": 4493.3
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 2062,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 413,
+     "cost_usd": 0.00047416,
+     "latency_ms": 2342.6
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 2815,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 1027,
+     "cost_usd": 0.0008564600000000001,
+     "latency_ms": 4665.0
+    }
+   ],
+   "cost_usd": 0.00152158,
+   "latency_ms": 11502.0,
+   "qid": "v05",
+   "set": "apollo-hard",
+   "run": 3,
+   "arm": "x-base"
+  },
+  {
+   "id": "apollo-hard/v06",
+   "question": "Before commanding Apollo 13, its commander flew on an earlier Apollo mission. Which photograph was taken on that mission, by whom, and on what date?",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    },
+    "owner_names": [],
+    "plan": false,
+    "coverage": false,
+    "siblings": false,
+    "verdict": false,
+    "capability": false,
+    "upcoming": false,
+    "escalate": null,
+    "today": "2026-11-02",
+    "horizon_days": 120
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "jim-lovell",
+       "apollo-8",
+       "apollo-program"
+      ]
+     },
+     "returned": [
+      "jim-lovell",
+      "apollo-8",
+      "apollo-program"
+     ]
+    },
+    {
+     "tool": "search_notes",
+     "input": {
+      "query": "Apollo 8 photograph Earthrise taken by",
+      "k": 5
+     },
+     "returned": [
+      "apollo-8 | 11.31 | name: \"Apollo 8\"",
+      "saturn-v | 3.68 | - [stated] First launched uncrewed on Apollo 4 on 1967-11-09 (src: NASA history, 2026-10-24)",
+      "jim-lovell | 3.62 | description: Apollo 13 commander who had already orbited the Moon on Apollo 8",
+      "apollo-program | 2.8 | name: \"Apollo program\"",
+      "neil-armstrong | 2.09 | description: Apollo 11 commander, first person on the Moon, flew the final descent manually past a crater"
+     ]
+    }
+   ],
+   "opened": [
+    "apollo-8",
+    "apollo-program",
+    "jim-lovell"
+   ],
+   "answer": "You flew Apollo 13 under Jim Lovell, who had already flown Apollo 8 in December 1968 [1]. On that mission, Bill Anders took the Earthrise photograph on 24 December 1968 [2].\n\n[1] [[jim-lovell]] «[stated] Flew Apollo 8 in December 1968, the first crewed lunar orbit»\n[2] [[apollo-8]] «[stated] Bill Anders took the Earthrise photograph on 1968-12-24»",
+   "abstain": false,
+   "third_person": [],
+   "citations": [
+    {
+     "slug": "jim-lovell",
+     "quote": "[stated] Flew Apollo 8 in December 1968, the first crewed lunar orbit",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "apollo-8",
+     "quote": "[stated] Bill Anders took the Earthrise photograph on 1968-12-24",
+     "ok": true,
+     "reason": ""
+    }
+   ],
+   "citation_check": {
+    "total": 2,
+    "failed": 0,
+    "retried": true
+   },
+   "searches": 1,
+   "abstain_search": false,
+   "plan": null,
+   "effort": null,
+   "escalated": false,
+   "coverage": [],
+   "verdict": null,
+   "siblings": {
+    "phrases": [],
+    "lines": []
+   },
+   "upcoming_loaded": false,
+   "write_offers": [],
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 130,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 274,
+     "cost_usd": 0.00021146,
+     "latency_ms": 4081.7
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 1931,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 286,
+     "cost_usd": 0.00039756000000000004,
+     "latency_ms": 2046.7
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 2516,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 260,
+     "cost_usd": 0.00044306000000000006,
+     "latency_ms": 1375.1
+    }
+   ],
+   "cost_usd": 0.0010520800000000002,
+   "latency_ms": 7505.6,
+   "qid": "v06",
+   "set": "apollo-hard",
+   "run": 3,
+   "arm": "x-base"
+  },
+  {
+   "id": "apollo-hard/v07",
+   "question": "The astronaut who caught German measles before Apollo 13 set off a crew swap. What office did the astronaut brought in by that swap later win, and what happened?",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    },
+    "owner_names": [],
+    "plan": false,
+    "coverage": false,
+    "siblings": false,
+    "verdict": false,
+    "capability": false,
+    "upcoming": false,
+    "escalate": null,
+    "today": "2026-11-02",
+    "horizon_days": 120
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "charlie-duke",
+       "jack-swigert",
+       "rubella-crew-swap",
+       "ken-mattingly",
+       "apollo-13-measles-article"
+      ]
+     },
+     "returned": [
+      "charlie-duke",
+      "jack-swigert",
+      "rubella-crew-swap",
+      "ken-mattingly",
+      "apollo-13-measles-article"
+     ]
+    },
+    {
+     "tool": "search_notes",
+     "input": {
+      "query": "Swigert elected Congress",
+      "k": 5
+     },
+     "returned": [
+      "jack-swigert | 7.34 | name: \"Jack Swigert\"",
+      "john-f-kennedy | 3.59 | - [stated] Asked Congress on 1961-05-25 to commit to landing a man on the Moon before the decade was out (src: NASA history, 2026-10-24)",
+      "rubella-crew-swap | 3.0 | description: German measles exposure that replaced Ken Mattingly with Jack Swigert on Apollo 13, decided 1970-04-10",
+      "apollo-13 | 2.38 | - [stated] Command module pilot is Jack Swigert (was Ken Mattingly, changed 1970-04-10 by KSC management meeting) (src: NASA history Apollo 13 measles article, ",
+      "jim-lovell | 2.08 | - crewed with [[jack-swigert]]"
+     ]
+    }
+   ],
+   "opened": [
+    "apollo-13-measles-article",
+    "charlie-duke",
+    "jack-swigert",
+    "ken-mattingly",
+    "rubella-crew-swap"
+   ],
+   "answer": "Charlie Duke's German measles started the swap [1]. The astronaut brought in was Jack Swigert, who became Apollo 13's prime command module pilot in place of Ken Mattingly [2]. Swigert was elected to the US House of Representatives in 1982, but he died before taking office [3]. Your notes don't say how or when he died.\n\n[1] [[charlie-duke]] «[stated] Caught German measles from a friend's 3-year-old son about three weeks before the Apollo 13 launch»\n[2] [[jack-swigert]] «[stated] Apollo 13 role is prime command module pilot (was backup command module pilot, changed 1970-04-10 by KSC management meeting)»\n[3] [[jack-swigert]] «[stated] Was elected to the US House of Representatives in 1982 but died before taking office»",
+   "abstain": false,
+   "third_person": [],
+   "citations": [
+    {
+     "slug": "charlie-duke",
+     "quote": "[stated] Caught German measles from a friend's 3-year-old son about three weeks before the Apollo 13 launch",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "jack-swigert",
+     "quote": "[stated] Apollo 13 role is prime command module pilot (was backup command module pilot, changed 1970-04-10 by KSC management meeting)",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "jack-swigert",
+     "quote": "[stated] Was elected to the US House of Representatives in 1982 but died before taking office",
+     "ok": true,
+     "reason": ""
+    }
+   ],
+   "citation_check": {
+    "total": 3,
+    "failed": 0,
+    "retried": true
+   },
+   "searches": 1,
+   "abstain_search": false,
+   "plan": null,
+   "effort": null,
+   "escalated": false,
+   "coverage": [],
+   "verdict": null,
+   "siblings": {
+    "phrases": [],
+    "lines": []
+   },
+   "upcoming_loaded": false,
+   "write_offers": [],
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 129,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 354,
+     "cost_usd": 0.00025136,
+     "latency_ms": 7353.2
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 3163,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 350,
+     "cost_usd": 0.00055276,
+     "latency_ms": 2157.9
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 3858,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 711,
+     "cost_usd": 0.00080276,
+     "latency_ms": 3085.0
+    }
+   ],
+   "cost_usd": 0.00160688,
+   "latency_ms": 12597.7,
+   "qid": "v07",
+   "set": "apollo-hard",
+   "run": 3,
+   "arm": "x-base"
+  },
+  {
+   "id": "apollo-hard/v08",
+   "question": "The tank that crippled Apollo 13 was carried by a spacecraft. Which Apollo 11 crew member piloted that kind of spacecraft, and what did he do during the landing?",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    },
+    "owner_names": [],
+    "plan": false,
+    "coverage": false,
+    "siblings": false,
+    "verdict": false,
+    "capability": false,
+    "upcoming": false,
+    "escalate": null,
+    "today": "2026-11-02",
+    "horizon_days": 120
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "oxygen-tank-2",
+       "command-service-module",
+       "michael-collins",
+       "north-american-aviation"
+      ]
+     },
+     "returned": [
+      "oxygen-tank-2",
+      "command-service-module",
+      "michael-collins",
+      "north-american-aviation"
+     ]
+    },
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "neil-armstrong",
+       "buzz-aldrin"
+      ]
+     },
+     "returned": [
+      "neil-armstrong",
+      "buzz-aldrin"
+     ]
+    }
+   ],
+   "opened": [
+    "buzz-aldrin",
+    "command-service-module",
+    "michael-collins",
+    "neil-armstrong",
+    "north-american-aviation",
+    "oxygen-tank-2"
+   ],
+   "answer": "The tank was oxygen tank No. 2, which sat in the service module of the command and service module (CSM) [1][2]. The CSM was piloted by Michael Collins, Apollo 11's command module pilot [3]. During the landing he didn't touch down. He stayed in lunar orbit aboard Columbia [4].\n\nWant me to look at the Apollo 11 descent details next?\n\n[1] [[oxygen-tank-2]] «[stated] Exploded on 1970-04-13, about 56 hours into the flight»\n[2] [[command-service-module]] «[stated] Its service module carried the oxygen tanks that supplied power and air»\n[3] [[michael-collins]] «[stated] Command module pilot of Apollo 11»\n[4] [[michael-collins]] «[stated] Stayed in lunar orbit aboard the command module Columbia during the landing»",
+   "abstain": false,
+   "third_person": [],
+   "citations": [
+    {
+     "slug": "oxygen-tank-2",
+     "quote": "[stated] Exploded on 1970-04-13, about 56 hours into the flight",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "command-service-module",
+     "quote": "[stated] Its service module carried the oxygen tanks that supplied power and air",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "michael-collins",
+     "quote": "[stated] Command module pilot of Apollo 11",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "michael-collins",
+     "quote": "[stated] Stayed in lunar orbit aboard the command module Columbia during the landing",
+     "ok": true,
+     "reason": ""
+    }
+   ],
+   "citation_check": {
+    "total": 4,
+    "failed": 0,
+    "retried": true
+   },
+   "searches": 0,
+   "abstain_search": false,
+   "plan": null,
+   "effort": null,
+   "escalated": false,
+   "coverage": [],
+   "verdict": null,
+   "siblings": {
+    "phrases": [],
+    "lines": []
+   },
+   "upcoming_loaded": false,
+   "write_offers": [],
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 139,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 298,
+     "cost_usd": 0.00022436000000000003,
+     "latency_ms": 2402.0
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 2974,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 500,
+     "cost_usd": 0.00060886,
+     "latency_ms": 2566.4
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 3896,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 841,
+     "cost_usd": 0.0008715600000000001,
+     "latency_ms": 4026.2
+    }
+   ],
+   "cost_usd": 0.0017047800000000001,
+   "latency_ms": 8995.6,
+   "qid": "v08",
+   "set": "apollo-hard",
+   "run": 3,
+   "arm": "x-base"
+  },
+  {
+   "id": "apollo-hard/v09",
+   "question": "How many years separate Neil Armstrong's Gemini 8 command and John Young's command of the first Space Shuttle flight?",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    },
+    "owner_names": [],
+    "plan": false,
+    "coverage": false,
+    "siblings": false,
+    "verdict": false,
+    "capability": false,
+    "upcoming": false,
+    "escalate": null,
+    "today": "2026-11-02",
+    "horizon_days": 120
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "neil-armstrong",
+       "john-young"
+      ]
+     },
+     "returned": [
+      "neil-armstrong",
+      "john-young"
+     ]
+    },
+    {
+     "tool": "search_notes",
+     "input": {
+      "query": "Gemini 8 command Armstrong",
+      "k": 5
+     },
+     "returned": [
+      "neil-armstrong | 7.74 | name: \"Neil Armstrong\"",
+      "michael-collins | 6.78 | description: Apollo 11 command module pilot who stayed in lunar orbit aboard Columbia",
+      "jim-lovell | 6.63 | description: Apollo 13 commander who had already orbited the Moon on Apollo 8",
+      "buzz-aldrin | 4.3 | - [stated] Flew Gemini 12 in 1966 (src: NASA biography, 2026-10-24)",
+      "apollo-11 | 4.05 | description: \"July 1969 first crewed lunar landing: Armstrong, Aldrin and Collins, Eagle landed at Tranquility Base\""
+     ]
+    },
+    {
+     "tool": "search_notes",
+     "input": {
+      "query": "first Space Shuttle flight Young commander STS-1",
+      "k": 5
+     },
+     "returned": [
+      "john-young | 29.16 | name: \"John Young\"",
+      "wernher-von-braun | 8.58 | description: First director of NASA Marshall Space Flight Center, led development of the Saturn V",
+      "fred-haise | 6.68 | description: Apollo 13 lunar module pilot, later flew the Shuttle Enterprise approach and landing tests",
+      "neil-armstrong | 6.38 | description: Apollo 11 commander, first person on the Moon, flew the final descent manually past a crater",
+      "jim-lovell | 5.5 | description: Apollo 13 commander who had already orbited the Moon on Apollo 8"
+     ]
+    }
+   ],
+   "opened": [
+    "john-young",
+    "neil-armstrong"
+   ],
+   "answer": "Gemini 8 and the first Shuttle flight are 15 years apart. Neil Armstrong commanded Gemini 8 in 1966 [1], and John Young commanded STS-1 in 1981, the first Space Shuttle flight [2]. 1981 minus 1966 is 15 years.\n\n[1] [[neil-armstrong]] «[stated] Earlier commanded Gemini 8 in 1966, the first docking of two spacecraft in orbit»\n[2] [[john-young]] «[stated] Commanded STS-1 in 1981, the first Space Shuttle flight»",
+   "abstain": false,
+   "third_person": [],
+   "citations": [
+    {
+     "slug": "neil-armstrong",
+     "quote": "[stated] Earlier commanded Gemini 8 in 1966, the first docking of two spacecraft in orbit",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "john-young",
+     "quote": "[stated] Commanded STS-1 in 1981, the first Space Shuttle flight",
+     "ok": true,
+     "reason": ""
+    }
+   ],
+   "citation_check": {
+    "total": 2,
+    "failed": 0,
+    "retried": true
+   },
+   "searches": 2,
+   "abstain_search": false,
+   "plan": null,
+   "effort": null,
+   "escalated": false,
+   "coverage": [],
+   "verdict": null,
+   "siblings": {
+    "phrases": [],
+    "lines": []
+   },
+   "upcoming_loaded": false,
+   "write_offers": [],
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 120,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 420,
+     "cost_usd": 0.00028346,
+     "latency_ms": 2283.7
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 1842,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 273,
+     "cost_usd": 0.00038216000000000004,
+     "latency_ms": 1659.0
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 2387,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 398,
+     "cost_usd": 0.00049916,
+     "latency_ms": 1845.6
+    }
+   ],
+   "cost_usd": 0.00116478,
+   "latency_ms": 5791.5,
+   "qid": "v09",
+   "set": "apollo-hard",
+   "run": 3,
+   "arm": "x-base"
+  },
+  {
+   "id": "apollo-hard/v10",
+   "question": "Which came first, Fred Haise's Space Shuttle Enterprise tests or Jack Swigert's election to the House of Representatives?",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    },
+    "owner_names": [],
+    "plan": false,
+    "coverage": false,
+    "siblings": false,
+    "verdict": false,
+    "capability": false,
+    "upcoming": false,
+    "escalate": null,
+    "today": "2026-11-02",
+    "horizon_days": 120
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "fred-haise",
+       "jack-swigert"
+      ]
+     },
+     "returned": [
+      "fred-haise",
+      "jack-swigert"
+     ]
+    }
+   ],
+   "opened": [
+    "fred-haise",
+    "jack-swigert"
+   ],
+   "answer": "Fred Haise's Space Shuttle Enterprise tests came first. He flew the approach and landing tests in 1977 [1]. Jack Swigert was elected to the US House of Representatives in 1982, but he died before taking office [2].\n\n[1] [[fred-haise]] «[stated] Flew the Space Shuttle Enterprise approach and landing tests in 1977»\n[2] [[jack-swigert]] «[stated] Was elected to the US House of Representatives in 1982 but died before taking office»",
+   "abstain": false,
+   "third_person": [],
+   "citations": [
+    {
+     "slug": "fred-haise",
+     "quote": "[stated] Flew the Space Shuttle Enterprise approach and landing tests in 1977",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "jack-swigert",
+     "quote": "[stated] Was elected to the US House of Representatives in 1982 but died before taking office",
+     "ok": true,
+     "reason": ""
+    }
+   ],
+   "citation_check": {
+    "total": 2,
+    "failed": 0,
+    "retried": true
+   },
+   "searches": 0,
+   "abstain_search": false,
+   "plan": null,
+   "effort": null,
+   "escalated": false,
+   "coverage": [],
+   "verdict": null,
+   "siblings": {
+    "phrases": [],
+    "lines": []
+   },
+   "upcoming_loaded": false,
+   "write_offers": [],
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 124,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 190,
+     "cost_usd": 0.00016886,
+     "latency_ms": 3460.3
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 1096,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 235,
+     "cost_usd": 0.00028856,
+     "latency_ms": 1562.0
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 1596,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 263,
+     "cost_usd": 0.0003525600000000001,
+     "latency_ms": 1586.5
+    }
+   ],
+   "cost_usd": 0.0008099800000000001,
+   "latency_ms": 6609.5,
+   "qid": "v10",
+   "set": "apollo-hard",
+   "run": 3,
+   "arm": "x-base"
+  },
+  {
+   "id": "apollo-hard/v11",
+   "question": "When were the Apollo 11 Mission Report and the Apollo 13 Review Board report dated or published?",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    },
+    "owner_names": [],
+    "plan": false,
+    "coverage": false,
+    "siblings": false,
+    "verdict": false,
+    "capability": false,
+    "upcoming": false,
+    "escalate": null,
+    "today": "2026-11-02",
+    "horizon_days": 120
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "apollo-11-mission-report",
+       "apollo-13-review-board-report"
+      ]
+     },
+     "returned": [
+      "apollo-11-mission-report",
+      "apollo-13-review-board-report"
+     ]
+    }
+   ],
+   "opened": [
+    "apollo-11-mission-report",
+    "apollo-13-review-board-report"
+   ],
+   "answer": "The Apollo 11 Mission Report is dated November 1969 [1]. The Apollo 13 Review Board report was published in June 1970 [2].\n\n[1] [[apollo-11-mission-report]] «[stated] Prepared by the Mission Evaluation Team at the NASA Manned Spacecraft Center, dated November 1969»\n[2] [[apollo-13-review-board-report]] «[stated] Published in June 1970»",
+   "abstain": false,
+   "third_person": [],
+   "citations": [
+    {
+     "slug": "apollo-11-mission-report",
+     "quote": "[stated] Prepared by the Mission Evaluation Team at the NASA Manned Spacecraft Center, dated November 1969",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "apollo-13-review-board-report",
+     "quote": "[stated] Published in June 1970",
+     "ok": true,
+     "reason": ""
+    }
+   ],
+   "citation_check": {
+    "total": 2,
+    "failed": 0,
+    "retried": true
+   },
+   "searches": 0,
+   "abstain_search": false,
+   "plan": null,
+   "effort": null,
+   "escalated": false,
+   "coverage": [],
+   "verdict": null,
+   "siblings": {
+    "phrases": [],
+    "lines": []
+   },
+   "upcoming_loaded": false,
+   "write_offers": [],
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 113,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 167,
+     "cost_usd": 0.00015626,
+     "latency_ms": 1640.1
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 1163,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 182,
+     "cost_usd": 0.00026876,
+     "latency_ms": 1326.9
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 1659,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 269,
+     "cost_usd": 0.00036186000000000004,
+     "latency_ms": 1535.5
+    }
+   ],
+   "cost_usd": 0.00078688,
+   "latency_ms": 4503.1,
+   "qid": "v11",
+   "set": "apollo-hard",
+   "run": 3,
+   "arm": "x-base"
+  },
+  {
+   "id": "apollo-hard/v12",
+   "question": "What did Margaret Hamilton and Wernher von Braun each lead?",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    },
+    "owner_names": [],
+    "plan": false,
+    "coverage": false,
+    "siblings": false,
+    "verdict": false,
+    "capability": false,
+    "upcoming": false,
+    "escalate": null,
+    "today": "2026-11-02",
+    "horizon_days": 120
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "margaret-hamilton",
+       "wernher-von-braun",
+       "mit-instrumentation-lab",
+       "saturn-v"
+      ]
+     },
+     "returned": [
+      "margaret-hamilton",
+      "wernher-von-braun",
+      "mit-instrumentation-lab",
+      "saturn-v"
+     ]
+    }
+   ],
+   "opened": [
+    "margaret-hamilton",
+    "mit-instrumentation-lab",
+    "saturn-v",
+    "wernher-von-braun"
+   ],
+   "answer": "Margaret Hamilton led the software engineering division at the MIT Instrumentation Laboratory, which developed the Apollo on-board flight software [1]. Wernher von Braun led the team that developed the Saturn V Moon rocket [2]. He was also the first director of NASA's Marshall Space Flight Center, from 1960 to 1970 [3].\n\n[1] [[margaret-hamilton]] «[stated] Led the software engineering division at the MIT Instrumentation Laboratory that developed Apollo on-board flight software»\n[2] [[wernher-von-braun]] «[stated] Led the team that developed the Saturn V»\n[3] [[wernher-von-braun]] «[stated] First director of NASA Marshall Space Flight Center, from 1960 to 1970»",
+   "abstain": false,
+   "third_person": [],
+   "citations": [
+    {
+     "slug": "margaret-hamilton",
+     "quote": "[stated] Led the software engineering division at the MIT Instrumentation Laboratory that developed Apollo on-board flight software",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "wernher-von-braun",
+     "quote": "[stated] Led the team that developed the Saturn V",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "wernher-von-braun",
+     "quote": "[stated] First director of NASA Marshall Space Flight Center, from 1960 to 1970",
+     "ok": true,
+     "reason": ""
+    }
+   ],
+   "citation_check": {
+    "total": 3,
+    "failed": 0,
+    "retried": true
+   },
+   "searches": 0,
+   "abstain_search": false,
+   "plan": null,
+   "effort": null,
+   "escalated": false,
+   "coverage": [],
+   "verdict": null,
+   "siblings": {
+    "phrases": [],
+    "lines": []
+   },
+   "upcoming_loaded": false,
+   "write_offers": [],
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 103,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 215,
+     "cost_usd": 0.00017926,
+     "latency_ms": 1591.7
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 1747,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 249,
+     "cost_usd": 0.00036066,
+     "latency_ms": 1335.7
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 2321,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 429,
+     "cost_usd": 0.0005080600000000001,
+     "latency_ms": 1952.0
+    }
+   ],
+   "cost_usd": 0.00104798,
+   "latency_ms": 4880.2,
+   "qid": "v12",
+   "set": "apollo-hard",
+   "run": 3,
+   "arm": "x-base"
+  },
+  {
+   "id": "apollo-hard/v13",
+   "question": "How long did the Apollo 11 crew spend on the lunar surface?",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    },
+    "owner_names": [],
+    "plan": false,
+    "coverage": false,
+    "siblings": false,
+    "verdict": false,
+    "capability": false,
+    "upcoming": false,
+    "escalate": null,
+    "today": "2026-11-02",
+    "horizon_days": 120
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "apollo-11",
+       "apollo-11-mission-report",
+       "apollo-11-mission-report-ch-05",
+       "neil-armstrong",
+       "buzz-aldrin",
+       "tranquility-base"
+      ]
+     },
+     "returned": [
+      "apollo-11",
+      "apollo-11-mission-report",
+      "apollo-11-mission-report-ch-05",
+      "neil-armstrong",
+      "buzz-aldrin",
+      "tranquility-base"
+     ]
+    },
+    {
+     "tool": "search_notes",
+     "input": {
+      "query": "Apollo 11 lunar surface time hours moonwalk EVA duration"
+     },
+     "returned": [
+      "neil-armstrong | 5.68 | description: Apollo 11 commander, first person on the Moon, flew the final descent manually past a crater",
+      "oxygen-tank-2 | 4.32 | description: Apollo 13 service module tank whose 28-volt thermostatic switches failed under 65-volt power and caused the explosion",
+      "edgar-cortright | 4.01 | description: Director of NASA Langley who chaired the Apollo 13 Review Board",
+      "apollo-11 | 3.15 | name: \"Apollo 11\"",
+      "lunar-module | 3.11 | name: \"Lunar module\"",
+      "michael-collins | 3.0 | description: Apollo 11 command module pilot who stayed in lunar orbit aboard Columbia",
+      "buzz-aldrin | 2.98 | description: Apollo 11 lunar module pilot, second on the Moon, wrote his MIT doctorate on orbital rendezvous",
+      "charlie-duke | 2.83 | description: Backup lunar module pilot whose German measles started the Apollo 13 crew swap, CAPCOM for Apollo 11",
+      "apollo-guidance-computer | 2.81 | name: \"Apollo Guidance Computer\"",
+      "lunar-orbit-rendezvous | 2.55 | name: \"Lunar orbit rendezvous\""
+     ]
+    }
+   ],
+   "opened": [
+    "apollo-11",
+    "apollo-11-mission-report",
+    "apollo-11-mission-report-ch-05",
+    "buzz-aldrin",
+    "neil-armstrong",
+    "tranquility-base"
+   ],
+   "answer": "I don't have that in your notes yet. Your notes give the landing on 1969-07-20 [1] and Armstrong's first step on 1969-07-21 UTC [2], but none states how long the crew spent on the surface, and I won't work it out from those dates.\n\n[1] [[apollo-11]] «[stated] Lunar module Eagle landed on 1969-07-20 in the Sea of Tranquility»\n[2] [[neil-armstrong]] «[stated] First person to step onto the lunar surface on 1969-07-21 UTC»",
+   "abstain": true,
+   "third_person": [],
+   "citations": [
+    {
+     "slug": "apollo-11",
+     "quote": "[stated] Lunar module Eagle landed on 1969-07-20 in the Sea of Tranquility",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "neil-armstrong",
+     "quote": "[stated] First person to step onto the lunar surface on 1969-07-21 UTC",
+     "ok": true,
+     "reason": ""
+    }
+   ],
+   "citation_check": {
+    "total": 2,
+    "failed": 0,
+    "retried": true
+   },
+   "searches": 1,
+   "abstain_search": false,
+   "plan": null,
+   "effort": null,
+   "escalated": false,
+   "coverage": [],
+   "verdict": null,
+   "siblings": {
+    "phrases": [],
+    "lines": []
+   },
+   "upcoming_loaded": false,
+   "write_offers": [],
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 102,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 184,
+     "cost_usd": 0.00016366000000000002,
+     "latency_ms": 1207.8
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 3386,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 173,
+     "cost_usd": 0.0004865600000000001,
+     "latency_ms": 1636.8
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 3992,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 256,
+     "cost_usd": 0.0005886600000000001,
+     "latency_ms": 1593.3
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 4556,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 386,
+     "cost_usd": 0.0007100600000000001,
+     "latency_ms": 2052.3
+    }
+   ],
+   "cost_usd": 0.0019489400000000004,
+   "latency_ms": 6493.0,
+   "qid": "v13",
+   "set": "apollo-hard",
+   "run": 3,
+   "arm": "x-base"
+  },
+  {
+   "id": "apollo-hard/v14",
+   "question": "Who was the lunar module pilot of Apollo 8?",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    },
+    "owner_names": [],
+    "plan": false,
+    "coverage": false,
+    "siblings": false,
+    "verdict": false,
+    "capability": false,
+    "upcoming": false,
+    "escalate": null,
+    "today": "2026-11-02",
+    "horizon_days": 120
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "apollo-8",
+       "jim-lovell",
+       "lunar-module"
+      ]
+     },
+     "returned": [
+      "apollo-8",
+      "jim-lovell",
+      "lunar-module"
+     ]
+    },
+    {
+     "tool": "search_notes",
+     "input": {
+      "query": "Apollo 8 lunar module pilot",
+      "k": 5
+     },
+     "returned": [
+      "fred-haise | 5.43 | description: Apollo 13 lunar module pilot, later flew the Shuttle Enterprise approach and landing tests",
+      "michael-collins | 5.43 | description: Apollo 11 command module pilot who stayed in lunar orbit aboard Columbia",
+      "buzz-aldrin | 5.25 | description: Apollo 11 lunar module pilot, second on the Moon, wrote his MIT doctorate on orbital rendezvous",
+      "charlie-duke | 5.2 | description: Backup lunar module pilot whose German measles started the Apollo 13 crew swap, CAPCOM for Apollo 11",
+      "apollo-8 | 5.02 | name: \"Apollo 8\""
+     ]
+    },
+    {
+     "tool": "search_notes",
+     "input": {
+      "query": "Apollo 8 crew Borman Anders",
+      "k": 5
+     },
+     "returned": [
+      "apollo-8 | 13.69 | name: \"Apollo 8\"",
+      "saturn-v | 4.2 | - [stated] First launched uncrewed on Apollo 4 on 1967-11-09 (src: NASA history, 2026-10-24)",
+      "jim-lovell | 3.62 | description: Apollo 13 commander who had already orbited the Moon on Apollo 8",
+      "rubella-crew-swap | 2.15 | name: \"Apollo 13 crew swap\"",
+      "apollo-program | 2.14 | name: \"Apollo program\""
+     ]
+    },
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "fred-haise",
+       "buzz-aldrin",
+       "charlie-duke"
+      ]
+     },
+     "returned": [
+      "fred-haise",
+      "buzz-aldrin",
+      "charlie-duke"
+     ]
+    }
+   ],
+   "opened": [
+    "apollo-8",
+    "buzz-aldrin",
+    "charlie-duke",
+    "fred-haise",
+    "jim-lovell",
+    "lunar-module"
+   ],
+   "answer": "I don't have that in your notes yet. None of your notes names a lunar module pilot for Apollo 8. Your Apollo 8 note lists the crew as Frank Borman, Jim Lovell and Bill Anders [1]. Those three are the only crew named for that mission.\n\n[1] [[apollo-8]] «[stated] Launched 1968-12-21 with Frank Borman, Jim Lovell and Bill Anders»",
+   "abstain": true,
+   "third_person": [],
+   "citations": [
+    {
+     "slug": "apollo-8",
+     "quote": "[stated] Launched 1968-12-21 with Frank Borman, Jim Lovell and Bill Anders",
+     "ok": true,
+     "reason": ""
+    }
+   ],
+   "citation_check": {
+    "total": 1,
+    "failed": 0,
+    "retried": true
+   },
+   "searches": 2,
+   "abstain_search": true,
+   "plan": null,
+   "effort": null,
+   "escalated": false,
+   "coverage": [],
+   "verdict": null,
+   "siblings": {
+    "phrases": [],
+    "lines": []
+   },
+   "upcoming_loaded": false,
+   "write_offers": [],
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 98,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 231,
+     "cost_usd": 0.00018675999999999998,
+     "latency_ms": 1439.8
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 1590,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 324,
+     "cost_usd": 0.00038246000000000005,
+     "latency_ms": 1984.4
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 1976,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 162,
+     "cost_usd": 0.00034006000000000005,
+     "latency_ms": 1228.4
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 2611,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 251,
+     "cost_usd": 0.00044806000000000007,
+     "latency_ms": 1835.2
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 4167,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 325,
+     "cost_usd": 0.00064066,
+     "latency_ms": 1706.8
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 4860,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 290,
+     "cost_usd": 0.00069246,
+     "latency_ms": 1793.6
+    }
+   ],
+   "cost_usd": 0.00269046,
+   "latency_ms": 9994.1,
+   "qid": "v14",
+   "set": "apollo-hard",
+   "run": 3,
+   "arm": "x-base"
+  },
+  {
+   "id": "apollo-hard/v15",
+   "question": "What was the name of the Apollo 16 lunar module?",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    },
+    "owner_names": [],
+    "plan": false,
+    "coverage": false,
+    "siblings": false,
+    "verdict": false,
+    "capability": false,
+    "upcoming": false,
+    "escalate": null,
+    "today": "2026-11-02",
+    "horizon_days": 120
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "apollo-16",
+       "lunar-module",
+       "john-young",
+       "charlie-duke",
+       "ken-mattingly"
+      ]
+     },
+     "returned": [
+      "apollo-16",
+      "lunar-module",
+      "john-young",
+      "charlie-duke",
+      "ken-mattingly"
+     ]
+    },
+    {
+     "tool": "search_notes",
+     "input": {
+      "query": "Apollo 16 lunar module Orion",
+      "k": 5
+     },
+     "returned": [
+      "charlie-duke | 4.99 | description: Backup lunar module pilot whose German measles started the Apollo 13 crew swap, CAPCOM for Apollo 11",
+      "apollo-11 | 4.5 | name: \"Apollo 11\"",
+      "ken-mattingly | 4.04 | description: Astronaut pulled from Apollo 13 over German measles exposure, never got sick, later flew Apollo 16",
+      "apollo-16 | 3.76 | name: \"Apollo 16\"",
+      "john-young | 3.44 | description: Apollo 16 commander and Apollo 13 backup commander, later commanded the first Space Shuttle flight"
+     ]
+    }
+   ],
+   "opened": [
+    "apollo-16",
+    "charlie-duke",
+    "john-young",
+    "ken-mattingly",
+    "lunar-module"
+   ],
+   "answer": "I don't have that in your notes yet. Your notes say Charlie Duke was the Apollo 16 lunar module pilot [1], and that the crew was John Young, Ken Mattingly and Charlie Duke [2]. None of the notes I opened names the Apollo 16 lunar module itself. The lunar module note only covers Eagle on Apollo 11 and Aquarius on Apollo 13 [3].\n\n[1] [[charlie-duke]] «[stated] Walked on the Moon as Apollo 16 lunar module pilot»\n[2] [[apollo-16]] «[stated] Crew was John Young, Ken Mattingly and Charlie Duke»\n[3] [[lunar-module]] «[stated] Apollo 11's lunar module was Eagle»",
+   "abstain": true,
+   "third_person": [],
+   "citations": [
+    {
+     "slug": "charlie-duke",
+     "quote": "[stated] Walked on the Moon as Apollo 16 lunar module pilot",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "apollo-16",
+     "quote": "[stated] Crew was John Young, Ken Mattingly and Charlie Duke",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "lunar-module",
+     "quote": "[stated] Apollo 11's lunar module was Eagle",
+     "ok": true,
+     "reason": ""
+    }
+   ],
+   "citation_check": {
+    "total": 3,
+    "failed": 0,
+    "retried": true
+   },
+   "searches": 1,
+   "abstain_search": false,
+   "plan": null,
+   "effort": null,
+   "escalated": false,
+   "coverage": [],
+   "verdict": null,
+   "siblings": {
+    "phrases": [],
+    "lines": []
+   },
+   "upcoming_loaded": false,
+   "write_offers": [],
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 97,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 189,
+     "cost_usd": 0.00016566000000000004,
+     "latency_ms": 1293.3
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 2464,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 147,
+     "cost_usd": 0.00038136,
+     "latency_ms": 1200.8
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 2826,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 268,
+     "cost_usd": 0.00047806000000000004,
+     "latency_ms": 1625.0
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 3397,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 437,
+     "cost_usd": 0.0006196600000000001,
+     "latency_ms": 2033.1
+    }
+   ],
+   "cost_usd": 0.0016447400000000002,
+   "latency_ms": 6154.4,
+   "qid": "v15",
+   "set": "apollo-hard",
+   "run": 3,
+   "arm": "x-base"
+  },
+  {
+   "id": "apollo-hard/v16",
+   "question": "What is the name of the crater that forced the Apollo 11 landing point to be redesignated?",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    },
+    "owner_names": [],
+    "plan": false,
+    "coverage": false,
+    "siblings": false,
+    "verdict": false,
+    "capability": false,
+    "upcoming": false,
+    "escalate": null,
+    "today": "2026-11-02",
+    "horizon_days": 120
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "apollo-11-mission-report-ch-05",
+       "neil-armstrong",
+       "tranquility-base",
+       "apollo-11-mission-report",
+       "program-alarms-1201-1202"
+      ]
+     },
+     "returned": [
+      "apollo-11-mission-report-ch-05",
+      "neil-armstrong",
+      "tranquility-base",
+      "apollo-11-mission-report",
+      "program-alarms-1201-1202"
+     ]
+    },
+    {
+     "tool": "search_notes",
+     "input": {
+      "query": "Apollo 11 landing crater name redesignation Eagle approach",
+      "k": 5
+     },
+     "returned": [
+      "apollo-11-mission-report-ch-05 | 11.1 | name: \"Apollo 11 Mission Report, Section 5.3: Powered Descent\"",
+      "apollo-11 | 7.56 | name: \"Apollo 11\"",
+      "tranquility-base | 6.28 | name: \"Tranquility Base\"",
+      "fred-haise | 6.24 | name: \"Fred Haise\"",
+      "lunar-module | 5.51 | name: \"Lunar module\""
+     ]
+    },
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "apollo-11"
+      ]
+     },
+     "returned": [
+      "apollo-11"
+     ]
+    }
+   ],
+   "opened": [
+    "apollo-11",
+    "apollo-11-mission-report",
+    "apollo-11-mission-report-ch-05",
+    "neil-armstrong",
+    "program-alarms-1201-1202",
+    "tranquility-base"
+   ],
+   "answer": "I don't have that in your notes yet. The Apollo 11 Mission Report's powered-descent section says the approach path led into a large crater and forced an unplanned redesignation of the landing point [1], but it does not name the crater, and the other Apollo 11 notes I opened don't either.\n\nThe full report would be the place to find the name, so if you can add it or the page that describes the redesignation, I can answer from that.\n\n[1] [[apollo-11-mission-report-ch-05]] «[stated] The approach path led into a large crater, forcing an unplanned redesignation»",
+   "abstain": true,
+   "third_person": [],
+   "citations": [
+    {
+     "slug": "apollo-11-mission-report-ch-05",
+     "quote": "[stated] The approach path led into a large crater, forcing an unplanned redesignation",
+     "ok": true,
+     "reason": ""
+    }
+   ],
+   "citation_check": {
+    "total": 1,
+    "failed": 0,
+    "retried": true
+   },
+   "searches": 1,
+   "abstain_search": false,
+   "plan": null,
+   "effort": null,
+   "escalated": false,
+   "coverage": [],
+   "verdict": null,
+   "siblings": {
+    "phrases": [],
+    "lines": []
+   },
+   "upcoming_loaded": false,
+   "write_offers": [],
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 108,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 239,
+     "cost_usd": 0.00019176,
+     "latency_ms": 1419.4
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 3008,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 166,
+     "cost_usd": 0.00044526,
+     "latency_ms": 1320.1
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 3326,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 87,
+     "cost_usd": 0.00043756000000000003,
+     "latency_ms": 957.6
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 3933,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 212,
+     "cost_usd": 0.00056076,
+     "latency_ms": 1918.5
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 4365,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 289,
+     "cost_usd": 0.0006424600000000001,
+     "latency_ms": 1530.5
+    }
+   ],
+   "cost_usd": 0.0022778,
+   "latency_ms": 7148.4,
+   "qid": "v16",
+   "set": "apollo-hard",
+   "run": 3,
+   "arm": "x-base"
+  },
+  {
+   "id": "apollo-hard/v17",
+   "question": "What was the improvised \"mailbox\" on Apollo 13 made from, and how did the crew build it?",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    },
+    "owner_names": [],
+    "plan": false,
+    "coverage": false,
+    "siblings": false,
+    "verdict": false,
+    "capability": false,
+    "upcoming": false,
+    "escalate": null,
+    "today": "2026-11-02",
+    "horizon_days": 120
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "co2-scrubber-adapter",
+       "apollo-13",
+       "lunar-module"
+      ]
+     },
+     "returned": [
+      "co2-scrubber-adapter",
+      "apollo-13",
+      "lunar-module"
+     ]
+    }
+   ],
+   "opened": [
+    "apollo-13",
+    "co2-scrubber-adapter",
+    "lunar-module"
+   ],
+   "answer": "The mailbox was a CO2 scrubber adapter. The command module's lithium hydroxide canisters were square, while the lunar module's were round, so the adapter let the command module's canisters fit the lunar module's round sockets [1]. Engineers devised it from hoses, cardboard, plastic bags and tape [2]. The crew built it from radioed instructions [3].\n\nWant me to look at the Apollo 13 oxygen-tank story next?\n\n[1] [[co2-scrubber-adapter]] «[stated] The command module's lithium hydroxide canisters were square and the lunar module's were round»\n[2] [[co2-scrubber-adapter]] «[stated] Engineers devised an adapter from hoses, cardboard, plastic bags and tape»\n[3] [[co2-scrubber-adapter]] «[stated] The crew built it from radioed instructions»",
+   "abstain": false,
+   "third_person": [],
+   "citations": [
+    {
+     "slug": "co2-scrubber-adapter",
+     "quote": "[stated] The command module's lithium hydroxide canisters were square and the lunar module's were round",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "co2-scrubber-adapter",
+     "quote": "[stated] Engineers devised an adapter from hoses, cardboard, plastic bags and tape",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "co2-scrubber-adapter",
+     "quote": "[stated] The crew built it from radioed instructions",
+     "ok": true,
+     "reason": ""
+    }
+   ],
+   "citation_check": {
+    "total": 3,
+    "failed": 0,
+    "retried": true
+   },
+   "searches": 0,
+   "abstain_search": false,
+   "plan": null,
+   "effort": null,
+   "escalated": false,
+   "coverage": [],
+   "verdict": null,
+   "siblings": {
+    "phrases": [],
+    "lines": []
+   },
+   "upcoming_loaded": false,
+   "write_offers": [],
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 111,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 192,
+     "cost_usd": 0.00016856,
+     "latency_ms": 1301.2
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 1879,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 331,
+     "cost_usd": 0.00041486,
+     "latency_ms": 1853.2
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 2533,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 514,
+     "cost_usd": 0.00057176,
+     "latency_ms": 2416.0
+    }
+   ],
+   "cost_usd": 0.00115518,
+   "latency_ms": 5571.4,
+   "qid": "v17",
+   "set": "apollo-hard",
+   "run": 3,
+   "arm": "x-base"
+  },
+  {
+   "id": "apollo-hard/v18",
+   "question": "How did the Cortright report describe the switch failure?",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    },
+    "owner_names": [],
+    "plan": false,
+    "coverage": false,
+    "siblings": false,
+    "verdict": false,
+    "capability": false,
+    "upcoming": false,
+    "escalate": null,
+    "today": "2026-11-02",
+    "horizon_days": 120
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "apollo-13-review-board-report",
+       "apollo-13-review-board",
+       "oxygen-tank-2"
+      ]
+     },
+     "returned": [
+      "apollo-13-review-board-report",
+      "apollo-13-review-board",
+      "oxygen-tank-2"
+     ]
+    }
+   ],
+   "opened": [
+    "apollo-13-review-board",
+    "apollo-13-review-board-report",
+    "oxygen-tank-2"
+   ],
+   "answer": "The Cortright board called the switch failure a serious oversight in which all parties shared the blame [1]. It traced the explosion to an electrically started fire in oxygen tank No. 2 [2], and recommended removing all electrical equipment from inside the tank's pressure vessel [1].\n\nThe switches were built to a 1962 specification for 28 volts DC [3]. The heater specification was later revised to 65 volts, but the switches were not changed [3].\n\n[1] [[apollo-13-review-board-report]] «[stated] Called the switch failure a serious oversight in which all parties share»; «[stated] Recommended removing all electrical equipment from inside the oxygen tank pressure vessel» [unverified]\n[2] [[apollo-13-review-board]] «[stated] Traced the explosion to an electrically started fire in oxygen tank No. 2»\n[3] [[oxygen-tank-2]] «[stated] Its thermostatic switches were built to a 1962 specification for 28 volts DC»; «[stated] The heater specification was revised in 1965 to 65 volts but the switches were not changed» [unverified]\n\nWant me to look at the Apollo 13 Review Board's other findings?",
+   "abstain": false,
+   "third_person": [],
+   "citations": [
+    {
+     "slug": "apollo-13-review-board-report",
+     "quote": "[stated] Called the switch failure a serious oversight in which all parties share",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "",
+     "quote": "[stated] Recommended removing all electrical equipment from inside the oxygen tank pressure vessel",
+     "ok": false,
+     "reason": "quote without a [[slug]]"
+    },
+    {
+     "slug": "apollo-13-review-board",
+     "quote": "[stated] Traced the explosion to an electrically started fire in oxygen tank No. 2",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "oxygen-tank-2",
+     "quote": "[stated] Its thermostatic switches were built to a 1962 specification for 28 volts DC",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "",
+     "quote": "[stated] The heater specification was revised in 1965 to 65 volts but the switches were not changed",
+     "ok": false,
+     "reason": "quote without a [[slug]]"
+    }
+   ],
+   "citation_check": {
+    "total": 5,
+    "failed": 2,
+    "retried": true
+   },
+   "searches": 0,
+   "abstain_search": false,
+   "plan": null,
+   "effort": null,
+   "escalated": false,
+   "coverage": [],
+   "verdict": null,
+   "siblings": {
+    "phrases": [],
+    "lines": []
+   },
+   "upcoming_loaded": false,
+   "write_offers": [],
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 95,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 198,
+     "cost_usd": 0.00016996,
+     "latency_ms": 1372.8
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 1628,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 599,
+     "cost_usd": 0.00052376,
+     "latency_ms": 3072.9
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 2639,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 756,
+     "cost_usd": 0.00070336,
+     "latency_ms": 3073.0
+    }
+   ],
+   "cost_usd": 0.00139708,
+   "latency_ms": 7519.6,
+   "qid": "v18",
+   "set": "apollo-hard",
+   "run": 3,
+   "arm": "x-base"
+  },
+  {
+   "id": "apollo-hard/v19",
+   "question": "At what height and speed did the lander pass high gate during the first Moon landing?",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    },
+    "owner_names": [],
+    "plan": false,
+    "coverage": false,
+    "siblings": false,
+    "verdict": false,
+    "capability": false,
+    "upcoming": false,
+    "escalate": null,
+    "today": "2026-11-02",
+    "horizon_days": 120
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "apollo-11-mission-report-ch-05",
+       "apollo-11-mission-report",
+       "program-alarms-1201-1202",
+       "lunar-module",
+       "tranquility-base",
+       "apollo-11"
+      ]
+     },
+     "returned": [
+      "apollo-11-mission-report-ch-05",
+      "apollo-11-mission-report",
+      "program-alarms-1201-1202",
+      "lunar-module",
+      "tranquility-base",
+      "apollo-11"
+     ]
+    }
+   ],
+   "opened": [
+    "apollo-11",
+    "apollo-11-mission-report",
+    "apollo-11-mission-report-ch-05",
+    "lunar-module",
+    "program-alarms-1201-1202",
+    "tranquility-base"
+   ],
+   "answer": "High gate came at about 7,129 feet, with the lander descending at 125 feet per second [1]. That was also when the switch to program P64 happened [1].\n\n[1] [[apollo-11-mission-report-ch-05]] «[stated] High gate and the switch to program P64 came at 7129 feet at 125 feet per second»",
+   "abstain": false,
+   "third_person": [],
+   "citations": [
+    {
+     "slug": "apollo-11-mission-report-ch-05",
+     "quote": "[stated] High gate and the switch to program P64 came at 7129 feet at 125 feet per second",
+     "ok": true,
+     "reason": ""
+    }
+   ],
+   "citation_check": {
+    "total": 1,
+    "failed": 0,
+    "retried": true
+   },
+   "searches": 0,
+   "abstain_search": false,
+   "plan": null,
+   "effort": null,
+   "escalated": false,
+   "coverage": [],
+   "verdict": null,
+   "siblings": {
+    "phrases": [],
+    "lines": []
+   },
+   "upcoming_loaded": false,
+   "write_offers": [],
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 103,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 260,
+     "cost_usd": 0.00020176,
+     "latency_ms": 1677.4
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 3523,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 210,
+     "cost_usd": 0.00051876,
+     "latency_ms": 1362.2
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 3958,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 243,
+     "cost_usd": 0.00057876,
+     "latency_ms": 1373.8
+    }
+   ],
+   "cost_usd": 0.0012992799999999999,
+   "latency_ms": 4414.0,
+   "qid": "v19",
+   "set": "apollo-hard",
+   "run": 3,
+   "arm": "x-base"
+  },
+  {
+   "id": "apollo-hard/v20",
+   "question": "What did the MIT IL later become?",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    },
+    "owner_names": [],
+    "plan": false,
+    "coverage": false,
+    "siblings": false,
+    "verdict": false,
+    "capability": false,
+    "upcoming": false,
+    "escalate": null,
+    "today": "2026-11-02",
+    "horizon_days": 120
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "mit-instrumentation-lab",
+       "margaret-hamilton"
+      ]
+     },
+     "returned": [
+      "mit-instrumentation-lab",
+      "margaret-hamilton"
+     ]
+    }
+   ],
+   "opened": [
+    "margaret-hamilton",
+    "mit-instrumentation-lab"
+   ],
+   "answer": "The MIT Instrumentation Lab later became the Charles Stark Draper Laboratory [1].\n\n[1] [[mit-instrumentation-lab]] «[stated] Was led by Charles Stark Draper and later became the Charles Stark Draper Laboratory»",
+   "abstain": false,
+   "third_person": [],
+   "citations": [
+    {
+     "slug": "mit-instrumentation-lab",
+     "quote": "[stated] Was led by Charles Stark Draper and later became the Charles Stark Draper Laboratory",
+     "ok": true,
+     "reason": ""
+    }
+   ],
+   "citation_check": {
+    "total": 1,
+    "failed": 0,
+    "retried": true
+   },
+   "searches": 0,
+   "abstain_search": false,
+   "plan": null,
+   "effort": null,
+   "escalated": false,
+   "coverage": [],
+   "verdict": null,
+   "siblings": {
+    "phrases": [],
+    "lines": []
+   },
+   "upcoming_loaded": false,
+   "write_offers": [],
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 90,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 183,
+     "cost_usd": 0.00016196,
+     "latency_ms": 1266.5
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 1028,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 161,
+     "cost_usd": 0.00024476,
+     "latency_ms": 1218.4
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 1461,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 227,
+     "cost_usd": 0.00032106,
+     "latency_ms": 1742.6
+    }
+   ],
+   "cost_usd": 0.00072778,
+   "latency_ms": 4228.1,
+   "qid": "v20",
+   "set": "apollo-hard",
+   "run": 3,
+   "arm": "x-base"
+  },
+  {
+   "id": "apollo-hard/v21",
+   "question": "List every Apollo mission in the brain that launched with a crew, with its launch date.",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    },
+    "owner_names": [],
+    "plan": false,
+    "coverage": false,
+    "siblings": false,
+    "verdict": false,
+    "capability": false,
+    "upcoming": false,
+    "escalate": null,
+    "today": "2026-11-02",
+    "horizon_days": 120
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "apollo-1",
+       "apollo-8",
+       "apollo-11",
+       "apollo-13",
+       "apollo-16",
+       "apollo-program"
+      ]
+     },
+     "returned": [
+      "apollo-1",
+      "apollo-8",
+      "apollo-11",
+      "apollo-13",
+      "apollo-16",
+      "apollo-program"
+     ]
+    }
+   ],
+   "opened": [
+    "apollo-1",
+    "apollo-11",
+    "apollo-13",
+    "apollo-16",
+    "apollo-8",
+    "apollo-program"
+   ],
+   "answer": "Four Apollo missions in your brain launched with a crew:\n\n- Apollo 8 launched on 1968-12-21 with Frank Borman, Jim Lovell and Bill Anders [1].\n- Apollo 11 launched on 1969-07-16 from Kennedy Space Center Launch Complex 39A [2].\n- Apollo 13 launched on 1970-04-11 [3].\n- Apollo 16 launched on 1972-04-16, with John Young, Ken Mattingly and Charlie Duke [4].\n\nApollo 1 is not on the list. Its crew died in a cabin fire during a launch rehearsal on 1967-01-27, before any launch [5].\n\n[1] [[apollo-8]] «[stated] Launched 1968-12-21 with Frank Borman, Jim Lovell and Bill Anders»\n[2] [[apollo-11]] «[stated] Launched 1969-07-16 from Kennedy Space Center Launch Complex 39A»\n[3] [[apollo-13]] «[stated] Launched 1970-04-11»\n[4] [[apollo-16]] «[stated] Launched 1972-04-16»\n[5] [[apollo-1]] «[stated] A cabin fire during a launch rehearsal test on 1967-01-27 killed Gus Grissom, Ed White and Roger Chaffee»",
+   "abstain": false,
+   "third_person": [],
+   "citations": [
+    {
+     "slug": "apollo-8",
+     "quote": "[stated] Launched 1968-12-21 with Frank Borman, Jim Lovell and Bill Anders",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "apollo-11",
+     "quote": "[stated] Launched 1969-07-16 from Kennedy Space Center Launch Complex 39A",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "apollo-13",
+     "quote": "[stated] Launched 1970-04-11",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "apollo-16",
+     "quote": "[stated] Launched 1972-04-16",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "apollo-1",
+     "quote": "[stated] A cabin fire during a launch rehearsal test on 1967-01-27 killed Gus Grissom, Ed White and Roger Chaffee",
+     "ok": true,
+     "reason": ""
+    }
+   ],
+   "citation_check": {
+    "total": 5,
+    "failed": 0,
+    "retried": true
+   },
+   "searches": 0,
+   "abstain_search": false,
+   "plan": null,
+   "effort": null,
+   "escalated": false,
+   "coverage": [],
+   "verdict": null,
+   "siblings": {
+    "phrases": [],
+    "lines": []
+   },
+   "upcoming_loaded": false,
+   "write_offers": [],
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 105,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 253,
+     "cost_usd": 0.00019846000000000002,
+     "latency_ms": 1463.4
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 3132,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 468,
+     "cost_usd": 0.0006086600000000001,
+     "latency_ms": 2104.4
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 4022,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 768,
+     "cost_usd": 0.0008476600000000001,
+     "latency_ms": 5431.7
+    }
+   ],
+   "cost_usd": 0.0016547800000000002,
+   "latency_ms": 9000.5,
+   "qid": "v21",
+   "set": "apollo-hard",
+   "run": 3,
+   "arm": "x-base"
+  },
+  {
+   "id": "apollo-hard/v22",
+   "question": "Which people does the brain explicitly name as walking on the Moon?",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    },
+    "owner_names": [],
+    "plan": false,
+    "coverage": false,
+    "siblings": false,
+    "verdict": false,
+    "capability": false,
+    "upcoming": false,
+    "escalate": null,
+    "today": "2026-11-02",
+    "horizon_days": 120
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "neil-armstrong",
+       "buzz-aldrin",
+       "john-young",
+       "charlie-duke",
+       "ken-mattingly",
+       "apollo-16",
+       "apollo-program",
+       "apollo-11"
+      ]
+     },
+     "returned": [
+      "neil-armstrong",
+      "buzz-aldrin",
+      "john-young",
+      "charlie-duke",
+      "ken-mattingly",
+      "apollo-16",
+      "apollo-program",
+      "apollo-11"
+     ]
+    }
+   ],
+   "opened": [
+    "apollo-11",
+    "apollo-16",
+    "apollo-program",
+    "buzz-aldrin",
+    "charlie-duke",
+    "john-young",
+    "ken-mattingly",
+    "neil-armstrong"
+   ],
+   "answer": "Three people in the brain are named as walking on the Moon:\n\n- **Neil Armstrong**, the first person to step onto the lunar surface, on 21 July 1969 UTC [1]\n- **Buzz Aldrin**, the second person to walk on the Moon, as Apollo 11 lunar module pilot [2]\n- **Charlie Duke**, who walked on the Moon as Apollo 16 lunar module pilot [3]\n\nJohn Young is only recorded as commander of Apollo 16 [4], not as a moonwalker, so I've left him out.\n\n[1] [[neil-armstrong]] «[stated] First person to step onto the lunar surface on 1969-07-21 UTC»\n[2] [[buzz-aldrin]] «[stated] Lunar module pilot of Apollo 11 and the second person to walk on the Moon»\n[3] [[charlie-duke]] «[stated] Walked on the Moon as Apollo 16 lunar module pilot»\n[4] [[john-young]] «[stated] Commander of Apollo 16»",
+   "abstain": false,
+   "third_person": [],
+   "citations": [
+    {
+     "slug": "neil-armstrong",
+     "quote": "[stated] First person to step onto the lunar surface on 1969-07-21 UTC",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "buzz-aldrin",
+     "quote": "[stated] Lunar module pilot of Apollo 11 and the second person to walk on the Moon",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "charlie-duke",
+     "quote": "[stated] Walked on the Moon as Apollo 16 lunar module pilot",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "john-young",
+     "quote": "[stated] Commander of Apollo 16",
+     "ok": true,
+     "reason": ""
+    }
+   ],
+   "citation_check": {
+    "total": 4,
+    "failed": 0,
+    "retried": true
+   },
+   "searches": 0,
+   "abstain_search": false,
+   "plan": null,
+   "effort": null,
+   "escalated": false,
+   "coverage": [],
+   "verdict": null,
+   "siblings": {
+    "phrases": [],
+    "lines": []
+   },
+   "upcoming_loaded": false,
+   "write_offers": [],
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 100,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 316,
+     "cost_usd": 0.00022946000000000002,
+     "latency_ms": 1976.3
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 4011,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 463,
+     "cost_usd": 0.00069406,
+     "latency_ms": 3785.1
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 4828,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 502,
+     "cost_usd": 0.00079526,
+     "latency_ms": 4911.8
+    }
+   ],
+   "cost_usd": 0.00171878,
+   "latency_ms": 10674.0,
+   "qid": "v22",
+   "set": "apollo-hard",
+   "run": 3,
+   "arm": "x-base"
+  },
+  {
+   "id": "apollo-hard/v23",
+   "question": "Which companies and laboratories built Apollo hardware in the brain, and what did each build?",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    },
+    "owner_names": [],
+    "plan": false,
+    "coverage": false,
+    "siblings": false,
+    "verdict": false,
+    "capability": false,
+    "upcoming": false,
+    "escalate": null,
+    "today": "2026-11-02",
+    "horizon_days": 120
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "grumman",
+       "north-american-aviation",
+       "beech-aircraft",
+       "mit-instrumentation-lab",
+       "apollo-guidance-computer",
+       "lunar-module",
+       "command-service-module",
+       "oxygen-tank-2"
+      ]
+     },
+     "returned": [
+      "grumman",
+      "north-american-aviation",
+      "beech-aircraft",
+      "mit-instrumentation-lab",
+      "apollo-guidance-computer",
+      "lunar-module",
+      "command-service-module",
+      "oxygen-tank-2"
+     ]
+    }
+   ],
+   "opened": [
+    "apollo-guidance-computer",
+    "beech-aircraft",
+    "command-service-module",
+    "grumman",
+    "lunar-module",
+    "mit-instrumentation-lab",
+    "north-american-aviation",
+    "oxygen-tank-2"
+   ],
+   "answer": "Four builders show up in your notes. Grumman built the lunar module [1]. North American Aviation was the prime contractor for the command and service module [2]. Beech Aircraft, a subcontractor under North American, built the service module oxygen tanks [3]. The MIT Instrumentation Laboratory designed the Apollo guidance and navigation system [4], including the Apollo Guidance Computer [5].\n\nWant me to look at the Apollo 13 oxygen tank story, since Beech and North American both appear in it?\n\n[1] [[grumman]] «[stated] Built the Apollo lunar module»\n[2] [[north-american-aviation]] «[stated] Prime contractor for the Apollo command and service module»\n[3] [[beech-aircraft]] «[stated] Built the service module oxygen tanks under North American Aviation»\n[4] [[mit-instrumentation-lab]] «[stated] Designed the Apollo guidance and navigation system»\n[5] [[apollo-guidance-computer]] «[stated] Designed at the MIT Instrumentation Laboratory»",
+   "abstain": false,
+   "third_person": [],
+   "citations": [
+    {
+     "slug": "grumman",
+     "quote": "[stated] Built the Apollo lunar module",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "north-american-aviation",
+     "quote": "[stated] Prime contractor for the Apollo command and service module",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "beech-aircraft",
+     "quote": "[stated] Built the service module oxygen tanks under North American Aviation",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "mit-instrumentation-lab",
+     "quote": "[stated] Designed the Apollo guidance and navigation system",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "apollo-guidance-computer",
+     "quote": "[stated] Designed at the MIT Instrumentation Laboratory",
+     "ok": true,
+     "reason": ""
+    }
+   ],
+   "citation_check": {
+    "total": 5,
+    "failed": 0,
+    "retried": true
+   },
+   "searches": 0,
+   "abstain_search": false,
+   "plan": null,
+   "effort": null,
+   "escalated": false,
+   "coverage": [],
+   "verdict": null,
+   "siblings": {
+    "phrases": [],
+    "lines": []
+   },
+   "upcoming_loaded": false,
+   "write_offers": [],
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 107,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 341,
+     "cost_usd": 0.00024266000000000004,
+     "latency_ms": 1952.2
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 3406,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 516,
+     "cost_usd": 0.0006600600000000001,
+     "latency_ms": 3791.4
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 4307,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 458,
+     "cost_usd": 0.0007211600000000001,
+     "latency_ms": 4499.8
+    }
+   ],
+   "cost_usd": 0.0016238800000000003,
+   "latency_ms": 10244.5,
+   "qid": "v23",
+   "set": "apollo-hard",
+   "run": 3,
+   "arm": "x-base"
+  },
+  {
+   "id": "apollo-hard/v24",
+   "question": "Put every 1970 date the brain records for Apollo 13 in order, with what happened on each.",
+   "config": {
+    "model": "claude-haiku-5-5",
+    "effort": "low",
+    "l0": false,
+    "neighbours": false,
+    "answer_model": null,
+    "maps": {
+     "format": "pipe",
+     "relationship": false,
+     "inverses": false,
+     "mentions": true,
+     "about_words": 25
+    },
+    "owner_names": [],
+    "plan": false,
+    "coverage": false,
+    "siblings": false,
+    "verdict": false,
+    "capability": false,
+    "upcoming": false,
+    "escalate": null,
+    "today": "2026-11-02",
+    "horizon_days": 120
+   },
+   "map_version": "1f6b8bdecccb",
+   "steps": [
+    {
+     "tool": "open_notes",
+     "input": {
+      "slugs": [
+       "apollo-13",
+       "rubella-crew-swap",
+       "oxygen-tank-2",
+       "apollo-13-review-board",
+       "apollo-13-review-board-report",
+       "apollo-13-measles-article",
+       "co2-scrubber-adapter",
+       "apollo-13-review-board"
+      ]
+     },
+     "returned": [
+      "apollo-13",
+      "rubella-crew-swap",
+      "oxygen-tank-2",
+      "apollo-13-review-board",
+      "apollo-13-review-board-report",
+      "apollo-13-measles-article",
+      "co2-scrubber-adapter"
+     ]
+    }
+   ],
+   "opened": [
+    "apollo-13",
+    "apollo-13-measles-article",
+    "apollo-13-review-board",
+    "apollo-13-review-board-report",
+    "co2-scrubber-adapter",
+    "oxygen-tank-2",
+    "rubella-crew-swap"
+   ],
+   "answer": "Here are the 1970 dates the brain records for Apollo 13, in order:\n\n- **1970-04-06:** Blood tests from the physicals showed Ken Mattingly had no rubella immunity [1].\n- **1970-04-10:** The crew swap was decided at a KSC management meeting and announced at a press conference. Jack Swigert replaced Mattingly as command module pilot [2][3].\n- **1970-04-11:** Apollo 13 launched [4].\n- **1970-04-13:** Oxygen tank No. 2 exploded about 56 hours into the flight [5]. The mission goal also changed from a Fra Mauro landing to a safe return to Earth [6].\n- **1970-04-17:** The crew splashed down, having used the lunar module Aquarius as a lifeboat [7].\n- **June 1970:** The Apollo 13 Review Board report was published. The notes give no day for it [8].\n\n[1] [[rubella-crew-swap]] «[stated] Blood tests from the 1970-04-06 physicals showed Ken Mattingly had no rubella immunity»\n[2] [[rubella-crew-swap]] «[stated] The swap was decided at a KSC management meeting and announced at a press conference on 1970-04-10»\n[3] [[apollo-13]] «[stated] Command module pilot is Jack Swigert (was Ken Mattingly, changed 1970-04-10 by KSC management meeting)»\n[4] [[apollo-13]] «[stated] Launched 1970-04-11»\n[5] [[oxygen-tank-2]] «[stated] Exploded on 1970-04-13, about 56 hours into the flight»\n[6] [[apollo-13]] «[stated] Mission goal became a safe return to Earth (was a lunar landing at Fra Mauro, changed 1970-04-13 by Mission Control abort decision)»\n[7] [[apollo-13]] «[stated] Crew used the lunar module Aquarius as a lifeboat and splashed down on 1970-04-17»\n[8] [[apollo-13-review-board-report]] «[stated] Published in June 1970»",
+   "abstain": false,
+   "third_person": [],
+   "citations": [
+    {
+     "slug": "rubella-crew-swap",
+     "quote": "[stated] Blood tests from the 1970-04-06 physicals showed Ken Mattingly had no rubella immunity",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "rubella-crew-swap",
+     "quote": "[stated] The swap was decided at a KSC management meeting and announced at a press conference on 1970-04-10",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "apollo-13",
+     "quote": "[stated] Command module pilot is Jack Swigert (was Ken Mattingly, changed 1970-04-10 by KSC management meeting)",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "apollo-13",
+     "quote": "[stated] Launched 1970-04-11",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "oxygen-tank-2",
+     "quote": "[stated] Exploded on 1970-04-13, about 56 hours into the flight",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "apollo-13",
+     "quote": "[stated] Mission goal became a safe return to Earth (was a lunar landing at Fra Mauro, changed 1970-04-13 by Mission Control abort decision)",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "apollo-13",
+     "quote": "[stated] Crew used the lunar module Aquarius as a lifeboat and splashed down on 1970-04-17",
+     "ok": true,
+     "reason": ""
+    },
+    {
+     "slug": "apollo-13-review-board-report",
+     "quote": "[stated] Published in June 1970",
+     "ok": true,
+     "reason": ""
+    }
+   ],
+   "citation_check": {
+    "total": 8,
+    "failed": 0,
+    "retried": true
+   },
+   "searches": 0,
+   "abstain_search": false,
+   "plan": null,
+   "effort": null,
+   "escalated": false,
+   "coverage": [],
+   "verdict": null,
+   "siblings": {
+    "phrases": [],
+    "lines": []
+   },
+   "upcoming_loaded": false,
+   "write_offers": [],
+   "calls": [
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 109,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 252,
+     "cost_usd": 0.00019836000000000002,
+     "latency_ms": 1735.7
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 3715,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 836,
+     "cost_usd": 0.00085096,
+     "latency_ms": 3992.8
+    },
+    {
+     "model": "claude-haiku-5-5",
+     "input_tokens": 5037,
+     "cache_write": 0,
+     "cache_read": 6146,
+     "output_tokens": 1322,
+     "cost_usd": 0.00122616,
+     "latency_ms": 4917.4
+    }
+   ],
+   "cost_usd": 0.00227548,
+   "latency_ms": 10647.1,
+   "qid": "v24",
+   "set": "apollo-hard",
+   "run": 3,
+   "arm": "x-base"
+  }
+ ]
+}
