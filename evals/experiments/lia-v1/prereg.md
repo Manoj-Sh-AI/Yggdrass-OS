@@ -183,3 +183,15 @@ The v1 gate failed bars 2 and 3. These are general fixes, with no question-speci
 - **Life hard-v1 is now a dev set,** contaminated by the failures seen and by skills written after its key. It is not part of the v2 gate.
 
 **Inputs:** the skills change (new SHA in `harness.py`), the run tag `v2`, and the budget ledger continuing from $5.06.
+
+## v3 voice check (Manoj, 2026-11-02, recorded before the run)
+
+**The change:** Lia's voice, not her evidence rules.
+- **Skills v3** (brain commit 96710fd): she speaks to Manoj in the first person ("I", "you"), warm and brief, with at most one short follow-up question.
+- **Citations are numbered footnotes:** `[1]` in the text, then `[1] [[slug]] «fact text»` lines at the end. The quote unit and the checker are unchanged. One rule is added: a marker with no footnote fails the check.
+- **The abstain line** is now "I don't have that in your notes yet." The code still recognises "Not in your brain.".
+- **Unchanged:** the final config, the maps, the retry and the abstain search.
+
+**The check:** Apollo hard-v8 only, the final config (arm `final-v3`), Haiku 5.5, **1 run**. It is graded and hand-reviewed with the same written element rules as Step 2, and reported against v2's three runs (23, 23, 22) and v2's fresh citation re-check (213 shown, 0 invented). It is a check, not a gate. "Didn't drop" means a score within v2's run-to-run range (22 to 23) or above it, and 0 invented citations.
+
+**Inputs:** the new skills SHA in `harness.py`, the run tag `v3`, and the budget ledger continuing.
