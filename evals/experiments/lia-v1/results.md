@@ -165,3 +165,66 @@ Grading: the judge and the key-term grader agree on all 24, and the element rule
 1. **The retry runs on almost every answer, in v2 and v3 alike.** Haiku's first draft usually drops the `[stated]` tag, and the retry restores it. Each retry costs one extra call.
 2. **v24: the retry's own words leaked into the reply.** "Here is the answer again with corrected citations:" opened the answer. This happened once in v2 as well.
 3. **v24: one footnote held three quotes,** `[4] [[apollo-13]] «a»; «b»; «c»`. The second and third have no slug in front, so they were marked `[unverified]`, although both are true fact lines of that note. The error is on the safe side.
+
+## Explore (F1–F7) on the dev sets, Haiku 5.5 (pre-registered under "Explore")
+
+**Budget stop and grading:**
+- The runs reached the $8 stop at $8.13. The last F7 run (`x-esc`, life-explore, run 3) was not run.
+- **Not graded by the judge yet.** That would mean spending past the stop. Every score below comes from the free key-term grader, with the Step 2 rule that a decline without the exact abstain line counts as a correct abstain. Recalls, citations, latency and cost don't depend on the grader.
+
+**Two ablation runs are invalid:**
+- `x-no-plan` on life-explore: 10 of 10 rows are API timeouts.
+- `x-no-coverage` on apollo-hard: 18 of 24 rows are timeouts.
+
+**Main results** (score = correct + correct abstain, key-term grader):
+
+| arm | set | score per run | facet recall | fact recall | citations verified / shown | invented | traps | p50 / p90 s | $ / q |
+|---|---|---|---|---|---|---|---|---|---|
+| x-base | apollo-hard | 23, 23, 23 of 24 | 0.99 | — | 203/205 | 0 | 12/12 | 6.7 / 11.2 | 0.0014 |
+| x-all | apollo-hard | 23, 23, 23 of 24 | 1.00 | — | 227/228 | 0 | 12/12 | 11.5 / 16.2 | 0.0035 |
+| x-esc | apollo-hard | 23, 23, 23 of 24 | 1.00 | — | 251/258 | 0 | 12/12 | 11.7 / 18.3 | 0.0036 |
+| x-base | life (hard-v1, dev) | 17, 16, 14 of 20 | 0.94 | — | 230/230 | 0 | 9/9 | 6.2 / 10.4 | 0.0020 |
+| x-all | life | 17, 15, 14 of 20 | 0.98 | — | 295/296 | 0 | 9/9 | 14.1 / 25.0 | 0.0066 |
+| x-esc | life | 17, 15, 15 of 20 | 0.98 | — | 321/321 | 0 | 9/9 | 15.1 / 32.0 | 0.0380 |
+| x-base | life-explore | 6, 5, 4 of 10 | 1.00 | 0.60 | 212/213 | 0 | — | 9.0 / 14.1 | 0.0024 |
+| x-all | life-explore | 5, 6, 4 of 10 | 1.00 | 0.57 | 262/262 | 0 | — | 25.1 / 34.8 | 0.0104 |
+| x-esc | life-explore | 9, 6 of 10 (run 3 not run) | 1.00 | 0.77 | 242/242 | 0 | — | 33.4 / 52.5 | 0.1278 |
+
+**Ablations** (1 run each; `x-all` means in brackets):
+
+| arm | apollo-hard | life | life-explore (fact recall) |
+|---|---|---|---|
+| x-no-plan | 22 (23) | 19 (15.3) | invalid (timeouts) |
+| x-no-coverage | invalid (timeouts) | 14 (15.3) | 6 (5.0), 0.55 (0.57) |
+| x-no-siblings | 22 (23) | 15 (15.3) | **3** (5.0), **0.46** (0.57) |
+| x-no-upcoming | 22 (23) | 16 (15.3) | 5 (5.0), 0.54 (0.57) |
+
+**Cost and latency by effort level** (levels from `x-all` run 1):
+
+| arm | simple p50 s | simple $ | medium p50 s | medium $ | complex p50 s | complex $ |
+|---|---|---|---|---|---|---|
+| x-base | 5.5 | 0.0013 | 7.9 | 0.0020 | 8.1 | 0.0024 |
+| x-all | **10.4** | 0.0032 | 15.9 | 0.0066 | 22.1 | 0.0098 |
+| x-esc | 10.8 | 0.0032 | 16.8 | 0.0154 | 29.5 | **0.1603** |
+
+**Guardrails for `x-all`:**
+- Apollo accuracy didn't drop: met.
+- Traps 100%: met (9/9 and 12/12).
+- 0 invented citations: met.
+- p50 ≤ 10 s on simple questions: **failed** (10.4 s).
+- Mean cost ≤ $0.01 per question: **failed** on life-explore ($0.0104).
+
+**`x-all` is not adopted.** F7 fails the cost guardrail by more than ten times ($0.16 per complex question) and is not adopted either.
+
+**What the switches did** (behaviour, from the traces):
+- **Write offers (P4):** 3 of 90 life answers in `x-base`, 0 of 90 in `x-all`.
+- **"Want me to check/look" offers (P3):** 60 in `x-base`, 22 in `x-all`.
+- **Parallel facts (P2):** the sibling sweep brought in German's "no progress" next to the thesis's on life-explore.
+- **The cost of siblings:** the sweep ran a sibling round on 48 of 72 Apollo answers, which is most of the extra latency on simple questions.
+- **Abstain wording drift:** with F4, some declines on traps come out as "partly" answers padded with nearby facts. They still decline, but not in the abstain line.
+
+**Reading it:**
+- **No measurable accuracy gain from F1–F6 on Haiku** with this grader; facet recall rose slightly (0.94 to 0.98 on life).
+- **The one strong ablation signal is siblings** on life-explore: 3 vs 5 correct, and fact recall 0.46 vs 0.57.
+- **Plan's ablation went the other way on life** (19 without it vs 15.3 with it). That is one run, so it is weak evidence.
+- **The biggest gain came from a bigger model on complex questions** (F7 life-explore: 7.5 vs 5.0, fact recall 0.77 vs 0.57), at a cost the guardrail rules out.
