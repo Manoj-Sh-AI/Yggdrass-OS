@@ -300,3 +300,38 @@ def test_nothing_is_written_to_the_brain(library, skills):
     )
     Lia(client, library, skills, LiaConfig(l0=True, neighbours=True)).ask("Allotment plan?")
     assert tree() == before
+
+
+def test_cascade_router_opens_and_the_answer_model_writes(library, skills):
+    router = FakeClient(
+        [[tool_use("open_notes", {"slugs": ["garden-plan"]})], [text("router's own answer")]]
+    )
+    writer = FakeClient([[text(f"Three hundred. {cited('garden-plan', GARDEN_FACT)}")]])
+    config = LiaConfig(answer_model="claude-sonnet-5-5")
+    result = Lia(router, library, skills, config, answer_client=writer).ask("Budget?")
+    assert "router's own answer" not in result["answer"]
+    assert result["citation_check"]["failed"] == 0 and len(result["calls"]) == 3
+    last = writer.sent[0]["messages"][-1]
+    assert last["role"] == "user" and last["content"][0]["type"] == "tool_result"
+
+
+def test_flat_brain_keeps_free_verbs_with_their_other_direction(tmp_path):
+    root = tmp_path / "demo"
+    (root / "people").mkdir(parents=True)
+    (root / "areas").mkdir()
+    (root / "people" / "ann.md").write_text(
+        "---\nid: a\nslug: ann\nname: Ann\ntype: person\ndescription: A pilot\naliases: []\n---\n\n"
+        "## Facts\n\n- [stated] Flew one mission (src: x, 2030-01-01)\n\n"
+        "## Links\n\n- flew [[m1]]\n",
+        encoding="utf-8",
+    )
+    (root / "areas" / "m1.md").write_text(
+        "---\nid: m\nslug: m1\nname: M1\ntype: event\ndescription: A mission\naliases: []\n---\n\n"
+        "## Facts\n\n- [stated] Launched (src: x, 2030-01-01)\n",
+        encoding="utf-8",
+    )
+    lib = Library(root, flat=True)
+    maps = lib.maps()
+    assert "ann: flew m1" in maps["relationship-map.md"]
+    assert "m1: ←flew ann" in maps["relationship-map.md"]
+    assert "## people" in maps["shelf-map.md"] and "people|1" in maps["atlas.md"]

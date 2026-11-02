@@ -65,6 +65,7 @@ class LiaConfig:
     effort: str = "low"
     l0: bool = False  # E3
     neighbours: bool = False  # E8
+    answer_model: str | None = None  # E6: a second model writes the answer
     maps: MapOptions = field(default_factory=MapOptions)
 
     def as_dict(self) -> dict:
@@ -120,78 +121,95 @@ def mark_unverified(text: str, failed: list[checks.Citation]) -> str:
 
 
 class Lia:
-    def __init__(self, client: ModelClient, library: Library, skills: str, config: LiaConfig):
+    """One question at a time. With *answer_client* (E6), *client* routes (opens and searches)
+    and *answer_client* writes the answer from the same context."""
+
+    def __init__(
+        self,
+        client: ModelClient,
+        library: Library,
+        skills: str,
+        config: LiaConfig,
+        answer_client: ModelClient | None = None,
+    ):
         self.client, self.library, self.config = client, library, config
+        self.answer_client = answer_client
         self.system = system_blocks(skills, library, config.maps)
+
+    def _assistant(self, messages: list, reply) -> None:
+        content = reply.content if reply.content is not None else reply.blocks
+        messages.append({"role": "assistant", "content": content})
+
+    def _tool(self, call: dict, state: dict) -> str:
+        name, args = call["name"], call.get("input", {})
+        if name == "open_notes":
+            text, done = self.library.open_notes(
+                list(args.get("slugs", [])), self.config.neighbours
+            )
+            state["opened"].update({s: self.library.note_text(s) for s in done})
+            state["steps"].append({"tool": name, "input": args, "returned": done})
+            return text
+        if name == "search_notes" and state["searches"] < MAX_SEARCHES:
+            state["searches"] += 1
+            text = self.library.search_notes(str(args.get("query", "")), int(args.get("k", 10)))
+            state["steps"].append({"tool": name, "input": args, "returned": text.splitlines()[:20]})
+            return text
+        if name == "search_notes":
+            state["steps"].append({"tool": name, "input": args, "returned": "limit"})
+            return "Search limit reached (3 per question). Answer from what you have."
+        return f"Unknown tool {name}."
+
+    def _loop(self, client: ModelClient, messages: list, state: dict):
+        """Call *client* until it stops using tools (at most MAX_TURNS calls)."""
+        reply = None
+        for _ in range(MAX_TURNS):
+            reply = client.send(system=self.system, tools=TOOLS, messages=messages)
+            state["calls"].append(reply.usage.as_dict())
+            self._assistant(messages, reply)
+            if reply.stop_reason != "tool_use":
+                return reply
+            results = [
+                {"type": "tool_result", "tool_use_id": c["id"], "content": self._tool(c, state)}
+                for c in reply.tool_calls
+            ]
+            messages.append({"role": "user", "content": results})
+        # Out of turns while still calling tools: one last call, tools off.
+        messages[-1]["content"].append(
+            {"type": "text", "text": "Tool limit reached: answer now from what you have."}
+        )
+        reply = client.send(
+            system=self.system, tools=TOOLS, messages=messages, tool_choice={"type": "none"}
+        )
+        state["calls"].append(reply.usage.as_dict())
+        self._assistant(messages, reply)
+        return reply
 
     def ask(self, question: str, qid: str = "q") -> dict:
         start = time.perf_counter()
-        steps, calls, opened = [], [], {}
+        state = {"steps": [], "calls": [], "opened": {}, "searches": 0}
         content = []
         if self.config.l0:
             slugs = self.library.l0_matches(question)
             if slugs:
                 text, done = self.library.open_notes(slugs, self.config.neighbours)
-                opened.update({s: self.library.note_text(s) for s in done})
-                content.append(
-                    {
-                        "type": "text",
-                        "text": f"Opened before you start (exact name match):\n\n{text}",
-                    }
-                )
-                steps.append({"tool": "l0", "input": {"slugs": slugs}, "returned": done})
+                state["opened"].update({s: self.library.note_text(s) for s in done})
+                intro = "Opened before you start (exact name match):"
+                content.append({"type": "text", "text": f"{intro}\n\n{text}"})
+                state["steps"].append({"tool": "l0", "input": {"slugs": slugs}, "returned": done})
         content.append({"type": "text", "text": f"Question: {question}"})
         messages = [{"role": "user", "content": content}]
-        searches, reply = 0, None
-        for _ in range(MAX_TURNS):
-            reply = self.client.send(system=self.system, tools=TOOLS, messages=messages)
-            calls.append(reply.usage.as_dict())
-            messages.append(
-                {
-                    "role": "assistant",
-                    "content": reply.content if reply.content is not None else reply.blocks,
-                }
-            )
-            if reply.stop_reason != "tool_use":
-                break
-            results = []
-            for call in reply.tool_calls:
-                name, args = call["name"], call.get("input", {})
-                if name == "open_notes":
-                    text, done = self.library.open_notes(
-                        list(args.get("slugs", [])), self.config.neighbours
-                    )
-                    opened.update({s: self.library.note_text(s) for s in done})
-                    steps.append({"tool": name, "input": args, "returned": done})
-                elif name == "search_notes" and searches < MAX_SEARCHES:
-                    searches += 1
-                    text = self.library.search_notes(
-                        str(args.get("query", "")), int(args.get("k", 10))
-                    )
-                    steps.append({"tool": name, "input": args, "returned": text.splitlines()[:20]})
-                elif name == "search_notes":
-                    text = "Search limit reached (3 per question). Answer from what you have."
-                    steps.append({"tool": name, "input": args, "returned": "limit"})
-                else:
-                    text = f"Unknown tool {name}."
-                results.append({"type": "tool_result", "tool_use_id": call["id"], "content": text})
-            messages.append({"role": "user", "content": results})
-        if reply is not None and reply.stop_reason == "tool_use":
-            # Out of turns while still calling tools: one last call, tools off.
-            messages[-1]["content"].append(
-                {"type": "text", "text": "Tool limit reached: answer now from what you have."}
-            )
-            reply = self.client.send(
-                system=self.system, tools=TOOLS, messages=messages, tool_choice={"type": "none"}
-            )
-            calls.append(reply.usage.as_dict())
-            messages.append(
-                {
-                    "role": "assistant",
-                    "content": reply.content if reply.content is not None else reply.blocks,
-                }
-            )
+        reply = self._loop(self.client, messages, state)
+        writer = self.client
+        if self.answer_client is not None:
+            messages.pop()  # the router's own answer is dropped; the answer model writes it
+            if messages[-1]["role"] == "assistant":
+                messages.pop()
+            if messages[-1]["role"] != "user":
+                messages.append({"role": "user", "content": "Answer the question now."})
+            reply = self._loop(self.answer_client, messages, state)
+            writer = self.answer_client
         answer = reply.text.strip() if reply else ""
+        opened = state["opened"]
         cites = [] if is_abstain(answer) else checks.check_citations(answer, opened)
         failed = [c for c in cites if not c.ok]
         retried = False
@@ -199,26 +217,24 @@ class Lia:
             retried = True
             lines = "\n".join(f'- [[{c.slug}]] "{c.quote}": {c.reason}' for c in failed)
             messages.append({"role": "user", "content": RETRY.format(failures=lines)})
-            reply = self.client.send(system=self.system, tools=TOOLS, messages=messages)
-            calls.append(reply.usage.as_dict())
+            reply = self._loop(writer, messages, state)
             answer = reply.text.strip()
             cites = [] if is_abstain(answer) else checks.check_citations(answer, opened)
             failed = [c for c in cites if not c.ok]
-        shown = mark_unverified(answer, failed)
         return {
             "id": qid,
             "question": question,
             "config": self.config.as_dict(),
             "map_version": self.library.version,
-            "steps": steps,
+            "steps": state["steps"],
             "opened": sorted(opened),
-            "answer": shown,
+            "answer": mark_unverified(answer, failed),
             "abstain": is_abstain(answer),
             "citations": [asdict(c) for c in cites],
             "citation_check": {"total": len(cites), "failed": len(failed), "retried": retried},
-            "searches": searches,
-            "calls": calls,
-            "cost_usd": sum(c["cost_usd"] for c in calls),
+            "searches": state["searches"],
+            "calls": state["calls"],
+            "cost_usd": sum(c["cost_usd"] for c in state["calls"]),
             "latency_ms": round((time.perf_counter() - start) * 1000, 1),
         }
 
