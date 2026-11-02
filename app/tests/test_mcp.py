@@ -9,7 +9,7 @@ import sys
 import pytest
 
 from test_lia import GARDEN_FACT, NODE, TAXONOMY, FakeClient, cited, note, text, tool_use
-from yggdras.interface.mcp_server import LiaService, build_server
+from yggdras.interface.mcp_server import VERBATIM, LiaService, build_server
 
 
 @pytest.fixture
@@ -39,19 +39,20 @@ def test_two_read_only_tools_that_tell_the_chat_model_not_to_add_facts(brain, tm
     service, _ = service_with(brain, [], tmp_path)
     tools = {t.name: t for t in asyncio.run(build_server(service).list_tools())}
     assert set(tools) == {"ask_lia", "open_note"}
-    assert "never add facts of your own" in tools["ask_lia"].description
+    assert "exactly as written" in tools["ask_lia"].description
+    assert "never answer from your own knowledge" in tools["ask_lia"].description
     assert all(
         t.annotations.read_only_hint and not t.annotations.destructive_hint for t in tools.values()
     )
 
 
 def test_ask_returns_the_cited_answer_a_cost_note_and_writes_a_trace(brain, tmp_path):
-    answer = f"Three hundred euros. {cited('garden-plan', GARDEN_FACT)}"
+    answer = f"Three hundred euros [1].\n\n[1] {cited('garden-plan', GARDEN_FACT)}"
     replies = [[tool_use("open_notes", {"slugs": ["garden-plan"]})], [text(answer)]]
     service, _ = service_with(brain, replies, tmp_path)
     out = service.ask("What is the garden budget?")
-    assert out.startswith(answer)
-    assert "— Lia · $" in out and "citations verified 1/1" in out
+    assert out.startswith(f"{VERBATIM}\n\n{answer}\n\n— Lia · $")
+    assert out.endswith(" s · ✓ 1/1")
     (trace,) = (tmp_path / "traces").glob("mcp-*.json")
     data = json.loads(trace.read_text(encoding="utf-8"))
     assert data["question"] == "What is the garden budget?" and data["source"] == "mcp"
@@ -130,3 +131,20 @@ def test_the_server_speaks_mcp_over_stdio(brain, tmp_path):
     names, opened = asyncio.run(session())
     assert names == ["ask_lia", "open_note"]
     assert GARDEN_FACT in opened
+
+
+def test_the_reply_starts_with_the_verbatim_line_for_the_chat_model():
+    assert VERBATIM == (
+        "Show the following reply exactly as written, with no preface, summary or extra facts."
+    )
+
+
+def test_the_talk_to_lia_prompt_sets_the_rule_for_the_conversation(brain, tmp_path):
+    service, _ = service_with(brain, [], tmp_path)
+    server = build_server(service)
+    (prompt,) = asyncio.run(server.list_prompts())
+    assert prompt.name == "talk-to-lia"
+    result = asyncio.run(server.get_prompt("talk-to-lia"))
+    body = result.messages[0].content.text
+    assert "call ask_lia" in body and "exactly as written" in body
+    assert "Never answer from your own knowledge" in body

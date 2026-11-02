@@ -139,3 +139,29 @@ The fixes are in `prereg.md` under "v2 changes": the citation check runs on ever
 - **Not shown yet:** the life-specific failures (type-word routing, completeness on Q11-like questions) can only be shown on life hard-v2, which isn't written yet.
 
 **Tooling fix found during validation:** the `recheck` command still looked for the old `"` delimiter before `[unverified]`. Fixed. v1's count is unaffected, because v1's marks used `"`.
+
+## v3 voice check (Apollo hard-v8 only, Haiku 5.5, 1 run; a check, not a gate)
+
+The change is in `prereg.md` under "v3 voice check": first person, numbered footnotes, the abstain line "I don't have that in your notes yet.". The evidence rules and the final config are unchanged.
+
+| | v2 final (3 runs) | v3 final (1 run) |
+|---|---|---|
+| Score (of 24) | 23, 23, 22 | **23** |
+| Partly correct | 1, 1, 2 | 1 (v24, missing 1970-04-03, as in every v2 run) |
+| Apollo traps (v13–v16) | 12 of 12 | 4 of 4, in the new abstain wording |
+| Shown citations, fresh re-check | 213: 211 verified, 2 marked, 0 invented | 67: 65 verified, 2 marked, **0 invented** |
+| Answers that needed the citation retry | 23, 22, 21 | 24 |
+| Routing recall | 0.97 | 0.97 |
+| $ / question | 0.0013 | 0.0014 |
+| p50 / p90 latency | 5.9 / 8.5 s | 5.3 / 9.3 s |
+| Third person in Lia's own sentences | not checked | 0 of 24 |
+| Answers with a follow-up question | — | 3 of 24 |
+
+Grading: the judge and the key-term grader agree on all 24, and the element rules from Step 2 change nothing (v24 still misses a date).
+
+**Reading it:** accuracy and citations didn't drop. The bars set in the prereg are met: the score is within v2's range, and 0 citations were invented.
+
+**Seen, not fixed** (changing anything now would be tuning after seeing the run):
+1. **The retry runs on almost every answer, in v2 and v3 alike.** Haiku's first draft usually drops the `[stated]` tag, and the retry restores it. Each retry costs one extra call.
+2. **v24: the retry's own words leaked into the reply.** "Here is the answer again with corrected citations:" opened the answer. This happened once in v2 as well.
+3. **v24: one footnote held three quotes,** `[4] [[apollo-13]] «a»; «b»; «c»`. The second and third have no slug in front, so they were marked `[unverified]`, although both are true fact lines of that note. The error is on the safe side.

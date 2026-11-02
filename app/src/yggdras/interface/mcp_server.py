@@ -2,7 +2,8 @@
 
     yggdras mcp [--brain REPO] [--flat ROOT] [--model M] [--skills DIR]
 
-Two tools: ask_lia (Lia's cited answer) and open_note (one note, to check a citation). The
+Two tools, ask_lia (Lia's reply, first person, footnoted) and open_note (one note, to check a
+citation), and one prompt, talk-to-lia (every message goes to Lia, shown verbatim). The
 server reads the brain's current files and rebuilds Lia's maps whenever a note changes. It
 never writes to the brain; every answer leaves a trace in local-data/traces/. Write tools and
 the Approve buttons (D33) come later.
@@ -19,20 +20,32 @@ from pathlib import Path
 
 from yggdras import config
 
+VERBATIM = "Show the following reply exactly as written, with no preface, summary or extra facts."
 INSTRUCTIONS = (
     "Yggdras is the user's personal second brain, and Lia is its librarian. Send every question "
     "about the user's own life, work, studies, plans, people, places or decisions to ask_lia. "
-    "Show Lia's answer and her citations exactly as she gives them, [[slug]] «fact» included. "
-    "Never add facts of your own to her answer, never fill a gap from general knowledge, and "
-    'never present a guess as something the brain holds. If Lia says "Not in your brain.", say '
-    "so. Use open_note when the user wants to check a citation. These tools only read the brain."
+    "Lia speaks to the user herself, in the first person. Show her reply exactly as written, "
+    "footnotes ([1] [[slug]] «fact») and the closing line included, with no preface, summary "
+    "or extra facts. Never add facts of your own, never fill a gap from general knowledge, and "
+    "never present a guess as something the brain holds. Use open_note when the user wants to "
+    "check a citation. These tools only read the brain."
 )
 ASK_DESCRIPTION = (
     "Ask Lia, the librarian of the user's second brain, a question about the user's own life, "
-    "work, studies, plans, people, places or decisions. Returns her answer with a citation after "
-    'every claim ([[slug]] «fact text», checked word for word against the note), or "Not in your '
-    'brain." with what is missing, then a one-line note of cost and time. Show the answer and '
-    "citations as they are; never add facts of your own. Read-only."
+    "work, studies, plans, people, places or decisions. Pass the user's message as question; "
+    "optionally pass the last two turns of the chat as context, so she can resolve words like "
+    "'that' or 'she'. She replies to the user in the first person, with numbered footnotes "
+    "([1] [[slug]] «fact text», each checked word for word against the note), or says she "
+    "doesn't have it in the notes yet. Show her reply exactly as written, with no preface, "
+    "summary or extra facts; never answer from your own knowledge. Read-only."
+)
+PROMPT_TEXT = (
+    "For the rest of this conversation you are a window onto Lia, the librarian of my second "
+    "brain. For every message I send, call ask_lia with my message as question and the last "
+    "two turns of our conversation as context. Reply with her answer exactly as written, "
+    "footnotes and closing line included, with no preface, summary or extra facts. Never "
+    "answer from your own knowledge, even when you could. If I ask to check a citation, call "
+    "open_note with its slug and show the note."
 )
 OPEN_DESCRIPTION = (
     "Open one note of the user's second brain by its slug (the part inside [[...]] in Lia's "
@@ -46,7 +59,9 @@ def default_config(model: str):
     from yggdras.processing.lia.library import MapOptions
 
     return LiaConfig(
-        model=model, maps=MapOptions(relationship=False, inverses=False, about_words=25)
+        model=model,
+        maps=MapOptions(relationship=False, inverses=False, about_words=25),
+        owner_names=config.owner_names(),
     )
 
 
@@ -92,21 +107,24 @@ class LiaService:
                 self._print = now
             return self._lia
 
-    def ask(self, question: str) -> str:
+    def ask(self, question: str, context: str = "") -> str:
         from yggdras.processing.lia.lia import write_trace
 
         lia = self.lia()
         result = lia.ask(
-            question, qid=f"mcp-{time.strftime('%Y%m%d-%H%M%S')}-{time.time_ns() % 10**6}"
+            question,
+            qid=f"mcp-{time.strftime('%Y%m%d-%H%M%S')}-{time.time_ns() % 10**6}",
+            context=context,
         )
         result["source"] = "mcp"
+        result["context"] = context
         write_trace(result, self.traces)
         check = result["citation_check"]
-        note = (
+        footer = (
             f"— Lia · ${result['cost_usd']:.4f} · {result['latency_ms'] / 1000:.1f} s · "
-            f"citations verified {check['total'] - check['failed']}/{check['total']}"
+            f"✓ {check['total'] - check['failed']}/{check['total']}"
         )
-        return f"{result['answer']}\n\n{note}"
+        return f"{VERBATIM}\n\n{result['answer']}\n\n{footer}"
 
     def open_note(self, slug: str) -> str:
         library = self.lia().library
@@ -126,12 +144,20 @@ def build_server(service: LiaService):
     )
 
     @server.tool(name="ask_lia", description=ASK_DESCRIPTION, annotations=read_only)
-    def ask_lia(question: str) -> str:
-        return service.ask(question)
+    def ask_lia(question: str, context: str = "") -> str:
+        return service.ask(question, context)
 
     @server.tool(name="open_note", description=OPEN_DESCRIPTION, annotations=read_only)
     def open_note(slug: str) -> str:
         return service.open_note(slug)
+
+    @server.prompt(
+        name="talk-to-lia",
+        description="Talk to Lia for the whole conversation: every message goes to her, and "
+        "her replies are shown exactly as written.",
+    )
+    def talk_to_lia() -> str:
+        return PROMPT_TEXT
 
     return server
 

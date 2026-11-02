@@ -5,7 +5,15 @@ import json
 
 import pytest
 
-from yggdras.processing.lia.lia import ABSTAIN, TOOLS, Lia, LiaConfig, load_skills, write_trace
+from yggdras.processing.lia.lia import (
+    ABSTAIN,
+    TOOLS,
+    Lia,
+    LiaConfig,
+    is_abstain,
+    load_skills,
+    write_trace,
+)
 from yggdras.processing.lia.library import Library, MapOptions
 from yggdras.processing.lia.models import Budget, BudgetStop, Reply, Usage, cost_of
 
@@ -395,3 +403,31 @@ def test_a_quote_without_a_slug_is_retried_then_marked(library, skills):
     result = Lia(client, library, skills, LiaConfig()).ask("Budget?")
     assert result["citation_check"] == {"total": 1, "failed": 1, "retried": True}
     assert f"«{GARDEN_FACT}» [unverified]" in result["answer"]
+
+
+# ---------------------------------------------------------------- v3 voice
+
+
+def test_abstain_wording_is_lias_own_and_the_old_one_still_counts(library, skills):
+    assert ABSTAIN == "I don't have that in your notes yet."
+    reply = f"{ABSTAIN} None of your notes mention a pond."
+    client = FakeClient([[text(reply)], *SEARCHED_ABSTAIN[:1], [text(reply)]])
+    result = Lia(client, library, skills, LiaConfig()).ask("Pond?")
+    assert result["abstain"] and result["answer"] == reply
+    assert is_abstain("Not in your brain. Nothing.")
+
+
+def test_footnoted_answer_is_verified_and_the_voice_is_checked(library, skills):
+    answer = f"You set it at three hundred euros [1].\n\n[1] {cited('garden-plan', GARDEN_FACT)}"
+    replies = [[tool_use("open_notes", {"slugs": ["garden-plan"]})], [text(answer)]]
+    cfg = LiaConfig(owner_names=("Manoj",))
+    result = Lia(FakeClient(replies), library, skills, cfg).ask("Budget?")
+    assert result["citation_check"] == {"total": 1, "failed": 0, "retried": False}
+    assert result["third_person"] == []
+
+
+def test_chat_context_is_shown_to_lia_but_not_as_the_question(library, skills):
+    client = FakeClient([[text(f"{ABSTAIN} x")], *SEARCHED_ABSTAIN])
+    Lia(client, library, skills, LiaConfig()).ask("And hers?", context="me: Who is Ada?")
+    first = client.sent[0]["messages"][0]["content"]
+    assert "me: Who is Ada?" in first[0]["text"] and first[-1]["text"] == "Question: And hers?"

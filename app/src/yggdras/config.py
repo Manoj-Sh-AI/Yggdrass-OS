@@ -29,6 +29,13 @@ def lia_model() -> str:
     return os.environ.get("YGGDRAS_LIA_MODEL", "claude-haiku-5-5").strip()
 
 
+def owner_names() -> tuple[str, ...]:
+    """The brain owner's names (YGGDRAS_OWNER_NAMES, comma-separated), for Lia's voice check:
+    her own sentences say "you", never these. Kept out of the code (D23)."""
+    raw = os.environ.get("YGGDRAS_OWNER_NAMES", "")
+    return tuple(n.strip() for n in raw.split(",") if n.strip())
+
+
 def local_data():
     """Personal outputs (traces, real-brain results): git-ignored, never committed."""
     from pathlib import Path
