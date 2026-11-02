@@ -40,6 +40,44 @@ uv run ruff check .
 
 Copy `.env.example` to `.env` and fill in values when a feature needs them.
 
+## Talk to Lia in Claude (read-only MCP connector)
+
+`yggdras mcp` runs Lia as a local stdio MCP server with two read-only tools:
+- `ask_lia(question)`: a cited answer, `[[slug]] «fact»`, or "Not in your brain.", plus a cost and time note;
+- `open_note(slug)`: one note's full text, to check a citation.
+
+How it works:
+- It reads the brain's current files and rebuilds the maps when a note changes. It never writes to the brain.
+- Every answer leaves a trace in `local-data/traces/`.
+- The config is the tested one: Haiku 5.5, shelf map only, skills from `<brain>/skills/lia`.
+
+The examples below use these placeholders:
+- `<APP>`: this repo's `app` folder, after `uv sync`;
+- `<BRAIN>`: the brain repo;
+- `<ENV>`: a `.env` file with `ANTHROPIC_API_KEY`. The key stays in that file and is never logged.
+
+**Claude Code:**
+
+```bash
+claude mcp add yggdras --scope user -e "YGGDRAS_BRAIN=<BRAIN>" -e "YGGDRAS_ENV_FILE=<ENV>" -e "PYTHONIOENCODING=utf-8" -- "<APP>/.venv/Scripts/python.exe" -m yggdras.interface.cli mcp
+```
+
+Check it with `claude mcp list`; it should show `yggdras: … ✔ Connected`.
+
+**Claude Desktop:** add this to `claude_desktop_config.json` (Settings → Developer → Edit Config), then quit and restart Claude Desktop:
+
+```json
+"mcpServers": {
+  "yggdras": {
+    "command": "<APP>\\.venv\\Scripts\\python.exe",
+    "args": ["-m", "yggdras.interface.cli", "mcp"],
+    "env": {"YGGDRAS_BRAIN": "<BRAIN>", "YGGDRAS_ENV_FILE": "<ENV>", "PYTHONIOENCODING": "utf-8"}
+  }
+}
+```
+
+On macOS or Linux, use `<APP>/.venv/bin/python`.
+
 ## Workflow
 
 1. Answer the six scoping questions in `requirements/` (you, not the agent).
