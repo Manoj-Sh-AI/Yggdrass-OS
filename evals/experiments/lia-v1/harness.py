@@ -426,8 +426,8 @@ def lia_tools():
 # ---------------------------------------------------------------- tables
 
 
-def final_grade(row: dict, overrides: dict) -> str:
-    key = f"{row['arm']}|{row['set']}|{row['run']}|{row['qid']}"
+def final_grade(row: dict, overrides: dict, model: str) -> str:
+    key = f"{row['arm']}|{row['set']}|{row['run']}|{row['qid']}|{model}"
     return overrides.get(key, row.get("grade_judge", "wrong"))
 
 
@@ -446,7 +446,7 @@ def table() -> None:
     for (arm, set_name, model), runs in sorted(groups.items()):
         scores, partly, lat, cost, rec, cit_ok, cit_all = [], [], [], [], [], 0, 0
         for d in sorted(runs, key=lambda d: d["run"]):
-            g = [final_grade(r, overrides) for r in d["rows"]]
+            g = [final_grade(r, overrides, model) for r in d["rows"]]
             scores.append(sum(x in ("correct", "correct_abstain") for x in g))
             partly.append(sum(x == "partly_correct" for x in g))
             for r in d["rows"]:
@@ -465,6 +465,34 @@ def table() -> None:
               f"{statistics.mean(cost):.4f} | {statistics.median(lat):.1f} | {q[8]:.1f} |")  # fmt: skip
 
 
+def recheck(arm: str, model: str) -> None:
+    """Gate bar 3: re-check every shown citation of *arm* against the pinned notes, fresh."""
+    from yggdras.data.maps import checks
+
+    shown = verified = marked = invented = 0
+    for folder in (HERE / "results", LOCAL / "results"):
+        for path in sorted(folder.glob(f"{arm}__*__{model}__r*.json")) if folder.is_dir() else []:
+            if path.name.endswith(".graded.json"):
+                continue
+            data = json.loads(path.read_text(encoding="utf-8"))
+            _, root, flat = SETS[data["set"]]
+            library = Library(root, flat=flat)
+            for row in data["rows"]:
+                answer = row.get("answer") or ""
+                opened = {s: library.note_text(s) for s in row.get("opened", [])}
+                for c in checks.check_citations(answer.replace(" [unverified]", ""), opened):
+                    shown += 1
+                    tag = f'{c.quote}" [unverified]' in answer or f"{c.quote} [unverified]" in answer
+                    if c.ok:
+                        verified += 1
+                    elif tag:
+                        marked += 1
+                    else:
+                        invented += 1
+                        print("INVENTED", data["set"], row["qid"], c.slug, c.quote[:80])
+    print(f"{arm} {model}: shown {shown}, verified {verified}, marked unverified {marked}, invented {invented}")
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1]
     model = sys.argv[sys.argv.index("--model") + 1] if "--model" in sys.argv else "claude-haiku-5-5"
@@ -479,3 +507,5 @@ if __name__ == "__main__":
         e7(model)
     elif cmd == "table":
         table()
+    elif cmd == "recheck":
+        recheck(sys.argv[2], model)
