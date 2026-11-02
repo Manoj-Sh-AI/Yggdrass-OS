@@ -195,3 +195,49 @@ The v1 gate failed bars 2 and 3. These are general fixes, with no question-speci
 **The check:** Apollo hard-v8 only, the final config (arm `final-v3`), Haiku 5.5, **1 run**. It is graded and hand-reviewed with the same written element rules as Step 2, and reported against v2's three runs (23, 23, 22) and v2's fresh citation re-check (213 shown, 0 invented). It is a check, not a gate. "Didn't drop" means a score within v2's run-to-run range (22 to 23) or above it, and 0 invented citations.
 
 **Inputs:** the new skills SHA in `harness.py`, the run tag `v3`, and the budget ledger continuing.
+
+## Explore: look wider, check coverage, then answer (Manoj, 2026-11-02, recorded before any run)
+
+Manoj calls this "Lia v3". The code names it **explore**, because v3 is already the voice change (skills 96710fd).
+
+**The changes** (each a `LiaConfig` switch; all off is the baseline):
+- **F1 `plan`:** the first call is forced to the `plan` tool. It lists facets (named and implied areas), 1–4 sub-questions and an effort level by fixed rules. The reply names each facet's hub, adds free hints (areas whose note names or aliases share a word with the question), and asks for one wide `open_notes` call.
+- **F2 `coverage`:** the `coverage` tool grades each sub-question. A gap gets a corrective round: search with rewritten terms, open the top hits, grade again. Rounds are capped by effort (simple 1, medium 2, complex 3), and so are searches (3, 4 and 6). The turn limit rises to 12.
+- **F3 `siblings` (free code):** after the draft, two-word key phrases are taken from its cited facts. A phrase counts when both words carry meaning: not a stopword, not a word of the note's own name, not a date. "no", "not" and "never" count. Phrases found in more than 8 fact lines are dropped. Up to 6 matching fact lines from notes the draft didn't cite go back to Lia once; those notes count as opened.
+- **F4 `verdict` (on whenever exploring):** the coverage call carries a verdict of sufficient, partly or insufficient. An answer written without one is sent back once.
+- **F5 `capability` (on whenever exploring):** a skill rule plus a code check for write offers in Lia's own sentences. An offer joins the one retry.
+- **F6 `upcoming`:** `upcoming.md` is built by code: `date | slug | title (kind)` for dated facts, review dates and `valid:` starts within 120 days. It is loaded only for complex questions or time words, and "today" is pinned to 2026-11-02.
+- **F7 `escalate`:** after the plan, Sonnet 5.5 takes over complex questions.
+- **Skills:** `skills/lia/explore.md` (brain commit fc985e5) is loaded only when a switch is on. `answering.md` is unchanged (v3).
+
+**Sets (all dev; none is used for a gate):**
+1. Apollo hard-v8.
+2. Life hard-v1 (a dev set since v2).
+3. **life-dev-explore:** Manoj's 10 cross-area questions. The rubric gives expected areas, expected facts and required elements. It was written by Claude from the pinned brain f6fe26a, not by Manoj. It lives in `local-data/lia-v1/explore-rubric.json`, SHA in `harness.py`.
+
+**Arms** (Haiku 5.5, final config, today pinned):
+- `x-base` (all off) and `x-all` (F1–F6): 3 runs each on all three sets.
+- `x-esc` (F7): 3 runs on all three sets.
+- Ablations `x-no-plan`, `x-no-coverage`, `x-no-siblings` and `x-no-upcoming`: 1 run each on all three sets.
+- F4 and F5 have no ablation (always on).
+
+**Metrics:**
+- Accuracy: the judge's grade, as in v2, hand-reviewed where the judge and key-term grader disagree. The written element rules from Step 2 apply on Apollo.
+- Facet recall: expected areas touched by an opened note.
+- Fact recall: expected facts cited, tags ignored; life sets only.
+- Citations: fresh re-check, verified, marked and invented.
+- Traps: correct abstains on ABSTAIN questions.
+- p50/p90 latency, and cost per question by effort level (the levels from `x-all` run 1).
+
+**Guardrails** (any failure means `x-all` is not adopted):
+- accuracy on Apollo hard-v8 doesn't drop (mean of runs, beyond the larger run-to-run range);
+- traps stay 100% correct;
+- 0 invented citations;
+- p50 latency ≤ 10 s on simple questions;
+- mean cost ≤ $0.01 per question.
+
+**F7 rule:** adopted only if it beats `x-all` on the dev sets by more than run-to-run noise. Cost decides only ties (D27).
+
+**Switch recommendations:** a switch is recommended ON if its ablation lowers the dev score or a recall. One ablation run is weak evidence, and the report says so.
+
+**Budget:** its own ledger, `local-data/lia-v1/spend-explore.json`, with a stop at $8 of a $10 cap. Runs go in order: `x-base`, `x-all`, the ablations, then `x-esc`. Whatever the stop cuts is reported as not run.
