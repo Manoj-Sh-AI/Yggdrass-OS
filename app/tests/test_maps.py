@@ -406,3 +406,13 @@ def test_the_quote_unit_is_the_text_before_the_source_tags_included():
     ]
     assert [checks.check_citations(c, opened)[0].ok for c in cases] == [True, True, True, False]
     assert checks.quote_unit(f"- {unit} (src: log, 2030-01-01)") == unit
+
+
+def test_a_quote_without_a_slug_fails_and_is_not_double_counted():
+    opened = {"garden-plan": GARDEN}
+    answer = (
+        "[[garden-plan]] «The garden plan has a budget of three hundred euros in total.» "
+        "It was also «The plan was smaller»."
+    )
+    results = [(c.slug, c.ok, c.reason) for c in checks.check_citations(answer, opened)]
+    assert results == [("garden-plan", True, ""), ("", False, "quote without a [[slug]]")]

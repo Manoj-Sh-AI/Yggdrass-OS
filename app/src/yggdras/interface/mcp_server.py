@@ -146,6 +146,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--skills", type=Path, help="skills folder (default: <brain>/skills/lia)")
     args = parser.parse_args(argv)
     config.load_env_file()
+    import logging
+
+    logging.getLogger("httpx").setLevel(logging.WARNING)  # no per-request lines on stderr
     brain = args.brain or config.brain_repo()
     if not (args.flat or brain):
         print("no brain: pass --brain or set YGGDRAS_BRAIN", file=sys.stderr)
