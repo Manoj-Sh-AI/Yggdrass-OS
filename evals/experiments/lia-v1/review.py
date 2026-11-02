@@ -58,7 +58,7 @@ def main():
                 continue
             ans = " ".join((row.get("answer") or "").split())
             print(f"## {key}  judge={row.get('grade_judge')} terms={row.get('grade_terms')}")
-            print(f"Q: {q['question']}\nKEY: {'ABSTAIN' if q['abstain'] else q['expected']}\nA: {ans[:900]}\n")
+            print(f"Q: {q['question']}\nKEY: {'ABSTAIN' if q['abstain'] else q['expected']}\nA: {ans}\n")
     elif cmd == "set":
         args = sys.argv[2:]
         for key, grade in zip(args[::2], args[1::2], strict=True):
