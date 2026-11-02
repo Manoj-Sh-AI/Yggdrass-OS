@@ -68,11 +68,6 @@ a { color: var(--accent); }
 #tip b { font-size: 13px; font-weight: 600; }
 #loading { position: absolute; left: 16px; bottom: 14px; color: var(--text-2); font-size: 12px; }
 #stats { color: var(--text-2); font-size: 11px; margin-top: 14px; }
-#legend-card { position: absolute; top: 12px; left: 12px; z-index: 5; border-radius: 8px; padding: 10px 12px; font-size: 13px; max-width: 520px; }
-#legend-card b { display: block; margin-bottom: 4px; }
-#legend-card .dot { display: inline-flex; align-items: center; gap: 6px; margin-right: 10px; }
-#legend-card i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-#legend-card .s { margin-top: 4px; }
 @media (max-width: 800px) {
   #graph { inset: 0 0 45vh 0; }
   #side { top: auto; height: 45vh; width: 100%; border-left: 0; border-top: 1px solid var(--line); }
@@ -82,7 +77,6 @@ a { color: var(--accent); }
 </head>
 <body>
 <div id="graph" aria-label="Brain map"></div>
-<div id="legend-card" hidden></div>
 <div id="loading">Laying out…</div>
 <aside id="side">
   <div class="row">
@@ -102,13 +96,20 @@ a { color: var(--accent); }
     </div>
     <div class="row" id="colour-by-row"><span>Colour by</span>
       <select id="colour-by" aria-label="Colour by">
-        <option value="group">Type group</option><option value="area">Life area</option>
+        <option value="area">Life area</option><option value="group">Type group</option>
       </select>
     </div>
+    <div class="row"><span>Layout</span>
+      <select id="layout" aria-label="Layout">
+        <option value="force">Force</option><option value="radial">Radial sectors</option><option value="circlepack">Circlepack</option>
+      </select>
+    </div>
+    <label><input type="checkbox" id="show-ring"> Show ring and area names</label>
     <label><input type="checkbox" id="hide-hubs"> Hide hubs and their links</label>
     <label><input type="checkbox" id="edge-labels"> Show link labels when zoomed in</label>
     <label><input type="checkbox" id="show-mentions" checked> Show mentions</label>
   </div>
+  <div id="counts" class="muted" style="margin-top:10px"></div>
   <div id="info"><span class="empty">Click a note to see its details.</span></div>
   <h3>Filters</h3>
   <details><summary>Areas</summary><div class="filter" id="f-area"></div></details>
@@ -161,10 +162,10 @@ const GROUPS = {
 function groupOf(n) {
   if (n.type === "hub" || n.type === "area") return "hub";
   if (n.type === "person") return "person";
-  if (["topic", "concept", "framework"].includes(n.type)) return "knowledge";
+  if (["concept", "framework"].includes(n.type) || (n.type === "topic" && n.shelf === "topics")) return "knowledge";
   if (n.type === "chunk" || (n.type === "source" && n.path.split("/").length > 2)) return "chunk";
   if (n.type === "source") return "source";
-  if (["project", "goal", "decision", "event", "journal"].includes(n.type)) return "doing";
+  if (["project", "goal", "decision", "event", "journal", "topic"].includes(n.type)) return "doing";
   if (n.type === "place") return "place";
   return "other";
 }
@@ -189,26 +190,42 @@ const degrees = DATA.nodes.filter((n) => n.type !== "hub").map((n) => n.degree).
 const ALWAYS_DEGREE = Math.max(5, degrees[Math.floor(degrees.length * 0.06)] || 0);
 const verbKey = (e) => (e.kind === "mention" ? "mentions" : e.label);
 
-// Area clouds: hidden springs pull each note gently towards its area's anchor (its hub, or
-// its most-linked note). Hidden edges are not drawn but take part in the layout.
-const anchors = new Map();
-for (const n of DATA.nodes) {
-  const k = colourKey(n);
-  if (!k || k === "cross") continue;
-  const cur = anchors.get(k);
+// Colour neighbourhoods: hidden springs pull each note towards the anchor of its colour
+// group (the group's hub, or its most-linked note), so notes of one colour sit together.
+// Hidden edges are not drawn but take part in the layout. "a" springs (long, gentle) group
+// by life area for Area clouds; "b" (short, firm) by life area and "g" by type group for Classic.
+function springs(prefix, keyOf) {
+  const anchors = new Map();
   const rank = (m) => (m.type === "hub" ? 1e6 : 0) + m.degree;
-  if (!cur || rank(n) > rank(cur)) anchors.set(k, n);
+  for (const n of DATA.nodes) {
+    const k = keyOf(n);
+    if (!k || k === "cross") continue;
+    const cur = anchors.get(k);
+    if (!cur || rank(n) > rank(cur)) anchors.set(k, n);
+  }
+  const out = [];
+  for (const n of DATA.nodes) {
+    const a = anchors.get(keyOf(n));
+    if (a && a.id !== n.id) out.push({ id: `${prefix}${out.length}`, from: n.id, to: a.id });
+  }
+  return out;
 }
-const CLOUD_EDGES = [];
-for (const n of DATA.nodes) {
-  const a = anchors.get(colourKey(n));
-  if (a && a.id !== n.id) CLOUD_EDGES.push({ id: `c${CLOUD_EDGES.length}`, from: n.id, to: a.id });
+const CLOUD_EDGES = [
+  ...springs("a", colourKey).map((e) => ({ ...e, length: 150 })),
+  ...springs("b", colourKey).map((e) => ({ ...e, length: 40 })),
+  ...springs("g", (n) => groupOf(n)).map((e) => ({ ...e, length: 40 })),
+];
+// Which springs the current style and colouring use: "a", "g" or none.
+function springSet() {
+  if (state.style === "clouds") return "a";
+  if (state.style === "classic") return state.colourBy === "area" ? "b" : "g";
+  return "";
 }
 
 // ---------------------------------------------------------------- state
 const state = { hideHubs: false, edgeLabels: false, mentions: true, areaOff: new Set(),
   typeOff: new Set(), verbOff: new Set(), hover: null, selected: null, revealed: new Set(),
-  pinned: new Set(), theme: "dark", style: "classic", colourBy: "group" };
+  pinned: new Set(), theme: "dark", style: "classic", colourBy: "area", layout: "force", ring: false };
 let visible = new Set(DATA.nodes.map((n) => n.id));
 
 function storeGet(k) { try { return localStorage.getItem(k); } catch (_) { return null; } }
@@ -233,13 +250,91 @@ function classicArea(k) {
   return `hsl(${hue}, ${k === "cross" ? 6 : 55}%, ${L.areaL}%)`;
 }
 function swatch(k) { return classic() ? classicArea(k) : areaColour({ area: k, shelf: k }); }
+// Blended colours (Classic): a note linked to other colour groups shows 65% its own colour
+// and 35% the link-weighted average of its neighbours' colours, mixed in OKLab so blends
+// stay clean. Hub "lists" links don't count. A note with no links to another group keeps
+// its pure colour. The legend shows pure colours only.
+const BLEND = Math.min(1, Math.max(0, Number(hash.get("blend") || 0.35)));
+function pureKey(n) { return state.colourBy === "area" ? colourKey(n) : groupOf(n); }
+function pureColour(n) { return state.colourBy === "area" ? classicArea(colourKey(n)) : GROUPS[groupOf(n)][1]; }
+function toRgb(c) {
+  if (c[0] === "#") return [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16) / 255);
+  const [h, sat, l] = c.match(/[\d.]+/g).map(Number);
+  const S = sat / 100, Li = l / 100, k = (x) => (x + h / 30) % 12, a = S * Math.min(Li, 1 - Li);
+  return [0, 8, 4].map((x) => Li - a * Math.max(-1, Math.min(k(x) - 3, 9 - k(x), 1)));
+}
+const lin = (c) => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+const gam = (c) => (c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055);
+function toOklab(rgb) {
+  const [r, g, b] = rgb.map(lin);
+  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+  const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+  const s2 = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+  return [0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s2,
+    1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s2,
+    0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s2];
+}
+function fromOklab([L0, A, B]) {
+  const l = Math.pow(L0 + 0.3963377774 * A + 0.2158037573 * B, 3);
+  const m = Math.pow(L0 - 0.1055613458 * A - 0.0638541728 * B, 3);
+  const s2 = Math.pow(L0 - 0.0894841775 * A - 1.291485548 * B, 3);
+  const rgb = [4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s2,
+    -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s2,
+    -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s2];
+  return "#" + rgb.map((c) => Math.round(Math.min(1, Math.max(0, gam(c))) * 255).toString(16).padStart(2, "0")).join("");
+}
+// Blends are made in OKLCH: lightness mixes straight, hue turns the short way round, and
+// chroma stays at least the average of the two colours, so opposite hues (yellow and blue)
+// meet as a colour, not as grey. Grey notes (Cross-area, or the "Other" type group) take no
+// part: they are never blended and never tint or count as a foreign colour. The hue turns at
+// most 20°, so a bridge keeps its own colour family (yellow toward blue must not read as green).
+const MAX_HUE_SHIFT = (20 * Math.PI) / 180;
+const toLch = ([l, a, b]) => [l, Math.hypot(a, b), Math.atan2(b, a)];
+const fromLch = ([l, c, h]) => [l, c * Math.cos(h), c * Math.sin(h)];
+const isGrey = (n) => { const k = pureKey(n); return k === "cross" || k === "other"; };
+function mixLch(own, other, t) {
+  const dh = ((other[2] - own[2] + 3 * Math.PI) % (2 * Math.PI)) - Math.PI;
+  return [own[0] + (other[0] - own[0]) * t,
+    Math.max(own[1] + (other[1] - own[1]) * t, (own[1] + other[1]) / 2),
+    own[2] + Math.max(-MAX_HUE_SHIFT, Math.min(MAX_HUE_SHIFT, dh * t))];
+}
+let blended = new Map();
+function computeBlends() {
+  blended = new Map();
+  if (!classic()) return;
+  const lch = new Map(DATA.nodes.map((n) => [n.id, toLch(toOklab(toRgb(pureColour(n))))]));
+  for (const n of DATA.nodes) {
+    if (isGrey(n)) { blended.set(n.id, pureColour(n)); continue; }
+    const k = pureKey(n);
+    let w = 0, cross = false, l = 0, c = 0, hx = 0, hy = 0;
+    for (const e of edgesOf.get(n.id)) {
+      if (e.kind === "hub") continue;
+      const o = e.from === n.id ? e.to : e.from;
+      const m = byId.get(o);
+      if (o === n.id || isGrey(m)) continue;
+      if (pureKey(m) !== k) cross = true;
+      const v = lch.get(o);
+      l += v[0]; c += v[1]; hx += Math.cos(v[2]); hy += Math.sin(v[2]); w++;
+    }
+    if (!cross) { blended.set(n.id, pureColour(n)); continue; }
+    const avg = [l / w, c / w, Math.atan2(hy, hx)];
+    blended.set(n.id, fromOklab(fromLch(mixLch(lch.get(n.id), avg, BLEND))));
+  }
+}
+// While "Colour by" changes, colours cross-fade: the animation sets these per frame.
+let colourOverride = null;
 function nodeColour(n, inFocus) {
-  if (classic()) return state.colourBy === "area" ? classicArea(colourKey(n)) : GROUPS[groupOf(n)][1];
+  if (classic()) return (colourOverride && colourOverride.get(n.id)) || blended.get(n.id) || pureColour(n);
   if (state.style === "muted" || inFocus || state.areaOff.size) return areaColour(n);
   return n.type === "hub" ? L.hub : L.node;
 }
+// Classic node sizes: 40% bigger than the first demo viewer at today's size, then scaled by
+// s = clamp(sqrt(80 / visible notes), 0.45, 1), so a growing brain doesn't crowd and
+// filtering down makes notes bigger again. Labels and link widths don't scale.
+function sizeFactor(count) { return Math.min(1, Math.max(0.45, Math.sqrt(80 / Math.max(count, 1)))); }
+let SIZE = sizeFactor(DATA.nodes.length);
 function radius(n) {
-  if (classic()) return (4 + Math.sqrt(Math.min(n.degree, 40)) * 2.2) * (groupOf(n) === "chunk" ? 0.7 : 1);
+  if (classic()) return (4 + Math.sqrt(Math.min(n.degree, 40)) * 2.2) * (groupOf(n) === "chunk" ? 0.7 : 1) * 1.4 * SIZE;
   if (n.type === "hub") return 12;
   return 4 + 8.5 * Math.sqrt(Math.min(n.degree, 30) / 30);
 }
@@ -249,21 +344,24 @@ const show = (n) => !n.sensitive || state.revealed.has(n.id);
 // network starts would restart its layout.
 state.style = STYLES.includes(hash.get("style")) ? hash.get("style") : (STYLES.includes(storeGet("yggdras-style")) ? storeGet("yggdras-style") : "classic");
 state.theme = hash.get("theme") || storeGet("yggdras-theme") || "dark";
-state.colourBy = (hash.get("colour") || storeGet("yggdras-colour-by")) === "area" ? "area" : "group";
+state.colourBy = (hash.get("colour") || storeGet("yggdras-colour-by")) === "group" ? "group" : "area";
+const LAYOUTS = ["force", "radial", "circlepack"];
+state.layout = LAYOUTS.includes(hash.get("layout")) ? hash.get("layout") : (LAYOUTS.includes(storeGet("yggdras-layout")) ? storeGet("yggdras-layout") : "force");
+state.ring = hash.get("ring") === "1";
 if (state.theme !== "system") document.documentElement.setAttribute("data-theme", state.theme);
 // The graph's colours: the current style's look for the current theme.
 function look() {
   const t = dark() ? "dark" : "light", base = LOOK[t];
   if (!classic()) return base;
   const c = CLASSIC[t];
-  return { ...base, bg: c.bg, edge: c.edge, hubEdge: c.edge, label: c.label, strong: c.label, accent: c.focus,
+  return { ...base, bg: c.bg, edge: c.edge, hubEdge: c.edge, label: c.muted, strong: c.label, accent: c.focus,
     halo: c.halo, veil: c.veil, areaL: c.areaL, card: c.card, cardLine: c.cardLine, muted: c.muted };
 }
 L = look();
 
 // ---------------------------------------------------------------- nodes: circles only
 function drawNode(ctx, n, x, y, opts = {}) {
-  const r = radius(n);
+  const r = radius(n) * (opts.grow || 1);
   ctx.save();
   if (n.type === "hub" && !classic()) {
     ctx.shadowColor = nodeColour(n, opts.focus); ctx.shadowBlur = 12;
@@ -290,14 +388,17 @@ function renderer({ ctx, id, x, y, state: s }) {
 function edgeStyle(e) {
   const c = e.kind === "hub" ? L.hubEdge : L.edge;
   const col = { color: c, highlight: c, hover: c, inherit: false, opacity: 1 };
-  if (classic()) return { width: 1, dashes: false, color: col };
+  if (classic()) return { width: 1, dashes: false, color: { inherit: "both", opacity: 0.28 } };
   if (e.kind === "mention") return { width: 0.6, dashes: [2, 3], color: col };
   return { width: e.kind === "hub" ? 0.6 : 0.8, dashes: false, color: col };
 }
-const nodesDS = new vis.DataSet(DATA.nodes.map((n) => ({ id: n.id, shape: "custom", ctxRenderer: renderer, size: radius(n) })));
+computeBlends();
+// Nodes carry their colour too, so gradient links can take it from both ends.
+const nodeColourOpt = (n) => { const c = nodeColour(n, false); return { background: c, border: c }; };
+const nodesDS = new vis.DataSet(DATA.nodes.map((n) => ({ id: n.id, shape: "custom", ctxRenderer: renderer, size: radius(n), color: nodeColourOpt(n) })));
 const edgesDS = new vis.DataSet([
   ...DATA.edges.map((e) => ({ id: e.id, from: e.from, to: e.to, ...edgeStyle(e) })),
-  ...CLOUD_EDGES.map((c) => ({ ...c, hidden: true, length: 150 })),
+  ...CLOUD_EDGES.map((c) => ({ ...c, hidden: true })),
 ]);
 function nodeVisible(n) {
   return !(state.hideHubs && n.type === "hub") && !state.areaOff.has(colourKey(n)) && !state.typeOff.has(n.type);
@@ -305,7 +406,7 @@ function nodeVisible(n) {
 const nodesView = new vis.DataView(nodesDS, { filter: (item) => nodeVisible(byId.get(item.id)) });
 const edgesView = new vis.DataView(edgesDS, {
   filter: (item) => {
-    if (typeof item.id === "string") return state.style === "clouds" && visible.has(item.from) && visible.has(item.to);
+    if (typeof item.id === "string") return item.id[0] === springSet() && visible.has(item.from) && visible.has(item.to);
     const e = edgeById.get(item.id);
     if (state.hideHubs && e.kind === "hub") return false;
     if (!state.mentions && e.kind === "mention") return false;
@@ -315,6 +416,8 @@ const edgesView = new vis.DataView(edgesDS, {
 });
 function refresh() {
   visible = new Set(DATA.nodes.filter(nodeVisible).map((n) => n.id));
+  SIZE = sizeFactor(visible.size);
+  nodesDS.update(DATA.nodes.map((n) => ({ id: n.id, size: radius(n) })));
   nodesView.refresh(); edgesView.refresh();
   if (state.selected && !visible.has(state.selected)) { state.selected = null; showInfo(null); }
   network.redraw();
@@ -337,6 +440,353 @@ const network = new vis.Network(document.getElementById("graph"), { nodes: nodes
 });
 const bodyNodes = () => network.body.nodes;
 let firstLayout = true;
+
+// Address options that need the final positions (#zoom, #center, #select), applied once the
+// notes have settled in.
+function afterLoad() {
+  if (hash.get("debug") === "layout") {
+    const at = network.getPositions();
+    document.body.dataset.layout = JSON.stringify({ layout: state.layout, info: lastLayout && { R: lastLayout.R, sectors: lastLayout.sectors, circles: lastLayout.circles },
+      nodes: Object.fromEntries(DATA.nodes.map((n) => [n.slug, { ...at[n.id], key: sectorKey(n), centre: isCentre(n), r: radius(n) }])) });
+  }
+  const zoom = Number(hash.get("zoom")), centreOn = DATA.nodes.find((m) => m.slug === hash.get("center"));
+  if (zoom > 0 || centreOn) {
+    network.moveTo({ scale: zoom > 0 ? zoom : network.getScale(),
+      position: centreOn ? network.getPositions([centreOn.id])[centreOn.id] : undefined });
+  }
+  const sel = hash.get("select");
+  if (sel) { const n = DATA.nodes.find((m) => m.slug === sel); if (n) goTo(n.id, false); }
+}
+
+// ---------------------------------------------------------------- motion (calm; nothing moves unless you act)
+const reduceMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+const easeOut = (t) => 1 - Math.pow(1 - t, 3);
+const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+let moving = null;
+// Glide notes from one set of positions to another; colours may cross-fade at the same time.
+function glide(from, to, ms, ease, colours, done) {
+  if (moving) cancelAnimationFrame(moving);
+  const ids = Object.keys(to), t0 = performance.now();
+  const step = (now) => {
+    const t = Math.min(1, (now - t0) / ms), e = ease(t);
+    for (const id of ids) {
+      const a = from[id] || to[id], b = to[id];
+      network.moveNode(id, a.x + (b.x - a.x) * e, a.y + (b.y - a.y) * e);
+    }
+    if (colours) {
+      colourOverride = new Map(ids.map((id) => [id, mixHex(colours.from.get(id), colours.to.get(id), e)]));
+      if (t >= 1) colourOverride = null;
+      nodesDS.update(ids.map((id) => ({ id, color: nodeColourOpt(byId.get(id)) })));
+    }
+    network.redraw();
+    if (t < 1) moving = requestAnimationFrame(step);
+    else { moving = null; if (done) done(); }
+  };
+  moving = requestAnimationFrame(step);
+}
+// ---------------------------------------------------------------- layouts: radial sectors and circlepack
+// Both put Manoj, the Ideas hub and the other grey Cross-area notes in the middle and give
+// each colour group (life area or type group) its own region. Positions are computed here,
+// in a few milliseconds, and the notes glide into them.
+const isCentre = (n) => colourKey(n) === "cross";
+const sectorKey = (n) => (state.colourBy === "area" ? colourKey(n) : groupOf(n));
+const layoutRadius = () => 40 * Math.sqrt(Math.max(DATA.nodes.length, 4));
+let lastLayout = null;
+// The force layout's positions, kept so "Force" returns to them; layoutRun lets a newer
+// layout switch cancel a force re-layout still in progress.
+let forceCache = null, layoutRun = 0;
+
+// Links between groups, for ordering: groups with the most links between them sit side by side.
+function groupWeights() {
+  const w = new Map();
+  for (const e of DATA.edges) {
+    if (e.kind === "hub") continue;
+    const a = byId.get(e.from), b = byId.get(e.to);
+    if (isCentre(a) || isCentre(b)) continue;
+    const ka = sectorKey(a), kb = sectorKey(b);
+    if (ka === kb) continue;
+    const k = ka < kb ? `${ka}|${kb}` : `${kb}|${ka}`;
+    w.set(k, (w.get(k) || 0) + 1);
+  }
+  return (a, b) => w.get(a < b ? `${a}|${b}` : `${b}|${a}`) || 0;
+}
+function bestOrder(keys, weight) {
+  if (keys.length < 3) return keys;
+  const score = (o) => o.reduce((s, k, i) => s + weight(k, o[(i + 1) % o.length]), 0);
+  if (keys.length <= 8) {
+    let best = keys, bestScore = -1;
+    const rest = keys.slice(1);
+    const permute = (arr, l) => {
+      if (l === arr.length) { const o = [keys[0], ...arr]; const sc = score(o); if (sc > bestScore) { bestScore = sc; best = o; } return; }
+      for (let i = l; i < arr.length; i++) { [arr[l], arr[i]] = [arr[i], arr[l]]; permute(arr, l + 1); [arr[l], arr[i]] = [arr[i], arr[l]]; }
+    };
+    permute(rest, 0);
+    return best;
+  }
+  const order = [keys[0]], left = new Set(keys.slice(1));
+  while (left.size) {
+    const last = order[order.length - 1];
+    let pick = null, pw = -1;
+    for (const k of left) { const wk = weight(last, k); if (wk > pw) { pw = wk; pick = k; } }
+    order.push(pick); left.delete(pick);
+  }
+  return order;
+}
+function groupsOf() {
+  const groups = new Map();
+  for (const n of DATA.nodes) {
+    if (isCentre(n)) continue;
+    const k = sectorKey(n);
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(n);
+  }
+  for (const list of groups.values()) list.sort((a, b) => b.degree - a.degree || a.slug.localeCompare(b.slug));
+  return groups;
+}
+const anchorOf = (list) => list.find((n) => n.type === "hub" || n.type === "area") || list[0];
+function placeCentre(pos, R) {
+  const centre = DATA.nodes.filter(isCentre).sort((a, b) => b.degree - a.degree);
+  centre.forEach((n, i) => {
+    if (i === 0) { pos[n.id] = { x: 0, y: 0 }; return; }
+    const a = (2 * Math.PI * (i - 1)) / Math.max(centre.length - 1, 1);
+    pos[n.id] = { x: Math.cos(a) * R * 0.09, y: Math.sin(a) * R * 0.09 };
+  });
+  return centre;
+}
+
+function radialLayout() {
+  const R = layoutRadius(), pos = {}, groups = groupsOf();
+  const centre = new Set(placeCentre(pos, R).map((n) => n.id));
+  const keys = bestOrder([...groups.keys()].sort(), groupWeights());
+  const total = DATA.nodes.length - centre.size || 1, MIN = 2 * Math.PI * 0.07;
+  const raw = keys.map((k) => Math.max(MIN, (2 * Math.PI * groups.get(k).length) / total));
+  const scale = (2 * Math.PI) / raw.reduce((a, b) => a + b, 0);
+  const sectors = {}, keyOfNode = new Map(), fixed = new Set(centre);
+  let start = -Math.PI / 2;
+  keys.forEach((k, i) => {
+    const span = raw[i] * scale, end = start + span, list = groups.get(k), anchor = anchorOf(list);
+    sectors[k] = [start, end];
+    pos[anchor.id] = { x: Math.cos(start + span / 2) * R * 0.55, y: Math.sin(start + span / 2) * R * 0.55 };
+    fixed.add(anchor.id);
+    const others = list.filter((n) => n !== anchor);
+    others.forEach((n, j) => {
+      const f = (j + 0.5) / others.length, r = R * (0.2 + 0.74 * f);
+      const t = 0.1 + 0.8 * (((j + 1) * 0.6180339887) % 1);
+      pos[n.id] = { x: Math.cos(start + span * t) * r, y: Math.sin(start + span * t) * r };
+    });
+    for (const n of list) keyOfNode.set(n.id, k);
+    start = end;
+  });
+  // Relax: links pull connected notes together, notes keep apart, a tether holds each note
+  // near its home spot, and every note stays inside its sector and the disc. Centre notes and
+  // area hubs stay put.
+  const home = Object.fromEntries(Object.entries(pos).map(([id, q]) => [id, { ...q }]));
+  const movable = DATA.nodes.filter((n) => !fixed.has(n.id));
+  const others = DATA.nodes.filter((n) => !centre.has(n.id));
+  const links = DATA.edges.filter((e) => e.kind !== "hub" && pos[e.from] && pos[e.to] && e.from !== e.to);
+  const iterations = movable.length > 1000 ? 20 : 80;
+  for (let it = 0; it < iterations; it++) {
+    for (const e of links) {
+      const a = pos[e.from], b = pos[e.to], dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || 1;
+      const f = (0.01 * (d - 60)) / d;
+      if (!fixed.has(e.from)) { a.x += dx * f; a.y += dy * f; }
+      if (!fixed.has(e.to)) { b.x -= dx * f; b.y -= dy * f; }
+    }
+    for (const n of movable) { const p = pos[n.id], h = home[n.id]; p.x += (h.x - p.x) * 0.06; p.y += (h.y - p.y) * 0.06; }
+    if (others.length <= 1000) {
+      for (let i = 0; i < others.length; i++) {
+        for (let j = i + 1; j < others.length; j++) {
+          const a = pos[others[i].id], b = pos[others[j].id], fa = fixed.has(others[i].id), fb = fixed.has(others[j].id);
+          if (fa && fb) continue;
+          const min = radius(others[i]) + radius(others[j]) + 8;
+          const dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || 0.01;
+          if (d < min) {
+            const push = (min - d) / d / (fa || fb ? 1 : 2);
+            if (!fa) { a.x -= dx * push; a.y -= dy * push; }
+            if (!fb) { b.x += dx * push; b.y += dy * push; }
+          }
+        }
+      }
+    }
+    for (const n of movable) {
+      const p = pos[n.id], [a0, a1] = sectors[keyOfNode.get(n.id)], span = a1 - a0;
+      let ang = Math.atan2(p.y, p.x), r = Math.hypot(p.x, p.y);
+      while (ang < a0) ang += 2 * Math.PI;
+      while (ang > a0 + 2 * Math.PI) ang -= 2 * Math.PI;
+      const lo = a0 + span * 0.04, hi = a1 - span * 0.04;
+      if (ang > hi) ang = ang - hi > (a0 + 2 * Math.PI - ang) ? lo : hi;
+      r = Math.min(R * 0.96, Math.max(R * 0.16, r));
+      p.x = Math.cos(ang) * r; p.y = Math.sin(ang) * r;
+    }
+  }
+  return { kind: "radial", pos, R, sectors };
+}
+
+// Circle packing, ported from d3-hierarchy's packSiblings and packEnclose (ISC licence,
+// Mike Bostock), the same algorithm graphology-layout's circlepack (MIT) uses. Ported rather
+// than bundled: the viewer is a single page with no build step, and graphology would bring a
+// graph structure the page doesn't use.
+function lcg(seed) { let s = seed; return () => ((s = (1664525 * s + 1013904223) % 4294967296) / 4294967296); }
+function enclosesNot(a, b) { const dr = a.r - b.r, dx = b.x - a.x, dy = b.y - a.y; return dr < 0 || dr * dr < dx * dx + dy * dy; }
+function enclosesWeak(a, b) { const dr = a.r - b.r + Math.max(a.r, b.r, 1) * 1e-9, dx = b.x - a.x, dy = b.y - a.y; return dr > 0 && dr * dr > dx * dx + dy * dy; }
+function enclosesWeakAll(a, B) { return B.every((b) => enclosesWeak(a, b)); }
+function encloseBasis2(a, b) {
+  const x21 = b.x - a.x, y21 = b.y - a.y, r21 = b.r - a.r, l = Math.sqrt(x21 * x21 + y21 * y21);
+  return { x: (a.x + b.x + (x21 / l) * r21) / 2, y: (a.y + b.y + (y21 / l) * r21) / 2, r: (l + a.r + b.r) / 2 };
+}
+function encloseBasis3(a, b, c) {
+  const x1 = a.x, y1 = a.y, r1 = a.r, a2 = x1 - b.x, a3 = x1 - c.x, b2 = y1 - b.y, b3 = y1 - c.y, c2 = b.r - r1, c3 = c.r - r1;
+  const d1 = x1 * x1 + y1 * y1 - r1 * r1, d2 = d1 - b.x * b.x - b.y * b.y + b.r * b.r, d3 = d1 - c.x * c.x - c.y * c.y + c.r * c.r;
+  const ab = a3 * b2 - a2 * b3, xa = (b2 * d3 - b3 * d2) / (ab * 2) - x1, xb = (b3 * c2 - b2 * c3) / ab;
+  const ya = (a3 * d2 - a2 * d3) / (ab * 2) - y1, yb = (a2 * c3 - a3 * c2) / ab;
+  const A = xb * xb + yb * yb - 1, B = 2 * (r1 + xa * xb + ya * yb), C = xa * xa + ya * ya - r1 * r1;
+  const r = -(Math.abs(A) > 1e-6 ? (B + Math.sqrt(B * B - 4 * A * C)) / (2 * A) : C / B);
+  return { x: x1 + xa + xb * r, y: y1 + ya + yb * r, r };
+}
+function encloseBasis(B) { return B.length === 1 ? { x: B[0].x, y: B[0].y, r: B[0].r } : B.length === 2 ? encloseBasis2(B[0], B[1]) : encloseBasis3(B[0], B[1], B[2]); }
+function extendBasis(B, p) {
+  if (enclosesWeakAll(p, B)) return [p];
+  for (let i = 0; i < B.length; ++i) if (enclosesNot(p, B[i]) && enclosesWeakAll(encloseBasis2(B[i], p), B)) return [B[i], p];
+  for (let i = 0; i < B.length - 1; ++i) for (let j = i + 1; j < B.length; ++j) {
+    if (enclosesNot(encloseBasis2(B[i], B[j]), p) && enclosesNot(encloseBasis2(B[i], p), B[j])
+      && enclosesNot(encloseBasis2(B[j], p), B[i]) && enclosesWeakAll(encloseBasis3(B[i], B[j], p), B)) return [B[i], B[j], p];
+  }
+  return [p];
+}
+function packEnclose(circles, random) {
+  const c = circles.slice();
+  for (let i = c.length - 1; i > 0; i--) { const j = Math.floor(random() * (i + 1)); [c[i], c[j]] = [c[j], c[i]]; }
+  let i = 0, B = [], e = null;
+  while (i < c.length) { const p = c[i]; if (e && enclosesWeak(e, p)) ++i; else { B = extendBasis(B, p); e = encloseBasis(B); i = 0; } }
+  return e;
+}
+function placeCircle(b, a, c) {
+  const dx = b.x - a.x, dy = b.y - a.y, d2 = dx * dx + dy * dy;
+  if (d2) {
+    let a2 = a.r + c.r, b2 = b.r + c.r; a2 *= a2; b2 *= b2;
+    if (a2 > b2) { const x = (d2 + b2 - a2) / (2 * d2), y = Math.sqrt(Math.max(0, b2 / d2 - x * x)); c.x = b.x - x * dx - y * dy; c.y = b.y - x * dy + y * dx; }
+    else { const x = (d2 + a2 - b2) / (2 * d2), y = Math.sqrt(Math.max(0, a2 / d2 - x * x)); c.x = a.x + x * dx - y * dy; c.y = a.y + x * dy + y * dx; }
+  } else { c.x = a.x + c.r; c.y = a.y; }
+}
+function intersects(a, b) { const dr = a.r + b.r - 1e-6, dx = b.x - a.x, dy = b.y - a.y; return dr > 0 && dr * dr > dx * dx + dy * dy; }
+function packScore(node) { const a = node._, b = node.next._, ab = a.r + b.r, dx = (a.x * b.r + b.x * a.r) / ab, dy = (a.y * b.r + b.y * a.r) / ab; return dx * dx + dy * dy; }
+// Packs circles (in place, x and y set) around the origin; returns the enclosing radius.
+function packSiblings(circles, random) {
+  const n = circles.length;
+  if (!n) return 0;
+  let a = circles[0], b, c;
+  a.x = 0; a.y = 0;
+  if (n === 1) return a.r;
+  b = circles[1]; a.x = -b.r; b.x = a.r; b.y = 0;
+  if (n === 2) { const e = packEnclose([a, b], random); for (const q of circles) { q.x -= e.x; q.y -= e.y; } return e.r; }
+  placeCircle(b, a, c = circles[2]);
+  const Node = (x) => ({ _: x, next: null, previous: null });
+  a = Node(a); b = Node(b); c = Node(c);
+  a.next = c.previous = b; b.next = a.previous = c; c.next = b.previous = a;
+  pack: for (let i = 3; i < n; ++i) {
+    placeCircle(a._, b._, circles[i]); c = Node(circles[i]);
+    let j = b.next, k = a.previous, sj = b._.r, sk = a._.r;
+    do {
+      if (sj <= sk) {
+        if (intersects(j._, c._)) { b = j; a.next = b; b.previous = a; --i; continue pack; }
+        sj += j._.r; j = j.next;
+      } else {
+        if (intersects(k._, c._)) { a = k; a.next = b; b.previous = a; --i; continue pack; }
+        sk += k._.r; k = k.previous;
+      }
+    } while (j !== k.next);
+    c.previous = a; c.next = b; a.next = b.previous = b = c;
+    let aa = packScore(a);
+    while ((c = c.next) !== b) { const ca = packScore(c); if (ca < aa) { a = c; aa = ca; } }
+    b = a.next;
+  }
+  const chain = [b._]; c = b;
+  while ((c = c.next) !== b) chain.push(c._);
+  const e = packEnclose(chain, random);
+  for (const q of circles) { q.x -= e.x; q.y -= e.y; }
+  return e.r;
+}
+
+function circlepackLayout() {
+  const random = lcg(7), groups = groupsOf(), pos = {};
+  const keys = bestOrder([...groups.keys()].sort(), groupWeights());
+  const pack = (list) => {
+    const circles = list.map((n) => ({ id: n.id, r: radius(n) + 4, x: 0, y: 0 }));
+    return { circles, r: packSiblings(circles, random) + 10 };
+  };
+  const centreNodes = DATA.nodes.filter(isCentre).sort((a, b) => b.degree - a.degree);
+  const groupCircles = keys.map((k) => ({ key: k, ...pack(groups.get(k)) }));
+  // The centre group is packed first, so the others pack around it and it stays near the
+  // middle of the outer circle (packSiblings centres that circle on the origin).
+  const all = centreNodes.length ? [{ key: "cross", ...pack(centreNodes) }, ...groupCircles] : groupCircles;
+  const top = all.map((g) => ({ g, r: g.r + 8, x: 0, y: 0 }));
+  const R = packSiblings(top, random) + 4;
+  const circles = {};
+  for (const t of top) {
+    const cx = t.x, cy = t.y;
+    circles[t.g.key] = { x: cx, y: cy, r: t.g.r };
+    for (const c of t.g.circles) pos[c.id] = { x: cx + c.x, y: cy + c.y };
+  }
+  return { kind: "circlepack", pos, R, circles };
+}
+
+function layoutTargets() {
+  if (state.layout === "force") return null;
+  lastLayout = state.layout === "radial" ? radialLayout() : circlepackLayout();
+  return lastLayout.pos;
+}
+// Move to the chosen layout: computed positions glide in; the force layout re-runs.
+function switchLayout(fromColours) {
+  layoutRun++;
+  network.setOptions({ physics: { enabled: false } });
+  if (state.layout === "force") {
+    lastLayout = null;
+    if (!forceCache || forceCache.springs !== springSet()) { relayoutGlide(fromColours); return; }
+  }
+  const before = network.getPositions();
+  colourOverride = null;
+  const target = state.layout === "force" ? forceCache.pos : layoutTargets();
+  const colours = fromColours && { from: fromColours, to: shownColours() };
+  const done = () => network.fit({ animation: reduceMotion() ? false : { duration: 500, easingFunction: "easeInOutQuad" } });
+  if (reduceMotion() || BIG) {
+    for (const [id, q] of Object.entries(target)) network.moveNode(id, q.x, q.y);
+    if (colours) nodesDS.update(DATA.nodes.map((n) => ({ id: n.id, color: nodeColourOpt(n) })));
+    done();
+    return;
+  }
+  if (colours) colourOverride = colours.from;
+  glide(before, target, 1000, easeInOut, colours, done);
+}
+
+function mixHex(a, b, t) {
+  if (!a || !b || a === b) return b || a;
+  const x = toOklab(toRgb(a)), y = toOklab(toRgb(b));
+  return fromOklab(x.map((v, i) => v + (y[i] - v) * t));
+}
+const shownColours = () => new Map(DATA.nodes.map((n) => [n.id, nodeColour(n, false)]));
+// Re-run the layout off-screen, then glide from the old positions to the new ones.
+function relayoutGlide(fromColours) {
+  const before = network.getPositions(), run = ++layoutRun;
+  colourOverride = null;
+  const colours = fromColours && { from: fromColours, to: shownColours() };
+  if (colours) colourOverride = fromColours;
+  if (reduceMotion() || BIG) {
+    colourOverride = null;
+    if (colours) nodesDS.update(DATA.nodes.map((n) => ({ id: n.id, color: nodeColourOpt(n) })));
+    relayout();
+    return;
+  }
+  network.setOptions({ physics: { enabled: true, stabilization: { fit: false } } });
+  network.once("stabilizationIterationsDone", () => {
+    if (run !== layoutRun) return;
+    const after = network.getPositions();
+    forceCache = { springs: springSet(), pos: after };
+    for (const id of Object.keys(before)) network.moveNode(id, before[id].x, before[id].y);
+    if (colours) colourOverride = colours.from;
+    glide(before, after, 1000, easeInOut, colours, () => network.setOptions({ physics: { stabilization: { fit: true } } }));
+  });
+  network.stabilize(BIG ? 120 : 300);
+}
 network.on("stabilizationProgress", (p) => {
   document.getElementById("loading").hidden = false;
   document.getElementById("loading").textContent = `Laying out… ${Math.round((100 * p.iterations) / p.total)}%`;
@@ -346,13 +796,40 @@ network.on("stabilizationIterationsDone", () => {
   document.getElementById("loading").hidden = true;
   if (!firstLayout) return;
   firstLayout = false;
+  // On load, notes glide from their group's centre to their place (skipped above 1,000 notes).
+  forceCache = { springs: springSet(), pos: network.getPositions() };
+  const targets = layoutTargets();
+  if (targets) {
+    for (const [id, q] of Object.entries(targets)) network.moveNode(id, q.x, q.y);
+    network.fit();
+  }
+  if (!reduceMotion() && !BIG) {
+    const to = network.getPositions(), centre = new Map();
+    for (const [id, p] of Object.entries(to)) {
+      const k = pureKey(byId.get(id)), c = centre.get(k) || { x: 0, y: 0, n: 0 };
+      c.x += p.x; c.y += p.y; c.n++; centre.set(k, c);
+    }
+    const from = {};
+    for (const [id, p] of Object.entries(to)) {
+      const c = centre.get(pureKey(byId.get(id)));
+      const cx = c.x / c.n, cy = c.y / c.n;
+      from[id] = { x: cx + (p.x - cx) * 0.08, y: cy + (p.y - cy) * 0.08 };
+      network.moveNode(id, from[id].x, from[id].y);
+    }
+    glide(from, to, 800, easeOut, null, afterLoad);
+  } else afterLoad();
   const ms = Math.round(performance.now() - T0);
   document.body.dataset.ready = "1";
   document.body.dataset.readyMs = String(ms);
   document.getElementById("stats").textContent =
     `${N} notes · ${DATA.edges.length} links · laid out in ${(ms / 1000).toFixed(1)} s · map ${DATA.schema}`;
-  const sel = hash.get("select");
-  if (sel) { const n = DATA.nodes.find((m) => m.slug === sel); if (n) goTo(n.id, false); }
+  if (hash.get("debug") === "sizes") {
+    document.body.dataset.sizes = JSON.stringify({ 80: sizeFactor(80), 320: sizeFactor(320), 5000: sizeFactor(5000) });
+  }
+  if (hash.get("debug") === "colours") {
+    document.body.dataset.colours = JSON.stringify(Object.fromEntries(DATA.nodes.map((n) => [n.slug, { pure: pureColour(n), shown: nodeColour(n, false) }])));
+  }
+
 });
 function relayout() {
   network.setOptions({ physics: { enabled: true } });
@@ -367,7 +844,7 @@ function setFocus(id) {
   if (fade.to === target && (!id || fade.id === id)) { network.redraw(); return; }
   Object.assign(fade, { from: fade.a, to: target, t0: performance.now() });
   const step = () => {
-    const t = Math.min(1, (performance.now() - fade.t0) / 180);
+    const t = reduceMotion() ? 1 : Math.min(1, (performance.now() - fade.t0) / 180);
     fade.a = fade.from + (fade.to - fade.from) * (1 - Math.pow(1 - t, 3));
     if (t >= 1 && fade.to === 0) fade.id = null;
     network.redraw();
@@ -404,7 +881,6 @@ function drawLabels(ctx, ids, scale, b, placed, all, strongId) {
     if (p.x < b.x0 || p.x > b.x1 || p.y < b.y0 || p.y > b.y1) continue;
     const n = byId.get(id);
     const important = n.type === "hub" || n.degree >= ALWAYS_DEGREE;
-    if (!all && classic() && !((n.type === "hub" || n.type === "area") && scale >= 1.3)) continue;
     if (!all && !important && scale < 1.1) continue;
     cand.push([id === strongId ? 1e9 : (important ? 1e6 : 0) + n.degree, n, p]);
   }
@@ -431,6 +907,26 @@ function drawEdgeLabels(ctx, scale, b, placed, onlyEdges) {
   }
 }
 network.on("beforeDrawing", (ctx) => {
+  if (state.ring && lastLayout && state.layout !== "force") {
+    const scale = network.getScale(), c = L.muted || L.label;
+    ctx.save(); ctx.strokeStyle = c; ctx.globalAlpha = 0.18; ctx.lineWidth = 1 / scale;
+    ctx.beginPath(); ctx.arc(0, 0, lastLayout.R, 0, 2 * Math.PI); ctx.stroke();
+    ctx.globalAlpha = 0.45; ctx.fillStyle = c; ctx.font = `600 ${11 / scale}px ${FONT}`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    const name = (k) => (state.colourBy === "area" ? AREA_NAMES[k] || k : (GROUPS[k] || [k])[0]).toUpperCase();
+    if (lastLayout.kind === "radial") {
+      for (const [k, [a0, a1]] of Object.entries(lastLayout.sectors)) {
+        const m = (a0 + a1) / 2, r = lastLayout.R + 18 / scale;
+        ctx.fillText(name(k), Math.cos(m) * r, Math.sin(m) * r);
+      }
+    } else {
+      for (const [k, q] of Object.entries(lastLayout.circles)) {
+        if (k === "cross") continue;
+        ctx.globalAlpha = 0.14; ctx.beginPath(); ctx.arc(q.x, q.y, q.r, 0, 2 * Math.PI); ctx.stroke();
+        ctx.globalAlpha = 0.45; ctx.fillText(name(k), q.x, q.y - q.r - 8 / scale);
+      }
+    }
+    ctx.restore();
+  }
   if (state.style !== "clouds") return;
   const bn = bodyNodes(), scale = network.getScale();
   const groups = new Map();
@@ -489,7 +985,7 @@ network.on("afterDrawing", (ctx) => {
   }
   ctx.save(); ctx.globalAlpha = a;
   for (const nid of near) {
-    const p = bn[nid]; if (p) drawNode(ctx, byId.get(nid), p.x, p.y, { focus: true, selected: nid === id });
+    const p = bn[nid]; if (p) drawNode(ctx, byId.get(nid), p.x, p.y, { focus: true, selected: nid === id, grow: 1 + 0.15 * a });
   }
   ctx.restore();
   drawLabels(ctx, [id, ...[...near].filter((x) => x !== id)], scale, b, placed, true, id);
@@ -572,7 +1068,11 @@ function showInfo(id) {
   const cc = document.getElementById("conceal");
   if (cc) cc.addEventListener("click", () => { state.revealed.delete(id); showInfo(id); });
 }
-network.on("selectNode", (p) => { state.selected = p.nodes[0]; showInfo(state.selected); setFocus(focusId()); });
+network.on("selectNode", (p) => {
+  state.selected = p.nodes[0]; showInfo(state.selected); setFocus(focusId());
+  network.focus(state.selected, { scale: network.getScale(),
+    animation: reduceMotion() ? false : { duration: 500, easingFunction: "easeInOutQuad" } });
+});
 network.on("deselectNode", () => { state.selected = null; showInfo(null); setFocus(state.hover); });
 function goTo(id, animate) {
   if (!visible.has(id)) {
@@ -583,7 +1083,7 @@ function goTo(id, animate) {
   }
   network.selectNodes([id]); state.selected = id; showInfo(id); setFocus(id);
   network.focus(id, { scale: Math.max(network.getScale(), 1.3),
-    animation: animate ? { duration: 700, easingFunction: "easeInOutCubic" } : false });
+    animation: animate && !reduceMotion() ? { duration: 500, easingFunction: "easeInOutQuad" } : false });
 }
 
 // ---------------------------------------------------------------- physics: drag with springs, pin, unpin
@@ -592,8 +1092,10 @@ network.on("dragStart", (p) => {
   if (!p.nodes.length) return;
   const id = p.nodes[0], near = adj.get(id);
   clearTimeout(settleTimer);
+  if (reduceMotion()) return;
   nodesDS.update(DATA.nodes.map((n) => ({ id: n.id, fixed: n.id !== id && (!near.has(n.id) || state.pinned.has(n.id)) })));
-  network.setOptions({ physics: { enabled: true, stabilization: { enabled: false } } });
+  network.setOptions({ physics: { enabled: true, stabilization: { enabled: false }, maxVelocity: 18,
+    forceAtlas2Based: { damping: 0.9 } } });
 });
 network.on("dragEnd", (p) => {
   if (!p.nodes.length) return;
@@ -601,9 +1103,9 @@ network.on("dragEnd", (p) => {
   state.pinned.add(id);
   nodesDS.update({ id, fixed: true });
   settleTimer = setTimeout(() => {
-    network.setOptions({ physics: { enabled: false } });
+    network.setOptions({ physics: { enabled: false, maxVelocity: 50, forceAtlas2Based: { damping: 0.55 } } });
     nodesDS.update(DATA.nodes.map((n) => ({ id: n.id, fixed: state.pinned.has(n.id) })));
-  }, 1200);
+  }, 1400);
 });
 network.on("doubleClick", (p) => {
   if (!p.nodes.length) return;
@@ -658,19 +1160,7 @@ filterList(document.getElementById("f-verb"), [...verbCounts.keys()].sort().map(
 // ---------------------------------------------------------------- legend
 const groupCounts = count(DATA.nodes, groupOf);
 const groupKeys = Object.keys(GROUPS).filter((g) => groupCounts.get(g));
-function legendCard() {
-  const card = document.getElementById("legend-card");
-  card.hidden = !classic();
-  if (!classic()) return;
-  card.style.background = L.card; card.style.border = `1px solid ${L.cardLine}`; card.style.color = L.label;
-  const dots = state.colourBy === "area"
-    ? keys.map((k) => [AREA_NAMES[k] || k, classicArea(k)])
-    : groupKeys.map((g) => [GROUPS[g][0], GROUPS[g][1]]);
-  card.innerHTML = `<b>Brain map</b><div>${dots.map(([name, c]) => `<span class="dot" style="color:${L.muted}"><i style="background:${c}"></i>${esc(name)}</span>`).join("")}</div>`
-    + `<div class="s" style="color:${L.muted}">${N} notes, ${DATA.edges.length} links. Drag to pan, wheel to zoom, drag a note to move it.</div>`;
-}
 function legend() {
-  legendCard();
   const la = document.getElementById("l-area"); la.innerHTML = "";
   document.getElementById("l-area-title").textContent = classic() && state.colourBy === "group" ? "Colours: type groups" : "Colours: areas";
   if (classic()) {
@@ -709,10 +1199,16 @@ function legend() {
 const themeSel = document.getElementById("theme"), styleSel = document.getElementById("style");
 function applyLook(edges = true) {
   L = look();
+  computeBlends();
+  nodesDS.update(DATA.nodes.map((n) => ({ id: n.id, color: nodeColourOpt(n) })));
   document.getElementById("colour-by").disabled = !classic();
   document.getElementById("colour-by-row").title = classic() ? "" : "Colour by applies to the Classic style";
   document.getElementById("graph").style.background = L.bg;
-  if (edges) edgesDS.update(DATA.edges.map((e) => ({ id: e.id, ...edgeStyle(e) })));
+  if (edges && classic()) {
+    const ids = DATA.edges.map((e) => e.id);
+    edgesDS.remove(ids);
+    edgesDS.add(DATA.edges.map((e) => ({ id: e.id, from: e.from, to: e.to, ...edgeStyle(e) })));
+  } else if (edges) edgesDS.update(DATA.edges.map((e) => ({ id: e.id, ...edgeStyle(e) })));
   legend(); if (state.selected) showInfo(state.selected);
   network.redraw();
 }
@@ -723,23 +1219,44 @@ function applyTheme(t) {
   applyLook();
 }
 function applyStyle(s, initial) {
-  const was = state.style;
+  const was = springSet();
   state.style = STYLES.includes(s) ? s : "classic"; styleSel.value = state.style;
   edgesView.refresh(); network.setOptions({ edges: { smooth: smoothing() } });
   nodesDS.update(DATA.nodes.map((n) => ({ id: n.id, size: radius(n) })));
   applyLook();
-  if (!initial && (was === "clouds") !== (state.style === "clouds")) relayout();
+  if (!initial && was !== springSet() && state.layout === "force") relayoutGlide(null);
 }
 themeSel.addEventListener("change", () => { storeSet("yggdras-theme", themeSel.value); applyTheme(themeSel.value); });
 styleSel.addEventListener("change", () => { storeSet("yggdras-style", styleSel.value); applyStyle(styleSel.value, false); });
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if (state.theme === "system") applyLook(); });
 const colourSel = document.getElementById("colour-by");
-colourSel.addEventListener("change", () => { state.colourBy = colourSel.value; storeSet("yggdras-colour-by", colourSel.value); applyLook(false); });
+colourSel.addEventListener("change", () => {
+  const was = springSet(), before = shownColours();
+  state.colourBy = colourSel.value; storeSet("yggdras-colour-by", colourSel.value);
+  edgesView.refresh();
+  if (classic() && !reduceMotion() && !BIG) colourOverride = before;
+  applyLook(false);
+  if (state.layout !== "force") switchLayout(before);
+  else if (was !== springSet()) relayoutGlide(before);
+  else if (colourOverride) {
+    const pos = network.getPositions();
+    colourOverride = null;
+    const after = shownColours();
+    colourOverride = before;
+    glide(pos, pos, 1000, easeInOut, { from: before, to: after }, null);
+  }
+});
+const layoutSel = document.getElementById("layout"), ringBox = document.getElementById("show-ring");
+layoutSel.addEventListener("change", () => { state.layout = layoutSel.value; storeSet("yggdras-layout", layoutSel.value); switchLayout(null); });
+ringBox.addEventListener("change", () => { state.ring = ringBox.checked; network.redraw(); });
+layoutSel.value = state.layout; ringBox.checked = state.ring;
 themeSel.value = state.theme; styleSel.value = state.style; colourSel.value = state.colourBy;
 applyLook(false);
 if (hash.get("labels") === "1") { state.edgeLabels = true; document.getElementById("edge-labels").checked = true; }
 if (document.fonts) document.fonts.load(`400 12px "Inter"`).then(() => network.redraw()).catch(() => {});
 document.getElementById("stats").textContent = `${N} notes · ${DATA.edges.length} links`;
+document.getElementById("counts").textContent =
+  `${N} notes, ${DATA.edges.length} links. Drag to pan, wheel to zoom, drag a note to move it.`;
 </script>
 </body>
 </html>
