@@ -36,3 +36,22 @@ def local_data():
     return Path(
         os.environ.get("YGGDRAS_LOCAL_DATA", Path(__file__).resolve().parents[3] / "local-data")
     )
+
+
+def load_env_file(path=None) -> None:
+    """Read KEY=value lines from a .env file into the environment (existing values win).
+
+    Default: YGGDRAS_ENV_FILE, else the code repo's .env. Values are never printed or logged.
+    """
+    from pathlib import Path
+
+    path = Path(
+        path or os.environ.get("YGGDRAS_ENV_FILE") or Path(__file__).resolve().parents[3] / ".env"
+    )
+    if not path.is_file():
+        return
+    for line in path.read_text(encoding="utf-8").splitlines():
+        key, sep, value = line.partition("=")
+        key = key.strip()
+        if sep and key and not key.startswith("#") and key not in os.environ:
+            os.environ[key] = value.strip().strip('"').strip("'")
