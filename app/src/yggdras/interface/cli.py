@@ -1,6 +1,7 @@
 """The `yggdras` command.
 
     yggdras ask "<question>" [--brain REPO] [--flat ROOT] [--model M] [--skills DIR]
+    yggdras mcp [--brain REPO] [--flat ROOT] [--model M] [--skills DIR]
 
 Prints Lia's answer, its citations, the cost and the latency, and writes a trace to
 local-data/traces/. Reads the brain only.
@@ -25,6 +26,13 @@ def main(argv: list[str] | None = None) -> int:
     ask.add_argument("--flat", type=Path, help="a flat demo brain root instead of a library")
     ask.add_argument("--model", default=config.lia_model())
     ask.add_argument("--skills", type=Path, help="skills folder (default: <brain>/skills/lia)")
+    sub.add_parser("mcp", help="run Lia as a read-only MCP server (stdio)", add_help=False)
+    if argv is None:
+        argv = sys.argv[1:]
+    if argv[:1] == ["mcp"]:
+        from yggdras.interface.mcp_server import main as mcp_main
+
+        return mcp_main(argv[1:])
     args = parser.parse_args(argv)
 
     from yggdras.processing.lia.lia import Lia, LiaConfig, load_skills, write_trace
