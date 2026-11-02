@@ -12,7 +12,8 @@ from yggdras.data.maps import checks
 from yggdras.processing.lia.library import Library, MapOptions
 from yggdras.processing.lia.models import ModelClient
 
-ABSTAIN = "Not in your brain."
+ABSTAIN = "I don't have that in your notes yet."  # v3 voice
+OLD_ABSTAIN = "Not in your brain."  # v1 and v2
 MAX_TURNS = 8  # model calls per question, before the citation retry
 MAX_SEARCHES = 3  # "look wider with new words", at most three rounds
 CACHE = {"type": "ephemeral", "ttl": "1h"}
@@ -52,13 +53,14 @@ TOOLS = [
     },
 ]
 ABSTAIN_SEARCH = (
-    'Before you answer "Not in your brain.", run search_notes with the question\'s key terms '
+    f'Before you answer "{ABSTAIN}", run search_notes with the question\'s key terms '
     "and open the top hits. Then answer from them, or abstain if they don't support an answer."
 )
 RETRY = (
-    "These citations failed the check: each quote must be a fact's text copied word for word "
-    '(everything after "- " and before " (src:", tags included), as [[slug]] «fact text», '
-    "or a frontmatter field as [[slug]] field: value, from a note you opened.\n{failures}\n"
+    "These citations failed the check: each footnote must quote a fact's text word for word "
+    '(everything after "- " and before " (src:", tags included), as [n] [[slug]] «fact text», '
+    "or a frontmatter field as [n] [[slug]] field: value, from a note you opened, and every "
+    "marker [n] in the text needs its footnote.\n{failures}\n"
     "Write the whole answer again with corrected citations. Drop any claim you can't cite, "
     f'or reply exactly "{ABSTAIN}" with a one-line reason.'
 )
@@ -72,6 +74,7 @@ class LiaConfig:
     neighbours: bool = False  # E8
     answer_model: str | None = None  # E6: a second model writes the answer
     maps: MapOptions = field(default_factory=MapOptions)
+    owner_names: tuple[str, ...] = ()  # the voice check: Lia says "you", never these names
 
     def as_dict(self) -> dict:
         return asdict(self)
@@ -115,14 +118,17 @@ def load_skills(folder: Path) -> str:
 
 
 def is_abstain(text: str) -> bool:
-    return text.strip().startswith(ABSTAIN)
+    return text.strip().startswith((ABSTAIN, OLD_ABSTAIN))
 
 
 def mark_unverified(text: str, failed: list[checks.Citation]) -> str:
     for c in failed:
-        patterns = (
-            [f"[[{c.slug}]] «{c.quote}»", f"[[{c.slug}]] {c.quote}"] if c.slug else [f"«{c.quote}»"]
-        )
+        if c.slug:
+            patterns = [f"[[{c.slug}]] «{c.quote}»", f"[[{c.slug}]] {c.quote}"]
+        elif checks.MARKER.fullmatch(c.quote):
+            patterns = [c.quote]  # a footnote marker with no footnote
+        else:
+            patterns = [f"«{c.quote}»"]
         for pattern in patterns:
             text = text.replace(pattern, pattern + " [unverified]", 1)
     return text
@@ -192,7 +198,8 @@ class Lia:
         self._assistant(messages, reply)
         return reply
 
-    def ask(self, question: str, qid: str = "q") -> dict:
+    def ask(self, question: str, qid: str = "q", context: str = "") -> dict:
+        """*context*: the last turns of a chat, to resolve "that" or "she"; never a source."""
         start = time.perf_counter()
         state = {"steps": [], "calls": [], "opened": {}, "searches": 0}
         content = []
@@ -204,6 +211,9 @@ class Lia:
                 intro = "Opened before you start (exact name match):"
                 content.append({"type": "text", "text": f"{intro}\n\n{text}"})
                 state["steps"].append({"tool": "l0", "input": {"slugs": slugs}, "returned": done})
+        if context.strip():
+            intro = "Recent conversation, only to understand the question (not a source of facts):"
+            content.append({"type": "text", "text": f"{intro}\n\n{context.strip()}"})
         content.append({"type": "text", "text": f"Question: {question}"})
         messages = [{"role": "user", "content": content}]
         reply = self._loop(self.client, messages, state)
@@ -246,6 +256,7 @@ class Lia:
             "opened": sorted(opened),
             "answer": mark_unverified(answer, failed),
             "abstain": is_abstain(answer),
+            "third_person": checks.third_person(answer, self.config.owner_names),
             "citations": [asdict(c) for c in cites],
             "citation_check": {"total": len(cites), "failed": len(failed), "retried": retried},
             "searches": state["searches"],

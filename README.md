@@ -42,9 +42,10 @@ Copy `.env.example` to `.env` and fill in values when a feature needs them.
 
 ## Talk to Lia in Claude (read-only MCP connector)
 
-`yggdras mcp` runs Lia as a local stdio MCP server with two read-only tools:
-- `ask_lia(question)`: a cited answer, `[[slug]] «fact»`, or "Not in your brain.", plus a cost and time note;
-- `open_note(slug)`: one note's full text, to check a citation.
+`yggdras mcp` runs Lia as a local stdio MCP server with two read-only tools and one prompt:
+- `ask_lia(question, context)`: Lia's reply in her own voice ("I", "you"), with numbered footnotes `[1] [[slug]] «fact»`, or "I don't have that in your notes yet.", then a line of cost, time and verified citations. It starts with a line telling the chat model to show it exactly as written;
+- `open_note(slug)`: one note's full text, to check a citation;
+- the prompt `talk-to-lia`: every message in the conversation goes to Lia, and her replies are shown verbatim.
 
 How it works:
 - It reads the brain's current files and rebuilds the maps when a note changes. It never writes to the brain.

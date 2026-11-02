@@ -170,4 +170,32 @@ def check_citations(answer: str, opened: dict[str, str]) -> list[Citation]:
     for m in BARE_QUOTE.finditer(answer):
         if not any(a <= m.start(1) and m.end(1) <= b for a, b in cited_spans):
             found.append((m.start(), Citation("", m.group(1), False, "quote without a [[slug]]")))
+    # A footnote marker [n] in the text with no footnote line "[n] [[slug]] …" cites nothing.
+    notes = set(FOOTNOTE.findall(answer))
+    for m in MARKER.finditer(answer_body(answer)):
+        if m.group(1) not in notes:
+            found.append((len(answer), Citation("", m.group(0), False, "marker with no footnote")))
     return [citation for _, citation in sorted(found, key=lambda pair: pair[0])]
+
+
+# Lia's footnotes (v3): markers [1] in the text, then one line per footnote at the end,
+# "[1] [[slug]] «fact text»" or "[1] [[slug]] field: value".
+FOOTNOTE = re.compile(r"^\s*\[(\d+)\]\s*\[\[", re.MULTILINE)
+MARKER = re.compile(r"\[(\d+)\]")
+
+
+def answer_body(answer: str) -> str:
+    """The answer without its footnote lines: Lia's own sentences."""
+    return "\n".join(line for line in answer.splitlines() if not FOOTNOTE.match(line))
+
+
+def third_person(answer: str, names: tuple[str, ...] = ()) -> list[str]:
+    """Places where Lia's own sentences speak about the owner in the third person ("the user",
+    or one of the owner's *names*) instead of "you". Footnotes quote notes and are not checked."""
+    words = ["the user", "the owner", *names]
+    body = answer_body(answer)
+    return [
+        m.group(0)
+        for w in words
+        for m in re.finditer(rf"\b{re.escape(w)}(?:'s|’s)?\b", body, re.IGNORECASE)
+    ]

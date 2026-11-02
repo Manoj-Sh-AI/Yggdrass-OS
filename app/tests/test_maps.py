@@ -416,3 +416,40 @@ def test_a_quote_without_a_slug_fails_and_is_not_double_counted():
     )
     results = [(c.slug, c.ok, c.reason) for c in checks.check_citations(answer, opened)]
     assert results == [("garden-plan", True, ""), ("", False, "quote without a [[slug]]")]
+
+
+# ---------------------------------------------------------------- footnotes and voice (v3)
+
+FOOTNOTED = (
+    "You set the garden budget at three hundred euros [1].\n\n"
+    "Want me to look at the plan's timeline?\n\n"
+    "[1] [[garden-plan]] «The garden plan has a budget of three hundred euros in total.»"
+)
+
+
+def test_footnote_citations_are_checked_like_inline_ones():
+    opened = {"garden-plan": GARDEN}
+    assert [(c.slug, c.ok) for c in checks.check_citations(FOOTNOTED, opened)] == [
+        ("garden-plan", True)
+    ]
+    wrong = FOOTNOTED.replace("three hundred euros in total", "four hundred euros in total")
+    assert [c.ok for c in checks.check_citations(wrong, opened)] == [False]
+
+
+def test_a_marker_without_its_footnote_fails():
+    answer = FOOTNOTED.replace("euros [1].", "euros [1], spent in May [2].")
+    opened = {"garden-plan": GARDEN}
+    results = [(c.quote, c.ok, c.reason) for c in checks.check_citations(answer, opened)]
+    assert results == [
+        ("The garden plan has a budget of three hundred euros in total.", True, ""),
+        ("[2]", False, "marker with no footnote"),
+    ]
+
+
+def test_the_voice_check_reads_only_lias_own_sentences():
+    footnote = "[1] [[move]] «Manoj moved in 2024»"
+    assert checks.third_person(f"You moved in 2024 [1].\n\n{footnote}", ("Manoj",)) == []
+    assert checks.third_person(f"Manoj's move was in 2024 [1].\n\n{footnote}", ("Manoj",)) == [
+        "Manoj's"
+    ]
+    assert checks.third_person("The user moved in 2024.") == ["The user"]
