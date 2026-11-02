@@ -1,0 +1,14 @@
+{
+ "model": "claude-haiku-5-5",
+ "effort": "low",
+ "l0": false,
+ "neighbours": false,
+ "answer_model": null,
+ "maps": {
+  "format": "pipe",
+  "relationship": false,
+  "inverses": false,
+  "mentions": true,
+  "about_words": 25
+ }
+}

@@ -163,7 +163,7 @@ def arm_config(arm: str, model: str) -> LiaConfig:
     }  # fmt: skip
     if arm == "final":
         data = json.loads((HERE / "final-config.json").read_text(encoding="utf-8"))
-        return LiaConfig(**{**data, "maps": MapOptions(**data["maps"])})
+        return LiaConfig(**{**data, "model": model, "maps": MapOptions(**data["maps"])})
     return arms[arm]
 
 
@@ -326,6 +326,8 @@ def grade() -> None:
             if target.is_file():
                 continue
             data = json.loads(path.read_text(encoding="utf-8"))
+            if "set" not in data:  # not a run file (the E7 summary)
+                continue
             keyed = {q["id"]: q for q in SETS[data["set"]][0]()}
 
             def one(row):

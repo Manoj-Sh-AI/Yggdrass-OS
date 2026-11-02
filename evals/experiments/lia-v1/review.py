@@ -36,6 +36,8 @@ def due() -> list[tuple[str, dict, dict]]:
     out = []
     for path in files():
         data = json.loads(path.read_text(encoding="utf-8"))
+        if "set" not in data:
+            continue
         rng = random.Random(f"7|{path.name}")
         keyed = {q["id"]: q for q in h.SETS[data["set"]][0]()}
         for row in data["rows"]:
