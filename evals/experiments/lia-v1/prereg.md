@@ -156,3 +156,30 @@ The final config against variant C (the current pipeline), both on the chosen mo
 4. **Harness additions after the prereg commit:**
    - tooling only: `recheck` (gate bar 3), model-keyed overrides in `table`, the `final` arm taking each run's model, and `grade` skipping the E7 summary;
    - no change to any question, key, bar or decision rule.
+
+## v2 changes (Manoj, 2026-11-02, recorded before any v2 run)
+
+The v1 gate failed bars 2 and 3. These are general fixes, with no question-specific patch.
+
+**The fixes:**
+1. **The citation check runs on every answer,** "Not in your brain." answers included, with the same one retry and then `[unverified]`.
+2. **The quote unit is defined once,** in `node.md`, D34, Lia's skill and the checker alike:
+   - **What a quote is:** the fact line's text after its leading `- ` and before ` (src:`, tags such as `[stated]` included. A quote may carry the source bracket; the checker ignores it.
+   - **The delimiter is «…»,** so fact lines that contain double quotes can be cited: `[[slug]] «fact text»`.
+   - **Frontmatter citations** are unchanged: `[[slug]] field: value`.
+3. **The abstain rule:**
+   - **In the skill:** before answering "Not in your brain.", Lia runs `search_notes` with the question's key terms and opens the top hits.
+   - **In code:** if a reply abstains and no search ran for this question, Lia is sent back once to do that search before answering.
+   - **In the trace:** the search is logged (`abstain_search`).
+4. **The completeness rule (skill):** when a note supports the answer, give every fact in it that bears on the question, not only the first.
+5. **Type words are topics (skill):** words like "goals", "projects" and "decisions" in a question are topics, not note-type filters. Facts can live in any note type.
+6. **The final config is the shelf map only (E2).** The relationship map is still generated (the viewer and discovery use it) but not loaded into Lia's prompt. Descriptions are cut at 25 words, and the rest is default (`final-config.json`, unchanged).
+
+**Validation:** Apollo hard-v8 only, the final config with these fixes, Haiku 5.5, 3 runs. It is reported against v1's final config on the same set (22, 23, 21) and v1's citation re-check. No bar is applied: it is a check, not a gate.
+
+**The v2 gate:**
+- **Sets:** life hard-v2 (20 new questions in the same seven categories, written and answered by Manoj, frozen at a pinned brain commit before any v2 run), Apollo held-out-v8 and Apollo hard-v8.
+- **Model and runs:** Haiku 5.5, 3 runs each, against the same five bars.
+- **Life hard-v1 is now a dev set,** contaminated by the failures seen and by skills written after its key. It is not part of the v2 gate.
+
+**Inputs:** the skills change (new SHA in `harness.py`), the run tag `v2`, and the budget ledger continuing from $5.06.
