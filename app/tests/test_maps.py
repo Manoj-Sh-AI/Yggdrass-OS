@@ -317,7 +317,8 @@ def test_structural_pass_writes_the_maps(brain):
     repo, _ = brain
     st.main([str(repo)])
     out = repo / "library/00-manual/generated"
-    assert {p.name for p in out.iterdir()} == {"map.json", *build.MAP_FILES, build.LINT_FILE}
+    expected = {"map.json", *build.MAP_FILES, build.UPCOMING_FILE, build.LINT_FILE}
+    assert {p.name for p in out.iterdir()} == expected
 
 
 # ---------------------------------------------------------------- citation check (D34)
