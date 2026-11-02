@@ -350,3 +350,39 @@ def test_citation_must_be_the_whole_line_not_a_fragment():
     opened = {"garden-plan": GARDEN}
     (result,) = checks.check_citations('[[garden-plan]] "a budget of three hundred"', opened)
     assert not result.ok
+
+
+DECISION = note(
+    "cert-plan",
+    typ="decision",
+    extra="status: decided\ndecided: 2030-02-01\nreview: 2030-03-01\n",
+    body="## Facts\n\n- The plan chose the evening course. (src: self, 2030-02-01)\n",
+)
+
+
+def test_frontmatter_citations_are_checked_word_for_word():
+    opened = {"cert-plan": DECISION}
+    answer = (
+        "A review is due [[cert-plan]] review: 2030-03-01, status: decided. "
+        "Another [[cert-plan]] review: 2030-04-01. "
+        "Unknown [[cert-plan]] owner: ana. "
+        "Unopened [[garden-plan]] review: 2030-03-01."
+    )
+    results = [(c.quote, c.ok, c.reason) for c in checks.check_citations(answer, opened)]
+    assert results == [
+        ("review: 2030-03-01", True, ""),
+        ("status: decided", True, ""),
+        ("review: 2030-04-01", False, "the note's review is '2030-03-01', word for word"),
+        ("owner: ana", False, "the note has no frontmatter field 'owner'"),
+        ("review: 2030-03-01", False, "note was not opened for this question"),
+    ]
+
+
+def test_quote_and_field_citations_mix_in_order():
+    opened = {"cert-plan": DECISION}
+    answer = (
+        '[[cert-plan]] "The plan chose the evening course." It was decided '
+        "[[cert-plan]] decided: 2030-02-01."
+    )
+    results = [(c.quote, c.ok) for c in checks.check_citations(answer, opened)]
+    assert results == [("The plan chose the evening course.", True), ("decided: 2030-02-01", True)]

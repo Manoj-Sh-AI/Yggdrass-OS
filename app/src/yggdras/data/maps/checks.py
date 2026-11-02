@@ -101,18 +101,59 @@ def _same(quote: str, line: str) -> bool:
     return q in (clean(line).rstrip("."), fact_text(line))
 
 
-def check_citations(answer: str, opened: dict[str, str]) -> list[Citation]:
-    """Every `[[slug]] "fact line"` in *answer*, checked word for word against *opened* notes.
+# A frontmatter citation: `[[slug]] review: 2026-11-07` or `[[slug]] review: 2026-11-07, status:
+# decided`. Each value is one word; a full stop, comma or semicolon after it ends it.
+FIELD = r"[a-z_]+: [^\s,;]+"
+FIELD_CITATION = re.compile(rf"\[\[([^\]|]+)\]\]\s+({FIELD}(?:,\s*{FIELD})*)")
 
-    *opened* maps the slug of each note Lia opened for this question to its full text.
+
+def note_fields(text: str) -> dict[str, str]:
+    """A note's scalar frontmatter fields, as the strings written in the file."""
+    parts = st._split(text)
+    if parts is None:
+        return {}
+    fields = {}
+    for line in parts[0].splitlines():
+        name, sep, value = line.partition(":")
+        if sep and re.fullmatch(r"[a-z_]+", name) and value.strip():
+            fields[name] = value.strip().strip('"')
+    return fields
+
+
+def _check_quote(slug: str, quote: str, opened: dict[str, str]) -> Citation:
+    if slug not in opened:
+        return Citation(slug, quote, False, "note was not opened for this question")
+    if any(_same(quote, line) for line in note_fact_lines(opened[slug])):
+        return Citation(slug, quote, True)
+    return Citation(slug, quote, False, "not a fact line of that note, word for word")
+
+
+def _check_field(slug: str, cited: str, opened: dict[str, str]) -> Citation:
+    cited = cited.rstrip(".")  # a full stop ends the sentence, not the value
+    if slug not in opened:
+        return Citation(slug, cited, False, "note was not opened for this question")
+    name, _, value = cited.partition(": ")
+    actual = note_fields(opened[slug]).get(name)
+    if actual is None:
+        return Citation(slug, cited, False, f"the note has no frontmatter field '{name}'")
+    if actual != value:
+        return Citation(slug, cited, False, f"the note's {name} is '{actual}', word for word")
+    return Citation(slug, cited, True)
+
+
+def check_citations(answer: str, opened: dict[str, str]) -> list[Citation]:
+    """Every citation in *answer*, checked word for word against the *opened* notes.
+
+    Two forms: a fact line, `[[slug]] "fact line"` (Facts or History), and frontmatter fields,
+    `[[slug]] review: 2026-11-07, status: decided`. *opened* maps the slug of each note Lia
+    opened for this question to its full text. Results come in the order they appear.
     """
-    out = []
-    for slug, quote in CITATION.findall(answer):
-        slug = slug.strip()
-        if slug not in opened:
-            out.append(Citation(slug, quote, False, "note was not opened for this question"))
-        elif any(_same(quote, line) for line in note_fact_lines(opened[slug])):
-            out.append(Citation(slug, quote, True))
-        else:
-            out.append(Citation(slug, quote, False, "not a fact line of that note, word for word"))
-    return out
+    found = [
+        (m.start(), _check_quote(m.group(1).strip(), m.group(2), opened))
+        for m in CITATION.finditer(answer)
+    ]
+    for m in FIELD_CITATION.finditer(answer):
+        slug = m.group(1).strip()
+        for cited in re.findall(FIELD, m.group(2)):
+            found.append((m.start(), _check_field(slug, cited, opened)))
+    return [citation for _, citation in sorted(found, key=lambda pair: pair[0])]
