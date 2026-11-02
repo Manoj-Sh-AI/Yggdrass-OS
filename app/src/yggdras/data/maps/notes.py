@@ -13,6 +13,8 @@ from yggdras.data.graph import structural as st
 GENERATOR_VERSION = "yggdras-maps/1"
 TAXONOMY = Path("00-manual") / "taxonomy.md"
 SUMMARY_HEADING = "## Summary"
+# Where chunks live: the library's sources shelf, or a flat brain's sources folder.
+SOURCE_SHELVES = ("13-sources", "sources")
 
 
 @dataclass
@@ -38,15 +40,19 @@ class NoteMeta:
     def parent(self) -> str:
         """The parent source of a chunk (13-sources/<parent>/<chunk>.md), else ""."""
         parts = self.path.split("/")
-        return parts[1] if len(parts) == 3 and parts[0] == "13-sources" else ""
+        return parts[1] if len(parts) == 3 and parts[0] in SOURCE_SHELVES else ""
 
 
 def _text(value) -> str:
     return "" if value is None else str(value)
 
 
-def load_notes(root: Path, shelves: tuple[str, ...]) -> dict[str, NoteMeta]:
-    """Every parseable note under the mapped shelves, by slug (first one wins on a clash)."""
+def load_notes(root: Path, shelves: tuple[str, ...] | None) -> dict[str, NoteMeta]:
+    """Every parseable note under the mapped shelves, by slug (first one wins on a clash).
+
+    With *shelves* None, a flat brain (the Apollo demo): every note under *root*, and a
+    note's top folder stands in for its area.
+    """
     notes: dict[str, NoteMeta] = {}
     for path in st.node_files(root, shelves):
         parts = st._split(path.read_text(encoding="utf-8"))
@@ -64,7 +70,9 @@ def load_notes(root: Path, shelves: tuple[str, ...]) -> dict[str, NoteMeta]:
             name=_text(fm.get("name")),
             type=_text(fm.get("type")),
             path=path.relative_to(root).as_posix(),
-            area=_text(fm.get("area")) or st.CROSS,
+            area=(_text(fm.get("area")) or st.CROSS)
+            if shelves is not None
+            else path.relative_to(root).parts[0],
             also=st._as_list(fm.get("also")),
             description=_text(fm.get("description")),
             aliases=st._as_list(fm.get("aliases")),
@@ -86,7 +94,7 @@ def load_notes(root: Path, shelves: tuple[str, ...]) -> dict[str, NoteMeta]:
     return notes
 
 
-def map_version(root: Path, shelves: tuple[str, ...]) -> str:
+def map_version(root: Path, shelves: tuple[str, ...] | None) -> str:
     """A hash of everything the maps are made from: same input, same version."""
     digest = hashlib.sha256(GENERATOR_VERSION.encode())
     for path in st.node_files(root, shelves):

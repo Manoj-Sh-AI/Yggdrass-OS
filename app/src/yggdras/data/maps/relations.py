@@ -37,8 +37,20 @@ def _chain(parent: str, notes: dict[str, NoteMeta], edges: list[dict]) -> list[s
     return order + [c for c in chunks if c not in order]
 
 
-def entries(graph: dict, notes: dict[str, NoteMeta]) -> tuple[dict[str, set[str]], int]:
-    """Each note's link entries ("verb target"), and the number of links written."""
+def entries(
+    graph: dict,
+    notes: dict[str, NoteMeta],
+    *,
+    inverses: bool = True,
+    mentions: bool = True,
+    free_verbs: bool = False,
+) -> tuple[dict[str, set[str]], int]:
+    """Each note's link entries ("verb target"), and the number of links written.
+
+    The keyword switches are for experiments (maps-design §8): *inverses* off writes each
+    link at its source only, *mentions* off drops plain mentions, and *free_verbs* keeps a
+    flat brain's free-text verbs, with "←verb" as the other direction.
+    """
     lines: dict[str, set[str]] = {}
     links = 0
     for e in graph["edges"]:
@@ -46,23 +58,29 @@ def entries(graph: dict, notes: dict[str, NoteMeta]) -> tuple[dict[str, set[str]
         if kind == "hub" or a == b or a not in notes or b not in notes:
             continue
         if kind == "mention":
+            if not mentions:
+                continue
             verb, back = st.MENTION, MENTIONED_IN
         elif reason in st.OPPOSITE:
             verb, back = reason, st.OPPOSITE[reason]
+        elif free_verbs:
+            verb = reason.replace(" ", "_")
+            back = f"←{verb}"
         else:
             continue  # an unknown verb is an error in map.json, not a map line
         if _is_chain_edge(e, notes):
             continue
         before = (len(lines.get(a, ())), len(lines.get(b, ())))
         lines.setdefault(a, set()).add(f"{verb} {b}")
-        lines.setdefault(b, set()).add(f"{back} {a}")
-        if (len(lines[a]), len(lines[b])) != before:
+        if inverses:
+            lines.setdefault(b, set()).add(f"{back} {a}")
+        if (len(lines.get(a, ())), len(lines.get(b, ()))) != before:
             links += 1
     return lines, links
 
 
-def relationship_map(graph: dict, notes: dict[str, NoteMeta], version: str) -> str:
-    lines, links = entries(graph, notes)
+def relationship_map(graph: dict, notes: dict[str, NoteMeta], version: str, **switches) -> str:
+    lines, links = entries(graph, notes, **switches)
     parents = sorted({n.parent for n in notes.values() if n.parent})
     out = [
         f"# relationship-map | links {links} ({2 * links} with inverses) | map_version {version}",
