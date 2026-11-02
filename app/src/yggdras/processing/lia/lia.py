@@ -51,9 +51,14 @@ TOOLS = [
         },
     },
 ]
+ABSTAIN_SEARCH = (
+    'Before you answer "Not in your brain.", run search_notes with the question\'s key terms '
+    "and open the top hits. Then answer from them, or abstain if they don't support an answer."
+)
 RETRY = (
-    "These citations failed the check: each quoted line must be copied word for word from a "
-    "fact line (or frontmatter field) of a note you opened.\n{failures}\n"
+    "These citations failed the check: each quote must be a fact's text copied word for word "
+    '(everything after "- " and before " (src:", tags included), as [[slug]] «fact text», '
+    "or a frontmatter field as [[slug]] field: value, from a note you opened.\n{failures}\n"
     "Write the whole answer again with corrected citations. Drop any claim you can't cite, "
     f'or reply exactly "{ABSTAIN}" with a one-line reason.'
 )
@@ -115,7 +120,7 @@ def is_abstain(text: str) -> bool:
 
 def mark_unverified(text: str, failed: list[checks.Citation]) -> str:
     for c in failed:
-        for pattern in (f'[[{c.slug}]] "{c.quote}"', f"[[{c.slug}]] {c.quote}"):
+        for pattern in (f"[[{c.slug}]] «{c.quote}»", f"[[{c.slug}]] {c.quote}"):
             text = text.replace(pattern, pattern + " [unverified]", 1)
     return text
 
@@ -209,17 +214,25 @@ class Lia:
             reply = self._loop(self.answer_client, messages, state)
             writer = self.answer_client
         answer = reply.text.strip() if reply else ""
+        abstain_search = False
+        if is_abstain(answer) and state["searches"] == 0:
+            # Abstain rule: search with the question's key terms and open the top hits first.
+            abstain_search = True
+            messages.append({"role": "user", "content": ABSTAIN_SEARCH})
+            reply = self._loop(writer, messages, state)
+            answer = reply.text.strip()
         opened = state["opened"]
-        cites = [] if is_abstain(answer) else checks.check_citations(answer, opened)
+        # The citation check runs on every answer, abstains included.
+        cites = checks.check_citations(answer, opened)
         failed = [c for c in cites if not c.ok]
         retried = False
         if failed:
             retried = True
-            lines = "\n".join(f'- [[{c.slug}]] "{c.quote}": {c.reason}' for c in failed)
+            lines = "\n".join(f"- [[{c.slug}]] «{c.quote}»: {c.reason}" for c in failed)
             messages.append({"role": "user", "content": RETRY.format(failures=lines)})
             reply = self._loop(writer, messages, state)
             answer = reply.text.strip()
-            cites = [] if is_abstain(answer) else checks.check_citations(answer, opened)
+            cites = checks.check_citations(answer, opened)
             failed = [c for c in cites if not c.ok]
         return {
             "id": qid,
@@ -233,6 +246,7 @@ class Lia:
             "citations": [asdict(c) for c in cites],
             "citation_check": {"total": len(cites), "failed": len(failed), "retried": retried},
             "searches": state["searches"],
+            "abstain_search": abstain_search,
             "calls": state["calls"],
             "cost_usd": sum(c["cost_usd"] for c in state["calls"]),
             "latency_ms": round((time.perf_counter() - start) * 1000, 1),

@@ -332,10 +332,10 @@ GARDEN = note(
 def test_citation_check():
     opened = {"garden-plan": GARDEN}
     answer = (
-        'It costs three hundred. [[garden-plan]] "The garden plan has a budget of three hundred '
-        'euros in total." It was smaller. [[garden-plan]] "The plan was  smaller" '
-        'It has a pond. [[garden-plan]] "The garden plan has a pond." '
-        'Ana helps. [[ana]] "Ana helps with the garden."'
+        "It costs three hundred. [[garden-plan]] «The garden plan has a budget of three hundred "
+        "euros in total.» It was smaller. [[garden-plan]] «The plan was  smaller» "
+        "It has a pond. [[garden-plan]] «The garden plan has a pond.» "
+        "Ana helps. [[ana]] «Ana helps with the garden.»"
     )
     results = [(c.ok, c.reason) for c in checks.check_citations(answer, opened)]
     assert results == [
@@ -348,7 +348,7 @@ def test_citation_check():
 
 def test_citation_must_be_the_whole_line_not_a_fragment():
     opened = {"garden-plan": GARDEN}
-    (result,) = checks.check_citations('[[garden-plan]] "a budget of three hundred"', opened)
+    (result,) = checks.check_citations("[[garden-plan]] «a budget of three hundred»", opened)
     assert not result.ok
 
 
@@ -381,8 +381,28 @@ def test_frontmatter_citations_are_checked_word_for_word():
 def test_quote_and_field_citations_mix_in_order():
     opened = {"cert-plan": DECISION}
     answer = (
-        '[[cert-plan]] "The plan chose the evening course." It was decided '
+        "[[cert-plan]] «The plan chose the evening course.» It was decided "
         "[[cert-plan]] decided: 2030-02-01."
     )
     results = [(c.quote, c.ok) for c in checks.check_citations(answer, opened)]
     assert results == [("The plan chose the evening course.", True), ("decided: 2030-02-01", True)]
+
+
+TAGGED = note(
+    "mission",
+    body='## Facts\n\n- [stated] Crew said "we have a problem" on day three'
+    " (src: log, 2030-01-01)\n",
+)
+
+
+def test_the_quote_unit_is_the_text_before_the_source_tags_included():
+    opened = {"mission": TAGGED}
+    unit = '[stated] Crew said "we have a problem" on day three'
+    cases = [
+        f"[[mission]] «{unit}»",  # the unit itself, with its inner double quotes
+        f"[[mission]] «{unit} (src: log, 2030-01-01)»",  # the source bracket is ignored
+        f"[[mission]] «- {unit}.»",  # a leading "- " and a final full stop are ignored
+        '[[mission]] «Crew said "we have a problem" on day three»',  # the tag is part of the unit
+    ]
+    assert [checks.check_citations(c, opened)[0].ok for c in cases] == [True, True, True, False]
+    assert checks.quote_unit(f"- {unit} (src: log, 2030-01-01)") == unit

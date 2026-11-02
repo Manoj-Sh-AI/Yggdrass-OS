@@ -95,8 +95,15 @@ class FakeClient:
         return Reply(blocks, stop, Usage(self.model, 100, 0, 1000, 50, 0.001, 5.0))
 
 
+# What the fake model says after the abstain rule sends it back: one search, then abstain.
+SEARCHED_ABSTAIN = [
+    [{"type": "tool_use", "id": "sx", "name": "search_notes", "input": {"query": "pond"}}],
+    [{"type": "text", "text": "Not in your brain. No note mentions it."}],
+]
+
+
 def cited(slug, line):
-    return f'[[{slug}]] "{line}"'
+    return f"[[{slug}]] «{line}»"
 
 
 # ---------------------------------------------------------------- tools
@@ -204,7 +211,7 @@ def test_still_failing_citation_is_marked_unverified(library, skills):
     client = FakeClient([[tool_use("open_notes", {"slugs": ["garden-plan"]})], [bad], [bad]])
     result = Lia(client, library, skills, LiaConfig()).ask("Budget?")
     assert result["citation_check"]["failed"] == 1
-    assert '"The budget is 300." [unverified]' in result["answer"]
+    assert "«The budget is 300.» [unverified]" in result["answer"]
 
 
 def test_citing_an_unopened_note_fails(library, skills):
@@ -215,9 +222,10 @@ def test_citing_an_unopened_note_fails(library, skills):
 
 
 def test_abstain_format(library, skills):
-    client = FakeClient([[text(f"{ABSTAIN} No note mentions a pond.")]])
+    client = FakeClient([[text(f"{ABSTAIN} No note mentions a pond.")], *SEARCHED_ABSTAIN])
     result = Lia(client, library, skills, LiaConfig()).ask("Pond?")
     assert result["abstain"] and result["citations"] == []
+    assert result["abstain_search"] and result["searches"] == 1
 
 
 def test_search_is_limited_to_three_rounds(library, skills):
@@ -241,14 +249,18 @@ def test_l0_switch_opens_before_the_first_call(library, skills):
 
 def test_neighbour_switch_reaches_open_notes(library, skills):
     client = FakeClient(
-        [[tool_use("open_notes", {"slugs": ["garden-plan"]})], [text(f"{ABSTAIN} x")]]
+        [
+            [tool_use("open_notes", {"slugs": ["garden-plan"]})],
+            [text(f"{ABSTAIN} x")],
+            *SEARCHED_ABSTAIN,
+        ]
     )
     Lia(client, library, skills, LiaConfig(neighbours=True)).ask("Q?")
     assert "neighbours of garden-plan" in json.dumps(client.sent[1]["messages"])
 
 
 def test_trace_is_written(library, skills, tmp_path):
-    client = FakeClient([[text(f"{ABSTAIN} Not recorded.")]])
+    client = FakeClient([[text(f"{ABSTAIN} Not recorded.")], *SEARCHED_ABSTAIN])
     result = Lia(client, library, skills, LiaConfig()).ask("Pond?", "life/q09 run1")
     path = write_trace(result, tmp_path / "traces")
     trace = json.loads(path.read_text(encoding="utf-8"))
@@ -263,6 +275,7 @@ def test_trace_is_written(library, skills, tmp_path):
         "cost_usd",
         "latency_ms",
         "map_version",
+        "abstain_search",
     } <= set(trace)
 
 
@@ -335,3 +348,42 @@ def test_flat_brain_keeps_free_verbs_with_their_other_direction(tmp_path):
     assert "ann: flew m1" in maps["relationship-map.md"]
     assert "m1: ←flew ann" in maps["relationship-map.md"]
     assert "## people" in maps["shelf-map.md"] and "people|1" in maps["atlas.md"]
+
+
+def test_abstain_without_a_search_is_sent_back_to_search_first(library, skills):
+    client = FakeClient(
+        [
+            [text(f"{ABSTAIN} No budget recorded.")],
+            [tool_use("search_notes", {"query": "garden budget"}, "s1")],
+            [tool_use("open_notes", {"slugs": ["garden-plan"]}, "o1")],
+            [text(f"Three hundred. {cited('garden-plan', GARDEN_FACT)}")],
+        ]
+    )
+    result = Lia(client, library, skills, LiaConfig()).ask("Garden budget?")
+    assert result["abstain_search"] and not result["abstain"]
+    assert "run search_notes" in json.dumps(client.sent[1]["messages"][-1])
+    assert [s["tool"] for s in result["steps"]] == ["search_notes", "open_notes"]
+
+
+def test_abstain_after_a_search_is_not_sent_back(library, skills):
+    client = FakeClient(
+        [[tool_use("search_notes", {"query": "pond"}, "s1")], [text(f"{ABSTAIN} No pond.")]]
+    )
+    result = Lia(client, library, skills, LiaConfig()).ask("Pond?")
+    assert result["abstain"] and not result["abstain_search"] and len(client.sent) == 2
+
+
+def test_citations_in_an_abstain_answer_are_checked(library, skills):
+    bad = text(f"{ABSTAIN} Only this: {cited('garden-plan', 'A budget was set.')}")
+    client = FakeClient(
+        [
+            [tool_use("search_notes", {"query": "b"}, "s1")],
+            [tool_use("open_notes", {"slugs": ["garden-plan"]}, "o1")],
+            [bad],
+            [bad],
+        ]
+    )
+    result = Lia(client, library, skills, LiaConfig()).ask("Pond?")
+    assert result["abstain"]
+    assert result["citation_check"] == {"total": 1, "failed": 1, "retried": True}
+    assert "«A budget was set.» [unverified]" in result["answer"]

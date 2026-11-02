@@ -73,7 +73,9 @@ def facts_in_maps(maps: dict[str, str], notes: dict[str, NoteMeta], hard: bool) 
 
 
 # ---------------------------------------------------------------- citation check (D34)
-CITATION = re.compile(r"\[\[([^\]|]+)\]\]\s*\"([^\"]+)\"")
+# A fact citation: [[slug]] «fact text». The «» delimiters let fact lines that contain
+# double quotes be cited as they are (D34, as amended for lia-v1 v2).
+CITATION = re.compile(r"\[\[([^\]|]+)\]\]\s*«([^»]+)»")
 
 
 @dataclass(frozen=True)
@@ -96,9 +98,15 @@ def note_fact_lines(text: str) -> list[str]:
     ]
 
 
+def quote_unit(text: str) -> str:
+    """The one definition of what a fact citation quotes (node.md, D34): the fact line's text
+    after its leading "- " and before " (src:", tags such as "[stated]" included, whitespace
+    normalised, a final full stop ignored. A quote that carries the source bracket is cut at it."""
+    return fact_text(clean(text).removeprefix("- "))
+
+
 def _same(quote: str, line: str) -> bool:
-    q = clean(quote).removeprefix("- ").rstrip(".")
-    return q in (clean(line).rstrip("."), fact_text(line))
+    return quote_unit(quote) == quote_unit(line)
 
 
 # A frontmatter citation: `[[slug]] review: 2026-11-07` or `[[slug]] review: 2026-11-07, status:
@@ -144,7 +152,7 @@ def _check_field(slug: str, cited: str, opened: dict[str, str]) -> Citation:
 def check_citations(answer: str, opened: dict[str, str]) -> list[Citation]:
     """Every citation in *answer*, checked word for word against the *opened* notes.
 
-    Two forms: a fact line, `[[slug]] "fact line"` (Facts or History), and frontmatter fields,
+    Two forms: a fact line, `[[slug]] «fact text»` (Facts or History), and frontmatter fields,
     `[[slug]] review: 2026-11-07, status: decided`. *opened* maps the slug of each note Lia
     opened for this question to its full text. Results come in the order they appear.
     """
