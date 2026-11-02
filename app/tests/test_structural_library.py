@@ -149,8 +149,8 @@ def test_maps_are_written_to_generated_and_nowhere_else(repo, tmp_path):
     st.main([str(root)])
     after = snapshot()
     assert sorted(set(after) - set(before)) == [
-        "brain-repo/library/00-manual/generated/map.json",
-        "brain-repo/library/00-manual/generated/relationship-map.md",
+        f"brain-repo/library/00-manual/generated/{name}"
+        for name in ("atlas.md", "lint.md", "map.json", "relationship-map.md", "shelf-map.md")
     ]
     assert {k: v for k, v in after.items() if k in before} == before
 
@@ -226,16 +226,12 @@ def test_relationship_map_adds_each_opposite(repo):
     root, _ = repo
     st.main([str(root)])
     text = (root / "library/00-manual/generated/relationship-map.md").read_text(encoding="utf-8")
-    sections = dict((block.split("\n", 1)[0], block) for block in text.split("\n## ")[1:])
-    goals = sections["home-goals (`home-goals`)"]
-    assert "- has_part [[garden-plan]] (added: opposite)" in goals
-    assert "- related_to [[garden-plan]]\n" in goals
-    garden = sections["garden-plan (`garden-plan`)"]
-    assert "- part_of [[home-goals]]" in garden
-    assert "- related_to [[home-goals]] (added: opposite)" in garden  # symmetric verb
-    ana = sections["ana (`ana`)"]
-    assert "- needed_by [[garden-plan]] (added: opposite)" in ana
-    assert "- mentioned in [[garden-plan]] (added: opposite)" in ana
+    lines = dict(line.split(": ", 1) for line in text.splitlines() if not line.startswith("#"))
+    assert lines["home-goals"] == "has_part garden-plan · related_to garden-plan"
+    assert lines["garden-plan"] == (
+        "depends_on ana · mentions ana · part_of home-goals · related_to home-goals"
+    )  # related_to is its own opposite
+    assert lines["ana"] == "mentioned_in garden-plan · needed_by garden-plan"
 
 
 def test_unknown_verb_is_flagged_and_gets_no_opposite(repo):
@@ -244,7 +240,9 @@ def test_unknown_verb_is_flagged_and_gets_no_opposite(repo):
     assert [(u["path"], u["verb"]) for u in graph["unknown_verbs"]] == [
         ("11-people/ana.md", "waters")
     ]
-    assert "- [[ana]] waters this (no opposite: verb not in the list)" in st.relationship_map(graph)
+    text = root / "library/00-manual/generated/relationship-map.md"
+    st.main([str(root)])
+    assert "waters" not in text.read_text(encoding="utf-8")  # an error in map.json, not a map line
 
 
 def test_hub_lists_are_hub_links(repo):
@@ -261,9 +259,9 @@ def test_hub_lists_are_hub_links(repo):
     assert graph["errors"] == []
     (edge,) = edges_from(graph, "hub-rest-joy")
     assert (edge["kind"], edge["reason"]) == ("hub", "lists")
-    text = st.relationship_map(graph)
-    assert "- lists [[garden-plan]] (hub link)" in text
-    assert "- listed_in [[hub-rest-joy]] (added: opposite, hub link)" in text
+    st.main([str(root)])
+    text = (root / "library/00-manual/generated/relationship-map.md").read_text(encoding="utf-8")
+    assert "hub-rest-joy" not in text  # hub links stay out of Lia's relationship map
 
 
 def test_a_hub_holds_no_facts(repo):
