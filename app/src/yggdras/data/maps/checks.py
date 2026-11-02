@@ -76,6 +76,7 @@ def facts_in_maps(maps: dict[str, str], notes: dict[str, NoteMeta], hard: bool) 
 # A fact citation: [[slug]] «fact text». The «» delimiters let fact lines that contain
 # double quotes be cited as they are (D34, as amended for lia-v1 v2).
 CITATION = re.compile(r"\[\[([^\]|]+)\]\]\s*«([^»]+)»")
+BARE_QUOTE = re.compile(r"«([^»]+)»")
 
 
 @dataclass(frozen=True)
@@ -164,4 +165,9 @@ def check_citations(answer: str, opened: dict[str, str]) -> list[Citation]:
         slug = m.group(1).strip()
         for cited in re.findall(FIELD, m.group(2)):
             found.append((m.start(), _check_field(slug, cited, opened)))
+    # A «quote» with no [[slug]] in front can't be checked against a note, so it fails.
+    cited_spans = [m.span(2) for m in CITATION.finditer(answer)]
+    for m in BARE_QUOTE.finditer(answer):
+        if not any(a <= m.start(1) and m.end(1) <= b for a, b in cited_spans):
+            found.append((m.start(), Citation("", m.group(1), False, "quote without a [[slug]]")))
     return [citation for _, citation in sorted(found, key=lambda pair: pair[0])]

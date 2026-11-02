@@ -120,7 +120,10 @@ def is_abstain(text: str) -> bool:
 
 def mark_unverified(text: str, failed: list[checks.Citation]) -> str:
     for c in failed:
-        for pattern in (f"[[{c.slug}]] «{c.quote}»", f"[[{c.slug}]] {c.quote}"):
+        patterns = (
+            [f"[[{c.slug}]] «{c.quote}»", f"[[{c.slug}]] {c.quote}"] if c.slug else [f"«{c.quote}»"]
+        )
+        for pattern in patterns:
             text = text.replace(pattern, pattern + " [unverified]", 1)
     return text
 

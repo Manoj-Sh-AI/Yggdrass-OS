@@ -387,3 +387,11 @@ def test_citations_in_an_abstain_answer_are_checked(library, skills):
     assert result["abstain"]
     assert result["citation_check"] == {"total": 1, "failed": 1, "retried": True}
     assert "«A budget was set.» [unverified]" in result["answer"]
+
+
+def test_a_quote_without_a_slug_is_retried_then_marked(library, skills):
+    bare = text(f"Three hundred: «{GARDEN_FACT}»")
+    client = FakeClient([[tool_use("open_notes", {"slugs": ["garden-plan"]})], [bare], [bare]])
+    result = Lia(client, library, skills, LiaConfig()).ask("Budget?")
+    assert result["citation_check"] == {"total": 1, "failed": 1, "retried": True}
+    assert f"«{GARDEN_FACT}» [unverified]" in result["answer"]
