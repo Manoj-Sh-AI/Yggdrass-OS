@@ -24,10 +24,12 @@ def note(slug, *, typ="project", area="08-rest-joy", description=None, aliases=(
     return (
         f"---\nid: id-{slug}\nslug: {slug}\nname: {slug.replace('-', ' ').title()}\n"
         f'type: {typ}\narea: {area}\ndescription: "{description or "About " + slug}"\n'
-        f"aliases: [{alias_list}]\nupdated: 2030-01-02\nreview: 2030-03-01\n---\n\n# {slug}\n\n{body}"
+        f"aliases: [{alias_list}]\nupdated: 2030-01-02\nreview: 2030-03-01\n---\n\n"
+        f"# {slug}\n\n{body}"
     )
 
 
+CORNER = "Home goals include a quiet garden corner. (src: self, 2030-01-01)"
 GARDEN_FACT = "The garden plan has a budget of three hundred euros. (src: self, 2030-01-01)"
 
 
@@ -47,7 +49,7 @@ def library(tmp_path):
             typ="goal",
             area="06-purpose",
             aliases=("home",),
-            body="## Facts\n\n- Home goals include a quiet garden corner. (src: self, 2030-01-01)\n",
+            body=f"## Facts\n\n- {CORNER}\n",
         ),
     }
     for rel, text in files.items():
@@ -206,9 +208,7 @@ def test_still_failing_citation_is_marked_unverified(library, skills):
 
 
 def test_citing_an_unopened_note_fails(library, skills):
-    claim = text(
-        f"Corner. {cited('home-goals', 'Home goals include a quiet garden corner. (src: self, 2030-01-01)')}"
-    )
+    claim = text(f"Corner. {cited('home-goals', CORNER)}")
     client = FakeClient([[claim], [claim]])
     result = Lia(client, library, skills, LiaConfig()).ask("Corner?")
     assert result["citations"][0]["reason"] == "note was not opened for this question"
