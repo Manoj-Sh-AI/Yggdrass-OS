@@ -132,4 +132,27 @@ The final config against variant C (the current pipeline), both on the chosen mo
 
 ## Deviations after start
 
-None yet.
+1. **Lia's model is chosen on Apollo hard-v8, and the gate runs once (Manoj, 2026-11-02, before any gate run is graded or read).**
+   - **Why:** Step 1's tie rule picked Haiku 5.5. The reviewed scores were Haiku 22, Sonnet 23 and Opus 23, and a gap of 1 counts as a tie.
+   - **Unchanged:** the experiments (Step 2) ran on Haiku.
+   - **The model choice:** the final config runs with `claude-haiku-5-5` and `claude-sonnet-5-5`, 3 runs each, on `apollo-hard` only.
+     - The higher mean score wins.
+     - A tie is a difference of means no larger than the run-to-run spread, the larger of the two models' ranges. The spread is reported.
+     - The cheaper model wins a tie.
+   - **Then the gate runs once** with the chosen model: Lia's final config against variant C on the same model, on `life`, `apollo-hard` and `apollo-held`, 3 runs each, against the five bars.
+   - **Life and held-out decide nothing.** `life` and `apollo-held` are used only for the gate verdict, never for any choice.
+   - **The superseded version.** An earlier instruction (choose the model on `life` plus `apollo-held`) was meant to be recorded here in commit ff3cc1e. The edit did not land, and that was not noticed until now. The instruction was replaced before any of its runs was graded or read. Two runs had already finished: the final config on `life` with Haiku, runs 1 and 2. They were moved, ungraded and unread, to `local-data/lia-v1/quarantine/` and are not used.
+2. **The reviewer's listing showed answers cut at 900 characters** for the Step 1 review. The judge always saw full answers. Every pick-run answer that needed it (v24) was re-read in full. The listing shows full answers from Step 2 on (commit a4879ed).
+3. **Hand review in Step 2:**
+   - **Rules:** systematic grader disagreements were resolved with written element rules, applied to every row of those questions in every arm, so all arms were graded alike:
+     - v24 needs all seven dates;
+     - v12 needs Marshall;
+     - v19 needs 7129, 125 and P64;
+     - v23 needs the four builders and the guidance computer;
+     - v07 needs House, 1982 and died.
+   - **Visible text counts,** including quoted fact lines.
+   - **Declines without the exact prefix** (v13, v16) are graded correct_abstain.
+   - **Re-grading Step 1** under these rules gives Haiku 22, Sonnet 24, Opus 23. The tie rule would then pick Sonnet, not Haiku. Deviation 1 settles the model on `apollo-hard` either way.
+4. **Harness additions after the prereg commit:**
+   - tooling only: `recheck` (gate bar 3), model-keyed overrides in `table`, the `final` arm taking each run's model, and `grade` skipping the E7 summary;
+   - no change to any question, key, bar or decision rule.
