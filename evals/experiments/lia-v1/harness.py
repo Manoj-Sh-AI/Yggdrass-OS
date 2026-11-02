@@ -37,7 +37,7 @@ BRAIN_REPO = Path(os.environ.get("LIA_BRAIN_REPO", "../yggdras-brain"))
 BRAIN_PIN = Path(os.environ.get("LIA_BRAIN_PIN", "../yggdras-brain-pin"))
 PIN, KEY_COMMIT = "f6fe26a", "723329b"
 KEY_SHA = "252bc0813f630f4a4810c52e946850b3caa8ac45ecb113e4b96795265e985640"
-SKILLS_SHA = "b0272539aa903b25b760a87090df002c459b77b96a5e0b6eba842158168b8756"  # v2 (01cd326); v1 was 11bce556…
+SKILLS_SHA = "60ed6245fefbfcca990cff797a2ac6ef9876bc1f30e5231caf718e68bfd9bd4b"  # v3 (96710fd); v2 b0272539…, v1 11bce556…
 LOCAL = CODE / "local-data" / "lia-v1"
 CAP, STOP = 15.0, 12.0
 WORKERS = 6
@@ -161,7 +161,7 @@ def arm_config(arm: str, model: str) -> LiaConfig:
                               answer_model=model if model != "claude-haiku-5-5" else "claude-sonnet-5-5"),
         "e8-neighbours": replace(base, neighbours=True),
     }  # fmt: skip
-    if arm in ("final", "final-v2"):  # final-v2: the same config, run with the v2 code and skills
+    if arm in ("final", "final-v2", "final-v3"):  # the same config, run with v2 or v3 code and skills
         data = json.loads((HERE / "final-config.json").read_text(encoding="utf-8"))
         return LiaConfig(**{**data, "model": model, "maps": MapOptions(**data["maps"])})
     return arms[arm]
