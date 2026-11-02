@@ -278,12 +278,12 @@ def test_a_framework_keeps_its_claim_in_the_summary(brain):
 def test_hard_switch_turns_rules_into_failures(brain, monkeypatch):
     repo, write = brain
     write("08-rest-joy/garden-plan.md", note("garden-plan", description="Budget of 300 euros"))
-    monkeypatch.delenv("YGGDRAS_HARD_DESCRIPTION_RULES", raising=False)
+    monkeypatch.setenv("YGGDRAS_HARD_DESCRIPTION_RULES", "0")
     assert build.main([str(repo)]) == 0
     lint = (repo / "library/00-manual/generated/lint.md").read_text(encoding="utf-8")
     assert "hard rules OFF" in lint and "- warning: `garden-plan`: dates or figures" in lint
-    monkeypatch.setenv("YGGDRAS_HARD_DESCRIPTION_RULES", "1")
-    assert build.main([str(repo)]) == 1
+    monkeypatch.delenv("YGGDRAS_HARD_DESCRIPTION_RULES")
+    assert build.main([str(repo)]) == 1  # on by default
 
 
 def test_lint_lists_sensitive_descriptions_and_warns_on_size(brain, monkeypatch):
