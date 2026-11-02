@@ -150,7 +150,14 @@ def test_maps_are_written_to_generated_and_nowhere_else(repo, tmp_path):
     after = snapshot()
     assert sorted(set(after) - set(before)) == [
         f"brain-repo/library/00-manual/generated/{name}"
-        for name in ("atlas.md", "lint.md", "map.json", "relationship-map.md", "shelf-map.md")
+        for name in (
+            "atlas.md",
+            "lint.md",
+            "map.json",
+            "relationship-map.md",
+            "shelf-map.md",
+            "upcoming.md",
+        )
     ]
     assert {k: v for k, v in after.items() if k in before} == before
 

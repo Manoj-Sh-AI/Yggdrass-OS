@@ -1,10 +1,11 @@
 """Build the maps and lint.md for a library; optionally log their size.
 
 Usage:
-    python -m yggdras.data.maps.build BRAIN_REPO [--out DIR] [--log]
+    python -m yggdras.data.maps.build BRAIN_REPO [--out DIR] [--log] [--today YYYY-MM-DD]
 
-Writes atlas.md, shelf-map.md, relationship-map.md and lint.md to
-library/00-manual/generated/ (or DIR). Never touches a note. --log appends one dated line
+Writes atlas.md, shelf-map.md, relationship-map.md, upcoming.md (F6: dated items in the next
+120 days from --today, default the real date) and lint.md to library/00-manual/generated/
+(or DIR). Never touches a note. --log appends one dated line
 to generated/map-size-log.md, the one generated file that is not deterministic; Lia never
 loads it.
 """
@@ -19,6 +20,7 @@ from pathlib import Path
 from yggdras import config
 from yggdras.data.graph import structural as st
 from yggdras.data.maps import checks
+from yggdras.data.maps import upcoming as upcoming_mod
 from yggdras.data.maps.atlas import atlas
 from yggdras.data.maps.notes import TAXONOMY, load_notes, map_version
 from yggdras.data.maps.relations import relationship_map
@@ -26,6 +28,7 @@ from yggdras.data.maps.shelf import shelf_map
 
 MAP_FILES = ("atlas.md", "shelf-map.md", "relationship-map.md")
 LINT_FILE = "lint.md"
+UPCOMING_FILE = "upcoming.md"
 SIZE_LOG = "map-size-log.md"
 # Map text is denser than prose (slugs, pipes): calibrated against Anthropic's count_tokens
 # on the real brain, 2026-11-01 (9,857 tokens for 23,189 characters).
@@ -105,6 +108,7 @@ def run(
     out_dir: Path | None = None,
     graph: dict | None = None,
     log_day: dt.date | None = None,
+    today: dt.date | None = None,
 ) -> list[checks.Problem]:
     """Build and write the maps and lint.md; return the problems found."""
     root = repo / st.LIBRARY
@@ -112,7 +116,10 @@ def run(
     hard = config.hard_description_rules()
     maps = build_maps(root, graph)
     found = problems(root, maps, hard)
-    write(out_dir, {**maps, LINT_FILE: lint(root, maps, found, hard)})
+    notes = load_notes(root, st.mapped_shelves())
+    texts = {s: (root / n.path).read_text(encoding="utf-8") for s, n in notes.items()}
+    view = upcoming_mod.upcoming(notes, texts, today or dt.date.today())
+    write(out_dir, {**maps, UPCOMING_FILE: view, LINT_FILE: lint(root, maps, found, hard)})
     if log_day:
         log = out_dir / SIZE_LOG
         notes = len(load_notes(root, st.mapped_shelves()))
@@ -131,11 +138,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("brain", type=Path, help="the brain repo")
     parser.add_argument("--out", type=Path, help="write here instead of generated/")
     parser.add_argument("--log", action="store_true", help="append today's map size to the log")
+    parser.add_argument("--today", type=dt.date.fromisoformat, help="the upcoming view's start")
     args = parser.parse_args(argv)
     if not (args.brain / st.LIBRARY).is_dir():
         print(f"not a brain repo with library/: {args.brain}", file=sys.stderr)
         return 2
-    found = run(args.brain, args.out, log_day=dt.date.today() if args.log else None)
+    log_day = dt.date.today() if args.log else None
+    found = run(args.brain, args.out, log_day=log_day, today=args.today)
     hard = [p for p in found if p.severity == "hard"]
     print(f"maps written; {len(hard)} hard problem(s), {len(found) - len(hard)} warning(s)")
     return 1 if hard else 0

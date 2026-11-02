@@ -16,6 +16,7 @@ from pathlib import Path
 from yggdras.data.graph import structural as st
 from yggdras.data.maps import atlas as atlas_mod
 from yggdras.data.maps import checks
+from yggdras.data.maps import upcoming as upcoming_mod
 from yggdras.data.maps.notes import NoteMeta, area_order, clean, load_notes, map_version
 from yggdras.data.maps.relations import relationship_map
 from yggdras.data.maps.shelf import shelf_map
@@ -224,6 +225,10 @@ class Library:
             if f" {key} " in q:
                 found.append(next(iter(slugs)))
         return sorted(set(found))
+
+    def upcoming(self, today, days: int = upcoming_mod.HORIZON_DAYS) -> str:
+        """The upcoming view (F6): dated items from *today* on, one row each, no fact text."""
+        return upcoming_mod.upcoming(self.notes, self._text, today, days)
 
     def fact_lines(self, slug: str) -> list[str]:
         text = self._text.get(slug)
