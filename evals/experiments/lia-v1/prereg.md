@@ -241,3 +241,66 @@ Manoj calls this "Lia v3". The code names it **explore**, because v3 is already 
 **Switch recommendations:** a switch is recommended ON if its ablation lowers the dev score or a recall. One ablation run is weak evidence, and the report says so.
 
 **Budget:** its own ledger, `local-data/lia-v1/spend-explore.json`, with a stop at $8 of a $10 cap. Runs go in order: `x-base`, `x-all`, the ablations, then `x-esc`. Whatever the stop cuts is reported as not run.
+
+## v4: find everything, prove every sentence, sound like herself (Manoj, 2026-11-03)
+
+**Not run by Claude.** Manoj will test v4 himself, manually and with the arms below ("no need testing with 10$, just implement it"). This section records the design and the bars before any v4 run.
+
+**Carried over from the explore decision:**
+- **On:** F5 (the capability rule) and F3 (the sibling sweep), F3 for medium and complex questions only.
+- **Off by default:** F1 and F2. Their code stays behind switches.
+- **Upcoming view:** generated, and loaded only for advice and decision questions.
+
+**Cost and latency bars (Manoj's decision):**
+- cost: simple ≤ $0.01, complex ≤ $0.05 per question;
+- p50 latency: simple ≤ 10 s, complex ≤ 30 s.
+
+**The effort rule (fixed code, `explore.effort_of`):**
+- **Complex:** advice, decision or whole-picture wording (should I, options, recommend, decide, worth, prioritise, warn, neglect, on track, realistic, connect, fit around or with, what has to happen, what limits, how does … affect), or 3+ areas.
+- **Simple:** 0–1 areas and at most 12 words.
+- **Medium:** everything else.
+- **How areas are counted:** an area counts when the question names it, or when a word of four letters or more is in its notes' names or aliases. A word that appears in the names of more than a third of the areas counts for none of them (e.g. "apollo").
+- **Offline levels:** life-dev-explore is 10 of 10 complex. Apollo hard-v8 is 7 simple, 12 medium and 5 complex.
+
+**Changes:**
+- **1a. Fact-level index.** Every Facts and History line is its own BM25 unit, plus one "about" unit per note. The fact text comes back with its slug, without the source bracket.
+- **1b. Search terms.**
+  - **Expansion:** a query word that is a whole alias, or a word of a one- or two-word alias, adds that note's names and aliases at half weight. A short German/English pairs list does the same.
+  - **Stemming:** light suffix stripping (robotics, robots → robot).
+- **1c. Hints, complex questions only.** The first `open_notes` result also lists up to 8 notes not yet opened whose title, aliases or description share an alias-expanded question term, under "Consider these before answering".
+  - **Deviation from the brief:** cited facts don't exist yet at that point, so only question terms are used. The hint rides on that tool result, at no extra model call.
+- **1d. Typed links, arm C only.** On complex questions, `open_notes` adds one line of each note's typed links.
+- **2a. Absence claims.**
+  - **Detection:** a sentence of Lia's own that says something is absent. Its topic is that sentence's content words.
+  - **A hit:** a fact line not yet cited that holds at least half of the topic words.
+  - **On a hit:** Lia is sent back once, with the hits. If the claim still has hits after that, it is marked `[unverified absence]`.
+- **2b. Claim support.** Each footnoted sentence must have its names, numbers, dates and negations in the lines it cites. Names may also come from the cited note's name or aliases, and ISO dates count as spelled out too. A failure joins the one retry, and is marked `[unsupported]` if it still fails.
+  - **Offline on saved life answers:** on 20 random sentences, 3 false positives before two fixes (a capitalised first word; ISO vs spelled dates) and 0 after.
+  - **Of 12 flagged sentences after the fixes,** about 9 are real gaps and 3 are false positives. The false positives are Lia's own contrasts tripping the negation rule.
+- **2c. No draft leakage.** The retry asks for a fresh answer. Any sentence that still talks about drafts, retries or checks is removed from the final answer.
+- **The one retry** carries every failure at once: citations, write offers, absences, unsupported sentences and leaks.
+- **The rolling cache:** a 5-minute cache breakpoint on the newest message, so later calls read the conversation from the cache. This is a cost change only.
+- **Retries:** 3 tries per API call, with waits of 2 s and 6 s, then 3 tries per question in the harness. A question is invalid only after both.
+- **Skills v4:** brain commit 992fd11. They add: answer what is asked; one connection per pair of areas; conflicts said plainly; timing clusters; each sentence holds in its footnote; search before claiming absence; never mention drafts.
+
+**Arms** (Haiku 5.5 unless stated; `harness.py run <arm> <set> 3`):
+
+| arm | config |
+|---|---|
+| `v4-ref` | lia-v1 final config with the v3 skills (96710fd), no new search, no new checks |
+| `v4-A` | the lean config + 1a–1c + 2a–2c + skills v4 |
+| `v4-B` | A, with Sonnet 5.5 for complex questions (the rule above) |
+| `v4-C` | B + 1d |
+
+- **Ablations** (1 run each, on the best arm): `v4-<arm>-no-search` (1a+1b off), `-no-hints` (1c) and `-no-absence` (2a).
+- **Sets:** apollo-hard, life (hard-v1, dev) and life-explore. Never life hard-v2.
+- **Grading:** `grade --v4`, then hand review of every judge/key-term disagreement and 20% of agreements. Fact recall comes from the rubric.
+- **Tables:** `xtable v4-` and `v4checks`. Budget: its own ledger, `spend-v4.json`, stopping at $10.
+
+**Adopt the best arm only if every guardrail passes:**
+- no accuracy drop on Apollo;
+- traps 100%;
+- 0 invented citations;
+- 0 false absence claims on the robotics and family-business tests;
+- the cost and latency bars above;
+- fact recall ≥ 0.70 on life-explore.

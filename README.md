@@ -47,6 +47,14 @@ Copy `.env.example` to `.env` and fill in values when a feature needs them.
 - `open_note(slug)`: one note's full text, to check a citation;
 - the prompt `talk-to-lia`: every message in the conversation goes to Lia, and her replies are shown verbatim.
 
+Each `ask_lia` result starts with one instruction line for the chat model, then Lia's reply inside `<lia_reply>…</lia_reply>`, which the chat model shows unchanged.
+
+The config arm comes from `--arm` or `YGGDRAS_LIA_ARM`:
+- `ref`: the lia-v1 final config;
+- `A` (default): fact-level search with alias expansion, hints on complex questions, and the absence, claim-support and draft-leak checks, all on Haiku;
+- `B`: A, with Sonnet for complex questions;
+- `C`: B, with typed links on complex questions.
+
 How it works:
 - It reads the brain's current files and rebuilds the maps when a note changes. It never writes to the brain.
 - Every answer leaves a trace in `local-data/traces/`.

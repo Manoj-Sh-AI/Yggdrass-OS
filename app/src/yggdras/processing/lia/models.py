@@ -92,6 +92,31 @@ class Budget:
                 )
 
 
+# Network and overload errors worth another try; anything else (a bad request) fails at once.
+TRANSIENT_ERRORS = (
+    "APIConnectionError",
+    "APITimeoutError",
+    "RateLimitError",
+    "InternalServerError",
+    "OverloadedError",
+    "ServiceUnavailableError",
+)
+TRIES = 3  # per call, so a question counts as invalid only after three failures
+BACKOFF_S = (2.0, 6.0)  # waits before the second and third try
+
+
+def with_retries(call, transient: tuple, tries: int = TRIES, sleep=time.sleep):
+    """Run *call*, retrying transient errors with backoff, at most *tries* times in all."""
+    for attempt in range(tries):
+        try:
+            return call()
+        except transient:
+            if attempt == tries - 1:
+                raise
+            sleep(BACKOFF_S[min(attempt, len(BACKOFF_S) - 1)])
+    raise AssertionError("unreachable")
+
+
 class AnthropicClient:
     """Claude through the Anthropic SDK. Thinking is left at the model's default (adaptive);
     depth is set with effort, which is the one control on the 5.5 models."""
@@ -102,7 +127,15 @@ class AnthropicClient:
         if model not in PRICES:
             raise ValueError(f"no price for {model}")
         self.model, self.effort, self.budget = model, effort, budget
-        self._client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+        # Retries are ours (with_retries), so the SDK's own are off.
+        self._client = anthropic.Anthropic(
+            api_key=os.environ.get("ANTHROPIC_API_KEY"), max_retries=0, timeout=180.0
+        )
+        self.transient = tuple(
+            getattr(anthropic, name)
+            for name in TRANSIENT_ERRORS
+            if isinstance(getattr(anthropic, name, None), type)
+        )
 
     def send(
         self,
@@ -116,14 +149,17 @@ class AnthropicClient:
         if self.budget:
             self.budget.check()
         start = time.perf_counter()
-        response = self._client.messages.create(
-            model=self.model,
-            max_tokens=max_tokens,
-            system=system,
-            tools=tools,
-            messages=messages,
-            output_config={"effort": self.effort},
-            **({"tool_choice": tool_choice} if tool_choice else {}),
+        response = with_retries(
+            lambda: self._client.messages.create(
+                model=self.model,
+                max_tokens=max_tokens,
+                system=system,
+                tools=tools,
+                messages=messages,
+                output_config={"effort": self.effort},
+                **({"tool_choice": tool_choice} if tool_choice else {}),
+            ),
+            self.transient,
         )
         u = response.usage
         usage = Usage(

@@ -39,7 +39,8 @@ def test_two_read_only_tools_that_tell_the_chat_model_not_to_add_facts(brain, tm
     service, _ = service_with(brain, [], tmp_path)
     tools = {t.name: t for t in asyncio.run(build_server(service).list_tools())}
     assert set(tools) == {"ask_lia", "open_note"}
-    assert "exactly as written" in tools["ask_lia"].description
+    assert "<lia_reply>" in tools["ask_lia"].description
+    assert "third person" in tools["ask_lia"].description
     assert "never answer from your own knowledge" in tools["ask_lia"].description
     assert all(
         t.annotations.read_only_hint and not t.annotations.destructive_hint for t in tools.values()
@@ -51,8 +52,8 @@ def test_ask_returns_the_cited_answer_a_cost_note_and_writes_a_trace(brain, tmp_
     replies = [[tool_use("open_notes", {"slugs": ["garden-plan"]})], [text(answer)]]
     service, _ = service_with(brain, replies, tmp_path)
     out = service.ask("What is the garden budget?")
-    assert out.startswith(f"{VERBATIM}\n\n{answer}\n\n— Lia · $")
-    assert out.endswith(" s · ✓ 1/1")
+    assert out.startswith(f"{VERBATIM}\n<lia_reply>\n{answer}\n\n— Lia · $")
+    assert out.endswith(" s · ✓ 1/1\n</lia_reply>")
     (trace,) = (tmp_path / "traces").glob("mcp-*.json")
     data = json.loads(trace.read_text(encoding="utf-8"))
     assert data["question"] == "What is the garden budget?" and data["source"] == "mcp"
@@ -133,10 +134,27 @@ def test_the_server_speaks_mcp_over_stdio(brain, tmp_path):
     assert GARDEN_FACT in opened
 
 
-def test_the_reply_starts_with_the_verbatim_line_for_the_chat_model():
-    assert VERBATIM == (
-        "Show the following reply exactly as written, with no preface, summary or extra facts."
-    )
+def test_the_result_starts_with_the_verbatim_line_and_wraps_her_reply(brain, tmp_path):
+    assert VERBATIM.startswith("Reply to the user with exactly the text inside <lia_reply>")
+    assert "third person" in VERBATIM
+    replies = [[text("I don't have that in your notes yet. Nothing on ponds.")]]
+    replies += [[tool_use("search_notes", {"query": "pond"})], [text("I don't have that yet.")]]
+    service, _ = service_with(brain, replies, tmp_path)
+    out = service.ask("Pond?")
+    first, rest = out.split("\n", 1)
+    assert first == VERBATIM
+    assert rest.startswith("<lia_reply>\n") and rest.endswith("\n</lia_reply>")
+
+
+@pytest.mark.parametrize("arm", ["ref", "A", "B", "C"])
+def test_the_connector_arms(arm):
+    from yggdras.interface.mcp_server import default_config
+
+    cfg = default_config("claude-haiku-5-5", arm)
+    assert cfg.fact_search == (arm != "ref")
+    assert (cfg.escalate == "claude-sonnet-5-5") == (arm in "BC")
+    assert cfg.links_complex == (arm == "C")
+    assert not cfg.plan and not cfg.coverage
 
 
 def test_the_talk_to_lia_prompt_sets_the_rule_for_the_conversation(brain, tmp_path):
@@ -146,5 +164,5 @@ def test_the_talk_to_lia_prompt_sets_the_rule_for_the_conversation(brain, tmp_pa
     assert prompt.name == "talk-to-lia"
     result = asyncio.run(server.get_prompt("talk-to-lia"))
     body = result.messages[0].content.text
-    assert "call ask_lia" in body and "exactly as written" in body
+    assert "call ask_lia" in body and "<lia_reply>" in body
     assert "Never answer from your own knowledge" in body

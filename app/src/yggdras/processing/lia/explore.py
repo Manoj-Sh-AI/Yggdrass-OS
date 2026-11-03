@@ -101,6 +101,54 @@ TIME_WORDS = re.compile(
     r"november|december))\b",
     re.IGNORECASE,
 )
+# v4 effort rule: advice, decision and whole-picture questions are complex, and so is any
+# question touching 3+ areas; one area and a short question is simple; the rest is medium.
+ADVICE = re.compile(
+    r"\b(should i|what should|options|recommend|advice|decide|decision|choose|worth|priorit\w*|"
+    r"warn|neglect\w*|on track|realistic|what would you|whole picture|across my life|"
+    r"connect\w*|fit\w* (?:around|with|together)|what has to happen|what limits|"
+    r"how does .+ affect)\b",
+    re.IGNORECASE,
+)
+SIMPLE_WORDS = 12
+
+
+def question_areas(question: str, library) -> list[str]:
+    """Areas the question touches: an area whose name or code it says, or whose notes' names or
+    aliases share a word (four letters or more) with it."""
+    words = {w.rstrip("s") for w in WORD.findall(question.lower()) if w not in STOP}
+    where: dict[str, set[str]] = {}
+    for n in library.notes.values():
+        if n.area == st.CROSS:
+            continue
+        for name in (n.name, *n.aliases):
+            for w in WORD.findall(name.lower()):
+                if len(w) > 3 and w.rstrip("s") in words:
+                    where.setdefault(w.rstrip("s"), set()).add(n.area)
+    n_areas = len({n.area for n in library.notes.values()} - {st.CROSS})
+    # A word found in the names of many areas ("apollo" in a demo brain) names none of them.
+    distinctive = max(2, n_areas // 3)
+    hits = sorted({a for areas in where.values() if len(areas) <= distinctive for a in areas})
+    q = question.lower()
+    for area in {n.area for n in library.notes.values()} - {st.CROSS}:
+        name = area.partition("-")[2].replace("-", " ")
+        if name and re.search(rf"\b{re.escape(name)}\b", q) and area not in hits:
+            hits.append(area)
+    return hits
+
+
+def effort_of(question: str, library) -> tuple[str, str]:
+    """(effort level, the reason) by the fixed v4 rule."""
+    if ADVICE.search(question):
+        return "complex", "advice, decision or whole-picture wording"
+    areas = question_areas(question, library)
+    if len(areas) >= 3:
+        return "complex", f"{len(areas)} areas: {', '.join(sorted(areas))}"
+    if len(areas) <= 1 and len(question.split()) <= SIMPLE_WORDS:
+        return "simple", f"{len(areas)} area, {len(question.split())} words"
+    return "medium", f"{len(areas)} areas"
+
+
 # F5: an offer to write, while Lia is read-only.
 WRITE_OFFER = re.compile(
     r"\b(I'll|I will|I can|I could|let me|shall I|want me to|should I)\s+(also\s+)?"
@@ -146,7 +194,7 @@ def resolve_facets(facets: list[str], library) -> list[tuple[str, str]]:
     return out
 
 
-def atlas_hints(question: str, library, already: set[str]) -> list[tuple[str, str]]:
+def atlas_hints(question: str, library, already: set[str], limit: int = 3) -> list[tuple[str, str]]:
     """Areas whose notes' names or aliases share a word with the question, not yet in the
     plan: free hints for implied facets ("visa" → the area of the note aliased "visa")."""
     words = {w.rstrip("s") for w in WORD.findall(question.lower()) if w not in STOP}
@@ -160,7 +208,7 @@ def atlas_hints(question: str, library, already: set[str]) -> list[tuple[str, st
                 if len(w) > 3 and w.rstrip("s") in words:
                     hits[n.area] += 1
                     examples.setdefault(n.area, w)
-    return [(area, examples[area]) for area, _ in hits.most_common(3)]
+    return [(area, examples[area]) for area, _ in hits.most_common(limit)]
 
 
 def plan_result(plan: dict, library, question: str, upcoming: str | None) -> str:
