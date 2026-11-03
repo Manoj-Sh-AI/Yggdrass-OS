@@ -20,6 +20,7 @@ from yggdras.data.maps import upcoming as upcoming_mod
 from yggdras.data.maps.notes import NoteMeta, area_order, clean, load_notes, map_version
 from yggdras.data.maps.relations import relationship_map
 from yggdras.data.maps.shelf import shelf_map
+from yggdras.processing.lia import search as search_mod
 
 MAX_OPEN = 10
 MAX_K = 20
@@ -134,7 +135,9 @@ class Library:
     def note_text(self, slug: str) -> str | None:
         return self._text.get(slug)
 
-    def open_notes(self, slugs: list[str], neighbours: bool = False) -> tuple[str, list[str]]:
+    def open_notes(
+        self, slugs: list[str], neighbours: bool = False, links: bool = False
+    ) -> tuple[str, list[str]]:
         """Full text of up to MAX_OPEN notes in one call; unknown slugs are reported."""
         opened, parts = [], []
         for slug in list(dict.fromkeys(slugs))[:MAX_OPEN]:
@@ -147,9 +150,36 @@ class Library:
             parts.append(f"=== {slug} ({n.path}) | updated {n.updated or '—'}\n{text.strip()}")
             if neighbours:
                 parts.append(self._neighbours(slug))
+            elif links:
+                parts.append(self.links_line(slug))
         if len(slugs) > MAX_OPEN:
             parts.append(f"(only the first {MAX_OPEN} slugs were opened)")
         return "\n\n".join(parts), opened
+
+    def links_line(self, slug: str) -> str:
+        """One line of a note's typed links, both directions, hubs left out (v4 1d)."""
+        out = []
+        for e in self.graph["edges"]:
+            if e["kind"] == "hub":
+                continue
+            if e["from_slug"] == slug:
+                out.append(f"{e['reason']} {e['to_slug']}")
+            elif e["to_slug"] == slug:
+                out.append(f"←{e['reason']} {e['from_slug']}")
+        return f"--- links of {slug}: " + (" · ".join(sorted(set(out))) or "(none)")
+
+    @property
+    def fact_index(self) -> search_mod.FactIndex:
+        if getattr(self, "_fact_index", None) is None:
+            self._fact_index = search_mod.FactIndex(self.notes, self._text)
+        return self._fact_index
+
+    def search_facts(self, query: str, k: int = 10, expand: bool = True) -> str:
+        """v4 1a–1b: ranked fact lines (and about rows) with their slugs."""
+        return self.fact_index.search(query, max(1, min(k, MAX_K)), expand)
+
+    def candidates(self, words: list[str], exclude: set[str], k: int = 8) -> list[NoteMeta]:
+        return search_mod.candidates(self.notes, words, exclude, k)
 
     def _neighbours(self, slug: str) -> str:
         rows = []

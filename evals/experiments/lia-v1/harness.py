@@ -37,18 +37,21 @@ BRAIN_REPO = Path(os.environ.get("LIA_BRAIN_REPO", "../yggdras-brain"))
 BRAIN_PIN = Path(os.environ.get("LIA_BRAIN_PIN", "../yggdras-brain-pin"))
 PIN, KEY_COMMIT = "f6fe26a", "723329b"
 KEY_SHA = "252bc0813f630f4a4810c52e946850b3caa8ac45ecb113e4b96795265e985640"
-SKILLS_SHA = "60ed6245fefbfcca990cff797a2ac6ef9876bc1f30e5231caf718e68bfd9bd4b"  # v3 (96710fd); v2 b0272539…, v1 11bce556…
+SKILLS_SHA = "91bd4b092af409ffcb8d50b0a8f63a671f0085b78ec7636d6e3d82b09bb57823"  # v4 (992fd11); v3 60ed6245… (96710fd)
 LOCAL = CODE / "local-data" / "lia-v1"
 CAP, STOP = 15.0, 12.0
 # The explore task (prereg "Explore"): its own ledger, stop at $8 of a $10 cap.
 EXPLORE_STOP = 8.0
-EXPLORE_SHA = "55077e1c49755b156cbc1af36497f6e471fa930bbcad06bcace060360f90227f"  # explore.md (fc985e5)
+EXPLORE_SHA = "b70667853e11ff37662001a3f563223005f99ed723f532c5d0a437a638a77a28"  # explore.md (992fd11)
 RUBRIC_SHA = "b5c31bf208e001fe45d7be62efae84efd2132bc8f1c071071f7c7384df3242cd"  # local-data, dev only
 TODAY = "2026-11-02"  # F6: the upcoming view is pinned to this day in every run
+# v4 (prereg "v4"): the Ref arm runs the v3 skills, read from the brain repo at this commit.
+REF_SKILLS_COMMIT = "96710fd"
+V4_STOP = 10.0
 WORKERS = 6
 JUDGE = "claude-haiku-5-5"
 
-from yggdras.processing.lia.lia import Lia, LiaConfig, explore_config, load_skills  # noqa: E402
+from yggdras.processing.lia.lia import Lia, LiaConfig, explore_config, load_skills, v4_config  # noqa: E402
 from yggdras.processing.lia.library import Library, MapOptions  # noqa: E402
 from yggdras.processing.lia.models import AnthropicClient, Budget, BudgetStop  # noqa: E402
 
@@ -69,7 +72,7 @@ def life_terms() -> dict[int, list[str]]:
 
 
 def git(*args, repo=BRAIN_REPO) -> str:
-    return subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True,
+    return subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True, encoding="utf-8",
                           check=True).stdout  # fmt: skip
 
 
@@ -183,6 +186,20 @@ def arm_config(arm: str, model: str) -> LiaConfig:
                               answer_model=model if model != "claude-haiku-5-5" else "claude-sonnet-5-5"),
         "e8-neighbours": replace(base, neighbours=True),
     }  # fmt: skip
+    if arm.startswith("v4-"):  # v4: ref, A, B, C, and ablations such as v4-B-no-search
+        data = json.loads((HERE / "final-config.json").read_text(encoding="utf-8"))
+        ref = LiaConfig(**{**data, "model": model, "maps": MapOptions(**data["maps"]), "today": TODAY})
+        name, _, off = arm[3:].partition("-no-")
+        if name == "ref":
+            return ref
+        cfg = v4_config(ref)
+        if name in ("B", "C"):
+            cfg = replace(cfg, escalate="claude-sonnet-5-5")
+        if name == "C":
+            cfg = replace(cfg, links_complex=True)
+        ablate = {"": {}, "search": {"fact_search": False}, "hints": {"hints": False},
+                  "absence": {"absence": False}}[off]  # fmt: skip
+        return replace(cfg, **ablate)
     if arm.startswith("x-"):  # the explore task: final config, today pinned
         data = json.loads((HERE / "final-config.json").read_text(encoding="utf-8"))
         final = LiaConfig(**{**data, "model": model, "maps": MapOptions(**data["maps"]), "today": TODAY})
@@ -205,13 +222,14 @@ def arm_config(arm: str, model: str) -> LiaConfig:
 # ---------------------------------------------------------------- budget ledger
 
 EXPLORING = any(a.startswith("x-") for a in sys.argv) or "--explore" in sys.argv
-LEDGER = LOCAL / ("spend-explore.json" if EXPLORING else "spend.json")
+V4 = any(a.startswith("v4-") for a in sys.argv) or "--v4" in sys.argv
+LEDGER = LOCAL / ("spend-v4.json" if V4 else "spend-explore.json" if EXPLORING else "spend.json")
 _ledger_lock = threading.Lock()
 
 
 def load_budget() -> Budget:
     spent = json.loads(LEDGER.read_text())["spent"] if LEDGER.is_file() else 0.0
-    return Budget(stop_at=EXPLORE_STOP if EXPLORING else STOP, spent=spent)
+    return Budget(stop_at=V4_STOP if V4 else EXPLORE_STOP if EXPLORING else STOP, spent=spent)
 
 
 def save_budget(budget: Budget) -> None:
@@ -252,7 +270,10 @@ def run(arm: str, set_name: str, runs: int, model: str) -> None:
             config = {"variant": "C", "model": model}
         else:
             cfg = arm_config(arm, model)
-            skills = load_skills(BRAIN_REPO / "skills" / "lia", explore=cfg.exploring)
+            if arm == "v4-ref":
+                skills = git("show", f"{REF_SKILLS_COMMIT}:skills/lia/answering.md")
+            else:
+                skills = load_skills(BRAIN_REPO / "skills" / "lia", explore=cfg.exploring)
             client = AnthropicClient(cfg.model, cfg.effort, budget)
             answer = AnthropicClient(cfg.answer_model, cfg.effort, budget) if cfg.answer_model else None
             esc = AnthropicClient(cfg.escalate, cfg.effort, budget) if cfg.escalate else None
@@ -578,7 +599,7 @@ def recheck(arm: str, model: str) -> None:
     print(f"{arm} {model}: shown {shown}, verified {verified}, marked unverified {marked}, invented {invented}")
 
 
-def xtable() -> None:
+def xtable(prefix: str = "x-") -> None:
     """The explore task's tables: per arm and set, accuracy, recalls, citations, traps, latency
     and cost, with cost and latency split by the effort level x-all's first run gave."""
     from yggdras.data.maps import checks
@@ -589,7 +610,7 @@ def xtable() -> None:
             overrides.update(json.loads(f.read_text(encoding="utf-8")))
     runs = {}
     for folder in (HERE / "results", LOCAL / "results"):
-        for path in sorted(folder.glob("x-*.graded.json")) if folder.is_dir() else []:
+        for path in sorted(folder.glob(f"{prefix}*.graded.json")) if folder.is_dir() else []:
             d = json.loads(path.read_text(encoding="utf-8"))
             runs.setdefault((d["arm"], d["set"], d["model"]), []).append(d)
     effort = {}
@@ -620,7 +641,7 @@ def xtable() -> None:
                     fact.append(r["fact_recall"])
                 lat.append(r.get("latency_ms", 0) / 1000)
                 cost.append(r.get("cost_usd", 0))
-                level = effort.get((set_name, r["qid"]), "medium")
+                level = r.get("effort") or effort.get((set_name, r["qid"]), "medium")
                 by_effort.setdefault((arm, level), []).append((r.get("latency_ms", 0) / 1000, r.get("cost_usd", 0)))
                 answer = r.get("answer") or ""
                 opened = {s: lib.note_text(s) for s in r.get("opened", [])}
@@ -645,6 +666,39 @@ def xtable() -> None:
               f"{statistics.mean(c for _, c in xs):.4f} |")  # fmt: skip
 
 
+def v4checks() -> None:
+    """The v4 check counters per arm: absence (fired, found, fixed by the retry, left marked),
+    unsupported sentences (flagged first, left marked), hints given and hints opened."""
+    print("| arm | set | answers | absence fired | found | fixed | left | unsupported flagged | left | hints given | hint notes opened |")
+    print("|---|---|---|---|---|---|---|---|---|---|---|")
+    for folder in (HERE / "results", LOCAL / "results"):
+        groups = {}
+        for path in sorted(folder.glob("v4-*.json")) if folder.is_dir() else []:
+            if path.name.endswith(".graded.json"):
+                continue
+            d = json.loads(path.read_text(encoding="utf-8"))
+            groups.setdefault((d["arm"], d["set"]), []).extend(d["rows"])
+        for (arm, set_name), rows in sorted(groups.items()):
+            c = {k: 0 for k in ("n", "fired", "found", "fixed", "left", "uns", "uns_left", "hints", "used")}
+            for r in rows:
+                if "error" in r:
+                    continue
+                ch = r.get("checks") or {}
+                first = ch.get("first") or {}
+                c["n"] += 1
+                c["fired"] += first.get("absence_fired", 0)
+                c["found"] += first.get("absence_found", 0)
+                c["left"] += len(ch.get("absence_left", []))
+                c["uns"] += len(first.get("unsupported", []))
+                c["uns_left"] += len(ch.get("unsupported_left", []))
+                hints = set(r.get("hints", []))
+                c["hints"] += bool(hints)
+                c["used"] += len(hints & set(r.get("opened", [])))
+            c["fixed"] = c["found"] - c["left"]
+            print(f"| {arm} | {set_name} | {c['n']} | {c['fired']} | {c['found']} | {c['fixed']} | {c['left']} | "
+                  f"{c['uns']} | {c['uns_left']} | {c['hints']} | {c['used']} |")  # fmt: skip
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1]
     model = sys.argv[sys.argv.index("--model") + 1] if "--model" in sys.argv else "claude-haiku-5-5"
@@ -660,6 +714,8 @@ if __name__ == "__main__":
     elif cmd == "table":
         table()
     elif cmd == "xtable":
-        xtable()
+        xtable(sys.argv[2] if len(sys.argv) > 2 and not sys.argv[2].startswith("--") else "x-")
+    elif cmd == "v4checks":
+        v4checks()
     elif cmd == "recheck":
         recheck(sys.argv[2], model)

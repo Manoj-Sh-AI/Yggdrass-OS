@@ -20,13 +20,18 @@ from pathlib import Path
 
 from yggdras import config
 
-VERBATIM = "Show the following reply exactly as written, with no preface, summary or extra facts."
+VERBATIM = (
+    "Reply to the user with exactly the text inside <lia_reply>…</lia_reply>, unchanged: no "
+    "preface, no summary, no retelling of Lia in the third person, nothing added."
+)
 INSTRUCTIONS = (
     "Yggdras is the user's personal second brain, and Lia is its librarian. Send every question "
     "about the user's own life, work, studies, plans, people, places or decisions to ask_lia. "
-    "Lia speaks to the user herself, in the first person. Show her reply exactly as written, "
-    "footnotes ([1] [[slug]] «fact») and the closing line included, with no preface, summary "
-    "or extra facts. Never add facts of your own, never fill a gap from general knowledge, and "
+    "Lia speaks to the user herself, in the first person. Each ask_lia result holds her reply "
+    "in a <lia_reply> block: reply with exactly the text inside it, footnotes ([1] [[slug]] "
+    "«fact») and the closing line included. No preface, no summary, and never retell her in the "
+    'third person ("Her strongest story…"). Never add facts of your own, never fill a gap '
+    "from general knowledge, and "
     "never present a guess as something the brain holds. Use open_note when the user wants to "
     "check a citation. These tools only read the brain."
 )
@@ -36,14 +41,16 @@ ASK_DESCRIPTION = (
     "optionally pass the last two turns of the chat as context, so she can resolve words like "
     "'that' or 'she'. She replies to the user in the first person, with numbered footnotes "
     "([1] [[slug]] «fact text», each checked word for word against the note), or says she "
-    "doesn't have it in the notes yet. Show her reply exactly as written, with no preface, "
-    "summary or extra facts; never answer from your own knowledge. Read-only."
+    "doesn't have it in the notes yet. The result holds her reply in a <lia_reply> block: "
+    "reply with exactly the text inside, unchanged, never retold in the third person; never "
+    "answer from your own knowledge. Read-only."
 )
 PROMPT_TEXT = (
     "For the rest of this conversation you are a window onto Lia, the librarian of my second "
     "brain. For every message I send, call ask_lia with my message as question and the last "
-    "two turns of our conversation as context. Reply with her answer exactly as written, "
-    "footnotes and closing line included, with no preface, summary or extra facts. Never "
+    "two turns of our conversation as context. Reply with exactly the text inside the "
+    "<lia_reply> block, footnotes and closing line included: no preface, no summary, never "
+    "retelling her in the third person. Never "
     "answer from your own knowledge, even when you could. If I ask to check a citation, call "
     "open_note with its slug and show the note."
 )
@@ -53,16 +60,33 @@ OPEN_DESCRIPTION = (
 )
 
 
-def default_config(model: str):
-    """The tested final config (lia-v1): shelf map only, descriptions cut at 25 words."""
-    from yggdras.processing.lia.lia import LiaConfig
+ARMS = ("ref", "A", "B", "C")
+COMPLEX_MODEL = "claude-sonnet-5-5"
+
+
+def default_config(model: str, arm: str = "A"):
+    """The connector's config. ref: the lia-v1 final config (shelf map only, descriptions cut
+    at 25 words). A: ref + the v4 lean config (better search and checks, all on *model*). B: A
+    with Sonnet for complex questions. C: B with typed links on complex questions."""
+    from dataclasses import replace
+
+    from yggdras.processing.lia.lia import LiaConfig, v4_config
     from yggdras.processing.lia.library import MapOptions
 
-    return LiaConfig(
+    if arm not in ARMS:
+        raise ValueError(f"unknown arm {arm!r}; one of {', '.join(ARMS)}")
+    ref = LiaConfig(
         model=model,
         maps=MapOptions(relationship=False, inverses=False, about_words=25),
         owner_names=config.owner_names(),
     )
+    if arm == "ref":
+        return ref
+    a = v4_config(ref)
+    if arm == "A":
+        return a
+    b = replace(a, escalate=COMPLEX_MODEL)
+    return b if arm == "B" else replace(b, links_complex=True)
 
 
 def fingerprint(root: Path, skills: Path) -> tuple:
@@ -83,8 +107,10 @@ class LiaService:
         flat: bool = False,
         model: str = "claude-haiku-5-5",
         traces: Path | None = None,
+        arm: str = "A",
     ):
         self.root, self.skills, self.flat, self.model = root, skills, flat, model
+        self.config = default_config(model, arm)
         self.client_factory = client_factory
         self.traces = traces or config.local_data() / "traces"
         self._lock = threading.Lock()
@@ -98,11 +124,14 @@ class LiaService:
             now = fingerprint(self.root, self.skills)
             if self._lia is None or now != self._print:
                 library = Library(self.root, flat=self.flat)
+                cfg = self.config
+                escalate = self.client_factory(cfg.escalate) if cfg.escalate else None
                 self._lia = Lia(
                     self.client_factory(self.model),
                     library,
-                    load_skills(self.skills),
-                    default_config(self.model),
+                    load_skills(self.skills, explore=cfg.exploring),
+                    cfg,
+                    escalate_client=escalate,
                 )
                 self._print = now
             return self._lia
@@ -124,7 +153,7 @@ class LiaService:
             f"— Lia · ${result['cost_usd']:.4f} · {result['latency_ms'] / 1000:.1f} s · "
             f"✓ {check['total'] - check['failed']}/{check['total']}"
         )
-        return f"{VERBATIM}\n\n{result['answer']}\n\n{footer}"
+        return f"{VERBATIM}\n<lia_reply>\n{result['answer']}\n\n{footer}\n</lia_reply>"
 
     def open_note(self, slug: str) -> str:
         library = self.lia().library
@@ -170,6 +199,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--flat", type=Path, help="a flat demo brain root instead of a library")
     parser.add_argument("--model", help="Lia's model (default: YGGDRAS_LIA_MODEL)")
     parser.add_argument("--skills", type=Path, help="skills folder (default: <brain>/skills/lia)")
+    parser.add_argument("--arm", choices=ARMS, help="config arm (default: YGGDRAS_LIA_ARM or A)")
     args = parser.parse_args(argv)
     config.load_env_file()
     import logging
@@ -191,6 +221,7 @@ def main(argv: list[str] | None = None) -> int:
         AnthropicClient,
         flat=bool(args.flat),
         model=args.model or config.lia_model(),
+        arm=args.arm or config.lia_arm(),
     )
     build_server(service).run("stdio")
     return 0
