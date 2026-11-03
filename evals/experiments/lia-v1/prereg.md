@@ -304,3 +304,40 @@ Manoj calls this "Lia v3". The code names it **explore**, because v3 is already 
 - 0 false absence claims on the robotics and family-business tests;
 - the cost and latency bars above;
 - fact recall ≥ 0.70 on life-explore.
+
+### v4 arm D: the skill library (Manoj, 2026-11-03, recorded before any arm-D run)
+
+**What D is:**
+- **The library:** a short core skill plus 10 job playbooks in `skills/lia/library/`, each with `name`, a one-line `description` and a `done_when` checklist. They live in brain commits 0fb4b69 and 687c94f, with the library hash in `harness.py`.
+- **The playbooks:** fact-lookup, bridge, chain, change-over-time, status-sweep, timing-and-deadlines, decision-advice, people, nickname-resolver and absence-verify.
+- **The core skill** (always loaded): voice, finding notes, citations, honesty and capability.
+- **The cached prompt** holds the core skill and the index (names and descriptions), never the playbooks.
+- **`load_skill(names)`:** at most 2 playbooks per question. Lia is told to call it in her first turn, alongside her first `open_notes`.
+- **`checklist`:** before answering, Lia reports each loaded playbook's items. If she skipped it, she is sent back once. Undone or unreported items get one more round, then she must answer saying what is missing.
+  - Items are matched by count per playbook, so reworded items count.
+  - The trace records `skills_loaded`, `skill_turns`, `first_open_turn`, `checklists` and `checklist_complete`.
+- **Arm `v4-D`** is B plus the library. `v4-D-on-A` and `v4-D-on-C` put it on the other arms. The prereg asks for "best of A/B/C", which isn't known yet, so pick the one that matches the A/B/C winner.
+
+**Hand labels** (written before any run, SHA-pinned in `harness.py`):
+- **Where:** Apollo hard-v8 in `skill-labels.json`, the life sets in `local-data/lia-v1/skill-labels-life.json`. Each holds the playbooks that fit each question's job.
+- **The pick metrics:**
+  - **Right:** at least one playbook loaded, and every loaded one in the labelled set.
+  - **First right:** the first loaded playbook is in the set.
+  - Also reported: questions where no playbook was loaded, and where it was loaded in the same turn as the first `open_notes`.
+- **Command:** `harness.py picks`.
+
+**The leak guard:** the run stops if any playbook contains a four-word run from a dev question with at least two content words, or a three-word "the x y" name from one.
+- It caught a draft that used three dev questions' indirect names, and the generic phrase "the one thing". Both were reworded before the hash was pinned.
+
+**Tokens** (estimated at 3.6 characters a token):
+
+| prompt | tokens |
+|---|---|
+| A/B/C skills (answering.md + explore.md) | ~2,530 |
+| D cached prompt (core + index) | ~1,200 |
+| the whole library in one prompt | ~2,330 |
+| each loaded playbook | ~240 |
+
+These tokens sit in the cached prefix, so the cost saving is mostly cache reads. The trace's per-call usage gives the measured numbers.
+
+**Report and guardrails:** score, fact recall, facet recall, traps, invented citations, cost and latency by effort, as for the other arms, plus pick accuracy. Arm D is adopted only under the same guardrails.

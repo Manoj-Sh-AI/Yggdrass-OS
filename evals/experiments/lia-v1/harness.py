@@ -47,10 +47,14 @@ RUBRIC_SHA = "b5c31bf208e001fe45d7be62efae84efd2132bc8f1c071071f7c7384df3242cd" 
 TODAY = "2026-11-02"  # F6: the upcoming view is pinned to this day in every run
 # v4 (prereg "v4"): the Ref arm runs the v3 skills, read from the brain repo at this commit.
 REF_SKILLS_COMMIT = "96710fd"
+# Arm D (prereg "v4, arm D"): the skill library and the hand labels, fixed before any run.
+LIBRARY_SHA = "c7ac6eb1f4c9c5168bf8c33555df5a30fc567b313528a4109b3c7f57f05c857e"  # sha256 over skills/lia/library/*.md (name + bytes), see library_hash()
+LABELS_SHA = {"apollo": "4ce17ce1ef58be3882076591eb28a83963aa56f7a3bd7f1ab642d57134db4acd", "life": "720e3d753b87459402bb221dbe3c7c5a3f3177f703f8acf00c31c8f7ad28291a"}
 V4_STOP = 10.0
 WORKERS = 6
 JUDGE = "claude-haiku-5-5"
 
+from yggdras.processing.lia import skills as skill_mod  # noqa: E402
 from yggdras.processing.lia.lia import Lia, LiaConfig, explore_config, load_skills, v4_config  # noqa: E402
 from yggdras.processing.lia.library import Library, MapOptions  # noqa: E402
 from yggdras.processing.lia.models import AnthropicClient, Budget, BudgetStop  # noqa: E402
@@ -95,9 +99,53 @@ def verify() -> None:
     skills = (BRAIN_REPO / "skills" / "lia" / "answering.md").read_bytes()
     if hashlib.sha256(skills).hexdigest() != SKILLS_SHA:
         sys.exit("STOP: Lia's skills changed since the prereg")
+    if V4:
+        check_library()
     explore_skill = (BRAIN_REPO / "skills" / "lia" / "explore.md").read_bytes()
     if hashlib.sha256(explore_skill).hexdigest() != EXPLORE_SHA:
         sys.exit("STOP: Lia's explore skill changed since the prereg")
+
+
+def library_hash() -> str:
+    h = hashlib.sha256()
+    for p in sorted((BRAIN_REPO / "skills" / "lia" / "library").glob("*.md")):
+        h.update(p.name.encode() + p.read_bytes())
+    return h.hexdigest()
+
+
+def labels() -> dict[str, dict[str, list[str]]]:
+    """The hand labels: {set: {qid: [acceptable skills]}}. Apollo's are public, life's local."""
+    files = {"apollo": HERE / "skill-labels.json", "life": LOCAL / "skill-labels-life.json"}
+    out = {}
+    for key, path in files.items():
+        raw = path.read_bytes()
+        if hashlib.sha256(raw).hexdigest() != LABELS_SHA[key]:
+            sys.exit(f"STOP: the {key} skill labels changed since the prereg")
+        out.update(json.loads(raw))
+    return out
+
+
+def check_library() -> None:
+    """The library is the pre-registered one, and no playbook quotes a dev question (any run of
+    six words from a dev question's text is a leak)."""
+    if library_hash() != LIBRARY_SHA:
+        sys.exit("STOP: the skill library changed since the prereg")
+    words = lambda s: re.findall(r"[a-z0-9]+", s.lower())  # noqa: E731
+    text = " " + " ".join(words(" ".join(p.read_text(encoding="utf-8")
+                          for p in (BRAIN_REPO / "skills" / "lia" / "library").glob("*.md")))) + " "  # fmt: skip
+    stop = {"a", "an", "the", "of", "to", "in", "on", "for", "and", "or", "my", "i", "is", "what",
+            "which", "do", "did", "with", "at", "by", "from", "how", "when", "where", "who", "it"}
+    for name in ("apollo-hard", "apollo-held", "life", "life-explore"):
+        for q in SETS[name][0]():
+            w = words(q["question"])
+            for i in range(len(w) - 3):
+                run = w[i:i + 4]
+                if sum(x not in stop for x in run) >= 2 and f" {' '.join(run)} " in text:
+                    sys.exit(f"STOP: a playbook quotes dev question {name}/{q['id']}: {' '.join(run)}")
+            for i in range(len(w) - 2):  # a short indirect name, e.g. "the x y" (three words)
+                run = w[i:i + 3]
+                if run[0] == "the" and all(x not in stop for x in run[1:]) and f" {' '.join(run)} " in text:
+                    sys.exit(f"STOP: a playbook quotes dev question {name}/{q['id']}: {' '.join(run)}")
 
 
 def tree_hash(root: Path) -> str:
@@ -190,9 +238,12 @@ def arm_config(arm: str, model: str) -> LiaConfig:
         data = json.loads((HERE / "final-config.json").read_text(encoding="utf-8"))
         ref = LiaConfig(**{**data, "model": model, "maps": MapOptions(**data["maps"]), "today": TODAY})
         name, _, off = arm[3:].partition("-no-")
+        name, _, on = name.partition("-on-")  # v4-D-on-A: the library on another arm
         if name == "ref":
             return ref
         cfg = v4_config(ref)
+        if name == "D":
+            name, cfg = on or "B", replace(cfg, skill_library=True)
         if name in ("B", "C"):
             cfg = replace(cfg, escalate="claude-sonnet-5-5")
         if name == "C":
@@ -270,14 +321,19 @@ def run(arm: str, set_name: str, runs: int, model: str) -> None:
             config = {"variant": "C", "model": model}
         else:
             cfg = arm_config(arm, model)
+            playbooks = None
             if arm == "v4-ref":
                 skills = git("show", f"{REF_SKILLS_COMMIT}:skills/lia/answering.md")
+            elif cfg.skill_library:
+                playbooks = skill_mod.load_library(BRAIN_REPO / "skills" / "lia" / "library")
+                skills = skill_mod.system_text(playbooks)
             else:
                 skills = load_skills(BRAIN_REPO / "skills" / "lia", explore=cfg.exploring)
             client = AnthropicClient(cfg.model, cfg.effort, budget)
             answer = AnthropicClient(cfg.answer_model, cfg.effort, budget) if cfg.answer_model else None
             esc = AnthropicClient(cfg.escalate, cfg.effort, budget) if cfg.escalate else None
-            lia = Lia(client, library, skills, cfg, answer_client=answer, escalate_client=esc)
+            lia = Lia(client, library, skills, cfg, answer_client=answer, escalate_client=esc,
+                      playbooks=playbooks)  # fmt: skip
             ask = lia.ask
             config = cfg.as_dict()
         rows, lock = [], threading.Lock()
@@ -666,6 +722,34 @@ def xtable(prefix: str = "x-") -> None:
               f"{statistics.mean(c for _, c in xs):.4f} |")  # fmt: skip
 
 
+def pick_accuracy() -> None:
+    """Arm D: a pick is right when at least one playbook was loaded and every loaded one is in
+    the question's labelled set; "first" counts the first loaded one alone."""
+    lab = labels()
+    print("| arm | set | answers | right | first right | none loaded | loaded with first open_notes |")
+    print("|---|---|---|---|---|---|---|")
+    for folder in (HERE / "results", LOCAL / "results"):
+        groups = {}
+        for path in sorted(folder.glob("v4-D*.json")) if folder.is_dir() else []:
+            if path.name.endswith(".graded.json"):
+                continue
+            d = json.loads(path.read_text(encoding="utf-8"))
+            groups.setdefault((d["arm"], d["set"]), []).extend(d["rows"])
+        for (arm, set_name), rows in sorted(groups.items()):
+            n = right = first = none = parallel = 0
+            for r in rows:
+                if "error" in r:
+                    continue
+                n += 1
+                ok = set(lab.get(f"{set_name}/{r['qid']}", []))
+                got = r.get("skills_loaded", [])
+                none += not got
+                right += bool(got) and set(got) <= ok
+                first += bool(got) and got[0] in ok
+                parallel += bool(r.get("skill_turns")) and r.get("first_open_turn") in r["skill_turns"]
+            print(f"| {arm} | {set_name} | {n} | {right} | {first} | {none} | {parallel} |")
+
+
 def v4checks() -> None:
     """The v4 check counters per arm: absence (fired, found, fixed by the retry, left marked),
     unsupported sentences (flagged first, left marked), hints given and hints opened."""
@@ -717,5 +801,11 @@ if __name__ == "__main__":
         xtable(sys.argv[2] if len(sys.argv) > 2 and not sys.argv[2].startswith("--") else "x-")
     elif cmd == "v4checks":
         v4checks()
+    elif cmd == "picks":
+        pick_accuracy()
+    elif cmd == "hashes":
+        print("library", library_hash())
+        for key, path in (("apollo", HERE / "skill-labels.json"), ("life", LOCAL / "skill-labels-life.json")):
+            print(key, hashlib.sha256(path.read_bytes()).hexdigest())
     elif cmd == "recheck":
         recheck(sys.argv[2], model)

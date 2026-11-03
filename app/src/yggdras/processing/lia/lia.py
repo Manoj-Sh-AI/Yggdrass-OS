@@ -11,6 +11,7 @@ from pathlib import Path
 
 from yggdras.data.maps import checks
 from yggdras.processing.lia import explore, verify
+from yggdras.processing.lia import skills as skill_mod
 from yggdras.processing.lia.library import Library, MapOptions
 from yggdras.processing.lia.models import ModelClient
 
@@ -99,6 +100,7 @@ class LiaConfig:
     support: bool = False  # 2b: each footnoted sentence must hold in its cited line
     leak_check: bool = False  # 2c: no talk of drafts, retries or checks
     cache_tail: bool = False  # a rolling cache breakpoint on the newest message
+    skill_library: bool = False  # arm D: core skill + index cached, playbooks via load_skill
 
     def as_dict(self) -> dict:
         return asdict(self)
@@ -225,13 +227,19 @@ class Lia:
         config: LiaConfig,
         answer_client: ModelClient | None = None,
         escalate_client: ModelClient | None = None,
+        playbooks: dict | None = None,
     ):
+        """With *playbooks* (arm D, from skills.load_library), *skills* should be
+        skills.system_text(playbooks): the core skill and the index."""
         self.client, self.library, self.config = client, library, config
         self.answer_client, self.escalate_client = answer_client, escalate_client
+        self.playbooks = playbooks
         self.system = system_blocks(skills, library, config.maps)
         self.tools = TOOLS + ([explore.PLAN_TOOL] if config.plan else [])
         if config.coverage or config.verdict:
             self.tools = self.tools + [explore.COVERAGE_TOOL]
+        if playbooks:
+            self.tools = self.tools + [skill_mod.LOAD_SKILL_TOOL, skill_mod.CHECKLIST_TOOL]
 
     def _assistant(self, messages: list, reply) -> None:
         content = reply.content if reply.content is not None else reply.blocks
@@ -256,7 +264,9 @@ class Lia:
                 links=self.config.links_complex and complex_q,
             )
             state["opened"].update({s: self.library.note_text(s) for s in done})
-            state["steps"].append({"tool": name, "input": args, "returned": done})
+            state["steps"].append(
+                {"tool": name, "input": args, "returned": done, "turn": state["turn"]}
+            )
             if self.config.hints and complex_q and not state.get("hints_given"):
                 text += self._hints(state)
             return text
@@ -275,6 +285,26 @@ class Lia:
             return f"Search limit reached ({cap} per question). Answer from what you have."
         if name == "plan" and self.config.plan:
             return self._plan(args, state)
+        if name == "load_skill" and self.playbooks:
+            room = skill_mod.MAX_LOAD - len(state["skills_loaded"])
+            names = [n for n in args.get("names", []) if n not in state["skills_loaded"]][:room]
+            if not names:
+                return f"At most {skill_mod.MAX_LOAD} skills per question; none more were loaded."
+            text, done = skill_mod.loaded_text(self.playbooks, names)
+            state["skills_loaded"].extend(done)
+            state["steps"].append(
+                {"tool": name, "input": args, "returned": done, "turn": state["turn"]}
+            )
+            return text
+        if name == "checklist" and self.playbooks:
+            items = list(args.get("items", []))
+            text, complete = skill_mod.checklist_reply(
+                items, state["skills_loaded"], self.playbooks, len(state["checklists"])
+            )
+            state["checklists"].append(items)
+            state["checklist_complete"] = complete
+            state["steps"].append({"tool": name, "input": args, "returned": text[:200]})
+            return text
         if name == "coverage" and (self.config.coverage or self.config.verdict):
             text, again = explore.coverage_result(
                 args, state["effort"], state["coverage_rounds"], self.config.coverage
@@ -321,6 +351,7 @@ class Lia:
         for turn in range(EXPLORE_TURNS if self.config.exploring else MAX_TURNS):
             active = state.get("client") or client
             choice = first if turn == 0 else None
+            state["turn"] = state.get("turn", 0) + 1
             sent = with_cache_tail(messages) if self.config.cache_tail else messages
             reply = active.send(
                 system=self.system, tools=self.tools, messages=sent, tool_choice=choice
@@ -376,6 +407,10 @@ class Lia:
             "coverage": [],
             "coverage_rounds": 0,
             "verdict": None,
+            "turn": 0,
+            "skills_loaded": [],
+            "checklists": [],
+            "checklist_complete": None,
         }
         content = []
         if cfg.l0:
@@ -416,6 +451,9 @@ class Lia:
         if (cfg.coverage or cfg.verdict) and not state["coverage"]:
             # F4: no answer is written before a sufficiency verdict.
             answer = self._again(writer, messages, state, explore.COVERAGE_NUDGE)
+        if self.playbooks and state["skills_loaded"] and not state["checklists"]:
+            # Arm D: the loaded playbooks' "done when" lists come before the answer.
+            answer = self._again(writer, messages, state, skill_mod.CHECKLIST_NUDGE)
         abstain_search = False
         if is_abstain(answer) and state["searches"] == 0:
             # Abstain rule: search with the question's key terms and open the top hits first.
@@ -507,6 +545,16 @@ class Lia:
             "write_offers": offers,
             "effort_reason": state.get("effort_reason"),
             "hints": state.get("hints", []),
+            "skills_loaded": state["skills_loaded"],
+            "skill_turns": sorted(
+                {s["turn"] for s in state["steps"] if s["tool"] == "load_skill" and "turn" in s}
+            ),
+            "first_open_turn": next(
+                (s["turn"] for s in state["steps"] if s["tool"] == "open_notes" and "turn" in s),
+                None,
+            ),
+            "checklists": state["checklists"],
+            "checklist_complete": state["checklist_complete"],
             "checks": {
                 "first": first_check,
                 "absence_left": [a.sentence for a in absent],
