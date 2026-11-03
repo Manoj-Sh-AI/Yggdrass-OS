@@ -48,7 +48,7 @@ TODAY = "2026-11-02"  # F6: the upcoming view is pinned to this day in every run
 # v4 (prereg "v4"): the Ref arm runs the v3 skills, read from the brain repo at this commit.
 REF_SKILLS_COMMIT = "96710fd"
 # Arm D (prereg "v4, arm D"): the skill library and the hand labels, fixed before any run.
-LIBRARY_SHA = "c7ac6eb1f4c9c5168bf8c33555df5a30fc567b313528a4109b3c7f57f05c857e"  # sha256 over skills/lia/library/*.md (name + bytes), see library_hash()
+LIBRARY_SHA = "e17ddc86167a028b04f9fc9adf8ec881d1d3351ca8a7f3a1875b47f9eb09d667"  # sha256 over skills/lia/library/*.md (name + bytes), see library_hash()
 LABELS_SHA = {"apollo": "4ce17ce1ef58be3882076591eb28a83963aa56f7a3bd7f1ab642d57134db4acd", "life": "720e3d753b87459402bb221dbe3c7c5a3f3177f703f8acf00c31c8f7ad28291a"}
 V4_STOP = 10.0
 WORKERS = 6
@@ -106,10 +106,15 @@ def verify() -> None:
         sys.exit("STOP: Lia's explore skill changed since the prereg")
 
 
+def lf(raw: bytes) -> bytes:
+    """Line endings normalised, so a CRLF checkout hashes the same."""
+    return raw.replace(b"\r\n", b"\n")
+
+
 def library_hash() -> str:
     h = hashlib.sha256()
     for p in sorted((BRAIN_REPO / "skills" / "lia" / "library").glob("*.md")):
-        h.update(p.name.encode() + p.read_bytes())
+        h.update(p.name.encode() + lf(p.read_bytes()))  # same hash on any checkout
     return h.hexdigest()
 
 
@@ -118,7 +123,7 @@ def labels() -> dict[str, dict[str, list[str]]]:
     files = {"apollo": HERE / "skill-labels.json", "life": LOCAL / "skill-labels-life.json"}
     out = {}
     for key, path in files.items():
-        raw = path.read_bytes()
+        raw = lf(path.read_bytes())
         if hashlib.sha256(raw).hexdigest() != LABELS_SHA[key]:
             sys.exit(f"STOP: the {key} skill labels changed since the prereg")
         out.update(json.loads(raw))
@@ -806,6 +811,6 @@ if __name__ == "__main__":
     elif cmd == "hashes":
         print("library", library_hash())
         for key, path in (("apollo", HERE / "skill-labels.json"), ("life", LOCAL / "skill-labels-life.json")):
-            print(key, hashlib.sha256(path.read_bytes()).hexdigest())
+            print(key, hashlib.sha256(lf(path.read_bytes())).hexdigest())
     elif cmd == "recheck":
         recheck(sys.argv[2], model)
