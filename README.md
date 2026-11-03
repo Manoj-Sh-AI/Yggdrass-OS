@@ -54,6 +54,7 @@ The config arm comes from `--arm` or `YGGDRAS_LIA_ARM`:
 - `A` (default): fact-level search with alias expansion, hints on complex questions, and the absence, claim-support and draft-leak checks, all on Haiku;
 - `B`: A, with Sonnet for complex questions;
 - `C`: B, with typed links on complex questions.
+- `D`: B, with the skill library: a short core skill and an index of job playbooks are cached, and Lia loads one or two playbooks per question with `load_skill`, then reports their checklist before answering. It reads `<brain>/skills/lia/library/`.
 
 How it works:
 - It reads the brain's current files and rebuilds the maps when a note changes. It never writes to the brain.

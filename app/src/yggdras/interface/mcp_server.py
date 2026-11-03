@@ -60,14 +60,15 @@ OPEN_DESCRIPTION = (
 )
 
 
-ARMS = ("ref", "A", "B", "C")
+ARMS = ("ref", "A", "B", "C", "D")
 COMPLEX_MODEL = "claude-sonnet-5-5"
 
 
 def default_config(model: str, arm: str = "A"):
     """The connector's config. ref: the lia-v1 final config (shelf map only, descriptions cut
     at 25 words). A: ref + the v4 lean config (better search and checks, all on *model*). B: A
-    with Sonnet for complex questions. C: B with typed links on complex questions."""
+    with Sonnet for complex questions. C: B with typed links on complex questions. D: B with the
+    skill library (core skill and index cached, playbooks loaded on demand)."""
     from dataclasses import replace
 
     from yggdras.processing.lia.lia import LiaConfig, v4_config
@@ -86,6 +87,8 @@ def default_config(model: str, arm: str = "A"):
     if arm == "A":
         return a
     b = replace(a, escalate=COMPLEX_MODEL)
+    if arm == "D":
+        return replace(b, skill_library=True)
     return b if arm == "B" else replace(b, links_complex=True)
 
 
@@ -117,6 +120,7 @@ class LiaService:
         self._lia, self._print = None, None
 
     def lia(self):
+        from yggdras.processing.lia import skills as skill_mod
         from yggdras.processing.lia.lia import Lia, load_skills
         from yggdras.processing.lia.library import Library
 
@@ -126,12 +130,21 @@ class LiaService:
                 library = Library(self.root, flat=self.flat)
                 cfg = self.config
                 escalate = self.client_factory(cfg.escalate) if cfg.escalate else None
+                playbooks = (
+                    skill_mod.load_library(self.skills / "library") if cfg.skill_library else None
+                )
+                text = (
+                    skill_mod.system_text(playbooks)
+                    if playbooks
+                    else load_skills(self.skills, explore=cfg.exploring)
+                )
                 self._lia = Lia(
                     self.client_factory(self.model),
                     library,
-                    load_skills(self.skills, explore=cfg.exploring),
+                    text,
                     cfg,
                     escalate_client=escalate,
+                    playbooks=playbooks,
                 )
                 self._print = now
             return self._lia

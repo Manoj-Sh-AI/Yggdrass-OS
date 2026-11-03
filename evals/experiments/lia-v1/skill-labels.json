@@ -1,0 +1,92 @@
+{
+ "apollo-hard/v01": [
+  "chain",
+  "bridge"
+ ],
+ "apollo-hard/v02": [
+  "bridge",
+  "chain"
+ ],
+ "apollo-hard/v03": [
+  "bridge",
+  "timing-and-deadlines"
+ ],
+ "apollo-hard/v04": [
+  "bridge",
+  "people"
+ ],
+ "apollo-hard/v05": [
+  "chain"
+ ],
+ "apollo-hard/v06": [
+  "chain"
+ ],
+ "apollo-hard/v07": [
+  "chain",
+  "people"
+ ],
+ "apollo-hard/v08": [
+  "chain"
+ ],
+ "apollo-hard/v09": [
+  "bridge",
+  "timing-and-deadlines"
+ ],
+ "apollo-hard/v10": [
+  "bridge",
+  "timing-and-deadlines"
+ ],
+ "apollo-hard/v11": [
+  "bridge",
+  "timing-and-deadlines",
+  "fact-lookup"
+ ],
+ "apollo-hard/v12": [
+  "bridge",
+  "people"
+ ],
+ "apollo-hard/v13": [
+  "absence-verify"
+ ],
+ "apollo-hard/v14": [
+  "absence-verify",
+  "people"
+ ],
+ "apollo-hard/v15": [
+  "absence-verify"
+ ],
+ "apollo-hard/v16": [
+  "absence-verify"
+ ],
+ "apollo-hard/v17": [
+  "nickname-resolver",
+  "fact-lookup"
+ ],
+ "apollo-hard/v18": [
+  "nickname-resolver",
+  "fact-lookup"
+ ],
+ "apollo-hard/v19": [
+  "nickname-resolver",
+  "fact-lookup"
+ ],
+ "apollo-hard/v20": [
+  "nickname-resolver",
+  "fact-lookup"
+ ],
+ "apollo-hard/v21": [
+  "status-sweep",
+  "timing-and-deadlines"
+ ],
+ "apollo-hard/v22": [
+  "status-sweep",
+  "people"
+ ],
+ "apollo-hard/v23": [
+  "status-sweep"
+ ],
+ "apollo-hard/v24": [
+  "status-sweep",
+  "timing-and-deadlines"
+ ]
+}
