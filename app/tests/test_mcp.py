@@ -10,10 +10,12 @@ import pytest
 
 from test_lia import (
     CORE,
+    DONE_LINE,
     GARDEN_FACT,
     NODE,
     TAXONOMY,
     FakeClient,
+    cite,
     cited,
     note,
     playbook,
@@ -60,10 +62,18 @@ def test_two_read_only_tools_that_tell_the_chat_model_not_to_add_facts(brain, tm
 
 
 def test_ask_returns_the_cited_answer_a_cost_note_and_writes_a_trace(brain, tmp_path):
-    answer = f"Three hundred euros [1].\n\n[1] {cited('garden-plan', GARDEN_FACT)}"
-    replies = [[tool_use("open_notes", {"slugs": ["garden-plan"]})], [text(answer)]]
+    from yggdras.processing.lia.library import Library
+
+    root, _ = brain
+    block = [b.shown for b in Library(root).blocks("garden-plan")].index(GARDEN_FACT)
+    reply = [cite("Three hundred euros.", 0, block), DONE_LINE]
+    replies = [[tool_use("open_notes", {"slugs": ["garden-plan"]})], reply]
     service, _ = service_with(brain, replies, tmp_path)
     out = service.ask("What is the garden budget?")
+    answer = (
+        "Three hundred euros. [1]\n\n"
+        "[1] [[garden-plan]] «The garden plan has a budget of three hundred euros»"
+    )
     assert out.startswith(f"{VERBATIM}\n<lia_reply>\n{answer}\n\n— Lia · $")
     assert out.endswith(" s · ✓ 1/1\n</lia_reply>")
     (trace,) = (tmp_path / "traces").glob("mcp-*.json")
