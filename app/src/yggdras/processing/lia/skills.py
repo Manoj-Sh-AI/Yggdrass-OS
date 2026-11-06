@@ -1,8 +1,9 @@
-"""Lia's skill library (arm D): a short core skill always loaded, an index of job playbooks in
-the cached prompt, and the playbooks themselves, loaded on demand with `load_skill`.
+"""Lia's skill library: a short core skill always loaded, an index of job playbooks in the
+cached prompt, and the playbooks themselves, loaded on demand with `load_skill`.
 
-Each playbook is `skills/lia/library/<name>.md` with frontmatter `name`, `description` (one
-line) and `done_when` (a checklist Lia reports with `checklist` before she answers).
+The layout in the brain repo: `skills/lia/core.md`, then one playbook per job in
+`skills/lia/library/<name>.md`, with frontmatter `name`, `description` (one line) and
+`done_when` (a checklist Lia reports with `checklist` before she answers).
 """
 
 from __future__ import annotations
@@ -40,11 +41,14 @@ def parse(path: Path) -> Skill:
 
 
 def load_library(folder: Path) -> dict[str, Skill]:
-    """Every skill in *folder* (core included), by name."""
-    skills = {s.name: s for s in (parse(p) for p in sorted(folder.glob("*.md")))}
-    if CORE not in skills:
+    """The core skill (*folder*/core.md) and every playbook in *folder*/library/, by name."""
+    core = folder / f"{CORE}.md"
+    if not core.is_file():
         raise FileNotFoundError(f"no {CORE}.md in {folder}")
-    return skills
+    playbooks = [parse(p) for p in sorted((folder / "library").glob("*.md"))]
+    if not playbooks:
+        raise FileNotFoundError(f"no playbooks in {folder / 'library'}")
+    return {CORE: parse(core), **{s.name: s for s in playbooks}}
 
 
 def index(library: dict[str, Skill]) -> str:

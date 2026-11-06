@@ -60,36 +60,11 @@ OPEN_DESCRIPTION = (
 )
 
 
-ARMS = ("ref", "A", "B", "C", "D")
-COMPLEX_MODEL = "claude-sonnet-5-5"
+def default_config(model: str):
+    """Lia's one config (D35): *model* for simple and medium questions, Sonnet for complex."""
+    from yggdras.processing.lia.lia import LiaConfig
 
-
-def default_config(model: str, arm: str = "A"):
-    """The connector's config. ref: the lia-v1 final config (shelf map only, descriptions cut
-    at 25 words). A: ref + the v4 lean config (better search and checks, all on *model*). B: A
-    with Sonnet for complex questions. C: B with typed links on complex questions. D: B with the
-    skill library (core skill and index cached, playbooks loaded on demand)."""
-    from dataclasses import replace
-
-    from yggdras.processing.lia.lia import LiaConfig, v4_config
-    from yggdras.processing.lia.library import MapOptions
-
-    if arm not in ARMS:
-        raise ValueError(f"unknown arm {arm!r}; one of {', '.join(ARMS)}")
-    ref = LiaConfig(
-        model=model,
-        maps=MapOptions(relationship=False, inverses=False, about_words=25),
-        owner_names=config.owner_names(),
-    )
-    if arm == "ref":
-        return ref
-    a = v4_config(ref)
-    if arm == "A":
-        return a
-    b = replace(a, escalate=COMPLEX_MODEL)
-    if arm == "D":
-        return replace(b, skill_library=True)
-    return b if arm == "B" else replace(b, links_complex=True)
+    return LiaConfig(model=model, owner_names=config.owner_names())
 
 
 def fingerprint(root: Path, skills: Path) -> tuple:
@@ -110,42 +85,23 @@ class LiaService:
         flat: bool = False,
         model: str = "claude-haiku-5-5",
         traces: Path | None = None,
-        arm: str = "A",
     ):
         self.root, self.skills, self.flat, self.model = root, skills, flat, model
-        self.config = default_config(model, arm)
+        self.config = default_config(model)
         self.client_factory = client_factory
         self.traces = traces or config.local_data() / "traces"
         self._lock = threading.Lock()
         self._lia, self._print = None, None
 
     def lia(self):
-        from yggdras.processing.lia import skills as skill_mod
-        from yggdras.processing.lia.lia import Lia, load_skills
+        from yggdras.processing.lia.lia import default_lia
         from yggdras.processing.lia.library import Library
 
         with self._lock:
             now = fingerprint(self.root, self.skills)
             if self._lia is None or now != self._print:
                 library = Library(self.root, flat=self.flat)
-                cfg = self.config
-                escalate = self.client_factory(cfg.escalate) if cfg.escalate else None
-                playbooks = (
-                    skill_mod.load_library(self.skills / "library") if cfg.skill_library else None
-                )
-                text = (
-                    skill_mod.system_text(playbooks)
-                    if playbooks
-                    else load_skills(self.skills, explore=cfg.exploring)
-                )
-                self._lia = Lia(
-                    self.client_factory(self.model),
-                    library,
-                    text,
-                    cfg,
-                    escalate_client=escalate,
-                    playbooks=playbooks,
-                )
+                self._lia = default_lia(library, self.skills, self.client_factory, self.config)
                 self._print = now
             return self._lia
 
@@ -212,7 +168,6 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--flat", type=Path, help="a flat demo brain root instead of a library")
     parser.add_argument("--model", help="Lia's model (default: YGGDRAS_LIA_MODEL)")
     parser.add_argument("--skills", type=Path, help="skills folder (default: <brain>/skills/lia)")
-    parser.add_argument("--arm", choices=ARMS, help="config arm (default: YGGDRAS_LIA_ARM or A)")
     args = parser.parse_args(argv)
     config.load_env_file()
     import logging
@@ -234,7 +189,6 @@ def main(argv: list[str] | None = None) -> int:
         AnthropicClient,
         flat=bool(args.flat),
         model=args.model or config.lia_model(),
-        arm=args.arm or config.lia_arm(),
     )
     build_server(service).run("stdio")
     return 0

@@ -1,5 +1,7 @@
 # Lia and the connector
 
+> **Status 2026-11-06 (D35):** the read side and the read-only connector are built and merged, as one Lia: Haiku 5.5 by default and Sonnet 5.5 for complex questions; the skill library (`skills/lia/core.md` plus playbooks in `skills/lia/library/`, loaded with `load_skill`); fact-level search and the free checks. Where this plan describes the answering skills or the maps Lia loads, D35 and `rationale/decisions/D35-one-lia.md` are current. The write side (D33) is not built yet.
+
 > Status: **plan, nothing built.** Drafted by Claude on 2026-11-01 from Manoj's brief and revised the same day for the button-first flow.
 > - **Decided 2026-11-01 (Manoj):** the ten open decisions and the pass bars, listed in "Decisions" at the end.
 > - **Approved amendments:** D8, D12, D22, D23 and D27, and the new D33, all applied to the register; the record is `rationale/decisions/D33-button-first-approval.md`.
