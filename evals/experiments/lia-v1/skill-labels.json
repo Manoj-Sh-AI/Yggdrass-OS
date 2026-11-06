@@ -46,17 +46,16 @@
   "people"
  ],
  "apollo-hard/v13": [
-  "absence-verify"
+  "fact-lookup"
  ],
  "apollo-hard/v14": [
-  "absence-verify",
   "people"
  ],
  "apollo-hard/v15": [
-  "absence-verify"
+  "fact-lookup"
  ],
  "apollo-hard/v16": [
-  "absence-verify"
+  "fact-lookup"
  ],
  "apollo-hard/v17": [
   "nickname-resolver",

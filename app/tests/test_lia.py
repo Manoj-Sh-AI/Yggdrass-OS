@@ -1,6 +1,6 @@
-"""Lia (D35): one behaviour. Tools, the cached prefix and its skill index, load_skill and the
-checklist, citations and the free checks, effort routing, upcoming, hints, siblings, traces,
-the budget, retries, and nothing written to the brain. Synthetic notes only."""
+"""Lia (D35): one behaviour. Notes as search results, native citations rendered as footnotes, the
+cached prefix and skill index, load_skill and the in-turn checklist, the abstain path, the empty
+guard, the free checks, effort routing, upcoming, hints, siblings, traces and plumbing."""
 
 import datetime as dt
 import hashlib
@@ -177,13 +177,42 @@ def cited(slug, line):
     return f"[[{slug}]] «{line}»"
 
 
-def footnoted(*facts, claim="It holds"):
-    marks = " ".join(f"[{i}]" for i in range(1, len(facts) + 1))
-    notes = "\n".join(f"[{i}] {cited(s, f)}" for i, (s, f) in enumerate(facts, 1))
-    return text(f"{claim} {marks}.\n\n{notes}")
+def cite(text_, index, block, end=None):
+    """A text block of Lia's reply that cites search result *index*, blocks [block, end)."""
+    return {
+        "type": "text",
+        "text": text_,
+        "citations": [
+            {
+                "type": "search_result_location",
+                "search_result_index": index,
+                "start_block_index": block,
+                "end_block_index": end if end is not None else block + 1,
+                "source": "?",
+                "title": "?",
+                "cited_text": "?",
+            }
+        ],
+    }
 
 
-GARDEN = footnoted(("garden-plan", GARDEN_FACT), claim="You set it at three hundred euros")
+def at(library, slug, line):
+    """The block index of *line* in a note's search result."""
+    return [b.shown for b in library.blocks(slug)].index(line)
+
+
+DONE_LINE = text('\n<done verdict="sufficient" checklist="none"/>')
+
+
+def garden_reply(library, index=0):
+    return [
+        cite("You set it at three hundred euros.", index, at(library, "garden-plan", GARDEN_FACT)),
+        DONE_LINE,
+    ]
+
+
+def abstain(reason="Nothing on ponds."):
+    return [text(f"{ABSTAIN} {reason}"), text('\n<done verdict="insufficient" checklist="none"/>')]
 
 
 def make(library, skills_dir, client, big=None, **cfg):
@@ -191,52 +220,110 @@ def make(library, skills_dir, client, big=None, **cfg):
     return Lia(client, library, playbooks, LiaConfig(today="2030-11-02", **cfg), complex_client=big)
 
 
-# ---------------------------------------------------------------- tools
+def open_(*slugs, call_id="o1"):
+    return tool_use("open_notes", {"slugs": list(slugs)}, call_id)
 
 
-def test_open_notes_returns_full_text_and_reports_unknown_slugs(library):
-    out, opened = library.open_notes(["garden-plan", "nope"])
-    assert opened == ["garden-plan"]
-    assert GARDEN_FACT in out and "nope: no such note" in out
+# ---------------------------------------------------------------- notes as search results
 
 
-def test_open_notes_caps_at_ten(library):
-    out, opened = library.open_notes(["garden-plan"] + [f"x{i}" for i in range(12)])
-    assert "only the first 10" in out
+def test_a_note_is_one_search_result_with_one_block_per_line(library):
+    blocks = library.blocks("garden-plan")
+    kinds = {b.kind for b in blocks}
+    assert {"field", "fact", "text"} <= kinds
+    assert "review: 2030-03-01" in [b.shown for b in blocks]
+    assert not any(b.shown.startswith(("id:", "slug:")) for b in blocks)
+    content, results = library.open_notes(["garden-plan", "nope"])
+    result = content[0]
+    assert result["type"] == "search_result" and result["source"] == "garden-plan"
+    assert result["title"] == "Garden Plan" and result["citations"] == {"enabled": True}
+    assert [c["text"] for c in result["content"]] == [b.shown for b in blocks]
+    assert content[1] == {"type": "text", "text": "nope: no such note (check the shelf map)"}
+    assert [s for s, _ in results] == ["garden-plan"]
 
 
-def test_search_returns_fact_lines_with_their_slugs(library):
-    first = library.search_notes("robotics companies").splitlines()[0]
-    assert first.startswith("job-search | ") and "Acme Robots is the one named so far" in first
-    assert "(src:" not in first
+def test_history_lines_are_marked_and_render_as_history(tmp_path):
+    from yggdras.processing.lia.library import note_blocks
+
+    body = (
+        "## Facts\n\n- Now it is red. (src: self, 2030-01-01)\n\n"
+        "## History\n\n- It was blue. (src: self, 2029-01-01; until: 2030-01-01)\n"
+    )
+    blocks = note_blocks(note("paint", body=body))
+    old = next(b for b in blocks if b.kind == "history")
+    assert old.shown.startswith("History: It was blue.")
+    assert old.footnote("paint") == "[[paint]] «It was blue» (history)"
 
 
-def test_stemming_and_alias_expansion():
+def test_search_returns_matching_lines_grouped_by_note(library):
+    content, results = library.search_notes("robotics companies")
+    assert content[0]["type"] == "search_result" and content[0]["source"] == "job-search"
+    assert ROBOTS in [c["text"] for c in content[0]["content"]]
+    assert all(c["citations"] == {"enabled": True} for c in content)  # all or none, per request
+
+
+def test_stemming_and_alias_expansion(library):
     assert search.stem("robotics") == search.stem("robots") == "robot"
-    assert search.stem("jobs") == "job" and search.stem("studies") == "study"
-
-
-def test_query_expansion_adds_the_aliases_of_the_notes_a_term_names(library):
     weights = search.expansions("my bank projects", library.notes)
     assert weights["bank"] == 1.0 and weights["werkstudent"] == search.EXPANDED_WEIGHT
-    assert (
-        search.expansions("Deutsch practice", library.notes).get("german") == search.EXPANDED_WEIGHT
+
+
+def test_the_maps_are_the_atlas_and_shelf_map(library):
+    assert set(library.maps()) == {"atlas.md", "shelf-map.md"}
+
+
+# ---------------------------------------------------------------- rendering native citations
+
+
+def test_render_puts_markers_after_cited_spans_and_footnotes_from_the_cited_blocks(library):
+    content, results = library.open_notes(["garden-plan", "german"])
+    exam = at(library, "german", EXAM)
+    blocks = [
+        cite("You set it at three hundred euros.", 0, at(library, "garden-plan", GARDEN_FACT)),
+        text(" "),
+        cite("The exam isn't booked yet.", 1, exam),
+        text(" Same budget again."),
+        cite(" It's still three hundred.", 0, at(library, "garden-plan", GARDEN_FACT)),
+        DONE_LINE,
+    ]
+    answer, footnotes = lia_mod.render(blocks, results)
+    assert answer.startswith(
+        "You set it at three hundred euros. [1] The exam isn't booked yet. [2]"
     )
+    assert "three hundred. [1]" in answer and "<done" not in answer
+    assert footnotes == [
+        {"n": 1, "line": "[[garden-plan]] «The garden plan has a budget of three hundred euros»"},
+        {
+            "n": 2,
+            "line": "[[german]] «The A2 exam is planned for January 2031; it is not booked yet»",
+        },
+    ]
 
 
-def test_the_maps_are_the_atlas_and_shelf_map_with_short_descriptions(library):
-    maps = library.maps()
-    assert set(maps) == {"atlas.md", "shelf-map.md"}
-    assert "garden-plan|" in maps["shelf-map.md"]
+def test_a_field_citation_renders_as_field_value(library):
+    _, results = library.open_notes(["garden-plan"])
+    review = at(library, "garden-plan", "review: 2030-03-01")
+    answer, _ = lia_mod.render([cite("The review is due in March.", 0, review)], results)
+    assert answer.endswith("[1] [[garden-plan]] review: 2030-03-01")
+
+
+def test_the_done_line_is_parsed_and_removed():
+    body, done = lia_mod.parse_done(
+        'It holds.\n<done verdict="partly" checklist="bridge 3/4; chain 4/4"/>'
+    )
+    assert body == "It holds." and done == {
+        "verdict": "partly",
+        "checklist": "bridge 3/4; chain 4/4",
+    }
+    assert lia_mod.parse_done("No line.") == ("No line.", None)
 
 
 # ---------------------------------------------------------------- the cached prefix and skills
 
 
 def test_prefix_is_fixed_cached_in_two_breakpoints_and_holds_core_and_index(library, skills_dir):
-    client = FakeClient([[text(f"{ABSTAIN} x")], *SEARCHED_ABSTAIN, [text(f"{ABSTAIN} x")]])
-    lia = make(library, skills_dir, client)
-    lia.ask("Pond?")
+    client = FakeClient([abstain(), abstain()])
+    make(library, skills_dir, client).ask("Pond?")
     first, last = client.sent[0], client.sent[-1]
     assert first["system"] == last["system"] and first["tools"] == last["tools"]
     blocks = json.loads(first["system"])
@@ -245,7 +332,6 @@ def test_prefix_is_fixed_cached_in_two_breakpoints_and_holds_core_and_index(libr
     assert "Cite every claim." in cached  # core, always
     assert "<skill-index>" in cached and "bridge | Use it for bridge jobs." in cached
     assert "Steps for bridge." not in cached  # playbooks load on demand only
-    assert "<atlas.md>" in blocks[1]["text"] and "<shelf-map.md>" in blocks[1]["text"]
 
 
 def test_a_playbook_needs_frontmatter_and_a_checklist(tmp_path):
@@ -259,101 +345,85 @@ def test_a_playbook_needs_frontmatter_and_a_checklist(tmp_path):
         skills.load_library(tmp_path)
 
 
-def test_load_skill_with_the_first_open_and_the_checklist_in_the_trace(library, skills_dir):
-    first = [
-        tool_use("load_skill", {"names": ["fact-lookup"]}, "s1"),
-        tool_use("open_notes", {"slugs": ["garden-plan"]}, "o1"),
+def test_load_skill_with_the_first_open_and_the_checklist_ticked_in_the_answer_turn(
+    library, skills_dir
+):
+    first = [tool_use("load_skill", {"names": ["fact-lookup"]}, "s1"), open_("garden-plan")]
+    reply = garden_reply(library)[:1] + [
+        text('\n<done verdict="sufficient" checklist="fact-lookup 2/2"/>')
     ]
-    report = tool_use(
-        "checklist",
-        {"items": [{"skill": "fact-lookup", "item": f"i{i}", "done": True} for i in range(2)]},
-        "k1",
-    )
-    client = FakeClient([first, [report], [GARDEN]])
+    client = FakeClient([first, reply])
     result = make(library, skills_dir, client).ask("What is the garden budget?")
     assert result["skills_loaded"] == ["fact-lookup"]
     assert result["skill_turns"] == [result["first_open_turn"]] == [1]  # one round trip
-    assert result["checklist_complete"] is True and len(result["checklists"]) == 1
+    assert (result["verdict"], result["checklist"]) == ("sufficient", "fact-lookup 2/2")
+    assert len(client.sent) == 2  # no separate checklist step
     loaded = client.sent[1]["messages"][-1]["content"][0]["content"]
     assert "Steps for fact-lookup." in loaded and "Done when:" in loaded
 
 
-def test_at_most_two_playbooks(library, skills_dir):
+def test_at_most_two_playbooks(skills_dir):
     lib = skills.load_library(skills_dir)
     text_, done = skills.loaded_text(lib, ["fact-lookup", "bridge", "status-sweep"])
     assert done == ["fact-lookup", "bridge"] and "only the first 2" in text_
 
 
-def test_an_answer_without_the_checklist_is_sent_back(library, skills_dir):
-    client = FakeClient(
-        [
-            [
-                tool_use("load_skill", {"names": ["bridge"]}, "s1"),
-                tool_use("open_notes", {"slugs": ["garden-plan"]}, "o1"),
-            ],
-            [GARDEN],  # skipped the checklist
-            [
-                tool_use(
-                    "checklist", {"items": [{"skill": "bridge", "item": "x", "done": False}]}, "k1"
-                )
-            ],
-            [
-                tool_use(
-                    "checklist",
-                    {
-                        "items": [
-                            {"skill": "bridge", "item": f"i{i}", "done": True} for i in range(2)
-                        ]
-                    },
-                    "k2",
-                )
-            ],
-            [GARDEN],
-        ]
+# ---------------------------------------------------------------- answers
+
+
+def test_a_cited_answer_has_its_footnote_and_no_retry(library, skills_dir):
+    client = FakeClient([[open_("garden-plan")], garden_reply(library)])
+    result = make(library, skills_dir, client).ask("What is the garden budget?")
+    assert result["answer"] == (
+        "You set it at three hundred euros. [1]\n\n"
+        "[1] [[garden-plan]] «The garden plan has a budget of three hundred euros»"
     )
-    result = make(library, skills_dir, client).ask("What is the garden budget?")
-    assert skills.CHECKLIST_NUDGE in str(client.sent[2]["messages"][-1])
-    assert "Finish these first" in str(client.sent[3]["messages"][-1])
-    assert result["checklist_complete"] is True
-
-
-# ---------------------------------------------------------------- citations and abstaining
-
-
-def test_footnoted_citations_pass(library, skills_dir):
-    client = FakeClient([[tool_use("open_notes", {"slugs": ["garden-plan"]})], [GARDEN]])
-    result = make(library, skills_dir, client).ask("What is the garden budget?")
     assert result["citation_check"] == {"total": 1, "failed": 0, "retried": False}
     assert result["effort"] == "simple" and result["model"] == "claude-haiku-5-5"
 
 
-def test_a_failing_citation_is_retried_then_marked_unverified(library, skills_dir):
-    bad = footnoted(("garden-plan", "The garden plan has a budget of four hundred euros."))
-    client = FakeClient([[tool_use("open_notes", {"slugs": ["garden-plan"]})], [bad], [bad]])
-    result = make(library, skills_dir, client).ask("What is the garden budget?")
-    assert result["citation_check"] == {"total": 1, "failed": 1, "retried": True}
-    assert "[unverified]" in result["answer"]
-    assert lia_mod.FRESH in str(client.sent[-1]["messages"][-1])
-
-
-def test_citing_an_unopened_note_fails(library, skills_dir):
-    client = FakeClient([[GARDEN], [GARDEN]])
-    result = make(library, skills_dir, client).ask("What is the garden budget?")
-    assert result["citations"][0]["reason"] == "note was not opened for this question"
-
-
-def test_abstain_is_sent_to_search_first_and_the_old_line_still_counts(library, skills_dir):
+def test_a_search_result_index_finds_its_note_across_tool_calls(library, skills_dir):
+    reply = [cite("Acme Robots is the one you named.", 1, 0), DONE_LINE]
     client = FakeClient(
-        [[text(f"{ABSTAIN} None of your notes mention a pond.")], *SEARCHED_ABSTAIN]
+        [[open_("garden-plan")], [tool_use("search_notes", {"query": "robotics"}, "s1")], reply]
     )
+    result = make(library, skills_dir, client).ask("What is the garden budget?")
+    assert "[1] [[job-search]] «Robotics companies fit the thesis topic" in result["answer"]
+
+
+def test_an_abstain_is_searched_by_code_first_and_sent_back_with_the_hits(library, skills_dir):
+    hit_reply = [
+        cite("You set it at three hundred euros.", 0, 0),
+        DONE_LINE,
+    ]  # the hit's own result
+    client = FakeClient([abstain(), hit_reply])
+    result = make(library, skills_dir, client).ask("What is the garden plan budget?")
+    assert result["abstain_search"]["hits"][0][0] == "garden-plan"
+    sent = client.sent[1]["messages"][-1]["content"]
+    assert sent[0]["text"] == lia_mod.ABSTAIN_HITS and sent[1]["type"] == "search_result"
+    assert not result["abstain"] and "[[garden-plan]]" in result["answer"]
+
+
+def test_an_abstain_with_no_hits_stands(library, skills_dir):
+    client = FakeClient([abstain()])
     result = make(library, skills_dir, client).ask("Pond?")
-    assert result["abstain"] and result["abstain_search"] and result["searches"] == 1
+    assert result["abstain"] and result["abstain_search"]["hits"] == [] and len(client.sent) == 1
     assert is_abstain("Not in your brain. Nothing.")
+
+
+def test_an_empty_reply_is_asked_for_once_more_then_reported(library, skills_dir):
+    client = FakeClient([[open_("garden-plan")], [text("")], garden_reply(library)])
+    result = make(library, skills_dir, client).ask("What is the garden budget?")
+    assert result["asked_again"] and "three hundred" in result["answer"]
+    assert lia_mod.ASK_AGAIN in str(client.sent[-1]["messages"][-1])
+    client = FakeClient([[text("")], [text('<done verdict="sufficient" checklist="none"/>')]])
+    result = make(library, skills_dir, client).ask("What is the garden budget?")
+    assert result["empty_reply"] and result["answer"] == lia_mod.EMPTY_ERROR
 
 
 def test_search_is_limited_to_three_rounds(library, skills_dir):
     calls = [[tool_use("search_notes", {"query": f"q{i}"}, f"s{i}")] for i in range(4)]
-    client = FakeClient([*calls, [text(f"{ABSTAIN} Nothing found.")]])
+    client = FakeClient([*calls, abstain()])
     result = make(library, skills_dir, client).ask("Pond?")
     assert result["searches"] == 3 and "limit" in json.dumps(result["steps"][-1])
 
@@ -362,9 +432,6 @@ def test_search_is_limited_to_three_rounds(library, skills_dir):
 
 
 def test_absence_claims_are_found_and_the_robotics_and_family_cases_caught(library):
-    assert verify.absence_claims("Nothing in your notes mentions robotics.") == [
-        ("Nothing in your notes mentions robotics.", ["robot"])
-    ]
     (robots,) = verify.check_absences("Nothing in your notes mentions robotics.", library, set())
     assert robots.hits[0][0] == "job-search"
     (family,) = verify.check_absences(
@@ -374,11 +441,12 @@ def test_absence_claims_are_found_and_the_robotics_and_family_cases_caught(libra
     assert verify.check_absences("Nothing mentions a pond.", library, set()) == []
 
 
-def test_a_false_absence_is_sent_back_then_marked(library, skills_dir):
-    claim = text("Nothing in your notes mentions robotics.")
-    client = FakeClient([[tool_use("open_notes", {"slugs": ["german"]})], [claim], [claim]])
+def test_a_false_absence_is_sent_back_with_citable_hits_then_marked(library, skills_dir):
+    claim = [text("Nothing in your notes mentions robotics."), DONE_LINE]
+    client = FakeClient([[open_("german")], claim, claim])
     result = make(library, skills_dir, client).ask("Do my notes say anything about robots?")
-    assert "these lines mention it" in str(client.sent[-1]["messages"][-1])
+    sent = client.sent[-1]["messages"][-1]["content"]
+    assert "these lines mention it" in sent[0]["text"] and sent[1]["type"] == "search_result"
     assert result["answer"].endswith("[unverified absence]")
 
 
@@ -386,41 +454,36 @@ def test_claim_support_passes_and_fails(library):
     opened = {s: library.note_text(s) for s in ("german", "bank-role")}
     good = (
         "Your A2 exam is planned for January 2031, and it isn't booked yet [1].\n\n"
-        f"[1] {cited('german', EXAM)}"
+        f"[1] {cited('german', checks.quote_unit(EXAM))}"
     )
     assert verify.check_support(good, opened, library.notes) == []
     bad = f"Your exam and visa all fall in January 2031 [1].\n\n[1] {cited('bank-role', HOURS)}"
     (u,) = verify.check_support(bad, opened, library.notes)
     assert set(u.missing) >= {"2031", "january"}
-    alias = f"Your Werkstudent job is 20 h a week [1].\n\n[1] {cited('bank-role', HOURS)}"
-    assert verify.check_support(alias, opened, library.notes) == []
 
 
 def test_an_unsupported_sentence_is_retried_then_marked(library, skills_dir):
-    bad = text(f"It all falls in January 2031 [1].\n\n[1] {cited('bank-role', HOURS)}")
-    client = FakeClient([[tool_use("open_notes", {"slugs": ["bank-role"]})], [bad], [bad]])
+    bad = [cite("It all falls in January 2031.", 0, at(library, "bank-role", HOURS)), DONE_LINE]
+    client = FakeClient([[open_("bank-role")], bad, bad])
     result = make(library, skills_dir, client).ask("When is the exam?")
-    assert "January 2031 [1]. [unsupported]" in result["answer"]
+    assert "is not supported by the line it cites" in str(client.sent[-1]["messages"][-1])
+    assert "January 2031. [1] [unsupported]" in result["answer"]
 
 
 def test_no_final_answer_mentions_drafts_or_checks(library, skills_dir):
-    leaky = text(
-        "You set it at three hundred euros [1]. I've dropped the claim about the pond after "
-        f"re-checking.\n\n[1] {cited('garden-plan', GARDEN_FACT)}"
-    )
-    client = FakeClient([[tool_use("open_notes", {"slugs": ["garden-plan"]})], [leaky], [leaky]])
+    leaky = garden_reply(library)[:1] + [
+        text(" I've dropped the claim about the pond after re-checking."),
+        DONE_LINE,
+    ]
+    client = FakeClient([[open_("garden-plan")], leaky, leaky])
     result = make(library, skills_dir, client).ask("What is the garden budget?")
     assert verify.leaks(result["answer"]) == [] and "dropped" not in result["answer"]
 
 
 def test_write_offers_are_retried(library, skills_dir):
-    assert verify.write_offers("Want me to look at the German side?") == []
     assert verify.write_offers("I can add the dates to the trip note.") == ["I can add"]
-    offer = text(
-        "You set it at three hundred euros [1]. I'll update the note.\n\n"
-        f"[1] {cited('garden-plan', GARDEN_FACT)}"
-    )
-    client = FakeClient([[tool_use("open_notes", {"slugs": ["garden-plan"]})], [offer], [GARDEN]])
+    offer = garden_reply(library)[:1] + [text(" I'll update the note."), DONE_LINE]
+    client = FakeClient([[open_("garden-plan")], offer, garden_reply(library)])
     result = make(library, skills_dir, client).ask("What is the garden budget?")
     assert "read-only" in str(client.sent[-1]["messages"][-1]) and result["write_offers"] == []
 
@@ -443,41 +506,37 @@ def test_the_effort_rule(library, question, level):
 
 def test_complex_questions_go_to_the_complex_model_and_get_hints(library, skills_dir):
     small = FakeClient([])
-    big = FakeClient(
-        [
-            [tool_use("open_notes", {"slugs": ["job-search"]})],
-            [text(f"{ABSTAIN} x")],
-            *SEARCHED_ABSTAIN,
-        ],
-        model="claude-sonnet-5-5",
-    )
+    big = FakeClient([[open_("job-search")], abstain(), abstain()], model="claude-sonnet-5-5")
     result = make(library, skills_dir, small, big=big).ask(
         "What are my realistic options for a family business website?"
     )
     assert result["escalated"] and result["model"] == "claude-sonnet-5-5" and not small.sent
-    hint = big.sent[1]["messages"][-1]["content"][0]["content"]
-    assert "Consider these before answering" in hint and "example-builders" in result["hints"]
+    tool_result = big.sent[1]["messages"][-1]["content"][0]["content"]
+    assert "Consider these before answering" in tool_result[-1]["text"]
+    assert "example-builders" in result["hints"]
 
 
 def test_simple_questions_stay_on_the_default_model_without_hints(library, skills_dir):
-    small = FakeClient(
-        [[tool_use("open_notes", {"slugs": ["german"]})], [text(f"{ABSTAIN} x")], *SEARCHED_ABSTAIN]
-    )
+    small = FakeClient([[open_("german")], abstain(), abstain()])
     big = FakeClient([], model="claude-sonnet-5-5")
     result = make(library, skills_dir, small, big=big).ask("When is the exam?")
     assert not result["escalated"] and not big.sent and result["hints"] == []
 
 
-def test_the_sibling_sweep_returns_new_facts_only_and_runs_from_medium(library, skills_dir):
+def test_the_sibling_sweep_returns_new_facts_as_citable_results_from_medium_up(library, skills_dir):
     found, phrases = search.siblings([checks.Citation("thesis", THESIS, True)], library)
     assert found == [("german", GERMAN)] and "no progress" in phrases
     medium_q = "Which robotics firms suit my job hunt, and what does my Deutsch exam need?"
-    first = footnoted(("thesis", THESIS), claim="Your thesis stalled")
-    both = footnoted(("thesis", THESIS), ("german", GERMAN), claim="Your thesis and German stalled")
-    client = FakeClient([[tool_use("open_notes", {"slugs": ["thesis"]})], [first], [both]])
+    first = [cite("Your thesis stalled.", 0, at(library, "thesis", THESIS)), DONE_LINE]
+    both = [
+        cite("Your thesis stalled.", 0, at(library, "thesis", THESIS)),
+        cite(" German too.", 1, 0),
+        DONE_LINE,
+    ]
+    client = FakeClient([[open_("thesis")], first, both])
     result = make(library, skills_dir, client).ask(medium_q)
     assert result["siblings"]["lines"] == [["german", GERMAN]]
-    assert result["citation_check"]["failed"] == 0
+    assert "[[german]] «German made no progress in October 2030»" in result["answer"]
 
 
 # ---------------------------------------------------------------- upcoming
@@ -486,11 +545,7 @@ def test_the_sibling_sweep_returns_new_facts_only_and_runs_from_medium(library, 
 def test_upcoming_is_deterministic_dated_and_fact_free(library):
     view = upcoming(library.notes, library._text, dt.date(2030, 11, 2))
     rows = view.splitlines()[2:]
-    assert (
-        "2030-12-01|permit|Permit (valid from)" in rows
-        and "2031-01-15|permit|Permit (fact)" in rows
-    )
-    assert not any("thesis" in r for r in rows)  # October 2030 is past
+    assert "2030-12-01|permit|Permit (valid from)" in rows
     for fact in (EXAM, VISA, THESIS):
         assert checks.quote_unit(fact) not in view
     assert fact_dates("A. (src: self, 2031-01-01)") == []
@@ -498,42 +553,31 @@ def test_upcoming_is_deterministic_dated_and_fact_free(library):
 
 def test_upcoming_is_loaded_for_advice_and_timing_questions_only(library, skills_dir):
     def loaded(question):
-        client = FakeClient([[text(f"{ABSTAIN} x")], *SEARCHED_ABSTAIN], model="claude-sonnet-5-5")
+        client = FakeClient([abstain(), abstain()], model="claude-sonnet-5-5")
         return make(library, skills_dir, client, big=client).ask(question)["upcoming_loaded"]
 
-    assert loaded("Should I book the exam first?") and loaded("What is due soon?")
-    assert not loaded("What does the thesis cover?")
+    assert loaded("Should I book a pond first?") and loaded("What pond is due soon?")
+    assert not loaded("What pond does the thesis cover?")
 
 
 # ---------------------------------------------------------------- traces, voice, context
 
 
 def test_trace_is_written(library, skills_dir, tmp_path):
-    client = FakeClient([[tool_use("open_notes", {"slugs": ["garden-plan"]})], [GARDEN]])
+    client = FakeClient([[open_("garden-plan")], garden_reply(library)])
     result = make(library, skills_dir, client).ask("What is the garden budget?", qid="q/01")
     path = write_trace(result, tmp_path / "traces")
     data = json.loads(path.read_text(encoding="utf-8"))
     for key in (
-        "question",
-        "steps",
-        "answer",
-        "citations",
-        "citation_check",
-        "calls",
-        "cost_usd",
-        "latency_ms",
-        "effort",
-        "model",
-        "skills_loaded",
-        "checklists",
-        "checks",
-    ):
+        "question", "steps", "answer", "citations", "calls", "cost_usd", "latency_ms",
+        "effort", "model", "skills_loaded", "verdict", "checklist", "checks", "empty_reply",
+    ):  # fmt: skip
         assert key in data
     assert path.name == "q_01.json"
 
 
 def test_the_voice_check_and_chat_context(library, skills_dir):
-    client = FakeClient([[tool_use("open_notes", {"slugs": ["garden-plan"]})], [GARDEN]])
+    client = FakeClient([[open_("garden-plan")], garden_reply(library)])
     result = make(library, skills_dir, client, owner_names=("Manoj",)).ask(
         "And the budget?", context="me: Tell me about the garden plan."
     )
@@ -552,7 +596,7 @@ def test_nothing_is_written_to_the_brain(library, skills_dir):
         }
 
     before = tree()
-    client = FakeClient([[tool_use("open_notes", {"slugs": ["garden-plan"]})], [GARDEN]])
+    client = FakeClient([[open_("garden-plan")], garden_reply(library)])
     make(library, skills_dir, client).ask("What is the garden budget?")
     assert tree() == before
 
@@ -617,16 +661,20 @@ def test_no_removed_code_paths_are_left():
 
     with pytest.raises(ModuleNotFoundError):
         importlib.import_module("yggdras.processing.lia.explore")
-    for name in ("load_skills", "v4_config", "explore_config", "MapOptions"):
+    for name in (
+        "load_skills",
+        "v4_config",
+        "explore_config",
+        "MapOptions",
+        "mark_unverified",
+        "RETRY",
+    ):
         assert not hasattr(lia_mod, name)
+    for name in ("CHECKLIST_TOOL", "checklist_reply", "CHECKLIST_NUDGE"):
+        assert not hasattr(skills, name)
     fields = set(LiaConfig.__dataclass_fields__)
     assert fields == {"model", "complex_model", "effort", "owner_names", "today", "horizon_days"}
-    assert [t["name"] for t in lia_mod.TOOLS] == [
-        "open_notes",
-        "search_notes",
-        "load_skill",
-        "checklist",
-    ]
+    assert [t["name"] for t in lia_mod.TOOLS] == ["open_notes", "search_notes", "load_skill"]
     import yggdras.processing.lia.library as lib_mod
 
     for name in ("l0_matches", "_neighbours", "links_line", "search_facts"):

@@ -279,11 +279,24 @@ def grade(payload: dict, budget: Budget) -> dict:
 
 def fresh_citations(payload: dict) -> tuple[int, int, int, int]:
     """Every shown citation, re-checked against the pinned notes: (shown, verified, marked
-    unverified, invented)."""
+    unverified, invented). Native citations (D35) are footnotes rendered from cited blocks: one
+    is verified when it is a footnote of a line of that note. Older runs quoted lines by hand
+    and are re-checked word for word with today's checker."""
     _, root, flat = SETS[payload["set"]]
     library = Library(root, flat=flat)
+    forms: dict[str, set[str]] = {}
     shown = verified = marked = invented = 0
     for row in payload["rows"]:
+        cites = row.get("citations") or []
+        if cites and isinstance(cites[0], dict) and "line" in cites[0]:
+            for c in cites:
+                shown += 1
+                slug = c["line"][2 : c["line"].index("]]")]
+                if slug not in forms:
+                    forms[slug] = {b.footnote(slug) for b in library.blocks(slug)}
+                verified += c["line"] in forms[slug]
+                invented += c["line"] not in forms[slug]
+            continue
         answer = row.get("answer") or ""
         opened = {s: library.note_text(s) for s in row.get("opened", [])}
         for c in checks.check_citations(answer.replace(" [unverified]", ""), opened):
@@ -308,7 +321,23 @@ def summary(payload: dict, overrides: dict | None = None) -> dict:
     traps = [r for r in rows if keyed[r["qid"]]["abstain"]]
     lat = sorted(r["latency_ms"] / 1000 for r in rows)
     shown, verified, marked, invented = fresh_citations(payload)
+    by_effort: dict[str, list] = {}
+    by_model: dict[str, list] = {}
+    for r in rows:
+        by_effort.setdefault(r.get("effort") or "—", []).append(r)
+        by_model.setdefault((r.get("model") or "claude-haiku-5-5").replace("claude-", ""), []).append(r)
+
+    def pct(xs, q):
+        v = sorted(x["latency_ms"] / 1000 for x in xs)
+        return statistics.median(v) if q == 50 else (statistics.quantiles(v, n=10)[8] if len(v) > 1 else v[0])
+
     return {
+        "calls": statistics.mean(len(r.get("calls", [])) for r in rows),
+        "retries": sum(bool((r.get("citation_check") or {}).get("retried")) for r in rows),
+        "empty": sum(bool(r.get("empty_reply")) for r in rows),
+        "effort": {k: (len(v), pct(v, 50), pct(v, 90), statistics.mean(x["cost_usd"] for x in v))
+                   for k, v in sorted(by_effort.items())},
+        "model": {k: (len(v), statistics.mean(x["cost_usd"] for x in v)) for k, v in sorted(by_model.items())},
         "questions": len(payload["rows"]),
         "invalid": len(payload["rows"]) - len(rows),
         "judge": sum(g in GOOD for g in judged) if all(judged) else None,
@@ -365,14 +394,20 @@ def check() -> None:
         rows.append((f"last check {previous[-1].stem[6:]}", summary(last)))
     rows += stored("final-v2") + stored("x-base")
     print(f"\nApollo hard-v8, {now['questions']} questions; saved {path.name}; spent ${budget.spent:.3f}\n")
-    print("| run | judge | key terms | traps | citations | unsupported | absence | $ / q | p50 / p90 s |")
-    print("|---|---|---|---|---|---|---|---|---|")
+    print("| run | judge | key terms | traps | citations | unsupported | unverified absence | calls / q | retries | $ / q | p50 / p90 s |")
+    print("|---|---|---|---|---|---|---|---|---|---|---|")
     for name, s in rows:
         judged = "—" if s["judge"] is None else s["judge"]
         print(f"| {name} | {judged} | {s['terms']} | {s['traps']} | {s['citations']} | {s['unsupported']} | "
-              f"{s['absence']} | {s['cost']:.4f} | {s['p50']:.1f} / {s['p90']:.1f} |")  # fmt: skip
+              f"{s['absence']} | {s['calls']:.1f} | {s['retries']} | {s['cost']:.4f} | {s['p50']:.1f} / {s['p90']:.1f} |")  # fmt: skip
+    print("\n| this check, by effort | questions | p50 s | p90 s | $ / q |\n|---|---|---|---|---|")
+    for level, (n, p50, p90, cost) in now["effort"].items():
+        print(f"| {level} | {n} | {p50:.1f} | {p90:.1f} | {cost:.4f} |")
+    print("\n| this check, by model | questions | $ / q |\n|---|---|---|")
+    for model, (n, cost) in now["model"].items():
+        print(f"| {model} | {n} | {cost:.4f} |")
     lab = labels()
-    print("\n| q | effort | model | skills loaded | labelled | right | checklist | judge |")
+    print("\n| q | effort | model | skills loaded | labelled | right | verdict; checklist | judge |")
     print("|---|---|---|---|---|---|---|---|")
     right = 0
     for r in payload["rows"]:
@@ -383,12 +418,27 @@ def check() -> None:
         good = bool(got) and set(got) <= set(ok)
         right += good
         print(f"| {r['qid']} | {r['effort']} | {r['model'].replace('claude-', '')} | {', '.join(got) or '—'} | "
-              f"{', '.join(ok)} | {'yes' if good else 'no'} | {r.get('checklist_complete')} | {r['grade_judge']} |")  # fmt: skip
-    print(f"\nskill picks right: {right}/{len(payload['rows'])}")
+              f"{', '.join(ok)} | {'yes' if good else 'no'} | {r.get('verdict')}; {r.get('checklist')} | {r['grade_judge']} |")  # fmt: skip
+    print(f"\nskill picks right: {right}/{len(payload['rows'])}; empty replies: {now['empty']}")
     ok_traps, all_traps = now["traps"].split("/")
-    if now["invented"] or ok_traps != all_traps:
-        print("\nREGRESSION: traps below 100% or invented citations; not fit to be the default.")
+    simple = now["effort"].get("simple", (0, 0.0, 0.0, 0.0))
+    complex_ = now["effort"].get("complex", (0, 0.0, 0.0, 0.0))
+    score = now["judge"] if now["judge"] is not None else now["terms"]
+    bars = [
+        ("traps 4/4", ok_traps == all_traps),
+        ("0 invented citations", now["invented"] == 0),
+        ("judge score >= 22", score >= 22),
+        ("simple p50 <= 10 s", simple[1] <= 10),
+        ("simple <= $0.01 / q", simple[3] <= 0.01),
+        ("complex <= $0.05 / q", complex_[3] <= 0.05),
+    ]
+    print("\n| bar | pass |\n|---|---|")
+    for name, ok in bars:
+        print(f"| {name} | {'yes' if ok else '**no**'} |")
+    if not all(ok for _, ok in bars):
+        print("\nFAIL: not fit to be the default.")
         sys.exit(1)
+    print("\nPASS")
 
 
 # ---------------------------------------------------------------- gate

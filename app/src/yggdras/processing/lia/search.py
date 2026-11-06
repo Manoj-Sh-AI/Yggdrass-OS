@@ -153,6 +153,10 @@ class FactIndex:
             rows.append(f"{u.slug} | {round(score, 2)} | {label}{text}")
         return "\n".join(rows)
 
+    def ranked(self, query: str, k: int = 10) -> list[Unit]:
+        """The top *k* units for *query*, fact, history and about rows alike."""
+        return [self.units[i] for _, i in self.scores(expansions(query, self.notes))[:k]]
+
     def hits(self, query: str, k: int = 10) -> list[Unit]:
         """The top fact and history units for *query* (no "about" rows): for the checks."""
         ranked = self.scores(expansions(query, self.notes))

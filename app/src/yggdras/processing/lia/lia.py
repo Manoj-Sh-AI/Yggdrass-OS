@@ -4,13 +4,17 @@ One fixed behaviour (D35), no switches:
 - the cached prompt: the core skill and the skill index, the taxonomy and node template, then
   her maps (atlas, shelf map);
 - the effort rule picks the model: Haiku for simple and medium questions, Sonnet for complex;
-- tools: open_notes, search_notes (fact-level), load_skill (at most two playbooks) and
-  checklist (each loaded playbook's "done when" list, before the answer);
+- tools: open_notes and search_notes return notes as search_result blocks with native
+  citations, so Lia cites lines by pointer and code renders the footnotes from the cited
+  blocks; load_skill loads at most two playbooks;
+- she ends her reply with a hidden <done verdict=… checklist=…/> line: her sufficiency verdict
+  and each loaded playbook's "done when" list, recorded in the trace, never shown;
 - complex questions get unopened-candidate hints with the first open_notes; advice and timing
   questions get the upcoming view;
-- free checks after the draft: the sibling sweep (medium and complex), then citations, claim
-  support, absence claims, write offers and draft talk, all in one retry; whatever still
-  fails is marked.
+- free checks after the draft: the sibling sweep (medium and complex); before any abstain, a
+  fact-level search of the question; then claim support, absence claims, write offers and
+  draft talk, all in one retry; whatever still fails is marked. An empty reply is asked for
+  once more, then reported as an error, never shown as an empty answer.
 """
 
 from __future__ import annotations
@@ -26,23 +30,28 @@ from yggdras.data.maps import checks
 from yggdras.processing.lia import effort as effort_mod
 from yggdras.processing.lia import search, verify
 from yggdras.processing.lia import skills as skill_mod
-from yggdras.processing.lia.library import Library
+from yggdras.processing.lia.library import Block, Library, search_result
 from yggdras.processing.lia.models import ModelClient
 
 ABSTAIN = "I don't have that in your notes yet."
 OLD_ABSTAIN = "Not in your brain."  # v1 and v2; still recognised
+EMPTY_ERROR = "Lia couldn't put an answer together this time. Please ask again."
 MAX_TURNS = 10  # model calls per question, before the checks
 MAX_SEARCHES = 3  # "look wider with new words", at most three rounds
 CACHE = {"type": "ephemeral", "ttl": "1h"}
 DEFAULT_MODEL = "claude-haiku-5-5"
 COMPLEX_MODEL = "claude-sonnet-5-5"
+# The hidden last line of every reply: the sufficiency verdict and the playbook checklist.
+DONE = re.compile(r"<done\b([^>]*)/?>(?:\s*</done>)?", re.IGNORECASE)
+ATTR = re.compile(r'(\w+)="([^"]*)"')
 
 TOOLS = [
     {
         "name": "open_notes",
         "description": (
-            "Open notes by slug, up to 10 in one call, and get each note's full text. Open every "
-            "note that may hold the answer at once, never one by one."
+            "Open notes by slug, up to 10 in one call. Each note comes back as a search result, "
+            "one line per block: frontmatter fields, Facts, History (marked), other sections. "
+            "Open every note that may hold the answer at once, never one by one."
         ),
         "input_schema": {
             "type": "object",
@@ -57,9 +66,9 @@ TOOLS = [
         "name": "search_notes",
         "description": (
             "Keyword search over every fact line, title, alias and description, with word forms "
-            "and the brain's aliases matched. One ranked list: slug | score | fact line. Use it "
-            "when the maps and the opened notes don't give enough evidence, and before you say "
-            "something isn't in the notes; try new words each time. At most 3 per question."
+            "and the brain's aliases matched. Returns the matching lines as search results, by "
+            "note. Use it when the maps and the opened notes don't give enough evidence; try "
+            "new words each time. At most 3 per question."
         ),
         "input_schema": {
             "type": "object",
@@ -72,23 +81,19 @@ TOOLS = [
         },
     },
     skill_mod.LOAD_SKILL_TOOL,
-    skill_mod.CHECKLIST_TOOL,
 ]
-ABSTAIN_SEARCH = (
-    f'Before you answer "{ABSTAIN}", run search_notes with the question\'s key terms '
-    "and open the top hits. Then answer from them, or abstain if they don't support an answer."
-)
-RETRY = (
-    "These citations failed the check: each footnote must quote a fact's text word for word "
-    '(everything after "- " and before " (src:", tags included), as [n] [[slug]] «fact text», '
-    "or a frontmatter field as [n] [[slug]] field: value, from a note you opened, and every "
-    "marker [n] in the text needs its footnote.\n{failures}\n"
-    "Drop any claim you can't cite, "
-    f'or reply exactly "{ABSTAIN}" with a one-line reason.'
-)
 FRESH = (
-    "Write the whole answer again, from scratch, as if for the first time. Never mention "
-    "drafts, retries, checks or corrections in it."
+    "Write the whole answer again, from scratch, as if for the first time, and end it with your "
+    "<done …/> line. Never mention drafts, retries, checks or corrections in it."
+)
+ASK_AGAIN = "Write your answer to the question now, and end it with your <done …/> line."
+ABSTAIN_HITS = (
+    "Before you say it isn't in the notes: these lines came up for the question. Use them if "
+    "they answer it; if they don't, keep your answer. Then write the whole answer again."
+)
+ABSENCE_HITS = (
+    'You wrote "{sentence}", but these lines mention it. Use them if they answer it, and keep '
+    "the sentence only if they don't."
 )
 
 
@@ -125,7 +130,7 @@ def system_blocks(skills: str, library: Library) -> list[dict]:
 
 def with_cache_tail(messages: list) -> list:
     """A copy of *messages* whose newest user block carries a 5-minute cache breakpoint, so each
-    call reads the conversation so far from the cache (the system blocks keep their 1-hour ones)."""
+    call reads the conversation so far (search results included) from the cache."""
     if not messages or messages[-1]["role"] != "user":
         return messages
     last = dict(messages[-1])
@@ -142,17 +147,46 @@ def is_abstain(text: str) -> bool:
     return text.strip().startswith((ABSTAIN, OLD_ABSTAIN))
 
 
-def mark_unverified(text: str, failed: list[checks.Citation]) -> str:
-    for c in failed:
-        if c.slug:
-            patterns = [f"[[{c.slug}]] «{c.quote}»", f"[[{c.slug}]] {c.quote}"]
-        elif checks.MARKER.fullmatch(c.quote):
-            patterns = [c.quote]  # a footnote marker with no footnote
-        else:
-            patterns = [f"«{c.quote}»"]
-        for pattern in patterns:
-            text = text.replace(pattern, pattern + " [unverified]", 1)
-    return text
+def parse_done(text: str) -> tuple[str, dict | None]:
+    """The reply without its <done …/> line, and that line's attributes (or None)."""
+    found = None
+    for m in DONE.finditer(text):
+        found = dict(ATTR.findall(m.group(1)))
+    return DONE.sub("", text).strip(), found
+
+
+def render(blocks: list[dict], results: list[tuple[str, list[Block]]]) -> tuple[str, list[dict]]:
+    """Lia's reply as text with numbered markers after each cited span, then one footnote per
+    cited line: "[1] [[slug]] «fact line»" (or "field: value"). *results* are the search results
+    of the conversation in request order, so a citation's search_result_index finds its note."""
+    body, notes = [], {}
+    for b in blocks:
+        if b.get("type") != "text":
+            continue
+        text, marks = b.get("text", ""), []
+        for c in b.get("citations") or []:
+            if c.get("type") != "search_result_location":
+                continue
+            i = c.get("search_result_index", -1)
+            if 0 <= i < len(results):
+                slug, lines = results[i]
+                cited = lines[c["start_block_index"] : c["end_block_index"]]
+            else:  # not ours: show what the API says was cited
+                slug, cited = c.get("source", "?"), [Block("text", c.get("cited_text", ""))]
+            for line in cited:
+                key = line.footnote(slug)
+                n = notes.setdefault(key, len(notes) + 1)
+                if n not in marks:
+                    marks.append(n)
+        if marks:
+            stripped = text.rstrip()
+            text = stripped + "".join(f" [{n}]" for n in marks) + text[len(stripped) :]
+        body.append(text)
+    answer, _ = parse_done("".join(body))
+    footnotes = [{"n": n, "line": key} for key, n in notes.items()]
+    if footnotes and answer:
+        answer += "\n\n" + "\n".join(f"[{f['n']}] {f['line']}" for f in footnotes)
+    return answer, footnotes
 
 
 class Lia:
@@ -182,16 +216,23 @@ class Lia:
         today = dt.date.fromisoformat(self.config.today) if self.config.today else dt.date.today()
         return self.library.upcoming(today, self.config.horizon_days)
 
-    def _tool(self, call: dict, state: dict) -> str:
+    def _register(self, state: dict, results: list[tuple[str, list[Block]]]) -> None:
+        state["results"].extend(results)
+        for slug, _ in results:
+            state["opened"].setdefault(slug, self.library.note_text(slug))
+
+    def _tool(self, call: dict, state: dict):
         name, args = call["name"], call.get("input", {})
         step = {"tool": name, "input": args, "turn": state["turn"]}
         if name == "open_notes":
-            text, done = self.library.open_notes(list(args.get("slugs", [])))
-            state["opened"].update({s: self.library.note_text(s) for s in done})
-            state["steps"].append({**step, "returned": done})
+            content, results = self.library.open_notes(list(args.get("slugs", [])))
+            self._register(state, results)
+            state["steps"].append({**step, "returned": [s for s, _ in results]})
             if state["effort"] == "complex" and not state["hints_given"]:
-                text += self._hints(state)
-            return text
+                hint = self._hints(state)
+                if hint:
+                    content.append({"type": "text", "text": hint})
+            return content
         if name == "search_notes":
             if state["searches"] >= MAX_SEARCHES:
                 state["steps"].append({**step, "returned": "limit"})
@@ -200,9 +241,11 @@ class Lia:
                     "Answer from what you have."
                 )
             state["searches"] += 1
-            text = self.library.search_notes(str(args.get("query", "")), int(args.get("k", 10)))
-            state["steps"].append({**step, "returned": text.splitlines()[:20]})
-            return text
+            query, k = str(args.get("query", "")), int(args.get("k", 10))
+            content, results = self.library.search_notes(query, k)
+            self._register(state, results)
+            state["steps"].append({**step, "returned": [s for s, _ in results]})
+            return content
         if name == "load_skill":
             room = skill_mod.MAX_LOAD - len(state["skills_loaded"])
             names = [n for n in args.get("names", []) if n not in state["skills_loaded"]][:room]
@@ -211,15 +254,6 @@ class Lia:
             text, done = skill_mod.loaded_text(self.playbooks, names)
             state["skills_loaded"].extend(done)
             state["steps"].append({**step, "returned": done})
-            return text
-        if name == "checklist":
-            items = list(args.get("items", []))
-            text, complete = skill_mod.checklist_reply(
-                items, state["skills_loaded"], self.playbooks, len(state["checklists"])
-            )
-            state["checklists"].append(items)
-            state["checklist_complete"] = complete
-            state["steps"].append({**step, "returned": text[:200]})
             return text
         return f"Unknown tool {name}."
 
@@ -233,7 +267,7 @@ class Lia:
         if not rows:
             return ""
         lines = "\n".join(f"{n.slug} | {n.type} | {n.name} | {n.description}" for n in rows)
-        return f"\n\nConsider these before answering (notes you haven't opened):\n{lines}"
+        return f"Consider these before answering (notes you haven't opened):\n{lines}"
 
     def _loop(self, messages: list, state: dict):
         """Call the model until it stops using tools (at most MAX_TURNS calls)."""
@@ -264,18 +298,60 @@ class Lia:
         self._assistant(messages, reply)
         return reply
 
-    def _again(self, messages: list, state: dict, prompt: str) -> str:
-        messages.append({"role": "user", "content": prompt})
-        return self._loop(messages, state).text.strip()
+    def _answer(self, reply, state: dict) -> str:
+        """Render a reply and keep its <done …/> line in the trace."""
+        raw = "".join(b.get("text", "") for b in reply.blocks if b.get("type") == "text")
+        _, done = parse_done(raw)
+        if done is not None:
+            state["done"] = done
+        answer, footnotes = render(reply.blocks, state["results"])
+        state["footnotes"] = footnotes
+        return answer
 
-    def _checks(self, answer: str, cites: list, opened: dict) -> tuple[list, list, list, list]:
-        cited = {(c.slug, checks.quote_unit(c.quote)) for c in cites if c.ok}
+    def _again(self, messages: list, state: dict, content) -> str:
+        messages.append({"role": "user", "content": content})
+        return self._answer(self._loop(messages, state), state)
+
+    def _with_lines(self, state: dict, text: str, lines: list[tuple[str, str]]) -> list[dict]:
+        """A user message: *text*, then the notes' *lines* as citable search results."""
+        grouped: dict[str, list[Block]] = {}
+        for slug, line in lines:
+            kind = "history" if line.startswith("History: ") else "fact"
+            grouped.setdefault(slug, []).append(Block(kind, line))
+        results = list(grouped.items())
+        self._register(state, results)
+        return [{"type": "text", "text": text}] + [
+            search_result(s, self.library.notes[s].name if s in self.library.notes else s, b)
+            for s, b in results
+        ]
+
+    def _cited(self, state: dict) -> set[tuple[str, str]]:
+        """(slug, quote unit) of every fact line the current answer cites."""
+        out = set()
+        for f in state["footnotes"]:
+            m = re.match(r"\[\[([^\]]+)\]\] «(.*)»", f["line"])
+            if m:
+                out.add((m.group(1), checks.quote_unit(m.group(2))))
+        return out
+
+    def _checks(self, answer: str, state: dict) -> tuple[list, list, list, list]:
+        cited = self._cited(state)
         return (
             verify.write_offers(answer),
             verify.check_absences(answer, self.library, cited),
-            verify.check_support(answer, opened, self.library.notes),
+            verify.check_support(answer, state["opened"], self.library.notes),
             verify.leaks(answer),
         )
+
+    def _abstain_hits(self, question: str, state: dict) -> list[tuple[str, str]]:
+        """Before any abstain: the fact-level search of the question, minus lines already given."""
+        given = {(s, b.shown) for s, bs in state["results"] for b in bs}
+        hits = []
+        for unit in self.library.fact_index.hits(question, k=5):
+            line = unit.text if unit.kind == "fact" else f"History: {unit.text}"
+            if (unit.slug, line) not in given:
+                hits.append((unit.slug, line))
+        return hits
 
     def ask(self, question: str, qid: str = "q", context: str = "") -> dict:
         """*context*: the last turns of a chat, to resolve "that" or "she"; never a source."""
@@ -286,6 +362,8 @@ class Lia:
             "steps": [],
             "calls": [],
             "opened": {},
+            "results": [],
+            "footnotes": [],
             "searches": 0,
             "question": question,
             "effort": level,
@@ -294,8 +372,7 @@ class Lia:
             "hints_given": False,
             "hints": [],
             "skills_loaded": [],
-            "checklists": [],
-            "checklist_complete": None,
+            "done": None,
         }
         content = []
         if context.strip():
@@ -308,30 +385,31 @@ class Lia:
             )
         content.append({"type": "text", "text": f"Question: {question}"})
         messages = [{"role": "user", "content": content}]
-        reply = self._loop(messages, state)
-        answer = reply.text.strip() if reply else ""
-        if state["skills_loaded"] and not state["checklists"]:
-            # The loaded playbooks' "done when" lists come before the answer.
-            answer = self._again(messages, state, skill_mod.CHECKLIST_NUDGE)
-        abstain_search = False
-        if is_abstain(answer) and state["searches"] == 0:
-            # Search with the question's key terms and open the top hits before abstaining.
-            abstain_search = True
-            answer = self._again(messages, state, ABSTAIN_SEARCH)
-        opened = state["opened"]
+        answer = self._answer(self._loop(messages, state), state)
+        asked_again = False
+        if not answer:
+            # Empty-reply guard: one more ask, then an error, never an empty answer.
+            asked_again = True
+            answer = self._again(messages, state, ASK_AGAIN)
+        abstain_hits = []
+        if answer and is_abstain(answer):
+            # The engineered abstain path: free code searches the question first.
+            abstain_hits = self._abstain_hits(question, state)
+            if abstain_hits:
+                answer = self._again(
+                    messages, state, self._with_lines(state, ABSTAIN_HITS, abstain_hits)
+                )
         sibling_lines, sibling_phrases = [], []
-        if level != "simple" and not is_abstain(answer):
-            draft = checks.check_citations(answer, opened)
+        if answer and level != "simple" and not is_abstain(answer):
+            draft = [checks.Citation(s, q, True) for s, q in self._cited(state)]
             sibling_lines, sibling_phrases = search.siblings(draft, self.library)
             if sibling_lines:
-                for slug, _ in sibling_lines:
-                    opened.setdefault(slug, self.library.note_text(slug))
-                lines = "\n".join(f"- [[{s}]] {f}" for s, f in sibling_lines)
-                answer = self._again(messages, state, search.SIBLINGS_PROMPT.format(lines=lines))
-        # Every free check runs on every answer, abstains included, and shares one retry.
-        cites = checks.check_citations(answer, opened)
-        failed = [c for c in cites if not c.ok]
-        offers, absent, unsupported, leaked = self._checks(answer, cites, opened)
+                answer = self._again(
+                    messages,
+                    state,
+                    self._with_lines(state, search.SIBLINGS_PROMPT.format(lines=""), sibling_lines),
+                )
+        offers, absent, unsupported, leaked = self._checks(answer, state)
         first_check = {
             "absence_fired": len(verify.absence_claims(answer)),
             "absence_found": len(absent),
@@ -339,49 +417,53 @@ class Lia:
             "leaks": leaked,
             "write_offers": offers,
         }
-        retried = bool(failed or offers or absent or unsupported or leaked)
+        retried = bool(answer and (offers or absent or unsupported or leaked))
         if retried:
-            parts = []
-            if failed:
-                lines = "\n".join(f"- [[{c.slug}]] «{c.quote}»: {c.reason}" for c in failed)
-                parts.append(RETRY.format(failures=lines))
+            parts: list[dict] = []
+            lines: list[tuple[str, str]] = []
+            text = []
             if offers:
-                parts.append(verify.CAPABILITY_RETRY)
+                text.append(verify.CAPABILITY_RETRY)
             for a in absent:
-                hits = "\n".join(f"- [[{s}]] {f}" for s, f in a.hits)
-                parts.append(
-                    f'You wrote "{a.sentence}", but these lines mention it. Use them if they '
-                    f"answer it, and keep the sentence only if they don't:\n{hits}"
-                )
+                text.append(ABSENCE_HITS.format(sentence=a.sentence))
+                lines += a.hits
             for u in unsupported:
-                parts.append(
+                text.append(
                     f'"{u.sentence}" is not supported by the line it cites (missing: '
                     f"{', '.join(u.missing)}). Cite the line that states it, or drop the claim."
                 )
-            parts.append(FRESH)
-            answer = self._again(messages, state, "\n\n".join(parts))
-            cites = checks.check_citations(answer, opened)
-            failed = [c for c in cites if not c.ok]
-            offers, absent, unsupported, leaked = self._checks(answer, cites, opened)
-        answer = verify.strip_leaks(answer)
-        for a in absent:
-            answer = verify.mark(answer, a.sentence, "[unverified absence]")
-        for u in unsupported:
-            answer = verify.mark(answer, u.sentence, "[unsupported]")
+            text.append(FRESH)
+            parts = (
+                self._with_lines(state, "\n\n".join(text), lines) if lines else "\n\n".join(text)
+            )
+            answer = self._again(messages, state, parts)
+            offers, absent, unsupported, leaked = self._checks(answer, state)
+        empty = not answer
+        if empty:
+            answer = EMPTY_ERROR
+        else:
+            answer = verify.strip_leaks(answer)
+            for a in absent:
+                answer = verify.mark(answer, a.sentence, "[unverified absence]")
+            for u in unsupported:
+                answer = verify.mark(answer, u.sentence, "[unsupported]")
+        done = state["done"] or {}
         return {
             "id": qid,
             "question": question,
             "config": self.config.as_dict(),
             "map_version": self.library.version,
             "steps": state["steps"],
-            "opened": sorted(opened),
-            "answer": mark_unverified(answer, failed),
+            "opened": sorted(state["opened"]),
+            "answer": answer,
+            "empty_reply": empty,
             "abstain": is_abstain(answer),
             "third_person": checks.third_person(answer, self.config.owner_names),
-            "citations": [asdict(c) for c in cites],
-            "citation_check": {"total": len(cites), "failed": len(failed), "retried": retried},
+            "citations": state["footnotes"],
+            "citation_check": {"total": len(state["footnotes"]), "failed": 0, "retried": retried},
             "searches": state["searches"],
-            "abstain_search": abstain_search,
+            "asked_again": asked_again,
+            "abstain_search": {"hits": [list(h) for h in abstain_hits]},
             "effort": level,
             "effort_reason": reason,
             "model": state["client"].model,
@@ -394,8 +476,8 @@ class Lia:
             "first_open_turn": next(
                 (s["turn"] for s in state["steps"] if s["tool"] == "open_notes"), None
             ),
-            "checklists": state["checklists"],
-            "checklist_complete": state["checklist_complete"],
+            "verdict": done.get("verdict"),
+            "checklist": done.get("checklist"),
             "write_offers": offers,
             "checks": {
                 "first": first_check,

@@ -3,7 +3,7 @@ cached prompt, and the playbooks themselves, loaded on demand with `load_skill`.
 
 The layout in the brain repo: `skills/lia/core.md`, then one playbook per job in
 `skills/lia/library/<name>.md`, with frontmatter `name`, `description` (one line) and
-`done_when` (a checklist Lia reports with `checklist` before she answers).
+`done_when` (a checklist Lia ticks silently in her reply's hidden <done …/> line).
 """
 
 from __future__ import annotations
@@ -87,8 +87,8 @@ LOAD_SKILL_TOOL = {
     "name": "load_skill",
     "description": (
         "Load one or two playbooks from the skill index that fit the job the question asks for. "
-        "Call it in your first turn, in the same turn as your first open_notes call. Finish each "
-        "loaded playbook's 'Done when' list and report it with checklist before you answer."
+        "Call it in your first turn, in the same turn as your first open_notes call. Work "
+        "through each loaded playbook's 'Done when' list, and tick it in your <done …/> line."
     ),
     "input_schema": {
         "type": "object",
@@ -99,58 +99,3 @@ LOAD_SKILL_TOOL = {
         "additionalProperties": False,
     },
 }
-CHECKLIST_TOOL = {
-    "name": "checklist",
-    "description": (
-        "Before you write the answer, report each loaded playbook's 'Done when' items: done or "
-        "not, with a short note. Items not done must be finished first, or the answer must say "
-        "what is missing."
-    ),
-    "input_schema": {
-        "type": "object",
-        "properties": {
-            "items": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "skill": {"type": "string"},
-                        "item": {"type": "string"},
-                        "done": {"type": "boolean"},
-                        "note": {"type": "string"},
-                    },
-                    "required": ["skill", "item", "done"],
-                    "additionalProperties": False,
-                },
-            }
-        },
-        "required": ["items"],
-        "additionalProperties": False,
-    },
-}
-CHECKLIST_NUDGE = (
-    "Before you answer, call checklist with every 'Done when' item of the playbooks you loaded."
-)
-
-
-def checklist_reply(items: list[dict], loaded: list[str], library: dict[str, Skill], round_: int):
-    """The reply to a checklist call, and whether it is complete. Missing or undone items get
-    one more round; after that, the answer must say what is missing."""
-    # Items are matched by count per playbook, so a reworded item still counts.
-    undone = [x for x in items if not x.get("done")]
-    missing = []
-    for name in loaded:
-        reported = sum(1 for x in items if x.get("skill") == name)
-        missing += [(name, i) for i in library[name].done_when[reported:]]
-    complete = not undone and not missing
-    if complete:
-        return "Checklist complete. Write the answer now.", True
-    if round_ == 0:
-        lines = [f"- {x['skill']}: {x['item']}" for x in undone]
-        lines += [f"- {n}: {i} (not reported)" for n, i in missing]
-        return (
-            "Finish these first (search or open what you need), then call checklist again:\n"
-            + "\n".join(lines),
-            False,
-        )
-    return "Write the answer now, and say plainly what is still missing.", False
