@@ -152,23 +152,24 @@ class Library:
         text = self._text.get(slug)
         return note_blocks(text) if text else []
 
-    def open_notes(self, slugs: list[str]) -> tuple[list[dict], list[tuple[str, list[Block]]]]:
+    def open_notes(
+        self, slugs: list[str]
+    ) -> tuple[list[dict], list[tuple[str, list[Block]]], list[str]]:
         """Up to MAX_OPEN notes in one call, each as a search_result block (every line of the
-        note); unknown slugs are reported as text. Returns the content and, in order, the
-        (slug, blocks) of each search result."""
-        content, results = [], []
+        note). Returns the search results, their (slug, blocks) in order, and the notices
+        (unknown slugs, the cap) as plain lines. A tool result may not mix search_result and text
+        blocks, so the caller sends the notices beside it, never inside."""
+        content, results, notices = [], [], []
         for slug in list(dict.fromkeys(slugs))[:MAX_OPEN]:
             if slug not in self._text:
-                missing = f"{slug}: no such note (check the shelf map)"
-                content.append({"type": "text", "text": missing})
+                notices.append(f"{slug}: no such note (check the shelf map)")
                 continue
             blocks = self.blocks(slug)
             content.append(search_result(slug, self.notes[slug].name, blocks))
             results.append((slug, blocks))
         if len(slugs) > MAX_OPEN:
-            capped = f"(only the first {MAX_OPEN} slugs were opened)"
-            content.append({"type": "text", "text": capped})
-        return content, results
+            notices.append(f"(only the first {MAX_OPEN} slugs were opened)")
+        return content, results, notices
 
     @property
     def fact_index(self) -> search_mod.FactIndex:

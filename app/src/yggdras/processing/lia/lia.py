@@ -225,13 +225,16 @@ class Lia:
         name, args = call["name"], call.get("input", {})
         step = {"tool": name, "input": args, "turn": state["turn"]}
         if name == "open_notes":
-            content, results = self.library.open_notes(list(args.get("slugs", [])))
+            content, results, notices = self.library.open_notes(list(args.get("slugs", [])))
             self._register(state, results)
             state["steps"].append({**step, "returned": [s for s, _ in results]})
             if state["effort"] == "complex" and not state["hints_given"]:
                 hint = self._hints(state)
                 if hint:
-                    content.append({"type": "text", "text": hint})
+                    notices.append(hint)
+            if not content:  # nothing opened: the notices are the whole (text) result
+                return "\n\n".join(notices) or "No notes opened."
+            state["notices"].extend(notices)  # sent beside the tool results, never inside
             return content
         if name == "search_notes":
             if state["searches"] >= MAX_SEARCHES:
@@ -286,6 +289,9 @@ class Lia:
                 {"type": "tool_result", "tool_use_id": c["id"], "content": self._tool(c, state)}
                 for c in reply.tool_calls
             ]
+            if state["notices"]:
+                results.append({"type": "text", "text": "\n\n".join(state["notices"])})
+                state["notices"] = []
             messages.append({"role": "user", "content": results})
         # Out of turns while still calling tools: one last call, tools off.
         messages[-1]["content"].append(
@@ -371,6 +377,7 @@ class Lia:
             "client": self.complex_client if complex_q else self.client,
             "hints_given": False,
             "hints": [],
+            "notices": [],
             "skills_loaded": [],
             "done": None,
         }

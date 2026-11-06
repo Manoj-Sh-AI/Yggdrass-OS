@@ -233,12 +233,12 @@ def test_a_note_is_one_search_result_with_one_block_per_line(library):
     assert {"field", "fact", "text"} <= kinds
     assert "review: 2030-03-01" in [b.shown for b in blocks]
     assert not any(b.shown.startswith(("id:", "slug:")) for b in blocks)
-    content, results = library.open_notes(["garden-plan", "nope"])
+    content, results, notices = library.open_notes(["garden-plan", "nope"])
     result = content[0]
     assert result["type"] == "search_result" and result["source"] == "garden-plan"
     assert result["title"] == "Garden Plan" and result["citations"] == {"enabled": True}
     assert [c["text"] for c in result["content"]] == [b.shown for b in blocks]
-    assert content[1] == {"type": "text", "text": "nope: no such note (check the shelf map)"}
+    assert len(content) == 1 and notices == ["nope: no such note (check the shelf map)"]
     assert [s for s, _ in results] == ["garden-plan"]
 
 
@@ -276,7 +276,7 @@ def test_the_maps_are_the_atlas_and_shelf_map(library):
 
 
 def test_render_puts_markers_after_cited_spans_and_footnotes_from_the_cited_blocks(library):
-    content, results = library.open_notes(["garden-plan", "german"])
+    _, results, _ = library.open_notes(["garden-plan", "german"])
     exam = at(library, "german", EXAM)
     blocks = [
         cite("You set it at three hundred euros.", 0, at(library, "garden-plan", GARDEN_FACT)),
@@ -301,7 +301,7 @@ def test_render_puts_markers_after_cited_spans_and_footnotes_from_the_cited_bloc
 
 
 def test_a_field_citation_renders_as_field_value(library):
-    _, results = library.open_notes(["garden-plan"])
+    _, results, _ = library.open_notes(["garden-plan"])
     review = at(library, "garden-plan", "review: 2030-03-01")
     answer, _ = lia_mod.render([cite("The review is due in March.", 0, review)], results)
     assert answer.endswith("[1] [[garden-plan]] review: 2030-03-01")
@@ -511,9 +511,46 @@ def test_complex_questions_go_to_the_complex_model_and_get_hints(library, skills
         "What are my realistic options for a family business website?"
     )
     assert result["escalated"] and result["model"] == "claude-sonnet-5-5" and not small.sent
-    tool_result = big.sent[1]["messages"][-1]["content"][0]["content"]
-    assert "Consider these before answering" in tool_result[-1]["text"]
+    beside = big.sent[1]["messages"][-1]["content"][-1]
+    assert beside["type"] == "text" and "Consider these before answering" in beside["text"]
     assert "example-builders" in result["hints"]
+
+
+def tool_results(client):
+    """Every tool_result block in every request *client* was sent."""
+    for request in client.sent:
+        for message in request["messages"]:
+            if isinstance(message["content"], list):
+                for block in message["content"]:
+                    if isinstance(block, dict) and block.get("type") == "tool_result":
+                        yield block
+
+
+def test_a_tool_result_never_mixes_search_results_and_text(library, skills_dir):
+    """The API rejects a tool result that mixes search_result and text blocks (a 400): hints,
+    unknown slugs and the cap go in a text block beside the tool results, in the same message."""
+    big = FakeClient(
+        [[open_("job-search", "nope", "x1")], abstain(), abstain()], model="claude-sonnet-5-5"
+    )
+    result = make(library, skills_dir, FakeClient([]), big=big).ask(
+        "What are my realistic options for a family business website?"
+    )
+    seen = list(tool_results(big))
+    assert seen
+    for block in seen:
+        content = block["content"]
+        if isinstance(content, list):
+            kinds = {b["type"] for b in content}
+            assert kinds == {"search_result"} or "search_result" not in kinds, kinds
+    message = big.sent[1]["messages"][-1]["content"]
+    assert message[0]["type"] == "tool_result" and message[-1]["type"] == "text"
+    assert "Consider these before answering" in message[-1]["text"]
+    assert "nope: no such note" in message[-1]["text"] and result["hints"]
+    # Nothing opened at all: the tool result is text only.
+    client = FakeClient([[open_("nope")], abstain(), abstain()])
+    make(library, skills_dir, client).ask("Pond?")
+    (only,) = tool_results(client)
+    assert only["content"] == "nope: no such note (check the shelf map)"
 
 
 def test_simple_questions_stay_on_the_default_model_without_hints(library, skills_dir):
