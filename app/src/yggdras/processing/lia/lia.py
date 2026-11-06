@@ -39,6 +39,7 @@ EMPTY_ERROR = "Lia couldn't put an answer together this time. Please ask again."
 MAX_TURNS = 10  # model calls per question, before the checks
 MAX_SEARCHES = 3  # "look wider with new words", at most three rounds
 CACHE = {"type": "ephemeral", "ttl": "1h"}
+RUNAWAY_USD = 1.0  # not a cap: past this, one question stops reading and answers with what it has
 DEFAULT_MODEL = "claude-haiku-5-5"
 COMPLEX_MODEL = "claude-sonnet-5-5"
 # The hidden last line of every reply: the sufficiency verdict and the playbook checklist.
@@ -91,6 +92,10 @@ ABSTAIN_HITS = (
     "Before you say it isn't in the notes: these lines came up for the question. Use them if "
     "they answer it; if they don't, keep your answer. Then write the whole answer again."
 )
+RUNAWAY_NOTE = (
+    "This question has used a lot of reading already. Answer now from what you have, and say "
+    "plainly in one line that you stopped looking early."
+)
 ABSENCE_HITS = (
     'You wrote "{sentence}", but these lines mention it. Use them if they answer it, and keep '
     "the sentence only if they don't."
@@ -105,6 +110,9 @@ class LiaConfig:
     owner_names: tuple[str, ...] = ()  # the voice check: Lia says "you", never these names
     today: str | None = None  # the upcoming view's "today" (ISO date); None is the real date
     horizon_days: int = 120
+    # Footnote links to the local note server, e.g. "http://127.0.0.1:8765/note/{slug}#cite={block}".
+    # None: plain footnotes, "[1] Master's thesis (masters-thesis)".
+    cite_url: str | None = None
 
     def as_dict(self) -> dict:
         return asdict(self)
@@ -129,18 +137,25 @@ def system_blocks(skills: str, library: Library) -> list[dict]:
 
 
 def with_cache_tail(messages: list) -> list:
-    """A copy of *messages* whose newest user block carries a 5-minute cache breakpoint, so each
-    call reads the conversation so far (search results included) from the cache."""
-    if not messages or messages[-1]["role"] != "user":
+    """A copy of *messages* whose two newest user messages end in a 5-minute cache breakpoint.
+    The older one sits exactly where the previous call wrote the cache, so each round reads
+    everything before it (notes included) at the cache-read price, however many blocks the
+    replies in between hold; the newer one writes this round for the next. With the system's
+    two breakpoints that is the API's limit of four."""
+    users = [i for i, m in enumerate(messages) if m["role"] == "user"][-2:]
+    if not users or users[-1] != len(messages) - 1:
         return messages
-    last = dict(messages[-1])
-    content = last["content"]
-    blocks = [{"type": "text", "text": content}] if isinstance(content, str) else list(content)
-    if not blocks:
-        return messages
-    blocks[-1] = {**blocks[-1], "cache_control": {"type": "ephemeral"}}
-    last["content"] = blocks
-    return [*messages[:-1], last]
+    out = list(messages)
+    for i in users:
+        message = dict(out[i])
+        content = message["content"]
+        blocks = [{"type": "text", "text": content}] if isinstance(content, str) else list(content)
+        if not blocks:
+            continue
+        blocks[-1] = {**blocks[-1], "cache_control": {"type": "ephemeral"}}
+        message["content"] = blocks
+        out[i] = message
+    return out
 
 
 def is_abstain(text: str) -> bool:
@@ -175,7 +190,9 @@ def render(blocks: list[dict], results: list[tuple[str, list[Block]]]) -> tuple[
                 slug, cited = c.get("source", "?"), [Block("text", c.get("cited_text", ""))]
             for line in cited:
                 key = line.footnote(slug)
-                n = notes.setdefault(key, len(notes) + 1)
+                if key not in notes:
+                    notes[key] = (len(notes) + 1, slug, line)
+                n = notes[key][0]
                 if n not in marks:
                     marks.append(n)
         if marks:
@@ -183,7 +200,10 @@ def render(blocks: list[dict], results: list[tuple[str, list[Block]]]) -> tuple[
             text = stripped + "".join(f" [{n}]" for n in marks) + text[len(stripped) :]
         body.append(text)
     answer, _ = parse_done("".join(body))
-    footnotes = [{"n": n, "line": key} for key, n in notes.items()]
+    footnotes = [
+        {"n": n, "line": key, "slug": slug, "shown": line.shown}
+        for key, (n, slug, line) in notes.items()
+    ]
     if footnotes and answer:
         answer += "\n\n" + "\n".join(f"[{f['n']}] {f['line']}" for f in footnotes)
     return answer, footnotes
@@ -225,7 +245,14 @@ class Lia:
         name, args = call["name"], call.get("input", {})
         step = {"tool": name, "input": args, "turn": state["turn"]}
         if name == "open_notes":
-            content, results, notices = self.library.open_notes(list(args.get("slugs", [])))
+            asked = list(args.get("slugs", []))
+            again = [s for s in asked if s in state["opened"]]
+            content, results, notices = self.library.open_notes(
+                [s for s in asked if s not in state["opened"]]
+            )
+            if again:  # never re-open: the note is already in this conversation
+                state["reopens_skipped"] += len(again)
+                notices.append("Already open above, not sent again: " + ", ".join(again))
             self._register(state, results)
             state["steps"].append({**step, "returned": [s for s, _ in results]})
             if state["effort"] == "complex" and not state["hints_given"]:
@@ -277,6 +304,9 @@ class Lia:
         client = state["client"]
         reply = None
         for _ in range(MAX_TURNS):
+            if sum(c["cost_usd"] for c in state["calls"]) >= RUNAWAY_USD:
+                state["runaway"] = True
+                break
             state["turn"] += 1
             reply = client.send(
                 system=self.system, tools=self.tools, messages=with_cache_tail(messages)
@@ -293,10 +323,15 @@ class Lia:
                 results.append({"type": "text", "text": "\n\n".join(state["notices"])})
                 state["notices"] = []
             messages.append({"role": "user", "content": results})
-        # Out of turns while still calling tools: one last call, tools off.
-        messages[-1]["content"].append(
-            {"type": "text", "text": "Tool limit reached: answer now from what you have."}
+        # Out of turns (or past the runaway line) while still reading: one last call, tools off.
+        note = (
+            RUNAWAY_NOTE
+            if state["runaway"]
+            else "Tool limit reached: answer now from what you have."
         )
+        if isinstance(messages[-1]["content"], str):
+            messages[-1]["content"] = [{"type": "text", "text": messages[-1]["content"]}]
+        messages[-1]["content"].append({"type": "text", "text": note})
         reply = client.send(
             system=self.system, tools=self.tools, messages=messages, tool_choice={"type": "none"}
         )
@@ -317,6 +352,26 @@ class Lia:
     def _again(self, messages: list, state: dict, content) -> str:
         messages.append({"role": "user", "content": content})
         return self._answer(self._loop(messages, state), state)
+
+    def _locate(self, footnotes: list[dict]) -> list[dict]:
+        """Each footnote with its note's title and the cited line's index in the whole note (the
+        anchor the note page highlights)."""
+        out = []
+        for f in footnotes:
+            slug = f["slug"]
+            blocks = self.library.blocks(slug)
+            unit = checks.quote_unit(f["shown"].removeprefix("History: "))
+            block = next(
+                (i for i, b in enumerate(blocks) if b.shown == f["shown"]),
+                next(
+                    (i for i, b in enumerate(blocks)
+                     if checks.quote_unit(b.shown.removeprefix("History: ")) == unit),
+                    None,
+                ),
+            )  # fmt: skip
+            note = self.library.notes.get(slug)
+            out.append({**f, "block": block, "title": note.name if note else slug})
+        return out
 
     def _with_lines(self, state: dict, text: str, lines: list[tuple[str, str]]) -> list[dict]:
         """A user message: *text*, then the notes' *lines* as citable search results."""
@@ -378,6 +433,8 @@ class Lia:
             "hints_given": False,
             "hints": [],
             "notices": [],
+            "reopens_skipped": 0,
+            "runaway": False,
             "skills_loaded": [],
             "done": None,
         }
@@ -399,7 +456,7 @@ class Lia:
             asked_again = True
             answer = self._again(messages, state, ASK_AGAIN)
         abstain_hits = []
-        if answer and is_abstain(answer):
+        if answer and is_abstain(answer) and not state["runaway"]:
             # The engineered abstain path: free code searches the question first.
             abstain_hits = self._abstain_hits(question, state)
             if abstain_hits:
@@ -407,7 +464,7 @@ class Lia:
                     messages, state, self._with_lines(state, ABSTAIN_HITS, abstain_hits)
                 )
         sibling_lines, sibling_phrases = [], []
-        if answer and level != "simple" and not is_abstain(answer):
+        if answer and level != "simple" and not is_abstain(answer) and not state["runaway"]:
             draft = [checks.Citation(s, q, True) for s, q in self._cited(state)]
             sibling_lines, sibling_phrases = search.siblings(draft, self.library)
             if sibling_lines:
@@ -424,7 +481,9 @@ class Lia:
             "leaks": leaked,
             "write_offers": offers,
         }
-        retried = bool(answer and (offers or absent or unsupported or leaked))
+        retried = bool(
+            answer and not state["runaway"] and (offers or absent or unsupported or leaked)
+        )
         if retried:
             parts: list[dict] = []
             lines: list[tuple[str, str]] = []
@@ -449,11 +508,14 @@ class Lia:
         if empty:
             answer = EMPTY_ERROR
         else:
-            answer = verify.strip_leaks(answer)
+            # Marks go on before draft talk is stripped, so every flagged sentence still matches.
             for a in absent:
                 answer = verify.mark(answer, a.sentence, "[unverified absence]")
             for u in unsupported:
                 answer = verify.mark(answer, u.sentence, "[unsupported]")
+            answer = verify.strip_leaks(answer)
+        footnotes = self._locate(state["footnotes"])
+        checked = verify.supported_sentences(answer)
         done = state["done"] or {}
         return {
             "id": qid,
@@ -462,11 +524,15 @@ class Lia:
             "map_version": self.library.version,
             "steps": state["steps"],
             "opened": sorted(state["opened"]),
-            "answer": answer,
+            "answer": display(answer, footnotes, self.config.cite_url) if not empty else answer,
+            "answer_full": answer,
             "empty_reply": empty,
+            "support": {"checked": checked, "unsupported": len(unsupported)},
+            "runaway": state["runaway"],
+            "reopens_skipped": state["reopens_skipped"],
             "abstain": is_abstain(answer),
             "third_person": checks.third_person(answer, self.config.owner_names),
-            "citations": state["footnotes"],
+            "citations": footnotes,
             "citation_check": {"total": len(state["footnotes"]), "failed": 0, "retried": retried},
             "searches": state["searches"],
             "asked_again": asked_again,
@@ -495,6 +561,23 @@ class Lia:
             "cost_usd": sum(c["cost_usd"] for c in state["calls"]),
             "latency_ms": round((time.perf_counter() - start) * 1000, 1),
         }
+
+
+def display(answer: str, footnotes: list[dict], cite_url: str | None) -> str:
+    """The answer as Manoj sees it: Lia's sentences with their [n] marks, then one short footnote
+    per mark, a link to the note page when *cite_url* is set, else the title and slug. The full
+    quotes stay in the trace (answer_full, citations)."""
+    body = checks.answer_body(answer).rstrip()
+    if not footnotes:
+        return body
+    lines = []
+    for f in footnotes:
+        if cite_url:
+            url = cite_url.format(slug=f["slug"], block="" if f["block"] is None else f["block"])
+            lines.append(f"[{f['n']}] [{f['title']}]({url})")
+        else:
+            lines.append(f"[{f['n']}] {f['title']} ({f['slug']})")
+    return body + "\n\n" + "\n".join(lines)
 
 
 def write_trace(result: dict, folder: Path) -> Path:
