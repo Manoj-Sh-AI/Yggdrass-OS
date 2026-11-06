@@ -29,11 +29,6 @@ def lia_model() -> str:
     return os.environ.get("YGGDRAS_LIA_MODEL", "claude-haiku-5-5").strip()
 
 
-def lia_arm() -> str:
-    """The connector's config arm (YGGDRAS_LIA_ARM): ref, A, B or C (v4 prereg); default A."""
-    return os.environ.get("YGGDRAS_LIA_ARM", "A").strip() or "A"
-
-
 def owner_names() -> tuple[str, ...]:
     """The brain owner's names (YGGDRAS_OWNER_NAMES, comma-separated), for Lia's voice check:
     her own sentences say "you", never these. Kept out of the code (D23)."""

@@ -49,17 +49,16 @@ Copy `.env.example` to `.env` and fill in values when a feature needs them.
 
 Each `ask_lia` result starts with one instruction line for the chat model, then Lia's reply inside `<lia_reply>…</lia_reply>`, which the chat model shows unchanged.
 
-The config arm comes from `--arm` or `YGGDRAS_LIA_ARM`:
-- `ref`: the lia-v1 final config;
-- `A` (default): fact-level search with alias expansion, hints on complex questions, and the absence, claim-support and draft-leak checks, all on Haiku;
-- `B`: A, with Sonnet for complex questions;
-- `C`: B, with typed links on complex questions.
-- `D`: B, with the skill library: a short core skill and an index of job playbooks are cached, and Lia loads one or two playbooks per question with `load_skill`, then reports their checklist before answering. It reads `<brain>/skills/lia/library/`.
+There is one Lia (D35):
+- **Models:** Haiku 5.5 answers simple and medium questions; Sonnet 5.5 answers complex ones (advice, decision or whole-picture wording, or 3+ areas).
+- **Skills:** `<brain>/skills/lia/core.md` is always loaded, with an index of the job playbooks in `<brain>/skills/lia/library/`. Lia loads one or two playbooks per question with `load_skill`, alongside her first `open_notes`, and reports their "done when" checklist before answering.
+- **Search:** fact-level, with word forms and the brain's aliases. Complex questions also get hints of notes not yet opened, and advice and timing questions the upcoming view.
+- **Free checks:** a sweep for parallel facts, then citations, claim support, absence claims, write offers and draft talk, in one retry. Whatever still fails is marked.
 
 How it works:
-- It reads the brain's current files and rebuilds the maps when a note changes. It never writes to the brain.
+- It reads the brain's current files and rebuilds the maps when a note or skill changes. It never writes to the brain.
 - Every answer leaves a trace in `local-data/traces/`.
-- The config is the tested one: Haiku 5.5, shelf map only, skills from `<brain>/skills/lia`.
+- A change is checked with the free tests and one Apollo run: `uv run python ../evals/experiments/lia-v1/harness.py check` (about $0.50 at most).
 
 The examples below use these placeholders:
 - `<APP>`: this repo's `app` folder, after `uv sync`;

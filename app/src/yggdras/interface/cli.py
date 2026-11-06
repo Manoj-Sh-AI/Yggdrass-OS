@@ -35,7 +35,7 @@ def main(argv: list[str] | None = None) -> int:
         return mcp_main(argv[1:])
     args = parser.parse_args(argv)
 
-    from yggdras.processing.lia.lia import Lia, LiaConfig, load_skills, write_trace
+    from yggdras.processing.lia.lia import LiaConfig, default_lia, write_trace
     from yggdras.processing.lia.library import Library
     from yggdras.processing.lia.models import AnthropicClient
 
@@ -51,8 +51,12 @@ def main(argv: list[str] | None = None) -> int:
     if not skills_dir:
         print("no skills folder: pass --skills", file=sys.stderr)
         return 2
-    lia = Lia(
-        AnthropicClient(args.model), library, load_skills(skills_dir), LiaConfig(model=args.model)
+    config.load_env_file()
+    lia = default_lia(
+        library,
+        skills_dir,
+        AnthropicClient,
+        LiaConfig(model=args.model, owner_names=config.owner_names()),
     )
     result = lia.ask(args.question, qid=f"ask-{int(time.time())}")
     print(result["answer"])

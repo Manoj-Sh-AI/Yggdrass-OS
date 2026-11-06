@@ -1,4 +1,4 @@
-"""More verification, free code (v4 2a–2c): absence claims, claim support, draft leakage.
+"""Verification, free code: absence claims, claim support, draft leakage, write offers.
 
 All lexical and deterministic. They run on Lia's own sentences (footnote lines left out), feed
 the one retry, and mark what still fails: `[unverified absence]`, `[unsupported]`.
@@ -200,3 +200,21 @@ def strip_leaks(answer: str) -> str:
 
 def mark(answer: str, sentence: str, tag: str) -> str:
     return answer.replace(sentence, f"{sentence} {tag}", 1)
+
+
+# ---------------------------------------------------------------- capability: read-only
+
+WRITE_OFFER = re.compile(
+    r"\b(I'll|I will|I can|I could|let me|shall I|want me to|should I)\s+(also\s+)?"
+    r"(add|save|update|note|record|write|create|log|put|store|set up|schedule)\b",
+    re.IGNORECASE,
+)
+CAPABILITY_RETRY = (
+    "You are read-only: remove every offer to add, save, update, note or create something. You "
+    'may say: "Tell me and I\'ll be able to note it once writing is switched on."'
+)
+
+
+def write_offers(answer: str) -> list[str]:
+    """Offers to write something, in Lia's own sentences."""
+    return [m.group(0) for m in WRITE_OFFER.finditer(checks.answer_body(answer))]

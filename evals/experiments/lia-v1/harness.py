@@ -1,13 +1,18 @@
-"""lia-v1: run, grade and summarise Lia's experiments and gate (prereg.md).
+"""Checking Lia (D35): one Apollo check per change, and the gate for life hard-v2.
 
-Usage (from the code repo's app/ folder, ANTHROPIC_API_KEY set):
-    uv run python ../evals/experiments/lia-v1/harness.py verify
-    uv run python ../evals/experiments/lia-v1/harness.py run <arm> <set> <runs> [--model M]
-    uv run python ../evals/experiments/lia-v1/harness.py grade
-    uv run python ../evals/experiments/lia-v1/harness.py e7 [--model M]
-    uv run python ../evals/experiments/lia-v1/harness.py table
+Usage (from the code repo's app/ folder; ANTHROPIC_API_KEY in the environment or .env;
+LIA_BRAIN_REPO = the brain repo, LIA_BRAIN_PIN = a clean checkout of it at PIN):
+    uv run python ../evals/experiments/lia-v1/harness.py check
+    uv run python ../evals/experiments/lia-v1/harness.py gate
 
-Sets: apollo-hard (hard-v8, the only tuning set), apollo-held (held-out-v8), life (hard-v1).
+check: Lia's one config, one run on Apollo hard-v8, stopped at $0.50. It is graded by the judge
+and the key-term grader, then compared with the stored final-v2 and x-base runs and the last
+check. It prints score, traps, citations, unsupported and absence flags, skill picks, cost and
+latency.
+
+gate: the v2 gate (prereg.md, "v2 changes") on life hard-v2, Apollo held-out-v8 and Apollo
+hard-v8, 3 runs each, Lia against variant C. It stops until life hard-v2 is frozen.
+
 Real-brain results and traces go to local-data/ only; Apollo ones into this folder.
 """
 
@@ -16,7 +21,6 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-import random
 import re
 import statistics
 import subprocess
@@ -24,7 +28,6 @@ import sys
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import replace
 from pathlib import Path
 
 import yaml
@@ -32,125 +35,38 @@ import yaml
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 CODE = HERE.parents[2]
-# Both come from the environment: the brain repo, and a clean worktree of it at PIN.
 BRAIN_REPO = Path(os.environ.get("LIA_BRAIN_REPO", "../yggdras-brain"))
 BRAIN_PIN = Path(os.environ.get("LIA_BRAIN_PIN", "../yggdras-brain-pin"))
-PIN, KEY_COMMIT = "f6fe26a", "723329b"
-KEY_SHA = "252bc0813f630f4a4810c52e946850b3caa8ac45ecb113e4b96795265e985640"
-SKILLS_SHA = "91bd4b092af409ffcb8d50b0a8f63a671f0085b78ec7636d6e3d82b09bb57823"  # v4 (992fd11); v3 60ed6245… (96710fd)
+PIN = "f6fe26a"  # the brain commit the Apollo sets are read from
 LOCAL = CODE / "local-data" / "lia-v1"
-CAP, STOP = 15.0, 12.0
-# The explore task (prereg "Explore"): its own ledger, stop at $8 of a $10 cap.
-EXPLORE_STOP = 8.0
-EXPLORE_SHA = "b70667853e11ff37662001a3f563223005f99ed723f532c5d0a437a638a77a28"  # explore.md (992fd11)
-RUBRIC_SHA = "b5c31bf208e001fe45d7be62efae84efd2132bc8f1c071071f7c7384df3242cd"  # local-data, dev only
-TODAY = "2026-11-02"  # F6: the upcoming view is pinned to this day in every run
-# v4 (prereg "v4"): the Ref arm runs the v3 skills, read from the brain repo at this commit.
-REF_SKILLS_COMMIT = "96710fd"
-# Arm D (prereg "v4, arm D"): the skill library and the hand labels, fixed before any run.
-LIBRARY_SHA = "e17ddc86167a028b04f9fc9adf8ec881d1d3351ca8a7f3a1875b47f9eb09d667"  # sha256 over skills/lia/library/*.md (name + bytes), see library_hash()
-LABELS_SHA = {"apollo": "4ce17ce1ef58be3882076591eb28a83963aa56f7a3bd7f1ab642d57134db4acd", "life": "720e3d753b87459402bb221dbe3c7c5a3f3177f703f8acf00c31c8f7ad28291a"}
-V4_STOP = 10.0
+TODAY = "2026-11-02"  # the upcoming view's "today" in every run
 WORKERS = 6
 JUDGE = "claude-haiku-5-5"
+CHECK_BUDGET = 0.50
+# The v2 gate's life set: Manoj writes and answers it, then it is frozen at a brain commit.
+# Fill these in when it is frozen; the gate refuses to run before that.
+LIFE_V2 = {"commit": None, "path": "evals/hard-v2.md", "sha256": None}
+GATE_BUDGET = 3.0
 
-from yggdras.processing.lia import skills as skill_mod  # noqa: E402
-from yggdras.processing.lia.lia import Lia, LiaConfig, explore_config, load_skills, v4_config  # noqa: E402
-from yggdras.processing.lia.library import Library, MapOptions  # noqa: E402
-from yggdras.processing.lia.models import AnthropicClient, Budget, BudgetStop  # noqa: E402
-
-# Key terms for the deterministic second grader on the life set: derived from the frozen key
-# and written before any run. They are personal, so they live in local-data/ (git-ignored);
-# prereg.md records the file's SHA-256, and the harness stops if it changed.
-LIFE_TERMS_SHA = "5c3f3b4201ba3169071874dd91689b382b1091773555986b221972ad1d4f945d"
-
-
-def life_terms() -> dict[int, list[str]]:
-    raw = (LOCAL / "life-terms.json").read_bytes()
-    if hashlib.sha256(raw).hexdigest() != LIFE_TERMS_SHA:
-        sys.exit("STOP: the life key terms changed since the prereg")
-    return {int(k): v for k, v in json.loads(raw).items()}
+from yggdras import config  # noqa: E402
+from yggdras.data.maps import checks  # noqa: E402
+from yggdras.processing.lia.lia import LiaConfig, default_lia  # noqa: E402
+from yggdras.processing.lia.library import Library  # noqa: E402
+from yggdras.processing.lia.models import AnthropicClient, Budget, BudgetStop, cost_of  # noqa: E402
 
 
-# ---------------------------------------------------------------- pinned inputs
+# ---------------------------------------------------------------- inputs
 
 
 def git(*args, repo=BRAIN_REPO) -> str:
-    return subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True, encoding="utf-8",
-                          check=True).stdout  # fmt: skip
+    return subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True,
+                          encoding="utf-8", check=True).stdout  # fmt: skip
 
 
-def key_text() -> str:
-    text = git("show", f"{KEY_COMMIT}:evals/hard-v1.md")
-    data = git("show", f"{KEY_COMMIT}:evals/hard-v1.md").encode("utf-8")
-    raw = subprocess.run(["git", "-C", str(BRAIN_REPO), "show", f"{KEY_COMMIT}:evals/hard-v1.md"],
-                         capture_output=True, check=True).stdout  # fmt: skip
-    if hashlib.sha256(raw).hexdigest() != KEY_SHA:
-        sys.exit(f"STOP: the answer key's SHA-256 differs from {KEY_SHA}")
-    del data
-    return text
-
-
-def verify() -> None:
-    key_text()
+def check_pin() -> None:
     head = git("rev-parse", "--short", "HEAD", repo=BRAIN_PIN).strip()
     if head != PIN or git("status", "--porcelain", repo=BRAIN_PIN).strip():
-        sys.exit(f"STOP: the brain worktree is not a clean checkout of {PIN} ({head})")
-    skills = (BRAIN_REPO / "skills" / "lia" / "answering.md").read_bytes()
-    if hashlib.sha256(skills).hexdigest() != SKILLS_SHA:
-        sys.exit("STOP: Lia's skills changed since the prereg")
-    if V4:
-        check_library()
-    explore_skill = (BRAIN_REPO / "skills" / "lia" / "explore.md").read_bytes()
-    if hashlib.sha256(explore_skill).hexdigest() != EXPLORE_SHA:
-        sys.exit("STOP: Lia's explore skill changed since the prereg")
-
-
-def lf(raw: bytes) -> bytes:
-    """Line endings normalised, so a CRLF checkout hashes the same."""
-    return raw.replace(b"\r\n", b"\n")
-
-
-def library_hash() -> str:
-    h = hashlib.sha256()
-    for p in sorted((BRAIN_REPO / "skills" / "lia" / "library").glob("*.md")):
-        h.update(p.name.encode() + lf(p.read_bytes()))  # same hash on any checkout
-    return h.hexdigest()
-
-
-def labels() -> dict[str, dict[str, list[str]]]:
-    """The hand labels: {set: {qid: [acceptable skills]}}. Apollo's are public, life's local."""
-    files = {"apollo": HERE / "skill-labels.json", "life": LOCAL / "skill-labels-life.json"}
-    out = {}
-    for key, path in files.items():
-        raw = lf(path.read_bytes())
-        if hashlib.sha256(raw).hexdigest() != LABELS_SHA[key]:
-            sys.exit(f"STOP: the {key} skill labels changed since the prereg")
-        out.update(json.loads(raw))
-    return out
-
-
-def check_library() -> None:
-    """The library is the pre-registered one, and no playbook quotes a dev question (any run of
-    six words from a dev question's text is a leak)."""
-    if library_hash() != LIBRARY_SHA:
-        sys.exit("STOP: the skill library changed since the prereg")
-    words = lambda s: re.findall(r"[a-z0-9]+", s.lower())  # noqa: E731
-    text = " " + " ".join(words(" ".join(p.read_text(encoding="utf-8")
-                          for p in (BRAIN_REPO / "skills" / "lia" / "library").glob("*.md")))) + " "  # fmt: skip
-    stop = {"a", "an", "the", "of", "to", "in", "on", "for", "and", "or", "my", "i", "is", "what",
-            "which", "do", "did", "with", "at", "by", "from", "how", "when", "where", "who", "it"}
-    for name in ("apollo-hard", "apollo-held", "life", "life-explore"):
-        for q in SETS[name][0]():
-            w = words(q["question"])
-            for i in range(len(w) - 3):
-                run = w[i:i + 4]
-                if sum(x not in stop for x in run) >= 2 and f" {' '.join(run)} " in text:
-                    sys.exit(f"STOP: a playbook quotes dev question {name}/{q['id']}: {' '.join(run)}")
-            for i in range(len(w) - 2):  # a short indirect name, e.g. "the x y" (three words)
-                run = w[i:i + 3]
-                if run[0] == "the" and all(x not in stop for x in run[1:]) and f" {' '.join(run)} " in text:
-                    sys.exit(f"STOP: a playbook quotes dev question {name}/{q['id']}: {' '.join(run)}")
+        sys.exit(f"STOP: {BRAIN_PIN} is not a clean checkout of {PIN} ({head})")
 
 
 def tree_hash(root: Path) -> str:
@@ -159,9 +75,6 @@ def tree_hash(root: Path) -> str:
         if p.is_file():
             h.update(p.relative_to(root).as_posix().encode() + p.read_bytes())
     return h.hexdigest()
-
-
-# ---------------------------------------------------------------- datasets and keys
 
 
 def apollo(name: str) -> list[dict]:
@@ -174,13 +87,20 @@ def apollo(name: str) -> list[dict]:
     return out
 
 
-def life() -> list[dict]:
-    text, out, current = key_text(), [], None
-    for line in text.splitlines():
+def life_v2() -> list[dict]:
+    """Life hard-v2, read from the brain repo at its frozen commit (the hard-v1 key format)."""
+    if not (LIFE_V2["commit"] and LIFE_V2["sha256"]):
+        sys.exit("STOP: life hard-v2 isn't frozen yet (LIFE_V2 in harness.py)")
+    raw = subprocess.run(["git", "-C", str(BRAIN_REPO), "show", f"{LIFE_V2['commit']}:{LIFE_V2['path']}"],
+                         capture_output=True, check=True).stdout  # fmt: skip
+    if hashlib.sha256(raw).hexdigest() != LIFE_V2["sha256"]:
+        sys.exit("STOP: the life hard-v2 key differs from its frozen SHA-256")
+    out, current = [], None
+    for line in raw.decode("utf-8").splitlines():
         m = re.match(r"^(\d+)\. (.*)$", line)
         if m:
-            current = {"id": f"q{int(m.group(1)):02d}", "n": int(m.group(1)), "question": m.group(2),
-                       "kind": "life", "expected": "", "gold": [], "citations": []}  # fmt: skip
+            current = {"id": f"q{int(m.group(1)):02d}", "question": m.group(2), "kind": "life",
+                       "expected": "", "gold": [], "citations": [], "keys": []}  # fmt: skip
             out.append(current)
             continue
         s = line.strip()
@@ -193,108 +113,44 @@ def life() -> list[dict]:
             current["citations"].append(s[2:])
     for q in out:
         q["abstain"] = q["expected"].startswith("ABSTAIN")
-    terms = life_terms()
-    for q in out:
-        q["keys"] = terms.get(q["n"], [])
-    return out
-
-
-def life_explore() -> list[dict]:
-    """life-dev-explore (dev only): 10 cross-area questions, rubric in local-data/."""
-    raw = (LOCAL / "explore-rubric.json").read_bytes()
-    if hashlib.sha256(raw).hexdigest() != RUBRIC_SHA:
-        sys.exit("STOP: the explore rubric changed since the prereg")
-    out = []
-    for q in json.loads(raw):
-        out.append({"id": q["id"], "kind": "explore", "question": q["question"], "expected": q["required"],
-                    "keys": q["keys"], "gold": sorted({s for s, _ in q["facts"]}), "areas": q["areas"],
-                    "facts": q["facts"], "abstain": False})  # fmt: skip
     return out
 
 
 SETS = {
     "apollo-hard": (lambda: apollo("hard-v8"), BRAIN_PIN / "archive" / "demo-brain", True),
     "apollo-held": (lambda: apollo("held-out-v8"), BRAIN_PIN / "archive" / "demo-brain", True),
-    "life": (life, BRAIN_PIN / "library", False),
-    "life-explore": (life_explore, BRAIN_PIN / "library", False),
+    "life-v2": (life_v2, BRAIN_PIN / "library", False),
 }
 
 
-# ---------------------------------------------------------------- arms
+def labels() -> dict[str, list[str]]:
+    """Hand labels of the playbooks that fit each Apollo hard-v8 question (written before the
+    first skill-library run)."""
+    return json.loads((HERE / "skill-labels.json").read_text(encoding="utf-8"))
 
 
-def arm_config(arm: str, model: str) -> LiaConfig:
-    base = LiaConfig(model=model)
-    arms = {
-        "default": base,
-        "e1-json": replace(base, maps=MapOptions(format="json")),
-        "e1-prose": replace(base, maps=MapOptions(format="prose")),
-        "e2-shelf-only": replace(base, maps=MapOptions(relationship=False)),
-        "e3-l0": replace(base, l0=True),
-        "e4-outgoing": replace(base, maps=MapOptions(inverses=False)),
-        "e5-10": replace(base, maps=MapOptions(about_words=10)),
-        "e5-15": replace(base, maps=MapOptions(about_words=15)),
-        "e5-25": replace(base, maps=MapOptions(about_words=25)),
-        "e6-cascade": replace(base, model="claude-haiku-5-5",
-                              answer_model=model if model != "claude-haiku-5-5" else "claude-sonnet-5-5"),
-        "e8-neighbours": replace(base, neighbours=True),
-    }  # fmt: skip
-    if arm.startswith("v4-"):  # v4: ref, A, B, C, and ablations such as v4-B-no-search
-        data = json.loads((HERE / "final-config.json").read_text(encoding="utf-8"))
-        ref = LiaConfig(**{**data, "model": model, "maps": MapOptions(**data["maps"]), "today": TODAY})
-        name, _, off = arm[3:].partition("-no-")
-        name, _, on = name.partition("-on-")  # v4-D-on-A: the library on another arm
-        if name == "ref":
-            return ref
-        cfg = v4_config(ref)
-        if name == "D":
-            name, cfg = on or "B", replace(cfg, skill_library=True)
-        if name in ("B", "C"):
-            cfg = replace(cfg, escalate="claude-sonnet-5-5")
-        if name == "C":
-            cfg = replace(cfg, links_complex=True)
-        ablate = {"": {}, "search": {"fact_search": False}, "hints": {"hints": False},
-                  "absence": {"absence": False}}[off]  # fmt: skip
-        return replace(cfg, **ablate)
-    if arm.startswith("x-"):  # the explore task: final config, today pinned
-        data = json.loads((HERE / "final-config.json").read_text(encoding="utf-8"))
-        final = LiaConfig(**{**data, "model": model, "maps": MapOptions(**data["maps"]), "today": TODAY})
-        switches = {
-            "x-base": None,
-            "x-all": {},
-            "x-esc": {"escalate": "claude-sonnet-5-5"},
-            "x-no-plan": {"plan": False},
-            "x-no-coverage": {"coverage": False},
-            "x-no-siblings": {"siblings": False},
-            "x-no-upcoming": {"upcoming": False},
-        }[arm]
-        return final if switches is None else explore_config(final, **switches)
-    if arm in ("final", "final-v2", "final-v3"):  # the same config, run with v2 or v3 code and skills
-        data = json.loads((HERE / "final-config.json").read_text(encoding="utf-8"))
-        return LiaConfig(**{**data, "model": model, "maps": MapOptions(**data["maps"])})
-    return arms[arm]
+def leak_guard() -> None:
+    """No skill quotes an eval question: a four-word run with two content words, or a three-word
+    "the x y" name, from any question of the Apollo sets is a leak."""
+    stop = {"a", "an", "the", "of", "to", "in", "on", "for", "and", "or", "my", "i", "is", "what",
+            "which", "do", "did", "with", "at", "by", "from", "how", "when", "where", "who", "it"}  # fmt: skip
+    words = lambda s: re.findall(r"[a-z0-9]+", s.lower())  # noqa: E731
+    skills = BRAIN_REPO / "skills" / "lia"
+    files = [skills / "core.md", *(skills / "library").glob("*.md")]
+    text = " " + " ".join(words(" ".join(p.read_text(encoding="utf-8") for p in files))) + " "
+    for name in ("apollo-hard", "apollo-held"):
+        for q in SETS[name][0]():
+            w = words(q["question"])
+            runs = [w[i:i + 4] for i in range(len(w) - 3)]
+            runs = [r for r in runs if sum(x not in stop for x in r) >= 2]
+            runs += [w[i:i + 3] for i in range(len(w) - 2)
+                     if w[i] == "the" and all(x not in stop for x in w[i + 1:i + 3])]  # fmt: skip
+            for r in runs:
+                if f" {' '.join(r)} " in text:
+                    sys.exit(f"STOP: a skill quotes eval question {name}/{q['id']}: {' '.join(r)}")
 
 
-# ---------------------------------------------------------------- budget ledger
-
-EXPLORING = any(a.startswith("x-") for a in sys.argv) or "--explore" in sys.argv
-V4 = any(a.startswith("v4-") for a in sys.argv) or "--v4" in sys.argv
-LEDGER = LOCAL / ("spend-v4.json" if V4 else "spend-explore.json" if EXPLORING else "spend.json")
-_ledger_lock = threading.Lock()
-
-
-def load_budget() -> Budget:
-    spent = json.loads(LEDGER.read_text())["spent"] if LEDGER.is_file() else 0.0
-    return Budget(stop_at=V4_STOP if V4 else EXPLORE_STOP if EXPLORING else STOP, spent=spent)
-
-
-def save_budget(budget: Budget) -> None:
-    with _ledger_lock:
-        LOCAL.mkdir(parents=True, exist_ok=True)
-        LEDGER.write_text(json.dumps({"spent": round(budget.spent, 6), "calls": budget.calls}))
-
-
-# ---------------------------------------------------------------- run
+# ---------------------------------------------------------------- running Lia
 
 
 def out_dirs(set_name: str) -> tuple[Path, Path]:
@@ -303,88 +159,63 @@ def out_dirs(set_name: str) -> tuple[Path, Path]:
     return HERE / "results", HERE / "traces"
 
 
-def run(arm: str, set_name: str, runs: int, model: str) -> None:
-    verify()
+def run_set(set_name: str, tag: str, budget: Budget, ask_factory) -> dict:
+    """One run of every question in *set_name*; the first question warms the cache."""
     load, root, flat = SETS[set_name]
     questions = load()
     library = Library(root, flat=flat)
-    before = tree_hash(BRAIN_PIN)
-    budget = load_budget()
-    results_dir, traces_dir = out_dirs(set_name)
-    results_dir.mkdir(parents=True, exist_ok=True)
-    traces_dir.mkdir(parents=True, exist_ok=True)
-    for r in range(1, runs + 1):
-        out = results_dir / f"{arm}__{set_name}__{model}__r{r}.json"
-        if out.is_file():
-            print("skip, exists:", out.name)
-            continue
-        if arm == "variant-c":
-            from variant_c import VariantC
+    ask = ask_factory(library, root, flat)
+    rows, lock = [], threading.Lock()
 
-            engine = VariantC(root, flat, model, budget)
-            ask = engine.ask
-            config = {"variant": "C", "model": model}
-        else:
-            cfg = arm_config(arm, model)
-            playbooks = None
-            if arm == "v4-ref":
-                skills = git("show", f"{REF_SKILLS_COMMIT}:skills/lia/answering.md")
-            elif cfg.skill_library:
-                playbooks = skill_mod.load_library(BRAIN_REPO / "skills" / "lia" / "library")
-                skills = skill_mod.system_text(playbooks)
-            else:
-                skills = load_skills(BRAIN_REPO / "skills" / "lia", explore=cfg.exploring)
-            client = AnthropicClient(cfg.model, cfg.effort, budget)
-            answer = AnthropicClient(cfg.answer_model, cfg.effort, budget) if cfg.answer_model else None
-            esc = AnthropicClient(cfg.escalate, cfg.effort, budget) if cfg.escalate else None
-            lia = Lia(client, library, skills, cfg, answer_client=answer, escalate_client=esc,
-                      playbooks=playbooks)  # fmt: skip
-            ask = lia.ask
-            config = cfg.as_dict()
-        rows, lock = [], threading.Lock()
+    def one(q):
+        res = None
+        for attempt in range(3):  # each API call also retries 3 times with backoff
+            try:
+                res = ask(q["question"], f"{set_name}/{q['id']}")
+                break
+            except BudgetStop:
+                raise
+            except Exception as exc:  # recorded as invalid only after three failures
+                if attempt == 2:
+                    res = {"id": q["id"], "error": repr(exc)[:300], "cost_usd": 0.0}
+                time.sleep(3 * (attempt + 1))
+        res.update({"qid": q["id"], "set": set_name, "tag": tag})
+        with lock:
+            rows.append(res)
+        return res
 
-        def one(q):
-            for attempt in range(3):
-                try:
-                    res = ask(q["question"], f"{set_name}/{q['id']}")
-                    break
-                except BudgetStop:
-                    raise
-                except Exception as exc:  # network or API error: retry, then record it
-                    if attempt == 2:
-                        res = {"id": q["id"], "error": repr(exc)[:300], "cost_usd": 0.0}
-                    time.sleep(3 * (attempt + 1))
-            res.update({"qid": q["id"], "set": set_name, "run": r, "arm": arm})
-            with lock:
-                rows.append(res)
-            save_budget(budget)
-            return res
+    one(questions[0])
+    with ThreadPoolExecutor(WORKERS) as pool:
+        list(pool.map(one, questions[1:]))
+    rows.sort(key=lambda x: x["qid"])
+    return {"tag": tag, "set": set_name, "pin": PIN, "spent": budget.spent, "rows": rows}
 
-        try:
-            one(questions[0])  # warm the cache first
-            with ThreadPoolExecutor(WORKERS) as pool:
-                list(pool.map(one, questions[1:]))
-        except BudgetStop as stop:
-            print("BUDGET STOP:", stop)
-            save_budget(budget)
-            sys.exit(3)
-        rows.sort(key=lambda x: x["qid"])
-        payload = {"arm": arm, "set": set_name, "model": model, "run": r, "config": config,
-                   "pin": PIN, "spent_after": budget.spent, "rows": rows}  # fmt: skip
-        out.write_text(json.dumps(payload, indent=1, ensure_ascii=False), encoding="utf-8")
-        if set_name.startswith("life"):
-            for row in rows:
-                name = re.sub(r"[^A-Za-z0-9_.-]", "_", f"{arm}__r{r}__{row['qid']}")
-                (traces_dir / f"{name}.json").write_text(json.dumps(row, indent=1, ensure_ascii=False),
-                                                         encoding="utf-8")  # fmt: skip
-        else:
-            trace = traces_dir / f"{arm}__{set_name}__{model}__r{r}.jsonl"
-            trace.write_text("\n".join(json.dumps(x, ensure_ascii=False) for x in rows) + "\n",
-                             encoding="utf-8")  # fmt: skip
-        cost = sum(x.get("cost_usd", 0) for x in rows)
-        print(f"{arm} {set_name} {model} r{r}: {len(rows)} q, ${cost:.3f}, total ${budget.spent:.3f}")
-    if tree_hash(BRAIN_PIN) != before:
-        sys.exit("STOP: the pinned brain changed during the run")
+
+def lia_factory(budget: Budget):
+    def factory(library, root, flat):
+        lia = default_lia(library, BRAIN_REPO / "skills" / "lia",
+                          lambda model: AnthropicClient(model, "low", budget),
+                          LiaConfig(today=TODAY))  # fmt: skip
+        return lia.ask
+
+    return factory
+
+
+def save(payload: dict, name: str) -> Path:
+    results, traces = out_dirs(payload["set"])
+    results.mkdir(parents=True, exist_ok=True)
+    traces.mkdir(parents=True, exist_ok=True)
+    path = results / f"{name}.json"
+    path.write_text(json.dumps(payload, indent=1, ensure_ascii=False), encoding="utf-8")
+    if payload["set"].startswith("life"):
+        for row in payload["rows"]:
+            safe = re.sub(r"[^A-Za-z0-9_.-]", "_", f"{name}__{row['qid']}")
+            (traces / f"{safe}.json").write_text(json.dumps(row, indent=1, ensure_ascii=False), encoding="utf-8")
+    else:
+        (traces / f"{name}.jsonl").write_text(
+            "\n".join(json.dumps(x, ensure_ascii=False) for x in payload["rows"]) + "\n", encoding="utf-8"
+        )
+    return path
 
 
 # ---------------------------------------------------------------- grading
@@ -399,11 +230,12 @@ Grades:
 - wrong_abstain: the key gives an answer, but the answer declines entirely.
 
 Judge only against the key. Ignore citation formatting."""
+GOOD = ("correct", "correct_abstain")
 
 
 def keyterm_grade(q: dict, row: dict) -> str:
     answer = (row.get("answer") or "").lower()
-    declined = row.get("abstain") or answer.lstrip().startswith(("not in your brain", "not in brain"))
+    declined = row.get("abstain") or answer.lstrip().startswith(("not in your brain", "i don't have that"))
     if q["abstain"]:
         return "correct_abstain" if declined else "wrong"
     if declined:
@@ -414,54 +246,7 @@ def keyterm_grade(q: dict, row: dict) -> str:
     return "correct" if hits == len(q["keys"]) else "partly_correct" if hits else "wrong"
 
 
-_libraries: dict = {}
-TAG = re.compile(r"^\[[a-z]+\]\s*")
-
-
-def library_of(set_name: str) -> Library:
-    if set_name not in _libraries:
-        _, root, flat = SETS[set_name]
-        _libraries[set_name] = Library(root, flat=flat)
-    return _libraries[set_name]
-
-
-def expected_facts(q: dict) -> list[tuple[str, str]]:
-    """(slug, fact text) a full answer cites: the rubric's facts, or the life key's citations."""
-    from yggdras.data.maps import checks
-
-    if q.get("facts"):
-        return [(s, f) for s, f in q["facts"]]
-    out = []
-    for line in q.get("citations", []):
-        m = checks.CITATION.search(line)
-        if m:
-            out.append((m.group(1).strip(), m.group(2)))
-    return out
-
-
-def recalls(q: dict, row: dict, library: Library) -> tuple[float | None, float | None]:
-    """Facet recall: expected areas touched by an opened note / expected areas. Fact recall:
-    expected facts cited (tags ignored) / expected facts. None where the set has no key for it."""
-    from yggdras.data.maps import checks
-
-    if "error" in row:
-        return 0.0, 0.0
-    areas = q.get("areas") or sorted({library.notes[s].area for s in q["gold"] if s in library.notes})
-    touched = {library.notes[s].area for s in row.get("opened", []) if s in library.notes}
-    facet = len(set(areas) & touched) / len(areas) if areas else None
-
-    def norm(text: str) -> str:
-        return TAG.sub("", checks.quote_unit(text))
-
-    cited = {(c["slug"], norm(c["quote"])) for c in row.get("citations", []) if c.get("ok")}
-    facts = expected_facts(q)
-    fact = sum((s, norm(f)) in cited for s, f in facts) / len(facts) if facts else None
-    return facet, fact
-
-
-def judge(client, q: dict, row: dict) -> str:
-    import anthropic  # noqa: F401
-
+def judge(client: AnthropicClient, q: dict, row: dict) -> str:
     key = "ABSTAIN" if q["abstain"] else q["expected"]
     schema = {"type": "object", "additionalProperties": False, "required": ["grade"],
               "properties": {"grade": {"type": "string", "enum": ["correct", "partly_correct", "wrong",
@@ -470,347 +255,181 @@ def judge(client, q: dict, row: dict) -> str:
     r = client._client.messages.create(model=JUDGE, max_tokens=512, system=RUBRIC,
                                        output_config={"effort": "low", "format": {"type": "json_schema", "schema": schema}},
                                        messages=[{"role": "user", "content": msg}])  # fmt: skip
-    from yggdras.processing.lia.models import cost_of
-
     u = r.usage
     client.budget.add(cost_of(JUDGE, u.input_tokens, u.cache_creation_input_tokens or 0,
                               u.cache_read_input_tokens or 0, u.output_tokens))  # fmt: skip
     return json.loads("".join(b.text for b in r.content if b.type == "text"))["grade"]
 
 
-def grade() -> None:
-    verify()
-    budget = load_budget()
+def grade(payload: dict, budget: Budget) -> dict:
+    keyed = {q["id"]: q for q in SETS[payload["set"]][0]()}
     client = AnthropicClient(JUDGE, "low", budget)
-    for folder in (HERE / "results", LOCAL / "results"):
-        for path in sorted(folder.glob("*.json")) if folder.is_dir() else []:
-            if path.name.endswith(".graded.json"):
-                continue
-            target = path.with_suffix(".graded.json")
-            if target.is_file():
-                continue
-            data = json.loads(path.read_text(encoding="utf-8"))
-            if "set" not in data:  # not a run file (the E7 summary)
-                continue
-            keyed = {q["id"]: q for q in SETS[data["set"]][0]()}
 
-            def one(row):
-                q = keyed[row["qid"]]
-                row["grade_terms"] = keyterm_grade(q, row) if "error" not in row else "wrong"
-                row["grade_judge"] = judge(client, q, row) if "error" not in row else "wrong"
-                row["gold"] = q["gold"]
-                row["recall"] = (len(set(q["gold"]) & set(row.get("opened", []))) / len(q["gold"])
-                                 if q["gold"] else None)  # fmt: skip
-                row["facet_recall"], row["fact_recall"] = recalls(q, row, library_of(data["set"]))
-                return row
+    def one(row):
+        q = keyed[row["qid"]]
+        bad = "error" in row
+        row["grade_terms"] = "wrong" if bad else keyterm_grade(q, row)
+        row["grade_judge"] = "wrong" if bad else judge(client, q, row)
+        return row
 
-            with ThreadPoolExecutor(WORKERS) as pool:
-                data["rows"] = list(pool.map(one, data["rows"]))
-            target.write_text(json.dumps(data, indent=1, ensure_ascii=False), encoding="utf-8")
-            save_budget(budget)
-            print("graded", target.name, f"total ${budget.spent:.3f}")
+    with ThreadPoolExecutor(WORKERS) as pool:
+        payload["rows"] = list(pool.map(one, payload["rows"]))
+    return payload
 
 
-# ---------------------------------------------------------------- E7: routing recall at scale
-
-
-def synth_brain(n: int, folder: Path, seed: int = 7) -> list[dict]:
-    """A synthetic library of n notes (people and projects in eight areas) and 30 questions,
-    each asking who works on a project given only its codename; gold = person + project."""
-    rng = random.Random(seed + n)
-    areas = ["01-health", "02-relationships", "03-work-career", "04-learning", "05-money",
-             "06-purpose", "07-home-admin", "08-rest-joy"]  # fmt: skip
-    syll = ["ka", "lo", "mi", "ra", "ve", "to", "su", "ne", "pa", "di", "go", "ru"]
-    word = lambda k: "".join(rng.choice(syll) for _ in range(k))  # noqa: E731
-    lib = folder / "library"
-    (lib / "00-manual").mkdir(parents=True, exist_ok=True)
-    for f in ("taxonomy.md", "node.md"):
-        (lib / "00-manual" / f).write_bytes((BRAIN_PIN / "library" / "00-manual" / f).read_bytes())
-    pairs, questions = n // 2, []
-    for i in range(pairs):
-        area = areas[i % len(areas)]
-        person, project, code = f"{word(2)}-{word(2)}", f"project-{word(3)}", word(3).capitalize()
-        (lib / "11-people").mkdir(exist_ok=True)
-        (lib / area).mkdir(exist_ok=True)
-        (lib / "11-people" / f"{person}.md").write_text(
-            f"---\nid: p{i}\nslug: {person}\nname: \"{person.replace('-', ' ').title()}\"\ntype: person\n"
-            f"area: {area}\ndescription: \"A person in {area[3:]}\"\naliases: []\n---\n\n# {person}\n\n"
-            f"## Facts\n\n- {person} works on {project}. (src: self, 2030-01-01)\n\n## Links\n\n"
-            f"- works_on [[{project}]]\n", encoding="utf-8")  # fmt: skip
-        (lib / area / f"{project}.md").write_text(
-            f"---\nid: j{i}\nslug: {project}\nname: \"{project.replace('-', ' ').title()}\"\ntype: project\n"
-            f"area: {area}\nstatus: active\ndescription: \"A project, codename {code}\"\naliases: [\"{code}\"]\n---\n\n"
-            f"# {project}\n\n## Facts\n\n- {project} has the codename {code}. (src: self, 2030-01-01)\n\n"
-            "## Links\n\n", encoding="utf-8")  # fmt: skip
-        questions.append({"id": f"s{i:04d}", "question": f"Who works on the project codenamed {code}?",
-                          "gold": [person, project]})  # fmt: skip
-    rng.shuffle(questions)
-    return questions[:30]
-
-
-def e7(model: str) -> None:
-    verify()
-    budget = load_budget()
-    skills = load_skills(BRAIN_REPO / "skills" / "lia")
-    out = {}
-    for n in (100, 300, 1000):
-        folder = LOCAL / "synth" / str(n)
-        questions = synth_brain(n, folder)
-        library = Library(folder / "library")
-        cfg = LiaConfig(model=model)
-        lia = Lia(AnthropicClient(model, "low", budget), library, skills, cfg)
-        recalls = []
-        for r in range(1, 4):
-            def route(q):
-                state = {"steps": [], "calls": [], "opened": {}, "searches": 0}
-                messages = [{"role": "user", "content": [{"type": "text", "text": f"Question: {q['question']}"}]}]
-                for _ in range(4):  # route only: stop at the first open_notes
-                    reply = lia.client.send(system=lia.system, tools=lia_tools(), messages=messages)
-                    lia._assistant(messages, reply)
-                    if reply.stop_reason != "tool_use":
-                        break
-                    results = [{"type": "tool_result", "tool_use_id": c["id"], "content": lia._tool(c, state)}
-                               for c in reply.tool_calls]  # fmt: skip
-                    messages.append({"role": "user", "content": results})
-                    if state["opened"]:
-                        break
-                save_budget(budget)
-                return len(set(q["gold"]) & set(state["opened"])) / 2
-
-            with ThreadPoolExecutor(WORKERS) as pool:
-                recalls.append(statistics.mean(pool.map(route, questions)))
-        out[n] = {"recall_per_run": recalls, "map_tokens_est": sum(len(t) for t in library.maps().values()) / 2.35}
-        print(n, out[n], f"total ${budget.spent:.3f}")
-    (HERE / "results" / f"e7__{model}.json").write_text(json.dumps(out, indent=1), encoding="utf-8")
-
-
-def lia_tools():
-    from yggdras.processing.lia.lia import TOOLS
-
-    return TOOLS
-
-
-# ---------------------------------------------------------------- tables
-
-
-def final_grade(row: dict, overrides: dict, model: str) -> str:
-    key = f"{row['arm']}|{row['set']}|{row['run']}|{row['qid']}|{model}"
-    return overrides.get(key, row.get("grade_judge", "wrong"))
-
-
-def table() -> None:
-    overrides = {}
-    for f in (HERE / "overrides.json", LOCAL / "overrides.json"):
-        if f.is_file():
-            overrides.update(json.loads(f.read_text(encoding="utf-8")))
-    groups = {}
-    for folder in (HERE / "results", LOCAL / "results"):
-        for path in sorted(folder.glob("*.graded.json")) if folder.is_dir() else []:
-            data = json.loads(path.read_text(encoding="utf-8"))
-            groups.setdefault((data["arm"], data["set"], data["model"]), []).append(data)
-    print("| arm | set | model | score per run (correct+correct abstain) | partly | citation pass | recall | $ / q | p50 s | p90 s |")
-    print("|---|---|---|---|---|---|---|---|---|---|")
-    for (arm, set_name, model), runs in sorted(groups.items()):
-        scores, partly, lat, cost, rec, cit_ok, cit_all = [], [], [], [], [], 0, 0
-        for d in sorted(runs, key=lambda d: d["run"]):
-            g = [final_grade(r, overrides, model) for r in d["rows"]]
-            scores.append(sum(x in ("correct", "correct_abstain") for x in g))
-            partly.append(sum(x == "partly_correct" for x in g))
-            for r in d["rows"]:
-                lat.append(r.get("latency_ms", 0) / 1000)
-                cost.append(r.get("cost_usd", 0))
-                if r.get("recall") is not None:
-                    rec.append(r["recall"])
-                cc = r.get("citation_check")
-                if cc:
-                    cit_all += cc["total"]
-                    cit_ok += cc["total"] - cc["failed"]
-        n = len(runs[0]["rows"])
-        q = statistics.quantiles(lat, n=10) if len(lat) > 1 else [0] * 9
-        print(f"| {arm} | {set_name} | {model.replace('claude-', '')} | {', '.join(map(str, scores))} of {n} | "
-              f"{', '.join(map(str, partly))} | {cit_ok}/{cit_all} | {statistics.mean(rec):.2f} | "
-              f"{statistics.mean(cost):.4f} | {statistics.median(lat):.1f} | {q[8]:.1f} |")  # fmt: skip
-
-
-def recheck(arm: str, model: str) -> None:
-    """Gate bar 3: re-check every shown citation of *arm* against the pinned notes, fresh."""
-    from yggdras.data.maps import checks
-
+def fresh_citations(payload: dict) -> tuple[int, int, int, int]:
+    """Every shown citation, re-checked against the pinned notes: (shown, verified, marked
+    unverified, invented)."""
+    _, root, flat = SETS[payload["set"]]
+    library = Library(root, flat=flat)
     shown = verified = marked = invented = 0
-    for folder in (HERE / "results", LOCAL / "results"):
-        for path in sorted(folder.glob(f"{arm}__*__{model}__r*.json")) if folder.is_dir() else []:
-            if path.name.endswith(".graded.json"):
-                continue
-            data = json.loads(path.read_text(encoding="utf-8"))
-            _, root, flat = SETS[data["set"]]
-            library = Library(root, flat=flat)
-            for row in data["rows"]:
-                answer = row.get("answer") or ""
-                opened = {s: library.note_text(s) for s in row.get("opened", [])}
-                for c in checks.check_citations(answer.replace(" [unverified]", ""), opened):
-                    shown += 1
-                    tag = any(f"{c.quote}{end} [unverified]" in answer for end in ('"', "»", ""))
-                    if c.ok:
-                        verified += 1
-                    elif tag:
-                        marked += 1
-                    else:
-                        invented += 1
-                        print("INVENTED", data["set"], row["qid"], c.slug, c.quote[:80])
-    print(f"{arm} {model}: shown {shown}, verified {verified}, marked unverified {marked}, invented {invented}")
+    for row in payload["rows"]:
+        answer = row.get("answer") or ""
+        opened = {s: library.note_text(s) for s in row.get("opened", [])}
+        for c in checks.check_citations(answer.replace(" [unverified]", ""), opened):
+            shown += 1
+            if c.ok:
+                verified += 1
+            elif any(f"{c.quote}{end} [unverified]" in answer for end in ("»", '"', "")):
+                marked += 1
+            else:
+                invented += 1
+    return shown, verified, marked, invented
 
 
-def xtable(prefix: str = "x-") -> None:
-    """The explore task's tables: per arm and set, accuracy, recalls, citations, traps, latency
-    and cost, with cost and latency split by the effort level x-all's first run gave."""
-    from yggdras.data.maps import checks
-
-    overrides = {}
-    for f in (HERE / "overrides.json", LOCAL / "overrides.json"):
-        if f.is_file():
-            overrides.update(json.loads(f.read_text(encoding="utf-8")))
-    runs = {}
-    for folder in (HERE / "results", LOCAL / "results"):
-        for path in sorted(folder.glob(f"{prefix}*.graded.json")) if folder.is_dir() else []:
-            d = json.loads(path.read_text(encoding="utf-8"))
-            runs.setdefault((d["arm"], d["set"], d["model"]), []).append(d)
-    effort = {}
-    for (arm, set_name, _), ds in runs.items():
-        if arm == "x-all":
-            for r in min(ds, key=lambda d: d["run"])["rows"]:
-                effort[(set_name, r["qid"])] = r.get("effort") or "medium"
-    keyed = {s: {q["id"]: q for q in SETS[s][0]()} for s in {k[1] for k in runs}}
-    print("| arm | set | score per run | partly | facet recall | fact recall | citations verified / shown | invented | traps | p50 / p90 s | $ / q |")
-    print("|---|---|---|---|---|---|---|---|---|---|---|")
-    by_effort = {}
-    for (arm, set_name, model), ds in sorted(runs.items()):
-        lib = library_of(set_name)
-        scores, partly, facet, fact, lat, cost = [], [], [], [], [], []
-        shown = verified = invented = traps = traps_ok = 0
-        for d in sorted(ds, key=lambda d: d["run"]):
-            g = [final_grade(r, overrides, model) for r in d["rows"]]
-            scores.append(sum(x in ("correct", "correct_abstain") for x in g))
-            partly.append(sum(x == "partly_correct" for x in g))
-            for r, grade in zip(d["rows"], g, strict=True):
-                q = keyed[set_name][r["qid"]]
-                if q["abstain"]:
-                    traps += 1
-                    traps_ok += grade == "correct_abstain"
-                if r.get("facet_recall") is not None:
-                    facet.append(r["facet_recall"])
-                if r.get("fact_recall") is not None:
-                    fact.append(r["fact_recall"])
-                lat.append(r.get("latency_ms", 0) / 1000)
-                cost.append(r.get("cost_usd", 0))
-                level = r.get("effort") or effort.get((set_name, r["qid"]), "medium")
-                by_effort.setdefault((arm, level), []).append((r.get("latency_ms", 0) / 1000, r.get("cost_usd", 0)))
-                answer = r.get("answer") or ""
-                opened = {s: lib.note_text(s) for s in r.get("opened", [])}
-                for c in checks.check_citations(answer.replace(" [unverified]", ""), opened):
-                    shown += 1
-                    if c.ok:
-                        verified += 1
-                    elif not any(f"{c.quote}{end} [unverified]" in answer for end in ("»", "")):
-                        invented += 1
-        n = len(ds[0]["rows"])
-        q9 = statistics.quantiles(lat, n=10)[8] if len(lat) > 1 else 0
-        mean = lambda xs: f"{statistics.mean(xs):.2f}" if xs else "—"  # noqa: E731
-        print(f"| {arm} | {set_name} | {', '.join(map(str, scores))} of {n} | {', '.join(map(str, partly))} | "
-              f"{mean(facet)} | {mean(fact)} | {verified}/{shown} | {invented} | "
-              f"{traps_ok}/{traps if traps else '—'} | {statistics.median(lat):.1f} / {q9:.1f} | "
-              f"{statistics.mean(cost):.4f} |")  # fmt: skip
-    print("\n| arm | effort | questions | p50 s | p90 s | $ / q |\n|---|---|---|---|---|---|")
-    for (arm, level), xs in sorted(by_effort.items()):
-        lat = sorted(x for x, _ in xs)
-        q9 = statistics.quantiles(lat, n=10)[8] if len(lat) > 1 else lat[0]
-        print(f"| {arm} | {level} | {len(xs)} | {statistics.median(lat):.1f} | {q9:.1f} | "
-              f"{statistics.mean(c for _, c in xs):.4f} |")  # fmt: skip
+# ---------------------------------------------------------------- check
 
 
-def pick_accuracy() -> None:
-    """Arm D: a pick is right when at least one playbook was loaded and every loaded one is in
-    the question's labelled set; "first" counts the first loaded one alone."""
+def summary(payload: dict, overrides: dict | None = None) -> dict:
+    keyed = {q["id"]: q for q in SETS[payload["set"]][0]()}
+    rows = [r for r in payload["rows"] if "error" not in r]
+    overrides = overrides or {}
+    judged = [overrides.get(r["qid"], r.get("grade_judge")) for r in rows]
+    traps = [r for r in rows if keyed[r["qid"]]["abstain"]]
+    lat = sorted(r["latency_ms"] / 1000 for r in rows)
+    shown, verified, marked, invented = fresh_citations(payload)
+    return {
+        "questions": len(payload["rows"]),
+        "invalid": len(payload["rows"]) - len(rows),
+        "judge": sum(g in GOOD for g in judged) if all(judged) else None,
+        "terms": sum(keyterm_grade(keyed[r["qid"]], r) in GOOD for r in rows),
+        "traps": f"{sum(keyterm_grade(keyed[r['qid']], r) == 'correct_abstain' for r in traps)}/{len(traps)}",
+        "citations": f"{verified}/{shown} verified, {marked} marked, {invented} invented",
+        "invented": invented,
+        "unsupported": sum(len((r.get("checks") or {}).get("unsupported_left", [])) for r in rows),
+        "absence": sum(len((r.get("checks") or {}).get("absence_left", [])) for r in rows),
+        "cost": statistics.mean(r["cost_usd"] for r in rows),
+        "p50": statistics.median(lat),
+        "p90": statistics.quantiles(lat, n=10)[8] if len(lat) > 1 else lat[0],
+    }
+
+
+def stored(prefix: str) -> list[tuple[str, dict]]:
+    """Stored Apollo hard-v8 runs named <prefix>__apollo-hard__claude-haiku-5-5__r*, with the
+    Step 2 hand overrides applied to the judge grades where they exist."""
+    overrides_all = json.loads((HERE / "overrides.json").read_text(encoding="utf-8"))
+    out = []
+    for r in (1, 2, 3):
+        base = HERE / "results" / f"{prefix}__apollo-hard__claude-haiku-5-5__r{r}"
+        path = next((p for p in (Path(f"{base}.graded.json"), Path(f"{base}.json")) if p.exists()), None)
+        if path is None:
+            continue
+        d = json.loads(path.read_text(encoding="utf-8"))
+        ov = {k.split("|")[3]: v for k, v in overrides_all.items()
+              if k.startswith(f"{prefix}|apollo-hard|{r}|") and k.endswith("claude-haiku-5-5")}  # fmt: skip
+        d["set"] = "apollo-hard"
+        out.append((f"{prefix} r{r}", summary(d, ov)))
+    return out
+
+
+def check() -> None:
+    config.load_env_file()
+    check_pin()
+    leak_guard()
+    before = tree_hash(BRAIN_PIN)
+    budget = Budget(stop_at=CHECK_BUDGET)
+    stamp = time.strftime("%Y%m%d-%H%M")
+    try:
+        payload = run_set("apollo-hard", f"check-{stamp}", budget, lia_factory(budget))
+        payload = grade(payload, budget)
+    except BudgetStop as stop:
+        sys.exit(f"BUDGET STOP: {stop}")
+    if tree_hash(BRAIN_PIN) != before:
+        sys.exit("STOP: the pinned brain changed during the check")
+    previous = sorted((HERE / "results").glob("check-*.json"))
+    path = save(payload, f"check-{stamp}")
+    now = summary(payload)
+    rows = [(f"check {stamp}", now)]
+    if previous:
+        last = json.loads(previous[-1].read_text(encoding="utf-8"))
+        rows.append((f"last check {previous[-1].stem[6:]}", summary(last)))
+    rows += stored("final-v2") + stored("x-base")
+    print(f"\nApollo hard-v8, {now['questions']} questions; saved {path.name}; spent ${budget.spent:.3f}\n")
+    print("| run | judge | key terms | traps | citations | unsupported | absence | $ / q | p50 / p90 s |")
+    print("|---|---|---|---|---|---|---|---|---|")
+    for name, s in rows:
+        judged = "—" if s["judge"] is None else s["judge"]
+        print(f"| {name} | {judged} | {s['terms']} | {s['traps']} | {s['citations']} | {s['unsupported']} | "
+              f"{s['absence']} | {s['cost']:.4f} | {s['p50']:.1f} / {s['p90']:.1f} |")  # fmt: skip
     lab = labels()
-    print("| arm | set | answers | right | first right | none loaded | loaded with first open_notes |")
+    print("\n| q | effort | model | skills loaded | labelled | right | checklist | judge |")
+    print("|---|---|---|---|---|---|---|---|")
+    right = 0
+    for r in payload["rows"]:
+        if "error" in r:
+            print(f"| {r['qid']} | invalid: {r['error'][:60]} |")
+            continue
+        got, ok = r.get("skills_loaded", []), lab.get(f"apollo-hard/{r['qid']}", [])
+        good = bool(got) and set(got) <= set(ok)
+        right += good
+        print(f"| {r['qid']} | {r['effort']} | {r['model'].replace('claude-', '')} | {', '.join(got) or '—'} | "
+              f"{', '.join(ok)} | {'yes' if good else 'no'} | {r.get('checklist_complete')} | {r['grade_judge']} |")  # fmt: skip
+    print(f"\nskill picks right: {right}/{len(payload['rows'])}")
+    ok_traps, all_traps = now["traps"].split("/")
+    if now["invented"] or ok_traps != all_traps:
+        print("\nREGRESSION: traps below 100% or invented citations; not fit to be the default.")
+        sys.exit(1)
+
+
+# ---------------------------------------------------------------- gate
+
+
+def gate() -> None:
+    """The v2 gate: Lia vs variant C, 3 runs each, on life hard-v2, Apollo held-out-v8 and
+    hard-v8, against the five bars in prereg.md. Stops until life hard-v2 is frozen."""
+    config.load_env_file()
+    check_pin()
+    SETS["life-v2"][0]()  # stops here until life hard-v2 is frozen
+    from variant_c import VariantC
+
+    before = tree_hash(BRAIN_PIN)
+    budget = Budget(stop_at=GATE_BUDGET)
+    factories = {"lia": lia_factory(budget),
+                 "variant-c": lambda library, root, flat: VariantC(root, flat, "claude-haiku-5-5", budget).ask}  # fmt: skip
+    results = {}
+    try:
+        for set_name in ("life-v2", "apollo-held", "apollo-hard"):
+            for arm, factory in factories.items():
+                for r in (1, 2, 3):
+                    payload = grade(run_set(set_name, f"gate-{arm}-r{r}", budget, factory), budget)
+                    save(payload, f"gate__{arm}__{set_name}__r{r}")
+                    results.setdefault((set_name, arm), []).append(payload)
+    except BudgetStop as stop:
+        sys.exit(f"BUDGET STOP: {stop}")
+    if tree_hash(BRAIN_PIN) != before:
+        sys.exit("STOP: the pinned brain changed during the gate")
+    print("| set | arm | judge score per run | traps | invented citations | p50 s | $ / q |")
     print("|---|---|---|---|---|---|---|")
-    for folder in (HERE / "results", LOCAL / "results"):
-        groups = {}
-        for path in sorted(folder.glob("v4-D*.json")) if folder.is_dir() else []:
-            if path.name.endswith(".graded.json"):
-                continue
-            d = json.loads(path.read_text(encoding="utf-8"))
-            groups.setdefault((d["arm"], d["set"]), []).extend(d["rows"])
-        for (arm, set_name), rows in sorted(groups.items()):
-            n = right = first = none = parallel = 0
-            for r in rows:
-                if "error" in r:
-                    continue
-                n += 1
-                ok = set(lab.get(f"{set_name}/{r['qid']}", []))
-                got = r.get("skills_loaded", [])
-                none += not got
-                right += bool(got) and set(got) <= ok
-                first += bool(got) and got[0] in ok
-                parallel += bool(r.get("skill_turns")) and r.get("first_open_turn") in r["skill_turns"]
-            print(f"| {arm} | {set_name} | {n} | {right} | {first} | {none} | {parallel} |")
-
-
-def v4checks() -> None:
-    """The v4 check counters per arm: absence (fired, found, fixed by the retry, left marked),
-    unsupported sentences (flagged first, left marked), hints given and hints opened."""
-    print("| arm | set | answers | absence fired | found | fixed | left | unsupported flagged | left | hints given | hint notes opened |")
-    print("|---|---|---|---|---|---|---|---|---|---|---|")
-    for folder in (HERE / "results", LOCAL / "results"):
-        groups = {}
-        for path in sorted(folder.glob("v4-*.json")) if folder.is_dir() else []:
-            if path.name.endswith(".graded.json"):
-                continue
-            d = json.loads(path.read_text(encoding="utf-8"))
-            groups.setdefault((d["arm"], d["set"]), []).extend(d["rows"])
-        for (arm, set_name), rows in sorted(groups.items()):
-            c = {k: 0 for k in ("n", "fired", "found", "fixed", "left", "uns", "uns_left", "hints", "used")}
-            for r in rows:
-                if "error" in r:
-                    continue
-                ch = r.get("checks") or {}
-                first = ch.get("first") or {}
-                c["n"] += 1
-                c["fired"] += first.get("absence_fired", 0)
-                c["found"] += first.get("absence_found", 0)
-                c["left"] += len(ch.get("absence_left", []))
-                c["uns"] += len(first.get("unsupported", []))
-                c["uns_left"] += len(ch.get("unsupported_left", []))
-                hints = set(r.get("hints", []))
-                c["hints"] += bool(hints)
-                c["used"] += len(hints & set(r.get("opened", [])))
-            c["fixed"] = c["found"] - c["left"]
-            print(f"| {arm} | {set_name} | {c['n']} | {c['fired']} | {c['found']} | {c['fixed']} | {c['left']} | "
-                  f"{c['uns']} | {c['uns_left']} | {c['hints']} | {c['used']} |")  # fmt: skip
+    for (set_name, arm), payloads in sorted(results.items()):
+        s = [summary(p) for p in payloads]
+        print(f"| {set_name} | {arm} | {', '.join(str(x['judge']) for x in s)} | {', '.join(x['traps'] for x in s)} | "
+              f"{sum(x['invented'] for x in s)} | {statistics.mean(x['p50'] for x in s):.1f} | "
+              f"{statistics.mean(x['cost'] for x in s):.4f} |")  # fmt: skip
+    print("\nApply the five bars in prereg.md (hand review of disagreements first).")
 
 
 if __name__ == "__main__":
-    cmd = sys.argv[1]
-    model = sys.argv[sys.argv.index("--model") + 1] if "--model" in sys.argv else "claude-haiku-5-5"
-    if cmd == "verify":
-        verify()
-        print("ok: key", KEY_SHA[:12], "pin", PIN, "skills", SKILLS_SHA[:12])
-    elif cmd == "run":
-        run(sys.argv[2], sys.argv[3], int(sys.argv[4]), model)
-    elif cmd == "grade":
-        grade()
-    elif cmd == "e7":
-        e7(model)
-    elif cmd == "table":
-        table()
-    elif cmd == "xtable":
-        xtable(sys.argv[2] if len(sys.argv) > 2 and not sys.argv[2].startswith("--") else "x-")
-    elif cmd == "v4checks":
-        v4checks()
-    elif cmd == "picks":
-        pick_accuracy()
-    elif cmd == "hashes":
-        print("library", library_hash())
-        for key, path in (("apollo", HERE / "skill-labels.json"), ("life", LOCAL / "skill-labels-life.json")):
-            print(key, hashlib.sha256(lf(path.read_bytes())).hexdigest())
-    elif cmd == "recheck":
-        recheck(sys.argv[2], model)
+    commands = {"check": check, "gate": gate}
+    if len(sys.argv) < 2 or sys.argv[1] not in commands:
+        sys.exit(f"usage: harness.py {' | '.join(commands)}")
+    commands[sys.argv[1]]()

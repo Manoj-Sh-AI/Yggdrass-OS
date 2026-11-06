@@ -8,7 +8,18 @@ import sys
 
 import pytest
 
-from test_lia import GARDEN_FACT, NODE, TAXONOMY, FakeClient, cited, note, text, tool_use
+from test_lia import (
+    CORE,
+    GARDEN_FACT,
+    NODE,
+    TAXONOMY,
+    FakeClient,
+    cited,
+    note,
+    playbook,
+    text,
+    tool_use,
+)
 from yggdras.interface.mcp_server import VERBATIM, LiaService, build_server
 
 
@@ -24,8 +35,9 @@ def brain(tmp_path):
         (root / rel).parent.mkdir(parents=True, exist_ok=True)
         (root / rel).write_text(body, encoding="utf-8")
     skills = tmp_path / "brain" / "skills" / "lia"
-    skills.mkdir(parents=True)
-    (skills / "answering.md").write_text("# Lia\n\nAnswer from notes only.\n", encoding="utf-8")
+    (skills / "library").mkdir(parents=True)
+    (skills / "core.md").write_text(CORE, encoding="utf-8")
+    (skills / "library" / "fact-lookup.md").write_text(playbook("fact-lookup"), encoding="utf-8")
     return root, skills
 
 
@@ -146,15 +158,11 @@ def test_the_result_starts_with_the_verbatim_line_and_wraps_her_reply(brain, tmp
     assert rest.startswith("<lia_reply>\n") and rest.endswith("\n</lia_reply>")
 
 
-@pytest.mark.parametrize("arm", ["ref", "A", "B", "C"])
-def test_the_connector_arms(arm):
+def test_the_connector_runs_the_one_config():
     from yggdras.interface.mcp_server import default_config
 
-    cfg = default_config("claude-haiku-5-5", arm)
-    assert cfg.fact_search == (arm != "ref")
-    assert (cfg.escalate == "claude-sonnet-5-5") == (arm in "BC")
-    assert cfg.links_complex == (arm == "C")
-    assert not cfg.plan and not cfg.coverage
+    cfg = default_config("claude-haiku-5-5")
+    assert (cfg.model, cfg.complex_model) == ("claude-haiku-5-5", "claude-sonnet-5-5")
 
 
 def test_the_talk_to_lia_prompt_sets_the_rule_for_the_conversation(brain, tmp_path):

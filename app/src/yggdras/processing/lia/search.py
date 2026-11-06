@@ -1,5 +1,5 @@
-"""Better search, free code (v4 1a–1c): a fact-level index, query expansion from the brain's own
-aliases, light stemming, and unopened-candidate hints. No embeddings; nothing is written."""
+"""Search, free code: a fact-level index, query expansion from the brain's own aliases, light
+stemming, unopened-candidate hints and the sibling-fact sweep. No embeddings; nothing is written."""
 
 from __future__ import annotations
 
@@ -9,7 +9,9 @@ from collections import Counter
 from dataclasses import dataclass
 
 from yggdras.data.graph import structural as st
+from yggdras.data.maps import checks
 from yggdras.data.maps.notes import NoteMeta, clean
+from yggdras.data.maps.upcoming import MONTHS, current_fact_lines
 
 WORD = re.compile(r"[a-z0-9äöüß]+")
 STOP = frozenset(
@@ -138,8 +140,8 @@ class FactIndex:
                 out.append((score, i))
         return sorted(out, key=lambda x: (-x[0], self.units[x[1]].slug))
 
-    def search(self, query: str, k: int = 10, expand: bool = True) -> str:
-        weights = expansions(query, self.notes) if expand else dict.fromkeys(terms(query), 1.0)
+    def search(self, query: str, k: int = 10) -> str:
+        weights = expansions(query, self.notes)
         ranked = self.scores(weights)[:k]
         if not ranked:
             return "No matches."
@@ -180,3 +182,81 @@ def candidates(
             score = sum(math.log(1 + total / df[t]) for t in shared)
             scored.append((-score, slug))
     return [notes[s] for _, s in sorted(scored)[:k]]
+
+
+# ---------------------------------------------------------------- the sibling-fact sweep
+
+SIBLINGS_MAX = 6  # sibling fact lines handed back
+PHRASE_MAX_LINES = 8  # a phrase in more fact lines than this is too common to be a key phrase
+SIBLINGS_PROMPT = (
+    "Before you finish: these fact lines, in notes you haven't cited, share a key phrase with "
+    "facts you cited. Include any that bear on the question, cited like the others (their "
+    "notes count as opened); leave out the rest. Then write the whole answer again.\n{lines}"
+)
+PHRASE_STOP = frozenset(
+    "a an the of to in on for and or with at by from as is was are were be been has had have "
+    "his her he she it its this that these those their there than then into about after before "
+    "over under via per also more most very can could would should will may might do does did "
+    "i me my you your we our they them".split()
+)
+TAG = re.compile(r"^\[[a-z]+\]\s*")
+
+
+def key_phrases(fact: str, name_words: set[str]) -> set[str]:
+    """Two-word phrases of a fact that could recur elsewhere: both words carry meaning (not a
+    stopword, a date, or a word of the note's own name). "no" and "not" count, so "no progress"
+    is one."""
+    words = WORD.findall(
+        checks.quote_unit(fact).replace("[stated]", "").replace("[inferred]", "").lower()
+    )
+
+    def keep(w: str) -> bool:
+        if w in ("no", "not", "never"):
+            return True
+        dated = w.isdigit() or w in MONTHS  # dates recur everywhere and say nothing alike
+        return not dated and w not in PHRASE_STOP and w not in name_words
+
+    return {f"{a} {b}" for a, b in zip(words, words[1:], strict=False) if keep(a) and keep(b)}
+
+
+def _is_fact(c: checks.Citation, library) -> bool:
+    """A draft quote that is a fact line of its note once tags like [stated] are ignored
+    (drafts often drop them; the final check still asks for them)."""
+    quote = TAG.sub("", checks.quote_unit(c.quote))
+    return any(TAG.sub("", checks.quote_unit(f)) == quote for f in library.fact_lines(c.slug))
+
+
+def siblings(cited: list[checks.Citation], library) -> tuple[list[tuple[str, str]], list[str]]:
+    """Fact lines in notes Lia didn't cite that share a key phrase with a fact she cited.
+    Returns ((slug, fact line), …) and the phrases that matched. No model call."""
+    good = [c for c in cited if c.slug and (c.ok or _is_fact(c, library))]
+    if not good:
+        return [], []
+    cited_slugs = {c.slug for c in good}
+    lines = {
+        slug: current_fact_lines(library.note_text(slug) or "")
+        for slug, n in library.notes.items()
+        if slug not in cited_slugs and n.type != st.HUB
+    }
+    phrases = set()
+    for c in good:
+        n = library.notes.get(c.slug)
+        name_words = (
+            set(WORD.findall(f"{n.name} {c.slug.replace('-', ' ')}".lower())) if n else set()
+        )
+        phrases |= key_phrases(c.quote, name_words)
+    joined = {(s, f): " ".join(WORD.findall(f.lower())) for s, fs in lines.items() for f in fs}
+    common = {
+        p
+        for p in phrases
+        if sum(1 for t in joined.values() if f" {p} " in f" {t} ") > PHRASE_MAX_LINES
+    }
+    phrases -= common
+    scored = []
+    for (slug, fact), text in joined.items():
+        hit = sorted(p for p in phrases if f" {p} " in f" {text} ")
+        if hit:
+            scored.append((-len(hit), slug, fact, hit))
+    scored.sort()
+    top = scored[:SIBLINGS_MAX]
+    return [(s, f) for _, s, f, _ in top], sorted({p for *_, h in top for p in h})
