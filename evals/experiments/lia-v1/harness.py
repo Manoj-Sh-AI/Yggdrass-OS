@@ -42,7 +42,7 @@ LOCAL = CODE / "local-data" / "lia-v1"
 TODAY = "2026-11-02"  # the upcoming view's "today" in every run
 WORKERS = 6
 JUDGE = "claude-haiku-5-5"
-CHECK_BUDGET = 0.50
+CHECK_BUDGET = float(os.environ.get("LIA_CHECK_BUDGET", "0.50"))  # a run may set a lower cap
 # The v2 gate's life set: Manoj writes and answers it, then it is frozen at a brain commit.
 # Fill these in when it is frozen; the gate refuses to run before that.
 LIFE_V2 = {"commit": None, "path": "evals/hard-v2.md", "sha256": None}
