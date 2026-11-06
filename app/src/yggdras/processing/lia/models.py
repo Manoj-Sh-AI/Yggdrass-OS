@@ -9,12 +9,14 @@ from dataclasses import asdict, dataclass, field
 from typing import Any, Protocol
 
 # $ per million tokens: input, output, cache-read multiplier, 1-hour cache-write multiplier.
+# A 5-minute cache write costs WRITE_5M times the input price (prompt-caching docs).
 # From the prompt-caching docs, checked 2026-11-01 (reads 0.05x on Opus 5.5 and Sonnet 5.5).
 PRICES = {
     "claude-opus-5-5": (4.00, 20.00, 0.05, 2.0),
     "claude-sonnet-5-5": (2.00, 10.00, 0.05, 2.0),
     "claude-haiku-5-5": (0.10, 0.50, 0.10, 2.0),
 }
+WRITE_5M = 1.25
 
 
 @dataclass
@@ -24,6 +26,7 @@ class Usage:
     cache_write: int = 0
     cache_read: int = 0
     output_tokens: int = 0
+    cache_write_5m: int = 0  # the part of cache_write written with the 5-minute TTL
     cost_usd: float = 0.0
     latency_ms: float = 0.0
 
@@ -31,9 +34,13 @@ class Usage:
         return asdict(self)
 
 
-def cost_of(model: str, inp: int, write: int, read: int, out: int) -> float:
+def cost_of(model: str, inp: int, write: int, read: int, out: int, write_5m: int = 0) -> float:
+    """Dollars for one call. *write* is every cache-write token; *write_5m* of them were written
+    with the 5-minute TTL (1.25x), the rest with the 1-hour TTL (2x)."""
     p_in, p_out, read_x, write_x = PRICES[model]
-    return (inp * p_in + write * p_in * write_x + read * p_in * read_x + out * p_out) / 1e6
+    write_5m = min(write_5m, write)
+    writes = (write - write_5m) * write_x + write_5m * WRITE_5M
+    return (inp * p_in + writes * p_in + read * p_in * read_x + out * p_out) / 1e6
 
 
 @dataclass
@@ -168,10 +175,16 @@ class AnthropicClient:
             cache_write=u.cache_creation_input_tokens or 0,
             cache_read=u.cache_read_input_tokens or 0,
             output_tokens=u.output_tokens,
+            cache_write_5m=getattr(u.cache_creation, "ephemeral_5m_input_tokens", 0) or 0,
             latency_ms=round((time.perf_counter() - start) * 1000, 1),
         )
         usage.cost_usd = cost_of(
-            self.model, usage.input_tokens, usage.cache_write, usage.cache_read, usage.output_tokens
+            self.model,
+            usage.input_tokens,
+            usage.cache_write,
+            usage.cache_read,
+            usage.output_tokens,
+            usage.cache_write_5m,
         )
         if self.budget:
             self.budget.add(usage.cost_usd)

@@ -199,7 +199,25 @@ def strip_leaks(answer: str) -> str:
 
 
 def mark(answer: str, sentence: str, tag: str) -> str:
-    return answer.replace(sentence, f"{sentence} {tag}", 1)
+    """*tag* right after *sentence*. If spacing changed since the check, the sentence is found
+    with any run of whitespace between its words; it is never silently left unmarked."""
+    if sentence in answer:
+        return answer.replace(sentence, f"{sentence} {tag}", 1)
+    pattern = r"\s+".join(re.escape(w) for w in sentence.split())
+    m = re.search(pattern, answer)
+    if m:
+        return answer[: m.end()] + f" {tag}" + answer[m.end() :]
+    body = checks.answer_body(answer).rstrip()
+    return body + f" {tag}" + answer[len(body) :]
+
+
+def supported_sentences(answer: str) -> int:
+    """How many of Lia's sentences carry footnote marks: the ones claim support checks."""
+    return sum(
+        1
+        for s in sentences(checks.answer_body(answer))
+        if re.search(r"\[\d+\]", s) and not ABSENCE.search(s)
+    )
 
 
 # ---------------------------------------------------------------- capability: read-only
