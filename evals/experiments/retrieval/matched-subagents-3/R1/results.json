@@ -1,0 +1,1587 @@
+[
+  {
+    "id": "d01",
+    "condition": "R1",
+    "description": "R1 d01",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: When did Apollo 8 launch, and who was its crew?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R1\\transcripts\\d01.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "a7b293c828cb34b5d",
+    "start_utc": "2026-10-25T19:30:44.157Z",
+    "end_utc": "2026-10-25T19:30:53.955Z",
+    "time_s": 9.798,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 351,
+      "cache_read_input_tokens": 52355,
+      "cache_creation_input_tokens": 6060
+    },
+    "total_tokens": 58774,
+    "cost_usd_at_recorded_rates": 0.047823,
+    "cache_neutral_cost_usd": 0.240712,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-8.md"
+        }
+      }
+    ],
+    "tool_call_count": 3,
+    "note_read_count": 1,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-8.md"
+    ],
+    "answers": [
+      "ANSWER: Apollo 8 launched on 1968-12-21. Its crew was Frank Borman, Jim Lovell and Bill Anders. This is a [stated] fact, sourced to NASA history, 2026-10-24.\nFILES: index.md, areas/apollo-8.md"
+    ],
+    "answer": "ANSWER: Apollo 8 launched on 1968-12-21. Its crew was Frank Borman, Jim Lovell and Bill Anders. This is a [stated] fact, sourced to NASA history, 2026-10-24.\nFILES: index.md, areas/apollo-8.md",
+    "tool_errors": []
+  },
+  {
+    "id": "d02",
+    "condition": "R1",
+    "description": "R1 d02",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: Which company built the Apollo service module oxygen tanks?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R1\\transcripts\\d02.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "a0092e7d5411d8aa0",
+    "start_utc": "2026-10-25T19:30:46.918Z",
+    "end_utc": "2026-10-25T19:30:55.496Z",
+    "time_s": 8.578,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 342,
+      "cache_read_input_tokens": 52347,
+      "cache_creation_input_tokens": 5985
+    },
+    "total_tokens": 58682,
+    "cost_usd_at_recorded_rates": 0.0472664,
+    "cache_neutral_cost_usd": 0.2402,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\beech-aircraft.md"
+        }
+      }
+    ],
+    "tool_call_count": 3,
+    "note_read_count": 1,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\beech-aircraft.md"
+    ],
+    "answers": [
+      "ANSWER: Beech Aircraft built the Apollo service module oxygen tanks, as a subcontractor to North American Aviation (src: Moonport SP-4204, 2026-10-24).\nFILES: index.md, areas/beech-aircraft.md"
+    ],
+    "answer": "ANSWER: Beech Aircraft built the Apollo service module oxygen tanks, as a subcontractor to North American Aviation (src: Moonport SP-4204, 2026-10-24).\nFILES: index.md, areas/beech-aircraft.md",
+    "tool_errors": []
+  },
+  {
+    "id": "d03",
+    "condition": "R1",
+    "description": "R1 d03",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: When did NASA announce lunar orbit rendezvous as the Apollo mission mode?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R1\\transcripts\\d03.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "a4a0f4e4ad237902a",
+    "start_utc": "2026-10-25T19:30:49.581Z",
+    "end_utc": "2026-10-25T19:30:58.070Z",
+    "time_s": 8.489,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 388,
+      "cache_read_input_tokens": 52393,
+      "cache_creation_input_tokens": 6048
+    },
+    "total_tokens": 58837,
+    "cost_usd_at_recorded_rates": 0.0485106,
+    "cache_neutral_cost_usd": 0.241556,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\lunar-orbit-rendezvous.md"
+        }
+      }
+    ],
+    "tool_call_count": 3,
+    "note_read_count": 1,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\lunar-orbit-rendezvous.md"
+    ],
+    "answers": [
+      "ANSWER: NASA announced lunar orbit rendezvous as the Apollo mission mode on 1962-07-11 (July 11, 1962). It was a stated fact, and the source is NASA history (2026-10-24). NASA picked it over direct ascent and Earth orbit rendezvous.\nFILES: index.md, topics/lunar-orbit-rendezvous.md"
+    ],
+    "answer": "ANSWER: NASA announced lunar orbit rendezvous as the Apollo mission mode on 1962-07-11 (July 11, 1962). It was a stated fact, and the source is NASA history (2026-10-24). NASA picked it over direct ascent and Earth orbit rendezvous.\nFILES: index.md, topics/lunar-orbit-rendezvous.md",
+    "tool_errors": []
+  },
+  {
+    "id": "d04",
+    "condition": "R1",
+    "description": "R1 d04",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: What award did Margaret Hamilton receive, and when?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R1\\transcripts\\d04.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "a3ae858b8cbbc412c",
+    "start_utc": "2026-10-25T19:30:52.278Z",
+    "end_utc": "2026-10-25T19:31:01.686Z",
+    "time_s": 9.408,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 344,
+      "cache_read_input_tokens": 52347,
+      "cache_creation_input_tokens": 6080
+    },
+    "total_tokens": 58779,
+    "cost_usd_at_recorded_rates": 0.0477814,
+    "cache_neutral_cost_usd": 0.24062,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\margaret-hamilton.md"
+        }
+      }
+    ],
+    "tool_call_count": 3,
+    "note_read_count": 1,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\margaret-hamilton.md"
+    ],
+    "answers": [
+      "ANSWER: Margaret Hamilton received the Presidential Medal of Freedom on 2016-11-22. This is a [stated] fact; the source is NASA history, recorded 2026-10-24.\nFILES: index.md, people/margaret-hamilton.md"
+    ],
+    "answer": "ANSWER: Margaret Hamilton received the Presidential Medal of Freedom on 2016-11-22. This is a [stated] fact; the source is NASA history, recorded 2026-10-24.\nFILES: index.md, people/margaret-hamilton.md",
+    "tool_errors": []
+  },
+  {
+    "id": "d05",
+    "condition": "R1",
+    "description": "R1 d05",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: How many astronauts walked on the Moon during the Apollo program?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R1\\transcripts\\d05.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "aa839aab8e0a2946b",
+    "start_utc": "2026-10-25T19:30:55.140Z",
+    "end_utc": "2026-10-25T19:31:02.754Z",
+    "time_s": 7.614,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 337,
+      "cache_read_input_tokens": 52358,
+      "cache_creation_input_tokens": 6148
+    },
+    "total_tokens": 58851,
+    "cost_usd_at_recorded_rates": 0.0479836,
+    "cache_neutral_cost_usd": 0.240796,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-program.md"
+        }
+      }
+    ],
+    "tool_call_count": 3,
+    "note_read_count": 1,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-program.md"
+    ],
+    "answers": [
+      "ANSWER: Twelve astronauts walked on the Moon during the Apollo program, across six crewed landings from July 1969 to December 1972 (src: NASA history, 2026-10-24).\nFILES: index.md, areas/apollo-program.md"
+    ],
+    "answer": "ANSWER: Twelve astronauts walked on the Moon during the Apollo program, across six crewed landings from July 1969 to December 1972 (src: NASA history, 2026-10-24).\nFILES: index.md, areas/apollo-program.md",
+    "tool_errors": []
+  },
+  {
+    "id": "d06",
+    "condition": "R1",
+    "description": "R1 d06",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: Why couldn't Apollo 13's command module CO2 canisters be used directly in the lunar module?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R1\\transcripts\\d06.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "aae67a39a726d77c9",
+    "start_utc": "2026-10-25T19:30:57.975Z",
+    "end_utc": "2026-10-25T19:31:05.986Z",
+    "time_s": 8.011,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 421,
+      "cache_read_input_tokens": 52412,
+      "cache_creation_input_tokens": 6109
+    },
+    "total_tokens": 58950,
+    "cost_usd_at_recorded_rates": 0.0494794,
+    "cache_neutral_cost_usd": 0.242536,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\co2-scrubber-adapter.md"
+        }
+      }
+    ],
+    "tool_call_count": 3,
+    "note_read_count": 1,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\co2-scrubber-adapter.md"
+    ],
+    "answers": [
+      "ANSWER: The command module's lithium hydroxide (CO2) canisters were square, but the lunar module's were round, so the square canisters did not fit the lunar module's sockets. To make them fit, engineers designed an adapter out of hoses, cardboard, plastic bags and tape, and the crew built it by following instructions radioed to them. (src: NASA Apollo 13 mission page, 2026-10-24)\nFILES: index.md, topics/co2-scrubber-adapter.md"
+    ],
+    "answer": "ANSWER: The command module's lithium hydroxide (CO2) canisters were square, but the lunar module's were round, so the square canisters did not fit the lunar module's sockets. To make them fit, engineers designed an adapter out of hoses, cardboard, plastic bags and tape, and the crew built it by following instructions radioed to them. (src: NASA Apollo 13 mission page, 2026-10-24)\nFILES: index.md, topics/co2-scrubber-adapter.md",
+    "tool_errors": []
+  },
+  {
+    "id": "d07",
+    "condition": "R1",
+    "description": "R1 d07",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: Where did Apollo 16 land?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R1\\transcripts\\d07.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "a9a31fe8a513d901b",
+    "start_utc": "2026-10-25T19:31:00.440Z",
+    "end_utc": "2026-10-25T19:31:08.793Z",
+    "time_s": 8.353,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 327,
+      "cache_read_input_tokens": 52315,
+      "cache_creation_input_tokens": 6009
+    },
+    "total_tokens": 58659,
+    "cost_usd_at_recorded_rates": 0.04708,
+    "cache_neutral_cost_usd": 0.239868,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-16.md"
+        }
+      }
+    ],
+    "tool_call_count": 3,
+    "note_read_count": 1,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-16.md"
+    ],
+    "answers": [
+      "ANSWER: Apollo 16 landed in the Descartes Highlands. This is a [stated] fact in the node (src: NASA history, 2026-10-24).\nFILES: index.md, areas/apollo-16.md"
+    ],
+    "answer": "ANSWER: Apollo 16 landed in the Descartes Highlands. This is a [stated] fact in the node (src: NASA history, 2026-10-24).\nFILES: index.md, areas/apollo-16.md",
+    "tool_errors": []
+  },
+  {
+    "id": "d08",
+    "condition": "R1",
+    "description": "R1 d08",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: Why did the Apollo Guidance Computer keep flying through the Apollo 11 alarms?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R1\\transcripts\\d08.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "a3923aca0d65d5cf8",
+    "start_utc": "2026-10-25T19:31:03.284Z",
+    "end_utc": "2026-10-25T19:31:20.701Z",
+    "time_s": 17.417,
+    "usage": {
+      "input_tokens": 14,
+      "output_tokens": 969,
+      "cache_read_input_tokens": 107078,
+      "cache_creation_input_tokens": 8255
+    },
+    "total_tokens": 116316,
+    "cost_usd_at_recorded_rates": 0.08212660000000001,
+    "cache_neutral_cost_usd": 0.480768,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\program-alarms-1201-1202.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\apollo-guidance-computer.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\sources\\apollo-11-mission-report\\apollo-11-mission-report-ch-05.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\margaret-hamilton.md"
+        }
+      }
+    ],
+    "tool_call_count": 6,
+    "note_read_count": 4,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\program-alarms-1201-1202.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\apollo-guidance-computer.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\sources\\apollo-11-mission-report\\apollo-11-mission-report-ch-05.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\margaret-hamilton.md"
+    ],
+    "answers": [
+      "ANSWER: The brain gives no stated source for why the computer kept going. The only explanation is an agent's own inference, not a documented fact: an agent concluded that the software's priority scheduling is why the computer kept flying through the Apollo 11 alarms (src: agent, 2026-10-24). This software was written by Margaret Hamilton's team at the MIT Instrumentation Laboratory. The stated facts are these: the Apollo Guidance Computer raised five program alarms (1201/1202) during the powered descent. The first came about 5 minutes after descent initiation. The alarms did not degrade any primary guidance or control function, though they did interfere with the crew's early assessment of the landing approach (src: Apollo 11 Mission Report p.5-4, 2026-10-24). Section 5.3 (pages 5-4 to 5-6) of the mission report records the alarms but gives no cause.\nFILES: index.md, topics/program-alarms-1201-1202.md, topics/apollo-guidance-computer.md, sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md, people/margaret-hamilton.md"
+    ],
+    "answer": "ANSWER: The brain gives no stated source for why the computer kept going. The only explanation is an agent's own inference, not a documented fact: an agent concluded that the software's priority scheduling is why the computer kept flying through the Apollo 11 alarms (src: agent, 2026-10-24). This software was written by Margaret Hamilton's team at the MIT Instrumentation Laboratory. The stated facts are these: the Apollo Guidance Computer raised five program alarms (1201/1202) during the powered descent. The first came about 5 minutes after descent initiation. The alarms did not degrade any primary guidance or control function, though they did interfere with the crew's early assessment of the landing approach (src: Apollo 11 Mission Report p.5-4, 2026-10-24). Section 5.3 (pages 5-4 to 5-6) of the mission report records the alarms but gives no cause.\nFILES: index.md, topics/program-alarms-1201-1202.md, topics/apollo-guidance-computer.md, sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md, people/margaret-hamilton.md",
+    "tool_errors": []
+  },
+  {
+    "id": "d09",
+    "condition": "R1",
+    "description": "R1 d09",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: What happened at Launch Complex 34 on 1967-01-27?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R1\\transcripts\\d09.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "a2a7997fd0324fd84",
+    "start_utc": "2026-10-25T19:31:05.965Z",
+    "end_utc": "2026-10-25T19:31:16.128Z",
+    "time_s": 10.163,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 420,
+      "cache_read_input_tokens": 52355,
+      "cache_creation_input_tokens": 6039
+    },
+    "total_tokens": 58822,
+    "cost_usd_at_recorded_rates": 0.049098,
+    "cache_neutral_cost_usd": 0.242008,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-1.md"
+        }
+      }
+    ],
+    "tool_call_count": 3,
+    "note_read_count": 1,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-1.md"
+    ],
+    "answers": [
+      "ANSWER: The Apollo 1 (AS-204) fire. On 1967-01-27, during a launch rehearsal test at Launch Complex 34 at Cape Kennedy, a fire broke out in the cabin and killed astronauts Gus Grissom, Ed White and Roger Chaffee. Afterwards the command module was redesigned, and the new design included a quick-opening hatch. (src: NASA history, 2026-10-24)\nFILES: index.md, areas/apollo-1.md"
+    ],
+    "answer": "ANSWER: The Apollo 1 (AS-204) fire. On 1967-01-27, during a launch rehearsal test at Launch Complex 34 at Cape Kennedy, a fire broke out in the cabin and killed astronauts Gus Grissom, Ed White and Roger Chaffee. Afterwards the command module was redesigned, and the new design included a quick-opening hatch. (src: NASA history, 2026-10-24)\nFILES: index.md, areas/apollo-1.md",
+    "tool_errors": []
+  },
+  {
+    "id": "m01",
+    "condition": "R1",
+    "description": "R1 m01",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: Who commanded the mission that the astronaut who caught German measles was a backup for?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R1\\transcripts\\m01.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "a77d7d0423ccae825",
+    "start_utc": "2026-10-25T19:31:08.769Z",
+    "end_utc": "2026-10-25T19:31:22.181Z",
+    "time_s": 13.412,
+    "usage": {
+      "input_tokens": 12,
+      "output_tokens": 616,
+      "cache_read_input_tokens": 88373,
+      "cache_creation_input_tokens": 7679
+    },
+    "total_tokens": 96680,
+    "cost_usd_at_recorded_rates": 0.0684376,
+    "cache_neutral_cost_usd": 0.396576,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\charlie-duke.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-13.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\jim-lovell.md"
+        }
+      }
+    ],
+    "tool_call_count": 5,
+    "note_read_count": 3,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\charlie-duke.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-13.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\jim-lovell.md"
+    ],
+    "answers": [
+      "ANSWER: Jim Lovell. Charlie Duke was the astronaut who caught German measles, from a friend's 3-year-old son about three weeks before launch. He was the backup lunar module pilot for Apollo 13, and Jim Lovell commanded Apollo 13 (src: NASA history Apollo 13 measles article; NASA Apollo 13 mission page).\nFILES: index.md, people/charlie-duke.md, areas/apollo-13.md, people/jim-lovell.md"
+    ],
+    "answer": "ANSWER: Jim Lovell. Charlie Duke was the astronaut who caught German measles, from a friend's 3-year-old son about three weeks before launch. He was the backup lunar module pilot for Apollo 13, and Jim Lovell commanded Apollo 13 (src: NASA history Apollo 13 measles article; NASA Apollo 13 mission page).\nFILES: index.md, people/charlie-duke.md, areas/apollo-13.md, people/jim-lovell.md",
+    "tool_errors": []
+  },
+  {
+    "id": "m02",
+    "condition": "R1",
+    "description": "R1 m02",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: Which company's revised specification set the voltage that the Apollo 13 tank switches could not handle?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R1\\transcripts\\m02.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "a86007c3d6200ba74",
+    "start_utc": "2026-10-25T19:31:11.520Z",
+    "end_utc": "2026-10-25T19:31:20.439Z",
+    "time_s": 8.919,
+    "usage": {
+      "input_tokens": 10,
+      "output_tokens": 502,
+      "cache_read_input_tokens": 69948,
+      "cache_creation_input_tokens": 6700
+    },
+    "total_tokens": 77160,
+    "cost_usd_at_recorded_rates": 0.0575696,
+    "cache_neutral_cost_usd": 0.316672,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\oxygen-tank-2.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\north-american-aviation.md"
+        }
+      }
+    ],
+    "tool_call_count": 4,
+    "note_read_count": 2,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\oxygen-tank-2.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\north-american-aviation.md"
+    ],
+    "answers": [
+      "Who revised it? Check north-american-aviation.",
+      "ANSWER: North American Aviation. In 1965 it revised the oxygen tank heater specification to 65 volts. The tank's thermostatic switches were never changed: they were built to a 1962 specification for 28 volts DC, so they could not handle the 65-volt power (src: Moonport SP-4204, 2026-10-24).\nFILES: index.md, topics/oxygen-tank-2.md, areas/north-american-aviation.md"
+    ],
+    "answer": "ANSWER: North American Aviation. In 1965 it revised the oxygen tank heater specification to 65 volts. The tank's thermostatic switches were never changed: they were built to a 1962 specification for 28 volts DC, so they could not handle the 65-volt power (src: Moonport SP-4204, 2026-10-24).\nFILES: index.md, topics/oxygen-tank-2.md, areas/north-american-aviation.md",
+    "tool_errors": []
+  },
+  {
+    "id": "m03",
+    "condition": "R1",
+    "description": "R1 m03",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: Which NASA centre was the Apollo 13 Review Board chair directing, and what did the board find caused the explosion?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R1\\transcripts\\m03.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "a7e6b05a5937d44c8",
+    "start_utc": "2026-10-25T19:31:14.379Z",
+    "end_utc": "2026-10-25T19:31:21.822Z",
+    "time_s": 7.443,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 471,
+      "cache_read_input_tokens": 52419,
+      "cache_creation_input_tokens": 6524
+    },
+    "total_tokens": 59422,
+    "cost_usd_at_recorded_rates": 0.0525558,
+    "cache_neutral_cost_usd": 0.245224,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-13-review-board.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\edgar-cortright.md"
+        }
+      }
+    ],
+    "tool_call_count": 4,
+    "note_read_count": 2,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-13-review-board.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\edgar-cortright.md"
+    ],
+    "answers": [
+      "ANSWER: The board was chaired by Edgar Cortright, who was director of NASA Langley Research Center at the time. The board traced the explosion to a fire in oxygen tank No. 2 that was started electrically. It recommended redesigning the oxygen tank and removing electrical equipment from inside it.\nFILES: index.md, areas/apollo-13-review-board.md, people/edgar-cortright.md"
+    ],
+    "answer": "ANSWER: The board was chaired by Edgar Cortright, who was director of NASA Langley Research Center at the time. The board traced the explosion to a fire in oxygen tank No. 2 that was started electrically. It recommended redesigning the oxygen tank and removing electrical equipment from inside it.\nFILES: index.md, areas/apollo-13-review-board.md, people/edgar-cortright.md",
+    "tool_errors": []
+  },
+  {
+    "id": "m04",
+    "condition": "R1",
+    "description": "R1 m04",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: The rocket that first carried a crew on Apollo 8 was developed under whom, and which centre did that person direct?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R1\\transcripts\\m04.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "a674c5b68864b034b",
+    "start_utc": "2026-10-25T19:31:17.196Z",
+    "end_utc": "2026-10-25T19:31:26.303Z",
+    "time_s": 9.107,
+    "usage": {
+      "input_tokens": 12,
+      "output_tokens": 579,
+      "cache_read_input_tokens": 87841,
+      "cache_creation_input_tokens": 7032
+    },
+    "total_tokens": 95464,
+    "cost_usd_at_recorded_rates": 0.0643562,
+    "cache_neutral_cost_usd": 0.39112,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-8.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\saturn-v.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\wernher-von-braun.md"
+        }
+      }
+    ],
+    "tool_call_count": 5,
+    "note_read_count": 3,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-8.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\saturn-v.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\wernher-von-braun.md"
+    ],
+    "answers": [
+      "ANSWER: The rocket was the Saturn V, and Apollo 8 was its first crewed flight. It was developed under Wernher von Braun, who led the team that built it. He was the first director of NASA's Marshall Space Flight Center, from 1960 to 1970. (All facts are [stated], src: NASA history / NASA biography, 2026-10-24.)\nFILES: index.md, areas/apollo-8.md, topics/saturn-v.md, people/wernher-von-braun.md"
+    ],
+    "answer": "ANSWER: The rocket was the Saturn V, and Apollo 8 was its first crewed flight. It was developed under Wernher von Braun, who led the team that built it. He was the first director of NASA's Marshall Space Flight Center, from 1960 to 1970. (All facts are [stated], src: NASA history / NASA biography, 2026-10-24.)\nFILES: index.md, areas/apollo-8.md, topics/saturn-v.md, people/wernher-von-braun.md",
+    "tool_errors": []
+  },
+  {
+    "id": "m05",
+    "condition": "R1",
+    "description": "R1 m05",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: Who was capsule communicator during the first Moon landing, and did they later walk on the Moon?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R1\\transcripts\\m05.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "a0cea020baf038942",
+    "start_utc": "2026-10-25T19:31:19.913Z",
+    "end_utc": "2026-10-25T19:31:27.136Z",
+    "time_s": 7.223,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 344,
+      "cache_read_input_tokens": 52397,
+      "cache_creation_input_tokens": 6196
+    },
+    "total_tokens": 58945,
+    "cost_usd_at_recorded_rates": 0.0483714,
+    "cache_neutral_cost_usd": 0.241284,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\charlie-duke.md"
+        }
+      }
+    ],
+    "tool_call_count": 3,
+    "note_read_count": 1,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\charlie-duke.md"
+    ],
+    "answers": [
+      "ANSWER: Charlie Duke was the capsule communicator (CAPCOM) during the Apollo 11 landing. Yes, he later walked on the Moon as the lunar module pilot of Apollo 16.\nFILES: index.md, people/charlie-duke.md"
+    ],
+    "answer": "ANSWER: Charlie Duke was the capsule communicator (CAPCOM) during the Apollo 11 landing. Yes, he later walked on the Moon as the lunar module pilot of Apollo 16.\nFILES: index.md, people/charlie-duke.md",
+    "tool_errors": []
+  },
+  {
+    "id": "p01",
+    "condition": "R1",
+    "description": "R1 p01",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: According to the Apollo 11 Mission Report, how much reaction control propellant was used in powered descent against the prediction, and on which page?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R1\\transcripts\\p01.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "a5f6a6961cd5f5103",
+    "start_utc": "2026-10-25T19:31:22.818Z",
+    "end_utc": "2026-10-25T19:31:30.767Z",
+    "time_s": 7.949,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 410,
+      "cache_read_input_tokens": 52443,
+      "cache_creation_input_tokens": 6444
+    },
+    "total_tokens": 59305,
+    "cost_usd_at_recorded_rates": 0.050940599999999996,
+    "cache_neutral_cost_usd": 0.24378,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\sources\\apollo-11-mission-report\\apollo-11-mission-report-ch-05.md"
+        }
+      }
+    ],
+    "tool_call_count": 3,
+    "note_read_count": 1,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\sources\\apollo-11-mission-report\\apollo-11-mission-report-ch-05.md"
+    ],
+    "answers": [
+      "ANSWER: About 95 pounds of reaction control propellant were used in powered descent, against 40 pounds predicted. This is on page 5-6 of the Apollo 11 Mission Report, in Section 5.3, Powered Descent, which covers pages 5-4 to 5-6.\nFILES: index.md, sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md"
+    ],
+    "answer": "ANSWER: About 95 pounds of reaction control propellant were used in powered descent, against 40 pounds predicted. This is on page 5-6 of the Apollo 11 Mission Report, in Section 5.3, Powered Descent, which covers pages 5-4 to 5-6.\nFILES: index.md, sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+    "tool_errors": []
+  },
+  {
+    "id": "p02",
+    "condition": "R1",
+    "description": "R1 p02",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: At what altitude did manual control begin on Apollo 11, how far downrange of the aim point did it land, and on which page of the report?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R1\\transcripts\\p02.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "a49a5923565e2dd26",
+    "start_utc": "2026-10-25T19:31:25.682Z",
+    "end_utc": "2026-10-25T19:31:32.932Z",
+    "time_s": 7.25,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 427,
+      "cache_read_input_tokens": 52431,
+      "cache_creation_input_tokens": 6441
+    },
+    "total_tokens": 59307,
+    "cost_usd_at_recorded_rates": 0.051263199999999995,
+    "cache_neutral_cost_usd": 0.24406,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\sources\\apollo-11-mission-report\\apollo-11-mission-report-ch-05.md"
+        }
+      }
+    ],
+    "tool_call_count": 3,
+    "note_read_count": 1,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\sources\\apollo-11-mission-report\\apollo-11-mission-report-ch-05.md"
+    ],
+    "answers": [
+      "ANSWER: Manual control began at about 600 feet, and the lunar module landed about 1,100 feet downrange of the initial aim point. The source is page 5-5 of the Apollo 11 Mission Report, in Section 5.3, Powered Descent, which covers pages 5-4 to 5-6. The fact is tagged [stated].\nFILES: index.md, sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md"
+    ],
+    "answer": "ANSWER: Manual control began at about 600 feet, and the lunar module landed about 1,100 feet downrange of the initial aim point. The source is page 5-5 of the Apollo 11 Mission Report, in Section 5.3, Powered Descent, which covers pages 5-4 to 5-6. The fact is tagged [stated].\nFILES: index.md, sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+    "tool_errors": []
+  },
+  {
+    "id": "p03",
+    "condition": "R1",
+    "description": "R1 p03",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: Which pages of the Apollo 11 Mission Report cover the powered descent section, and what forced the landing point redesignation?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R1\\transcripts\\p03.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "aed83e183fe56613c",
+    "start_utc": "2026-10-25T19:31:28.464Z",
+    "end_utc": "2026-10-25T19:31:35.619Z",
+    "time_s": 7.155,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 458,
+      "cache_read_input_tokens": 52431,
+      "cache_creation_input_tokens": 6441
+    },
+    "total_tokens": 59338,
+    "cost_usd_at_recorded_rates": 0.0518832,
+    "cache_neutral_cost_usd": 0.24468,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\sources\\apollo-11-mission-report\\apollo-11-mission-report-ch-05.md"
+        }
+      }
+    ],
+    "tool_call_count": 3,
+    "note_read_count": 1,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\sources\\apollo-11-mission-report\\apollo-11-mission-report-ch-05.md"
+    ],
+    "answers": [
+      "ANSWER: Section 5.3, \"Powered Descent\", covers pages 5-4 to 5-6 of the Apollo 11 Mission Report. The redesignation was forced because the approach path led into a large crater, and it was not planned (src: Apollo 11 Mission Report p.5-4). After that, manual control began at about 600 feet, and the craft landed about 1100 feet downrange of the initial aim point (p.5-5).\nFILES: index.md, sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md"
+    ],
+    "answer": "ANSWER: Section 5.3, \"Powered Descent\", covers pages 5-4 to 5-6 of the Apollo 11 Mission Report. The redesignation was forced because the approach path led into a large crater, and it was not planned (src: Apollo 11 Mission Report p.5-4). After that, manual control began at about 600 feet, and the craft landed about 1100 feet downrange of the initial aim point (p.5-5).\nFILES: index.md, sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+    "tool_errors": []
+  },
+  {
+    "id": "t01",
+    "condition": "R1",
+    "description": "R1 t01",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: What was Apollo 13's mission goal before it changed, what changed it, and when?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R1\\transcripts\\t01.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "aa4fa4fc844b5b89c",
+    "start_utc": "2026-10-25T19:31:31.273Z",
+    "end_utc": "2026-10-25T19:31:39.802Z",
+    "time_s": 8.529,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 361,
+      "cache_read_input_tokens": 52375,
+      "cache_creation_input_tokens": 6379
+    },
+    "total_tokens": 59123,
+    "cost_usd_at_recorded_rates": 0.049622,
+    "cache_neutral_cost_usd": 0.242268,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-13.md"
+        }
+      }
+    ],
+    "tool_call_count": 3,
+    "note_read_count": 1,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-13.md"
+    ],
+    "answers": [
+      "ANSWER: Apollo 13's original goal was a lunar landing at Fra Mauro. The Mission Control abort decision changed it to a safe return to Earth on 1970-04-13. Source: NASA Apollo 13 mission page, 2026-10-24.\nFILES: index.md, areas/apollo-13.md"
+    ],
+    "answer": "ANSWER: Apollo 13's original goal was a lunar landing at Fra Mauro. The Mission Control abort decision changed it to a safe return to Earth on 1970-04-13. Source: NASA Apollo 13 mission page, 2026-10-24.\nFILES: index.md, areas/apollo-13.md",
+    "tool_errors": []
+  },
+  {
+    "id": "t02",
+    "condition": "R1",
+    "description": "R1 t02",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: What was Jack Swigert's Apollo 13 role before 1970-04-10, and what is it now?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R1\\transcripts\\t02.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "a90922980373412c5",
+    "start_utc": "2026-10-25T19:31:34.023Z",
+    "end_utc": "2026-10-25T19:31:41.104Z",
+    "time_s": 7.081,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 374,
+      "cache_read_input_tokens": 52409,
+      "cache_creation_input_tokens": 6083
+    },
+    "total_tokens": 58874,
+    "cost_usd_at_recorded_rates": 0.0484088,
+    "cache_neutral_cost_usd": 0.24148,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\jack-swigert.md"
+        }
+      }
+    ],
+    "tool_call_count": 3,
+    "note_read_count": 1,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\jack-swigert.md"
+    ],
+    "answers": [
+      "ANSWER: Before 1970-04-10, Jack Swigert was the backup command module pilot for Apollo 13. He is now the prime command module pilot. The role changed on 1970-04-10 at a KSC management meeting. Source: NASA history Apollo 13 measles article, a [stated] fact.\nFILES: index.md, people/jack-swigert.md"
+    ],
+    "answer": "ANSWER: Before 1970-04-10, Jack Swigert was the backup command module pilot for Apollo 13. He is now the prime command module pilot. The role changed on 1970-04-10 at a KSC management meeting. Source: NASA history Apollo 13 measles article, a [stated] fact.\nFILES: index.md, people/jack-swigert.md",
+    "tool_errors": []
+  },
+  {
+    "id": "t03",
+    "condition": "R1",
+    "description": "R1 t03",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: What was the Houston centre called before it became Johnson Space Center, and when was it renamed?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R1\\transcripts\\t03.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "a54c5291206207228",
+    "start_utc": "2026-10-25T19:31:36.718Z",
+    "end_utc": "2026-10-25T19:31:43.323Z",
+    "time_s": 6.605,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 362,
+      "cache_read_input_tokens": 52393,
+      "cache_creation_input_tokens": 6089
+    },
+    "total_tokens": 58852,
+    "cost_usd_at_recorded_rates": 0.0481956,
+    "cache_neutral_cost_usd": 0.2412,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\mission-control-houston.md"
+        }
+      }
+    ],
+    "tool_call_count": 3,
+    "note_read_count": 1,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\mission-control-houston.md"
+    ],
+    "answers": [
+      "ANSWER: Before it became Johnson Space Center, the Houston centre was called the Manned Spacecraft Center. It was renamed on 1973-02-19, in honour of Lyndon B. Johnson (src: NASA history, 2026-10-24).\nFILES: index.md, areas/mission-control-houston.md"
+    ],
+    "answer": "ANSWER: Before it became Johnson Space Center, the Houston centre was called the Manned Spacecraft Center. It was renamed on 1973-02-19, in honour of Lyndon B. Johnson (src: NASA history, 2026-10-24).\nFILES: index.md, areas/mission-control-houston.md",
+    "tool_errors": []
+  },
+  {
+    "id": "n01",
+    "condition": "R1",
+    "description": "R1 n01",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: How much did the Apollo program cost?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R1\\transcripts\\n01.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "a379f974cff076172",
+    "start_utc": "2026-10-25T19:31:56.689Z",
+    "end_utc": "2026-10-25T19:32:03.517Z",
+    "time_s": 6.828,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 411,
+      "cache_read_input_tokens": 52328,
+      "cache_creation_input_tokens": 6151
+    },
+    "total_tokens": 58898,
+    "cost_usd_at_recorded_rates": 0.0494726,
+    "cache_neutral_cost_usd": 0.242168,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-program.md"
+        }
+      }
+    ],
+    "tool_call_count": 3,
+    "note_read_count": 1,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-program.md"
+    ],
+    "answers": [
+      "ANSWER: I don't have that. I read index.md and the apollo-program node. That node lists six crewed landings, twelve moonwalkers, Apollo 17 as the last crewed lunar mission, and the choice of lunar orbit rendezvous in 1962. It says nothing about cost, and no row in the index mentions the program's cost or budget.\nFILES: index.md, areas/apollo-program.md"
+    ],
+    "answer": "ANSWER: I don't have that. I read index.md and the apollo-program node. That node lists six crewed landings, twelve moonwalkers, Apollo 17 as the last crewed lunar mission, and the choice of lunar orbit rendezvous in 1962. It says nothing about cost, and no row in the index mentions the program's cost or budget.\nFILES: index.md, areas/apollo-program.md",
+    "tool_errors": []
+  },
+  {
+    "id": "n02",
+    "condition": "R1",
+    "description": "R1 n02",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: Who was the command module pilot of Apollo 12?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R1\\transcripts\\n02.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "adb925e0f5ef5bb31",
+    "start_utc": "2026-10-25T19:31:59.513Z",
+    "end_utc": "2026-10-25T19:32:07.044Z",
+    "time_s": 7.531,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 354,
+      "cache_read_input_tokens": 35458,
+      "cache_creation_input_tokens": 5514
+    },
+    "total_tokens": 41332,
+    "cost_usd_at_recorded_rates": 0.0417656,
+    "cache_neutral_cost_usd": 0.170992,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+        }
+      }
+    ],
+    "tool_call_count": 2,
+    "note_read_count": 0,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+    ],
+    "answers": [
+      "I couldn't find the Apollo 12 command module pilot in the brain. The index has no Apollo 12 node, and none of the people, missions or topics listed mention Apollo 12. Following the skill, I stopped there rather than opening nodes just to look.\n\nANSWER: I don't have that.\nFILES: index.md"
+    ],
+    "answer": "I couldn't find the Apollo 12 command module pilot in the brain. The index has no Apollo 12 node, and none of the people, missions or topics listed mention Apollo 12. Following the skill, I stopped there rather than opening nodes just to look.\n\nANSWER: I don't have that.\nFILES: index.md",
+    "tool_errors": []
+  },
+  {
+    "id": "n03",
+    "condition": "R1",
+    "description": "R1 n03",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: What did Michael Collins say about being alone behind the Moon?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R1\\transcripts\\n03.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "a535a03dc1f0e6f1a",
+    "start_utc": "2026-10-25T19:32:01.981Z",
+    "end_utc": "2026-10-25T19:32:18.121Z",
+    "time_s": 16.14,
+    "usage": {
+      "input_tokens": 10,
+      "output_tokens": 508,
+      "cache_read_input_tokens": 69750,
+      "cache_creation_input_tokens": 6740
+    },
+    "total_tokens": 77008,
+    "cost_usd_at_recorded_rates": 0.05785,
+    "cache_neutral_cost_usd": 0.31616,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\michael-collins.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-11.md"
+        }
+      }
+    ],
+    "tool_call_count": 4,
+    "note_read_count": 2,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\michael-collins.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-11.md"
+    ],
+    "answers": [
+      "ANSWER: I don't have that. Michael Collins's node only says that he was the Apollo 11 command module pilot, that he stayed in lunar orbit aboard Columbia during the landing, and that he flew Gemini 10 in 1966. Neither his node nor the Apollo 11 node records anything he said about being alone behind the Moon.\nFILES: index.md, people/michael-collins.md, areas/apollo-11.md"
+    ],
+    "answer": "ANSWER: I don't have that. Michael Collins's node only says that he was the Apollo 11 command module pilot, that he stayed in lunar orbit aboard Columbia during the landing, and that he flew Gemini 10 in 1966. Neither his node nor the Apollo 11 node records anything he said about being alone behind the Moon.\nFILES: index.md, people/michael-collins.md, areas/apollo-11.md",
+    "tool_errors": []
+  },
+  {
+    "id": "n04",
+    "condition": "R1",
+    "description": "R1 n04",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: What colour vest did Gene Kranz wear during Apollo 13?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R1\\transcripts\\n04.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "acc0d1ab33b7c9b27",
+    "start_utc": "2026-10-25T19:32:05.118Z",
+    "end_utc": "2026-10-25T19:32:19.991Z",
+    "time_s": 14.873,
+    "usage": {
+      "input_tokens": 10,
+      "output_tokens": 553,
+      "cache_read_input_tokens": 69718,
+      "cache_creation_input_tokens": 6868
+    },
+    "total_tokens": 77149,
+    "cost_usd_at_recorded_rates": 0.0593836,
+    "cache_neutral_cost_usd": 0.317444,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\gene-kranz.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-13.md"
+        }
+      }
+    ],
+    "tool_call_count": 4,
+    "note_read_count": 2,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\gene-kranz.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-13.md"
+    ],
+    "answers": [
+      "ANSWER: I don't have that. The brain says nothing about the colour of Gene Kranz's vest. I checked his node (people/gene-kranz.md). It only says he was flight director for the Apollo 11 landing and that his team was on console when Apollo 13's oxygen tank failed. I also checked the Apollo 13 node (areas/apollo-13.md), which covers the launch, the abort, the crew swap, the lifeboat and the splashdown, with no mention of a vest.\nFILES: index.md, people/gene-kranz.md, areas/apollo-13.md"
+    ],
+    "answer": "ANSWER: I don't have that. The brain says nothing about the colour of Gene Kranz's vest. I checked his node (people/gene-kranz.md). It only says he was flight director for the Apollo 11 landing and that his team was on console when Apollo 13's oxygen tank failed. I also checked the Apollo 13 node (areas/apollo-13.md), which covers the launch, the abort, the crew swap, the lifeboat and the splashdown, with no mention of a vest.\nFILES: index.md, people/gene-kranz.md, areas/apollo-13.md",
+    "tool_errors": []
+  },
+  {
+    "id": "n05",
+    "condition": "R1",
+    "description": "R1 n05",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: What landing coordinates did the Lunar Reconnaissance Orbiter later measure for Apollo 11?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R1\\transcripts\\n05.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "afcd339b71b220baf",
+    "start_utc": "2026-10-25T19:32:07.896Z",
+    "end_utc": "2026-10-25T19:32:23.906Z",
+    "time_s": 16.01,
+    "usage": {
+      "input_tokens": 12,
+      "output_tokens": 773,
+      "cache_read_input_tokens": 88161,
+      "cache_creation_input_tokens": 7807
+    },
+    "total_tokens": 96753,
+    "cost_usd_at_recorded_rates": 0.0721752,
+    "cache_neutral_cost_usd": 0.39938,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\tranquility-base.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-11.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\sources\\apollo-11-mission-report\\apollo-11-mission-report-ch-05.md"
+        }
+      }
+    ],
+    "tool_call_count": 5,
+    "note_read_count": 3,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\tranquility-base.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-11.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\sources\\apollo-11-mission-report\\apollo-11-mission-report-ch-05.md"
+    ],
+    "answers": [
+      "ANSWER: I don't have that. None of the nodes I opened mentions the Lunar Reconnaissance Orbiter or any later measurement of the landing site. The only coordinates in the brain come from the Apollo 11 Mission Report, not the orbiter: the actual landing point was 0 degrees 41 minutes 15 seconds north, 23 degrees 26 minutes east (src: Apollo 11 Mission Report p.5-6). I checked the index, the Tranquility Base and Apollo 11 nodes, and the Section 5.3 chunk of the mission report (pages 5-4 to 5-6).\nFILES: index.md, topics/tranquility-base.md, areas/apollo-11.md, sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md"
+    ],
+    "answer": "ANSWER: I don't have that. None of the nodes I opened mentions the Lunar Reconnaissance Orbiter or any later measurement of the landing site. The only coordinates in the brain come from the Apollo 11 Mission Report, not the orbiter: the actual landing point was 0 degrees 41 minutes 15 seconds north, 23 degrees 26 minutes east (src: Apollo 11 Mission Report p.5-6). I checked the index, the Tranquility Base and Apollo 11 nodes, and the Section 5.3 chunk of the mission report (pages 5-4 to 5-6).\nFILES: index.md, topics/tranquility-base.md, areas/apollo-11.md, sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+    "tool_errors": []
+  }
+]

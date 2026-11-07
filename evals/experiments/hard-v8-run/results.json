@@ -1,0 +1,191 @@
+{
+  "hard-v8/whole": {
+    "score_per_run": [
+      23,
+      24,
+      24
+    ],
+    "of": 24,
+    "cost_per_correct": 0.000617,
+    "billed_in_median": 2793,
+    "billed_in_highest": [
+      33964,
+      "v01"
+    ],
+    "e2e_median_s": 3.32,
+    "cost_per_run": [
+      0.0164,
+      0.01389,
+      0.01352
+    ],
+    "cold": {
+      "n": 1,
+      "ids": [
+        "v01"
+      ],
+      "median_cost": 0.003559,
+      "median_s": 2.44
+    },
+    "warm": {
+      "n": 71,
+      "median_cost": 0.000543,
+      "median_s": 3.32
+    },
+    "partials": [],
+    "misses": [
+      [
+        "v05",
+        "declined an answerable question"
+      ]
+    ],
+    "missed_every_run": []
+  },
+  "hard-v8/pipeline": {
+    "score_per_run": [
+      21,
+      20,
+      21
+    ],
+    "of": 24,
+    "cost_per_correct": 0.000798,
+    "billed_in_median": 3948,
+    "billed_in_highest": [
+      7818,
+      "v24"
+    ],
+    "e2e_median_s": 4.22,
+    "cost_per_run": [
+      0.0166,
+      0.01625,
+      0.01665
+    ],
+    "cold": {
+      "n": 1,
+      "ids": [
+        "v01"
+      ],
+      "median_cost": 0.001012,
+      "median_s": 4.38
+    },
+    "warm": {
+      "n": 71,
+      "median_cost": 0.000668,
+      "median_s": 4.21
+    },
+    "partials": [],
+    "misses": [
+      [
+        "v17",
+        "declined an answerable question"
+      ],
+      [
+        "v21",
+        "declined an answerable question"
+      ],
+      [
+        "v21",
+        "lacks ['1969-07-16', '1970-04-11', '1972-04-16']"
+      ],
+      [
+        "v22",
+        "lacks ['duke']"
+      ],
+      [
+        "v23",
+        "lacks ['mit']"
+      ]
+    ],
+    "missed_every_run": [
+      "v21",
+      "v22",
+      "v23"
+    ]
+  },
+  "held-out-v8/whole": {
+    "score_per_run": [
+      9,
+      9,
+      10
+    ],
+    "of": 10,
+    "cost_per_correct": 0.000575,
+    "billed_in_median": 2794,
+    "billed_in_highest": [
+      2808,
+      "y02"
+    ],
+    "e2e_median_s": 2.53,
+    "cost_per_run": [
+      0.00546,
+      0.00523,
+      0.00541
+    ],
+    "cold": {
+      "n": 0,
+      "ids": [],
+      "median_cost": null,
+      "median_s": null
+    },
+    "warm": {
+      "n": 30,
+      "median_cost": 0.000519,
+      "median_s": 2.53
+    },
+    "partials": [],
+    "misses": [
+      [
+        "y06",
+        "declined an answerable question"
+      ]
+    ],
+    "missed_every_run": []
+  },
+  "held-out-v8/pipeline": {
+    "score_per_run": [
+      9,
+      9,
+      8
+    ],
+    "of": 10,
+    "cost_per_correct": 0.000935,
+    "billed_in_median": 5945,
+    "billed_in_highest": [
+      8189,
+      "y10"
+    ],
+    "e2e_median_s": 3.74,
+    "cost_per_run": [
+      0.00819,
+      0.00812,
+      0.008
+    ],
+    "cold": {
+      "n": 0,
+      "ids": [],
+      "median_cost": null,
+      "median_s": null
+    },
+    "warm": {
+      "n": 30,
+      "median_cost": 0.000799,
+      "median_s": 3.74
+    },
+    "partials": [
+      [
+        "y08",
+        "has 3/4, lacks ['berry']"
+      ]
+    ],
+    "misses": [
+      [
+        "y10",
+        "lacks ['capsule communicator', 'flight director']"
+      ]
+    ],
+    "missed_every_run": [
+      "y10"
+    ]
+  },
+  "hard-v8/missed_by_every_option": [],
+  "held-out-v8/missed_by_every_option": []
+}

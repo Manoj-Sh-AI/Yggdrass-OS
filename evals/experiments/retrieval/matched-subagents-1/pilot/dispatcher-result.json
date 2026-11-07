@@ -1,0 +1,105 @@
+{
+  "exit_code": 0,
+  "start_utc": "2026-10-25T19:25:14.763081+00:00",
+  "end_utc": "2026-10-25T19:25:25.678346+00:00",
+  "wall_time_s": 10.915702199999942,
+  "result": {
+    "duration_api_ms": 5786,
+    "stop_reason": "end_turn",
+    "session_id": "bee5cd7e-4ceb-4ded-a288-d35747bf7b54",
+    "total_cost_usd": 0.011721,
+    "usage": {
+      "input_tokens": 4,
+      "cache_creation_input_tokens": 537,
+      "cache_read_input_tokens": 0,
+      "output_tokens": 451,
+      "output_tokens_details": {
+        "thinking_tokens": 204
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 0,
+        "ephemeral_5m_input_tokens": 537
+      },
+      "inference_geo": "global",
+      "iterations": [
+        {
+          "input_tokens": 4,
+          "output_tokens": 451,
+          "cache_read_input_tokens": 0,
+          "cache_creation_input_tokens": 537,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 537,
+            "ephemeral_1h_input_tokens": 0
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard",
+      "fallback_credit": null
+    },
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 4,
+        "outputTokens": 451,
+        "cacheReadInputTokens": 0,
+        "cacheCreationInputTokens": 537,
+        "webSearchRequests": 0,
+        "costUSD": 0.011721,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 204,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "permission_denials": [],
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "fast_mode_disabled_reason": "sdk_opt_in_required",
+    "subagent_stats": {
+      "spawned": 0,
+      "requested": {
+        "background": 0,
+        "foreground": 0,
+        "unset": 0
+      },
+      "started_in_background": 0,
+      "max_depth": 0,
+      "spawned_by_subagents": 0,
+      "completed": 0,
+      "failed": 0,
+      "killed": {
+        "parent": 0,
+        "user": 0,
+        "system": 0
+      },
+      "refused": {
+        "depth_limit": 0,
+        "concurrency_limit": 0,
+        "budget": 0
+      },
+      "by_type": {}
+    },
+    "safety_stops": 0,
+    "is_error": false,
+    "num_turns": 1,
+    "subtype": "success",
+    "api_error_status": null,
+    "result": "**Completion count: 0 of 1 jobs dispatched.**\n\nI couldn't run the pilot tool-check because this session has no Agent tool, or any other tool. I didn't answer the job myself or read the file in its place.\n\nTo run it, start a session where the Agent tool is enabled, with the `Explore` subagent type available and `opus` allowed as the child model. The job can then be dispatched exactly as written:\n\n- description: `pilot tool-check`\n- subagent_type: `Explore`\n- model: `opus`\n- prompt: unchanged\n\nAlso, the instructions mention 25 jobs in two batches (20, then 5), but the jobs list has only this one tool-check job. Once the tool check works, please send the full list of 25 jobs for the batched run.",
+    "ttft_ms": 3706,
+    "type": "result",
+    "duration_ms": 6164,
+    "uuid": "f44ee999-83e0-4b5a-8a42-c49aedef641b",
+    "ttft_stream_ms": 1968,
+    "time_to_request_ms": 399,
+    "first_content_frame_ms": 1969,
+    "queued_turn_count": 0,
+    "result_index": 0
+  }
+}

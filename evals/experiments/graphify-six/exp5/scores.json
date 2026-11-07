@@ -1,0 +1,253 @@
+{
+  "deep-1": {
+    "nodes": 43,
+    "edges": 71,
+    "relations": {
+      "references": 63,
+      "conceptually_related_to": 7,
+      "cites": 1
+    },
+    "generic_share": 0.986,
+    "conceptually_related_share": 0.099,
+    "rationale_nodes": 2,
+    "pairs": 68,
+    "refound": 59,
+    "recovered": [
+      [
+        "apollo-11",
+        "neil-armstrong"
+      ],
+      [
+        "apollo-11-mission-report-ch-05",
+        "neil-armstrong"
+      ],
+      [
+        "apollo-11-mission-report-ch-05",
+        "program-alarms-1201-1202"
+      ],
+      [
+        "apollo-13-review-board",
+        "edgar-cortright"
+      ],
+      [
+        "beech-aircraft",
+        "north-american-aviation"
+      ],
+      [
+        "beech-aircraft",
+        "oxygen-tank-2"
+      ],
+      [
+        "grumman",
+        "lunar-module"
+      ],
+      [
+        "saturn-v",
+        "wernher-von-braun"
+      ]
+    ],
+    "new": [
+      {
+        "pair": [
+          "north-american-aviation",
+          "oxygen-tank-2"
+        ],
+        "relations": [
+          "conceptually_related_to"
+        ]
+      }
+    ]
+  },
+  "deep-2": {
+    "nodes": 43,
+    "edges": 72,
+    "relations": {
+      "references": 64,
+      "conceptually_related_to": 7,
+      "cites": 1
+    },
+    "generic_share": 0.986,
+    "conceptually_related_share": 0.097,
+    "rationale_nodes": 3,
+    "pairs": 68,
+    "refound": 59,
+    "recovered": [
+      [
+        "apollo-11-mission-report-ch-05",
+        "neil-armstrong"
+      ],
+      [
+        "apollo-11-mission-report-ch-05",
+        "program-alarms-1201-1202"
+      ],
+      [
+        "apollo-13",
+        "rubella-crew-swap"
+      ],
+      [
+        "apollo-13-review-board",
+        "edgar-cortright"
+      ],
+      [
+        "beech-aircraft",
+        "north-american-aviation"
+      ],
+      [
+        "beech-aircraft",
+        "oxygen-tank-2"
+      ],
+      [
+        "grumman",
+        "lunar-module"
+      ],
+      [
+        "saturn-v",
+        "wernher-von-braun"
+      ]
+    ],
+    "new": [
+      {
+        "pair": [
+          "north-american-aviation",
+          "oxygen-tank-2"
+        ],
+        "relations": [
+          "conceptually_related_to"
+        ]
+      }
+    ]
+  },
+  "tb15k-1": {
+    "nodes": 43,
+    "edges": 66,
+    "relations": {
+      "references": 63,
+      "conceptually_related_to": 3
+    },
+    "generic_share": 1.0,
+    "conceptually_related_share": 0.045,
+    "rationale_nodes": 0,
+    "pairs": 65,
+    "refound": 61,
+    "recovered": [
+      [
+        "apollo-13-review-board",
+        "edgar-cortright"
+      ],
+      [
+        "beech-aircraft",
+        "north-american-aviation"
+      ],
+      [
+        "beech-aircraft",
+        "oxygen-tank-2"
+      ],
+      [
+        "grumman",
+        "lunar-module"
+      ]
+    ],
+    "new": []
+  },
+  "tb15k-2": {
+    "nodes": 43,
+    "edges": 73,
+    "relations": {
+      "references": 64,
+      "conceptually_related_to": 8,
+      "cites": 1
+    },
+    "generic_share": 0.986,
+    "conceptually_related_share": 0.11,
+    "rationale_nodes": 0,
+    "pairs": 69,
+    "refound": 59,
+    "recovered": [
+      [
+        "apollo-11",
+        "neil-armstrong"
+      ],
+      [
+        "apollo-11-mission-report-ch-05",
+        "neil-armstrong"
+      ],
+      [
+        "apollo-11-mission-report-ch-05",
+        "program-alarms-1201-1202"
+      ],
+      [
+        "apollo-13-review-board",
+        "edgar-cortright"
+      ],
+      [
+        "apollo-program",
+        "john-f-kennedy"
+      ],
+      [
+        "beech-aircraft",
+        "north-american-aviation"
+      ],
+      [
+        "beech-aircraft",
+        "oxygen-tank-2"
+      ],
+      [
+        "grumman",
+        "lunar-module"
+      ],
+      [
+        "saturn-v",
+        "wernher-von-braun"
+      ]
+    ],
+    "new": [
+      {
+        "pair": [
+          "north-american-aviation",
+          "oxygen-tank-2"
+        ],
+        "relations": [
+          "conceptually_related_to"
+        ]
+      }
+    ]
+  },
+  "tb15k-noise": {
+    "overlap": 0.887,
+    "recovered_flips": [
+      [
+        "apollo-11",
+        "neil-armstrong"
+      ],
+      [
+        "apollo-11-mission-report-ch-05",
+        "neil-armstrong"
+      ],
+      [
+        "apollo-11-mission-report-ch-05",
+        "program-alarms-1201-1202"
+      ],
+      [
+        "apollo-program",
+        "john-f-kennedy"
+      ],
+      [
+        "saturn-v",
+        "wernher-von-braun"
+      ]
+    ]
+  },
+  "deep-noise": {
+    "overlap": 0.971,
+    "recovered_flips": [
+      [
+        "apollo-11",
+        "neil-armstrong"
+      ],
+      [
+        "apollo-13",
+        "rubella-crew-swap"
+      ]
+    ]
+  }
+}

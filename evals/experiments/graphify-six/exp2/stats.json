@@ -1,0 +1,276 @@
+{
+ "A": {
+  "correct_per_run": [
+   19,
+   19,
+   19
+  ],
+  "of": 24,
+  "mean": 0.792,
+  "wilson95": [
+   0.684,
+   0.869
+  ],
+  "cost_per_run": [
+   0.01712,
+   0.01609,
+   0.01679
+  ],
+  "seconds_per_run": [
+   100.9,
+   95.2,
+   92.4
+  ],
+  "cost_per_correct": 0.000877,
+  "billed_in_median": 3912,
+  "billed_in_highest": [
+   8629,
+   "x21"
+  ],
+  "e2e_median_s": 3.82,
+  "e2e_slowest_s": [
+   8.03,
+   "x15"
+  ],
+  "misses": [
+   [
+    "x07",
+    "declined an answerable question"
+   ],
+   [
+    "x08",
+    "declined an answerable question"
+   ],
+   [
+    "x08",
+    "lacks ['armstrong', 'gemini 8', 'collins', 'gemini 10', 'aldrin']"
+   ],
+   [
+    "x09",
+    "lacks ['haise', 'lovell', 'young']"
+   ],
+   [
+    "x22",
+    "declined an answerable question"
+   ],
+   [
+    "x23",
+    "lacks ['abort']"
+   ]
+  ]
+ },
+ "B": {
+  "correct_per_run": [
+   23,
+   23,
+   23
+  ],
+  "of": 24,
+  "mean": 0.958,
+  "wilson95": [
+   0.885,
+   0.986
+  ],
+  "cost_per_run": [
+   0.01365,
+   0.01345,
+   0.01353
+  ],
+  "seconds_per_run": [
+   79.9,
+   80.3,
+   79.3
+  ],
+  "cost_per_correct": 0.000589,
+  "billed_in_median": 2794,
+  "billed_in_highest": [
+   2818,
+   "x03"
+  ],
+  "e2e_median_s": 3.16,
+  "e2e_slowest_s": [
+   5.7,
+   "x01"
+  ],
+  "misses": [
+   [
+    "x23",
+    "lacks ['abort']"
+   ]
+  ],
+  "paired_vs_A": {
+   "mean_diff": 0.167,
+   "clustered_se": 0.078,
+   "ci95": [
+    0.013,
+    0.32
+   ],
+   "clusters": 23,
+   "beats_ref": true
+  }
+ },
+ "C": {
+  "correct_per_run": [
+   19,
+   19,
+   19
+  ],
+  "of": 24,
+  "mean": 0.792,
+  "wilson95": [
+   0.684,
+   0.869
+  ],
+  "cost_per_run": [
+   0.01847,
+   0.01854,
+   0.01872
+  ],
+  "seconds_per_run": [
+   103.2,
+   108.7,
+   107.3
+  ],
+  "cost_per_correct": 0.000978,
+  "billed_in_median": 4180,
+  "billed_in_highest": [
+   10443,
+   "x08"
+  ],
+  "e2e_median_s": 4.27,
+  "e2e_slowest_s": [
+   8.22,
+   "x07"
+  ],
+  "misses": [
+   [
+    "x07",
+    "declined an answerable question"
+   ],
+   [
+    "x08",
+    "declined an answerable question"
+   ],
+   [
+    "x09",
+    "lacks ['haise', 'lovell', 'young']"
+   ],
+   [
+    "x22",
+    "declined an answerable question"
+   ],
+   [
+    "x23",
+    "lacks ['abort']"
+   ]
+  ],
+  "paired_vs_A": {
+   "mean_diff": 0.0,
+   "clustered_se": 0.0,
+   "ci95": [
+    0.0,
+    0.0
+   ],
+   "clusters": 23,
+   "beats_ref": false
+  }
+ },
+ "D": {
+  "correct_per_run": [
+   14,
+   13,
+   14
+  ],
+  "of": 24,
+  "mean": 0.569,
+  "wilson95": [
+   0.454,
+   0.677
+  ],
+  "cost_per_run": [
+   0.01825,
+   0.01822,
+   0.01835
+  ],
+  "seconds_per_run": [
+   92.5,
+   87.4,
+   88.7
+  ],
+  "cost_per_correct": 0.001337,
+  "billed_in_median": 5823,
+  "billed_in_highest": [
+   11255,
+   "x19"
+  ],
+  "e2e_median_s": 3.47,
+  "e2e_slowest_s": [
+   8.64,
+   "x23"
+  ],
+  "misses": [
+   [
+    "x01",
+    "declined an answerable question"
+   ],
+   [
+    "x02",
+    "declined an answerable question"
+   ],
+   [
+    "x03",
+    "declined an answerable question"
+   ],
+   [
+    "x05",
+    "declined an answerable question"
+   ],
+   [
+    "x07",
+    "declined an answerable question"
+   ],
+   [
+    "x08",
+    "lacks ['collins', 'gemini 10', 'aldrin', 'gemini 12']"
+   ],
+   [
+    "x09",
+    "lacks ['young']"
+   ],
+   [
+    "x21",
+    "declined an answerable question"
+   ],
+   [
+    "x21",
+    "lacks ['hatch', 'oxygen tank']"
+   ],
+   [
+    "x22",
+    "declined an answerable question"
+   ],
+   [
+    "x22",
+    "lacks ['abort', 'priority scheduling', 'unrelated']"
+   ],
+   [
+    "x23",
+    "lacks ['abort']"
+   ],
+   [
+    "x24",
+    "lacks ['adapter']"
+   ]
+  ],
+  "paired_vs_A": {
+   "mean_diff": -0.222,
+   "clustered_se": 0.094,
+   "ci95": [
+    -0.407,
+    -0.037
+   ],
+   "clusters": 23,
+   "beats_ref": false
+  }
+ }
+}

@@ -124,6 +124,67 @@ Pre-registered and committed before any arm ran. Same copy, answer key and 20 pa
 
 Register and plan unchanged. Ruling is Manoj's.
 
+## Apollo 25-question eval: with and without the map (2026-10-25)
+
+**Setup.**
+- **Same for both conditions:** 25 questions (`demo-evals/questions.yaml`) over `demo-brain/`, phase 1a method: one fresh agent per question that follows `skills/gateway/SKILL.md` and reads one file at a time.
+- **Model pinned:** `claude-opus-5-5`, confirmed in every transcript.
+- **Without the map:** the phase 1a prompt, unchanged.
+- **With the map:** the same prompt, plus permission to read `.map/graph.json` (checked current against `demo-brain`) to find the starting note and follow links, with `index.md` optional.
+- **One run per condition.** Batching was matched (20 agents at once, then 5), because time depends on how many run together.
+- **How each column was measured:**
+  - Tokens are all tokens processed, including cache reads.
+  - Cost uses Opus 5.5 rates of $4/MTok input, $20/MTok output and $0.20/MTok cache reads, and assumes $5/MTok for cache writes.
+  - Time is first to last transcript entry.
+  - "Notes read" excludes the skill file, `index.md` and the map.
+
+| Q | Correct (no map / map) | Notes read | Tokens (k) | Time (s) | Cost ($) |
+|---|---|---|---|---|---|
+| d01 | ✓ / ✓ | 1 / 1 | 159 / 203 | 46 / 43 | 0.24 / 0.24 |
+| d02 | ✓ / ✓ | 1 / 2 ⚑ | 159 / 352 | 47 / 62 | 0.24 / 0.31 |
+| d03 | ✓ / ✓ | 1 / 1 | 159 / 281 | 49 / 55 | 0.24 / 0.29 |
+| d04 | ✓ / ✓ | 1 / 1 | 159 / 203 | 51 / 47 | 0.24 / 0.24 |
+| d05 | ✓ / ✓ | 1 / 1 | 159 / 281 | 47 / 52 | 0.24 / 0.29 |
+| d06 | ✓ / ✓ | 1 / 1 | 159 / 281 | 49 / 54 | 0.25 / 0.29 |
+| d07 | ✓ / ✓ | 1 / 1 | 159 / 165 | 51 / 42 | 0.24 / 0.23 |
+| d08 | ✓ / ✓ | 4 / 4 | 249 / 355 | 59 / 69 | 0.28 / 0.33 |
+| d09 | ✓ / ✓ | 1 / 1 | 159 / 203 | 48 / 47 | 0.25 / 0.24 |
+| m01 | ✓ / ✓ | 3 / 4 ⚑ | 247 / 365 | 56 / 64 | 0.27 / 0.29 |
+| m02 | ✓ / ✓ | 2 / 3 ⚑ | 160 / 335 | 48 / 63 | 0.25 / 0.28 |
+| m03 | ✓ / ✓ | 3 / 2 | 203 / 272 | 54 / 59 | 0.27 / 0.27 |
+| m04 | ✓ / ✓ | 3 / 3 | 160 / 282 | 48 / 55 | 0.25 / 0.30 |
+| m05 | ✓ / ✓ | 1 / 1 | 159 / 204 | 47 / 41 | 0.25 / 0.24 |
+| p01 | ✓ / ✓ | 1 / 1 | 159 / 204 | 47 / 40 | 0.25 / 0.24 |
+| p02 | ✓ / ✓ | 1 / 1 | 159 / 204 | 46 / 45 | 0.25 / 0.24 |
+| p03 | ✓ / ✓ | 1 / 1 | 159 / 204 | 47 / 40 | 0.25 / 0.24 |
+| t01 | ✓ / ✓ | 1 / 1 | 159 / 204 | 51 / 40 | 0.25 / 0.24 |
+| t02 | ✓ / ✓ | 1 / 1 | 159 / 203 | 46 / 42 | 0.24 / 0.24 |
+| t03 | ✓ / ✓ | 1 / 1 | 159 / 203 | 46 / 44 | 0.24 / 0.24 |
+| n01 | ✓ / ✓ | 1 / 2 ⚑ | 159 / 282 | 22 / 28 | 0.13 / 0.30 |
+| n02 | ✓ / ✓ | 0 / 0 | 116 / 171 | 18 / 20 | 0.11 / 0.27 |
+| n03 | ✓ / ✓ | 2 / 5 ⚑ | 202 / 269 | 24 / 28 | 0.14 / 0.27 |
+| n04 | ✓ / ✓ | 2 / 2 | 202 / 269 | 25 / 25 | 0.14 / 0.26 |
+| n05 | ✓ / ✓ | 3 / 3 | 247 / 388 | 31 / 27 | 0.16 / 0.33 |
+| **Total** | **25 / 25 both** | **38 / 44** | **4,328 / 6,382 (+47%)** | **1,101 / 1,133 (+3%)** | **5.68 / 6.71 (+18%)** |
+
+- **Answers:** no question got a different answer between the two conditions. Both flagged d08 as an agent's inference, and both said "I don't have that" on all five negatives.
+- **⚑ The map run read notes the question didn't need:**
+  - d02: `oxygen-tank-2`.
+  - m01: `rubella-crew-swap`.
+  - m02: `beech-aircraft`.
+  - n01: `nasa`.
+  - n03: `command-service-module`, plus re-reading `apollo-11` and `command-service-module`.
+- **The one saving:** on m03 the map run skipped `oxygen-tank-2`, which the run without the map had read for background.
+- **Why the map costs more:**
+  - `graph.json` is 55 KB, about seven times `index.md`, and has no descriptions.
+  - It was read 35 times in 25 runs; 10 runs had to read it in two parts.
+  - Following links led to extra neighbours rather than fewer reads.
+- **Cost caveat:**
+  - Billed cost depends on what was already cached. The 5 negatives without the map ran on a warm cache, which made them about half price.
+  - Priced as if nothing were cached, the totals are $17.52 without the map and $25.77 with it (+47%), the same ratio as tokens.
+
+Register and plan unchanged.
+
 ## Known gaps
 
 - **Alias resolution has no real-corpus coverage yet (2026-10-25).** Structural-pass criterion 4 is covered by unit tests only (`[[Mattingly]]` resolving to `ken-mattingly`). All 143 Apollo links resolved by slug, because none in that corpus are written as an alias. The Apollo brain is deliberately **not** edited to add alias links, since that would write the test's answer into the corpus. Real coverage comes when Manoj's own brain is in, since he writes links by alias.

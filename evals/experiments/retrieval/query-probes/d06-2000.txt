@@ -1,0 +1,7 @@
+Graph: evals/experiments/retrieval/build/graphify-out/graph.json (78 nodes) | Traversal: BFS depth=2 | Start: ['Apollo 13 CO2 scrubber adapter', 'Command and service module', 'Lunar module', 'CO2 scrubber adapter', 'Apollo 13'] | Context: import (heuristic) | 5 nodes found
+
+NODE Apollo 13 CO2 scrubber adapter [src=topics/co2-scrubber-adapter.md loc=None community=Apollo 13 Crew Swap]
+NODE Command and service module [src=topics/command-service-module.md loc=None community=Apollo 13 Accident Investigation]
+NODE Lunar module [src=topics/lunar-module.md loc=None community=Apollo 13 Crew Swap]
+NODE CO2 scrubber adapter [src=areas/apollo-13.md loc=None community=Apollo 13 Mission Operations]
+NODE Apollo 13 [src=areas/apollo-13.md loc=None community=Apollo 13 Mission Operations]

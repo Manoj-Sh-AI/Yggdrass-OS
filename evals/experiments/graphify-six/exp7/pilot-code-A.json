@@ -1,0 +1,74 @@
+{
+  "part": "code",
+  "arm": "A",
+  "run": 1,
+  "spent": 0.00695074,
+  "rows": [
+    {
+      "id": "c1",
+      "question": "Trace how a question goes from retrieve.py to the final answer shown to the user.",
+      "answer": "ANSWER:\n\nThe flow runs inside `retrieve.py` in one pass. `main()` calls `Retriever(brain).ask(question)`, and `ask()` runs three stages, then `main()` prints the result.\n\n1. **Setup (`Retriever.__init__`, L223-238):** `build_map(brain)` from `yggdras.data.graph.structural` builds the graph of nodes and edges. `signposts()` (L77) writes one line per node (`slug | name | aka aliases | description`). That list goes into a single system block marked `cache_control: ephemeral`.\n\n2. **Pick (`pick()`, L165-187):** One Haiku call (`claude-haiku-5-5`, effort low) returns JSON `{\"notes\": [...]}`, constrained by an enum of the valid slugs. Results are filtered to real slugs and capped at 2. An empty result is retried once.\n\n3. **Gather (`search_results()`, L111-134, no model):** For each picked node, it reads the note's `## Facts` lines (`fact_lines`, L62) and adds a `Link:` line for each edge (`edges_of`, L94). It also adds the facts of each neighbour. Each node becomes a `search_result` block with `source` = slug, `title` = node name, one text block per line, and citations enabled.\n\n4. **Answer (`answer()`, L190-220):** One Haiku call gets the blocks plus the instruction \"answer from these search results only, citing them\", with a \"NOT IN BRAIN\" prefix for declines. The function collects the raw text, the citations, and the usage/timing numbers.\n\n5. **Result (`ask()`, L240-263):** `status_of()` (L142) returns `not_in_brain` if the reply starts with the decline marker, otherwise `answer`. The `answer` field is `display_text(raw)` (L137), which strips the `(src: ...)` tails with the `SRC_TAIL` regex (L48). The raw text, citations, and cost/latency figures are kept alongside it.\n\n6. **Shown to user (`main()`, L266-274):** For `ask <brain> \"<question>\"`, it prints `result[\"answer\"]` (the cleaned text), then a `Sources:` line listing the unique citation sources, or `none`. The `eval` subcommand (L275-286) does not print the answer; it writes the full result rows to JSON.\n\nNotes:\n- The graph returned the two `retrieve` nodes (`Retriever` at L223 and the module), and `query`/`explain` supplied the function locations above. I did not open `structural.py`, so the exact fields of `build_map`'s output (`slug`, `name`, `aliases`, `path`, edge `reason`) are inferred from how `retrieve.py` uses them.\n- The `variant_a.py` file is a different variant (`ask_a`, `gather_lines`) and is not part of this path.\n\nFILES: `evals/experiments/speed-test-one-query/retrieve.py` (read in full). I also used `graphify query`, `graphify explain`, and the graph output. No files were edited.",
+      "is_error": false,
+      "subtype": "success",
+      "num_turns": 4,
+      "tool_calls": 3,
+      "tool_names": {
+        "Bash": 2,
+        "Read": 1
+      },
+      "tokens_total": 92937,
+      "model_usage": {
+        "claude-haiku-5-5": {
+          "inputTokens": 6,
+          "outputTokens": 1999,
+          "cacheReadInputTokens": 72201,
+          "cacheCreationInputTokens": 18731,
+          "webSearchRequests": 0,
+          "costUSD": 0.004063485,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 334,
+          "canonicalModel": "claude-haiku-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "cost_usd": 0.004063485,
+      "seconds": 27.82,
+      "stderr": ""
+    },
+    {
+      "id": "c4",
+      "question": "Where is `normalize` defined, and where is it used?",
+      "answer": "ANSWER: `normalize` is defined at `app/src/yggdras/data/graph/structural.py:29` as `def normalize(text: str) -> str`. It lowercases, strips accents via `unicodedata` NFKD, and applies the D02 rules.\n\nIt is used in three places:\n- `app/src/yggdras/data/graph/structural.py:127` in `build_map()`, for `node.slug` keys.\n- `app/src/yggdras/data/graph/structural.py:129` in `build_map()`, for alias keys.\n- `app/src/yggdras/data/graph/structural.py:138` in `build_map()`, for the `written` link text when matching.\n\nThe graph only reported the call at line 127. The grep found lines 129 and 138 too.\n\nIt is also called from a test, `app/tests/test_structural_map.py:280` (`st.normalize(text)` in `test_normalize_follows_d02`). The graph did not show that edge.\n\nFILES: graphify-out/graph.json (via `graphify query`, `graphify explain`), `app/src/yggdras/data/graph/structural.py` (grep matches only, no full read), `app/tests/test_structural_map.py` (grep match only, no full read). Grep also matched files under `graphify-out/` (cache, graph.html, GRAPH_REPORT.md), which were not useful. No files were edited.",
+      "is_error": false,
+      "subtype": "success",
+      "num_turns": 3,
+      "tool_calls": 2,
+      "tool_names": {
+        "Bash": 1,
+        "Grep": 1
+      },
+      "tokens_total": 88806,
+      "model_usage": {
+        "claude-haiku-5-5": {
+          "inputTokens": 6,
+          "outputTokens": 1160,
+          "cacheReadInputTokens": 75203,
+          "cacheCreationInputTokens": 12437,
+          "webSearchRequests": 0,
+          "costUSD": 0.002887255,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 348,
+          "canonicalModel": "claude-haiku-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "cost_usd": 0.002887255,
+      "seconds": 22.82,
+      "stderr": ""
+    }
+  ]
+}

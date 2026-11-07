@@ -1,0 +1,217 @@
+{
+ "D": {
+  "correct_per_run": [
+   23,
+   25
+  ],
+  "of": 35,
+  "mean": 0.686,
+  "wilson95": [
+   0.57,
+   0.782
+  ],
+  "cost_per_run": [
+   0.03127,
+   0.03099
+  ],
+  "seconds_per_run": [
+   162.8,
+   164.3
+  ],
+  "cost_per_correct": 0.001297,
+  "billed_in_median": 9179,
+  "billed_in_highest": [
+   11714,
+   "p01"
+  ],
+  "e2e_median_s": 4.44,
+  "e2e_slowest_s": [
+   7.2,
+   "d08"
+  ],
+  "misses": [
+   [
+    "d02",
+    "lacks ['beech']"
+   ],
+   [
+    "d08",
+    "lacks ['priority scheduling', 'infer']"
+   ],
+   [
+    "d09",
+    "declined an answerable question"
+   ],
+   [
+    "h02",
+    "lacks ['columbia']"
+   ],
+   [
+    "h03",
+    "declined an answerable question"
+   ],
+   [
+    "h04",
+    "declined an answerable question"
+   ],
+   [
+    "h05",
+    "declined an answerable question"
+   ],
+   [
+    "h06",
+    "declined an answerable question"
+   ],
+   [
+    "h07",
+    "declined an answerable question"
+   ],
+   [
+    "h08",
+    "declined an answerable question"
+   ],
+   [
+    "h09",
+    "answered a negative"
+   ],
+   [
+    "m05",
+    "lacks ['duke', 'apollo 16']"
+   ]
+  ]
+ },
+ "D-strip": {
+  "correct_per_run": [
+   28,
+   26
+  ],
+  "of": 35,
+  "mean": 0.771,
+  "wilson95": [
+   0.66,
+   0.854
+  ],
+  "cost_per_run": [
+   0.03526,
+   0.03561
+  ],
+  "seconds_per_run": [
+   140.4,
+   145.8
+  ],
+  "cost_per_correct": 0.001312,
+  "billed_in_median": 9676,
+  "billed_in_highest": [
+   11714,
+   "p01"
+  ],
+  "e2e_median_s": 4.03,
+  "e2e_slowest_s": [
+   8.33,
+   "h01"
+  ],
+  "misses": [
+   [
+    "d08",
+    "declined an answerable question"
+   ],
+   [
+    "d09",
+    "declined an answerable question"
+   ],
+   [
+    "h02",
+    "lacks ['columbia']"
+   ],
+   [
+    "h03",
+    "declined an answerable question"
+   ],
+   [
+    "h04",
+    "declined an answerable question"
+   ],
+   [
+    "h05",
+    "declined an answerable question"
+   ],
+   [
+    "h06",
+    "declined an answerable question"
+   ],
+   [
+    "h08",
+    "declined an answerable question"
+   ],
+   [
+    "h09",
+    "answered a negative"
+   ],
+   [
+    "m05",
+    "lacks ['duke', 'apollo 16']"
+   ]
+  ],
+  "paired_vs_D": {
+   "mean_diff": 0.086,
+   "clustered_se": 0.043,
+   "ci95": [
+    0.001,
+    0.171
+   ],
+   "clusters": 27,
+   "beats_ref": true
+  }
+ },
+ "D-seed": {
+  "correct_per_run": [
+   33,
+   34
+  ],
+  "of": 35,
+  "mean": 0.957,
+  "wilson95": [
+   0.881,
+   0.985
+  ],
+  "cost_per_run": [
+   0.02496,
+   0.02442
+  ],
+  "seconds_per_run": [
+   274.0,
+   299.6
+  ],
+  "cost_per_correct": 0.000737,
+  "billed_in_median": 4954,
+  "billed_in_highest": [
+   10746,
+   "h05"
+  ],
+  "e2e_median_s": 8.16,
+  "e2e_slowest_s": [
+   14.18,
+   "d08"
+  ],
+  "misses": [
+   [
+    "h06",
+    "declined an answerable question"
+   ],
+   [
+    "h08",
+    "declined an answerable question"
+   ]
+  ],
+  "paired_vs_D": {
+   "mean_diff": 0.271,
+   "clustered_se": 0.069,
+   "ci95": [
+    0.136,
+    0.407
+   ],
+   "clusters": 27,
+   "beats_ref": true
+  }
+ }
+}

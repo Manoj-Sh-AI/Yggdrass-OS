@@ -1,0 +1,74 @@
+{
+ "D-1.json": {
+  "t02": [
+   true,
+   "hand-graded: paraphrase of the key term"
+  ]
+ },
+ "D-2.json": {
+  "t02": [
+   true,
+   "hand-graded: paraphrase of the key term"
+  ],
+  "d08": [
+   true,
+   "hand-graded: paraphrase of the key term (agent-derived note credits priority scheduling)"
+  ]
+ },
+ "D-strip-1.json": {
+  "t02": [
+   true,
+   "hand-graded: paraphrase of the key term"
+  ],
+  "h07": [
+   true,
+   "hand-graded: paraphrase of the key term"
+  ]
+ },
+ "D-strip-2.json": {
+  "t02": [
+   true,
+   "hand-graded: paraphrase of the key term"
+  ],
+  "h07": [
+   true,
+   "hand-graded: paraphrase of the key term"
+  ]
+ },
+ "D-seed-1.json": {
+  "d08": [
+   true,
+   "hand-graded: paraphrase of the key term"
+  ],
+  "p02": [
+   true,
+   "hand-graded: paraphrase of the key term (1100 feet)"
+  ],
+  "t02": [
+   true,
+   "hand-graded: paraphrase of the key term"
+  ],
+  "h07": [
+   true,
+   "hand-graded: paraphrase of the key term"
+  ]
+ },
+ "D-seed-2.json": {
+  "d08": [
+   true,
+   "hand-graded: paraphrase of the key term"
+  ],
+  "p02": [
+   true,
+   "hand-graded: paraphrase of the key term (1,100 feet)"
+  ],
+  "t02": [
+   true,
+   "hand-graded: paraphrase of the key term"
+  ],
+  "h07": [
+   true,
+   "hand-graded: paraphrase of the key term"
+  ]
+ }
+}

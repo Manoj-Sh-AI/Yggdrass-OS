@@ -1,0 +1,122 @@
+{
+ "A-1.json": {
+  "x16": [
+   true,
+   "hand-graded: dates written in another format"
+  ]
+ },
+ "A-2.json": {
+  "x15": [
+   true,
+   "hand-graded: dates written in another format"
+  ],
+  "x16": [
+   true,
+   "hand-graded: dates written in another format"
+  ]
+ },
+ "B-1.json": {
+  "x12": [
+   true,
+   "hand-graded: dates written in another format"
+  ]
+ },
+ "C-1.json": {
+  "x12": [
+   true,
+   "hand-graded: dates written in another format"
+  ],
+  "x15": [
+   true,
+   "hand-graded: dates written in another format"
+  ]
+ },
+ "C-2.json": {
+  "x16": [
+   true,
+   "hand-graded: dates written in another format"
+  ]
+ },
+ "C-3.json": {
+  "x12": [
+   true,
+   "hand-graded: dates written in another format"
+  ],
+  "x15": [
+   true,
+   "hand-graded: dates written in another format"
+  ],
+  "x16": [
+   true,
+   "hand-graded: dates written in another format"
+  ]
+ },
+ "D-1.json": {
+  "x16": [
+   true,
+   "hand-graded: dates written in another format"
+  ]
+ },
+ "D-2.json": {
+  "x14": [
+   true,
+   "hand-graded: dates written in another format"
+  ]
+ },
+ "D-3.json": {
+  "x16": [
+   true,
+   "hand-graded: dates written in another format"
+  ]
+ },
+ "B-2.json": {
+  "x22": [
+   true,
+   "hand-graded: names all three inferences, paraphrasing \"unrelated\""
+  ]
+ },
+ "B-old-1.json": {
+  "d05": [
+   true,
+   "hand-graded: paraphrase of the key term (a dozen)"
+  ]
+ },
+ "B-old-3.json": {
+  "h04": [
+   true,
+   "hand-graded: paraphrase of the key term (a dozen)"
+  ],
+  "t01": [
+   true,
+   "hand-graded: paraphrase of the key term (13 April 1970)"
+  ]
+ },
+ "v6-C-2.json": {
+  "t01": [
+   true,
+   "hand-graded in v6: paraphrase"
+  ],
+  "t02": [
+   true,
+   "hand-graded in v6: paraphrase"
+  ]
+ },
+ "v6-C-3.json": {
+  "t01": [
+   true,
+   "hand-graded in v6: paraphrase"
+  ],
+  "t02": [
+   true,
+   "hand-graded in v6: paraphrase"
+  ],
+  "h07": [
+   true,
+   "hand-graded in v6: paraphrase"
+  ],
+  "h08": [
+   true,
+   "hand-graded in v6: paraphrase"
+  ]
+ }
+}

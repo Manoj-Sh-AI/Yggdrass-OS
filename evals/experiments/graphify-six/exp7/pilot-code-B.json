@@ -1,0 +1,75 @@
+{
+  "part": "code",
+  "arm": "B",
+  "run": 1,
+  "spent": 0.005998405,
+  "rows": [
+    {
+      "id": "c1",
+      "question": "Trace how a question goes from retrieve.py to the final answer shown to the user.",
+      "answer": "ANSWER: `retrieve.py` is a model-free-in-the-middle, three-step pipeline. It lives in `evals/experiments/speed-test-one-query/`, not in `app/src`, so it is an experiment rather than the app's production chat path. The trace below is the `ask` command, which is the path the README calls the default (variant C).\n\n1. **Entry:** `main()` (line 266) takes `ask <brain> \"<question>\"`, builds `Retriever(brain)`, and calls `.ask(question)`.\n2. **Setup (`Retriever.__init__`, line 223):** it builds the structural graph with `build_map(brain)` from `yggdras.data.graph.structural`. It then builds a signpost list (`signposts`, line 77) with one line per node (`slug | name | aka aliases | description`). If a note has no description, the first `- [` fact line is used. That list goes into a single system block with `cache_control: ephemeral`.\n3. **Pick (`pick`, line 165):** one `claude-haiku-5-5` call with thinking off and a JSON schema. The `notes` enum is restricted to real slugs. The reply is de-duplicated and capped at 2. An empty result is retried once. This is the only model call that sees the full node list.\n4. **Gather (`search_results`, line 111, no model):** for each picked slug, it collects that node's fact lines and its edges in both directions (`edges_of`, line 94). It then collects the fact lines of every neighbour. Picked nodes come first, duplicates are skipped, and each node becomes a `search_result` block with `source` = slug, `title` = node name, one text block per fact line, and citations enabled. The picked node also gets `Link: ...` lines.\n5. **Answer (`answer`, line 190):** one Haiku call with those blocks plus the instruction \"answer from these search results only, citing them; if absent, start with NOT IN BRAIN\". Thinking is off and effort is low. The function streams to record time-to-first-token, then collects the text blocks and their `citations`.\n6. **Result (`ask`, line 240):** `status_of` returns `not_in_brain` if the reply starts with `NOT IN BRAIN`, otherwise `answer`. `display_text` (line 137) removes the `(src: ...)` tails from the answer with a regex. The raw answer and citations are kept beside it, and the cost, token and timing fields are summed across both calls.\n7. **To the user:** `main` prints `result[\"answer\"]` (the tail-stripped text), then a `Sources:` line built from the citation `source` values. In `eval` mode, the same result is appended to a JSON file instead.\n\n`variant_a.py` differs at step 5: it sends plain-text fact lines and forces a `{text, status}` JSON reply. It reuses `pick`, `edges_of`, `fact_lines`, and `note_text` from `retrieve.py`.\n\nFILES: `evals/experiments/speed-test-one-query/retrieve.py`, `evals/experiments/speed-test-one-query/variant_a.py`, `evals/experiments/speed-test-one-query/README.md`",
+      "is_error": false,
+      "subtype": "success",
+      "num_turns": 6,
+      "tool_calls": 5,
+      "tool_names": {
+        "Glob": 1,
+        "Grep": 1,
+        "Read": 3
+      },
+      "tokens_total": 88153,
+      "model_usage": {
+        "claude-haiku-5-5": {
+          "inputTokens": 6,
+          "outputTokens": 1920,
+          "cacheReadInputTokens": 70141,
+          "cacheCreationInputTokens": 16086,
+          "webSearchRequests": 0,
+          "costUSD": 0.0036727599999999997,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 227,
+          "canonicalModel": "claude-haiku-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "cost_usd": 0.0036727599999999997,
+      "seconds": 15.57,
+      "stderr": ""
+    },
+    {
+      "id": "c4",
+      "question": "Where is `normalize` defined, and where is it used?",
+      "answer": "ANSWER: `normalize` is defined at `app/src/yggdras/data/graph/structural.py:29`. It implements the D02 normalization rule: lowercase, strip accents via NFKD, map \u00df\u2192ss and \u00f8\u2192o, turn whitespace and underscores into hyphens, drop other punctuation, and collapse repeated or edge hyphens.\n\nIt is used in two places:\n- `app/src/yggdras/data/graph/structural.py:127` and `:129`, inside `build_map`, to build the lookup index of normalized slugs and aliases.\n- `app/src/yggdras/data/graph/structural.py:138`, in the same function, to resolve `[[wikilinks]]` that don't match a slug exactly. It also flags ambiguous matches.\n\nIt is also called directly in the tests at `app/tests/test_structural_map.py:280`. The decision record `rationale/decisions/D02-node-identity.md:18` describes the rule but does not call the function.\n\nFILES: `app/src/yggdras/data/graph/structural.py` (lines 1\u2013140), `app/tests/test_structural_map.py` (grep hit at 280), `rationale/decisions/D02-node-identity.md` (grep hit at 18). I did not spawn subagents, and I edited nothing.",
+      "is_error": false,
+      "subtype": "success",
+      "num_turns": 3,
+      "tool_calls": 2,
+      "tool_names": {
+        "Grep": 1,
+        "Read": 1
+      },
+      "tokens_total": 80457,
+      "model_usage": {
+        "claude-haiku-5-5": {
+          "inputTokens": 6,
+          "outputTokens": 947,
+          "cacheReadInputTokens": 70317,
+          "cacheCreationInputTokens": 9187,
+          "webSearchRequests": 0,
+          "costUSD": 0.0023256450000000003,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 79,
+          "canonicalModel": "claude-haiku-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "cost_usd": 0.0023256450000000003,
+      "seconds": 14.79,
+      "stderr": ""
+    }
+  ]
+}

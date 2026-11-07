@@ -1,0 +1,53 @@
+{
+  "id": "d09",
+  "condition": "R3",
+  "description": "R3 d09",
+  "model": [
+    "claude-opus-5-5"
+  ],
+  "prompt_exact": true,
+  "subagent_type": "Explore",
+  "launch_model": "opus",
+  "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly, with one change: use graphify query as your navigation entry point instead of the brain's index. After reading the skill, call the Bash tool exactly once to run this command, using the question exactly as given:\ngraphify query \"What happened at Launch Complex 34 on 1967-01-27?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"\nQuestion logging is disabled by the environment. This query is local and does not call a model. Use only the note paths named by this query's NODE lines to choose the notes to read. Do not change the query, raise the budget, request other subgraphs, or work around an empty or truncated result. You may read index.md only if the query itself names it. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only the skill file plus files inside the brain root that the query names. Do not use Glob, Grep, ls or any search across files or folders. Do not read graph.json, the wiki, or anything else. The Bash tool is allowed only for the single graphify query command above.\n\nQuestion: What happened at Launch Complex 34 on 1967-01-27?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+  "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R3\\transcripts\\d09.jsonl",
+  "finalized_transcript_available": true,
+  "agent_id": "a830b66ca6cbafecd",
+  "start_utc": "2026-10-25T19:36:46.202Z",
+  "end_utc": "2026-10-25T19:36:59.883Z",
+  "time_s": 13.681,
+  "usage": {
+    "input_tokens": 6,
+    "output_tokens": 585,
+    "cache_read_input_tokens": 34926,
+    "cache_creation_input_tokens": 4461
+  },
+  "total_tokens": 39978,
+  "cost_usd_at_recorded_rates": 0.041014199999999994,
+  "cache_neutral_cost_usd": 0.169272,
+  "tool_calls": [
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "graphify query \"What happened at Launch Complex 34 on 1967-01-27?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"",
+        "description": "Run graphify query for navigation"
+      }
+    }
+  ],
+  "tool_call_count": 2,
+  "note_read_count": 0,
+  "wiki_read_count": 0,
+  "opened_paths": [
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+  ],
+  "answers": [
+    "ANSWER: I don't have that. The graphify query returned only nodes about Apollo 11: the 1201/1202 program alarms, the Apollo 11 Mission Report and its Section 5.3 on powered descent, Margaret Hamilton, the Apollo Guidance Computer, the lunar module, Neil Armstrong, Michael Collins, Tranquility Base and the MIT Instrumentation Laboratory. None of them is about Launch Complex 34 or 1967-01-27. The skill says not to open a node just to see what is in it, so I opened no brain nodes.\nFILES: (none)"
+  ],
+  "answer": "ANSWER: I don't have that. The graphify query returned only nodes about Apollo 11: the 1201/1202 program alarms, the Apollo 11 Mission Report and its Section 5.3 on powered descent, Margaret Hamilton, the Apollo Guidance Computer, the lunar module, Neil Armstrong, Michael Collins, Tranquility Base and the MIT Instrumentation Laboratory. None of them is about Launch Complex 34 or 1967-01-27. The skill says not to open a node just to see what is in it, so I opened no brain nodes.\nFILES: (none)",
+  "tool_errors": []
+}

@@ -1,0 +1,60 @@
+{
+  "id": "d03",
+  "condition": "R1",
+  "description": "R1 d03",
+  "model": [
+    "claude-opus-5-5"
+  ],
+  "prompt_exact": true,
+  "subagent_type": "Explore",
+  "launch_model": "opus",
+  "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: When did NASA announce lunar orbit rendezvous as the Apollo mission mode?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+  "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R1\\transcripts\\d03.jsonl",
+  "finalized_transcript_available": true,
+  "agent_id": "a4a0f4e4ad237902a",
+  "start_utc": "2026-10-25T19:30:49.581Z",
+  "end_utc": "2026-10-25T19:30:58.070Z",
+  "time_s": 8.489,
+  "usage": {
+    "input_tokens": 8,
+    "output_tokens": 388,
+    "cache_read_input_tokens": 52393,
+    "cache_creation_input_tokens": 6048
+  },
+  "total_tokens": 58837,
+  "cost_usd_at_recorded_rates": 0.0485106,
+  "cache_neutral_cost_usd": 0.241556,
+  "tool_calls": [
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\lunar-orbit-rendezvous.md"
+      }
+    }
+  ],
+  "tool_call_count": 3,
+  "note_read_count": 1,
+  "wiki_read_count": 0,
+  "opened_paths": [
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\lunar-orbit-rendezvous.md"
+  ],
+  "answers": [
+    "ANSWER: NASA announced lunar orbit rendezvous as the Apollo mission mode on 1962-07-11 (July 11, 1962). It was a stated fact, and the source is NASA history (2026-10-24). NASA picked it over direct ascent and Earth orbit rendezvous.\nFILES: index.md, topics/lunar-orbit-rendezvous.md"
+  ],
+  "answer": "ANSWER: NASA announced lunar orbit rendezvous as the Apollo mission mode on 1962-07-11 (July 11, 1962). It was a stated fact, and the source is NASA history (2026-10-24). NASA picked it over direct ascent and Earth orbit rendezvous.\nFILES: index.md, topics/lunar-orbit-rendezvous.md",
+  "tool_errors": []
+}

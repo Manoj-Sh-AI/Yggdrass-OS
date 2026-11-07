@@ -1,0 +1,482 @@
+{
+  "question": "Who replaced Ken Mattingly on Apollo 13, and why?",
+  "arm_a": {
+    "noun": "ken-mattingly",
+    "picked": [
+      "apollo-13-measles-article",
+      "apollo-13",
+      "rubella-crew-swap"
+    ],
+    "line_count": 17,
+    "lines": [
+      {
+        "from": "ken-mattingly",
+        "line": "- [stated] Assigned to Apollo 16 as command module pilot (was Apollo 13 command module pilot, changed 1970-04-10 by KSC management meeting) (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "ken-mattingly",
+        "line": "- [stated] Was the only one of the five prime and backup crew members tested without rubella antibodies (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "ken-mattingly",
+        "line": "- [stated] Never contracted German measles (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "ken-mattingly",
+        "line": "- [stated] Helped work out the power procedures the Apollo 13 crew used to return (src: NASA history, 2026-10-24)"
+      },
+      {
+        "from": "ken-mattingly",
+        "line": "- [derived] Being removed kept him off the one Apollo mission that had to abort its landing (src: agent, 2026-10-24)"
+      },
+      {
+        "from": "apollo-13-measles-article",
+        "line": "- [stated] Published by NASA history at nasa.gov/history/50-years-ago-apollo-13-and-german-measles (src: self, 2026-10-24)"
+      },
+      {
+        "from": "apollo-13-measles-article",
+        "line": "- [stated] Covers the exposure, the immunity tests and the 1970-04-10 swap decision (src: self, 2026-10-24)"
+      },
+      {
+        "from": "apollo-13",
+        "line": "- [stated] Launched 1970-04-11 (src: NASA Apollo 13 mission page, 2026-10-24)"
+      },
+      {
+        "from": "apollo-13",
+        "line": "- [stated] Mission goal became a safe return to Earth (was a lunar landing at Fra Mauro, changed 1970-04-13 by Mission Control abort decision) (src: NASA Apollo 13 mission page, 2026-10-24)"
+      },
+      {
+        "from": "apollo-13",
+        "line": "- [stated] Command module pilot is Jack Swigert (was Ken Mattingly, changed 1970-04-10 by KSC management meeting) (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "apollo-13",
+        "line": "- [stated] Crew used the lunar module Aquarius as a lifeboat and splashed down on 1970-04-17 (src: NASA Apollo 13 mission page, 2026-10-24)"
+      },
+      {
+        "from": "apollo-13",
+        "line": "- [stated] The Fra Mauro landing site was later reached by Apollo 14 in February 1971 (src: NASA history, 2026-10-24)"
+      },
+      {
+        "from": "apollo-13",
+        "line": "- [derived] The crew swap and the explosion are unrelated: the swap was decided before launch (src: agent, 2026-10-24)"
+      },
+      {
+        "from": "rubella-crew-swap",
+        "line": "- [stated] Backup lunar module pilot Charlie Duke caught German measles and exposed the crews (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "rubella-crew-swap",
+        "line": "- [stated] Blood tests from the 1970-04-06 physicals showed Ken Mattingly had no rubella immunity (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "rubella-crew-swap",
+        "line": "- [stated] Flight surgeon Charles Berry worried Mattingly could fall ill alone in the command module in lunar orbit (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "rubella-crew-swap",
+        "line": "- [stated] The swap was decided at a KSC management meeting and announced at a press conference on 1970-04-10 (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      }
+    ],
+    "pick": {
+      "full_ms": 1323.955,
+      "input_tokens": 319,
+      "output_tokens": 36,
+      "cost_usd": 4.990000000000001e-05,
+      "text": "Jack Swigert\napollo-13\nrubella-crew-swap\napollo-13-measles-article",
+      "stop_reason": "end_turn",
+      "first_word_ms": 1316.295
+    },
+    "answer": {
+      "full_ms": 2389.812,
+      "input_tokens": 1203,
+      "output_tokens": 246,
+      "cost_usd": 0.0002433,
+      "text": "Jack Swigert replaced Ken Mattingly as the command module pilot on Apollo 13. The swap was made because Mattingly had no rubella (German measles) immunity: blood tests from the 1970-04-06 physicals showed he was the only one of the five prime and backup crew members without antibodies. Backup lunar module pilot Charlie Duke had caught German measles and exposed the crews, and flight surgeon Charles Berry worried Mattingly could fall ill alone in the command module in lunar orbit. The decision was made at a KSC management meeting and announced at a press conference on 1970-04-10 (sources: [apollo-13-measles-article], [rubella-crew-swap], [ken-mattingly], [apollo-13]).",
+      "stop_reason": "end_turn",
+      "first_word_ms": 1641.332
+    },
+    "first_word_from_start_ms": 2965.287,
+    "total": {
+      "end_to_end_ms": 3717.572,
+      "input_tokens": 1522,
+      "output_tokens": 282,
+      "cost_usd": 0.0002932
+    }
+  },
+  "arm_b": {
+    "noun": "ken-mattingly",
+    "neighbour_count": 5,
+    "edge_count": 8,
+    "line_count": 23,
+    "lines": [
+      {
+        "from": "ken-mattingly",
+        "line": "- [stated] Assigned to Apollo 16 as command module pilot (was Apollo 13 command module pilot, changed 1970-04-10 by KSC management meeting) (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "ken-mattingly",
+        "line": "- [stated] Was the only one of the five prime and backup crew members tested without rubella antibodies (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "ken-mattingly",
+        "line": "- [stated] Never contracted German measles (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "ken-mattingly",
+        "line": "- [stated] Helped work out the power procedures the Apollo 13 crew used to return (src: NASA history, 2026-10-24)"
+      },
+      {
+        "from": "ken-mattingly",
+        "line": "- [derived] Being removed kept him off the one Apollo mission that had to abort its landing (src: agent, 2026-10-24)"
+      },
+      {
+        "from": "apollo-13-measles-article",
+        "line": "- [stated] Published by NASA history at nasa.gov/history/50-years-ago-apollo-13-and-german-measles (src: self, 2026-10-24)"
+      },
+      {
+        "from": "apollo-13-measles-article",
+        "line": "- [stated] Covers the exposure, the immunity tests and the 1970-04-10 swap decision (src: self, 2026-10-24)"
+      },
+      {
+        "from": "apollo-16",
+        "line": "- [stated] Launched 1972-04-16 (src: NASA history, 2026-10-24)"
+      },
+      {
+        "from": "apollo-16",
+        "line": "- [stated] Landed in the Descartes Highlands (src: NASA history, 2026-10-24)"
+      },
+      {
+        "from": "apollo-16",
+        "line": "- [stated] Crew was John Young, Ken Mattingly and Charlie Duke (src: NASA history, 2026-10-24)"
+      },
+      {
+        "from": "jack-swigert",
+        "line": "- [stated] Apollo 13 role is prime command module pilot (was backup command module pilot, changed 1970-04-10 by KSC management meeting) (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "jack-swigert",
+        "line": "- [stated] Was immune to rubella, which made him eligible to fly (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "jack-swigert",
+        "line": "- [stated] Was elected to the US House of Representatives in 1982 but died before taking office (src: NASA biography, 2026-10-24)"
+      },
+      {
+        "from": "apollo-13",
+        "line": "- [stated] Launched 1970-04-11 (src: NASA Apollo 13 mission page, 2026-10-24)"
+      },
+      {
+        "from": "apollo-13",
+        "line": "- [stated] Mission goal became a safe return to Earth (was a lunar landing at Fra Mauro, changed 1970-04-13 by Mission Control abort decision) (src: NASA Apollo 13 mission page, 2026-10-24)"
+      },
+      {
+        "from": "apollo-13",
+        "line": "- [stated] Command module pilot is Jack Swigert (was Ken Mattingly, changed 1970-04-10 by KSC management meeting) (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "apollo-13",
+        "line": "- [stated] Crew used the lunar module Aquarius as a lifeboat and splashed down on 1970-04-17 (src: NASA Apollo 13 mission page, 2026-10-24)"
+      },
+      {
+        "from": "apollo-13",
+        "line": "- [stated] The Fra Mauro landing site was later reached by Apollo 14 in February 1971 (src: NASA history, 2026-10-24)"
+      },
+      {
+        "from": "apollo-13",
+        "line": "- [derived] The crew swap and the explosion are unrelated: the swap was decided before launch (src: agent, 2026-10-24)"
+      },
+      {
+        "from": "rubella-crew-swap",
+        "line": "- [stated] Backup lunar module pilot Charlie Duke caught German measles and exposed the crews (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "rubella-crew-swap",
+        "line": "- [stated] Blood tests from the 1970-04-06 physicals showed Ken Mattingly had no rubella immunity (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "rubella-crew-swap",
+        "line": "- [stated] Flight surgeon Charles Berry worried Mattingly could fall ill alone in the command module in lunar orbit (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "rubella-crew-swap",
+        "line": "- [stated] The swap was decided at a KSC management meeting and announced at a press conference on 1970-04-10 (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      }
+    ],
+    "gather_ms": 2.135,
+    "answer": {
+      "full_ms": 1928.1,
+      "input_tokens": 1813,
+      "output_tokens": 230,
+      "cost_usd": 0.0002963,
+      "text": "Jack Swigert replaced Ken Mattingly on Apollo 13 as command module pilot. The reason was rubella (German measles) exposure: blood tests from the 1970-04-06 physicals showed Mattingly had no rubella immunity, and flight surgeon Charles Berry worried he could fall ill alone in the command module in lunar orbit after backup lunar module pilot Charlie Duke caught German measles and exposed the crews. The swap was decided at a KSC management meeting and announced on 1970-04-10. Swigert was immune to rubella, which made him eligible to fly. (Sources: apollo-13-measles-article, rubella-crew-swap, jack-swigert)",
+      "stop_reason": "end_turn",
+      "first_word_ms": 1208.31
+    },
+    "first_word_from_start_ms": 1210.445,
+    "total": {
+      "end_to_end_ms": 1930.292,
+      "input_tokens": 1813,
+      "output_tokens": 230,
+      "cost_usd": 0.0002963
+    }
+  },
+  "hub": {
+    "question": "Why was Apollo 13's command module pilot changed?",
+    "noun": "apollo-13",
+    "neighbour_count": 15,
+    "edge_count": 24,
+    "line_count": 58,
+    "lines": [
+      {
+        "from": "apollo-13",
+        "line": "- [stated] Launched 1970-04-11 (src: NASA Apollo 13 mission page, 2026-10-24)"
+      },
+      {
+        "from": "apollo-13",
+        "line": "- [stated] Mission goal became a safe return to Earth (was a lunar landing at Fra Mauro, changed 1970-04-13 by Mission Control abort decision) (src: NASA Apollo 13 mission page, 2026-10-24)"
+      },
+      {
+        "from": "apollo-13",
+        "line": "- [stated] Command module pilot is Jack Swigert (was Ken Mattingly, changed 1970-04-10 by KSC management meeting) (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "apollo-13",
+        "line": "- [stated] Crew used the lunar module Aquarius as a lifeboat and splashed down on 1970-04-17 (src: NASA Apollo 13 mission page, 2026-10-24)"
+      },
+      {
+        "from": "apollo-13",
+        "line": "- [stated] The Fra Mauro landing site was later reached by Apollo 14 in February 1971 (src: NASA history, 2026-10-24)"
+      },
+      {
+        "from": "apollo-13",
+        "line": "- [derived] The crew swap and the explosion are unrelated: the swap was decided before launch (src: agent, 2026-10-24)"
+      },
+      {
+        "from": "jim-lovell",
+        "line": "- [stated] Commander of Apollo 13 (src: NASA Apollo 13 mission page, 2026-10-24)"
+      },
+      {
+        "from": "jim-lovell",
+        "line": "- [stated] Flew Apollo 8 in December 1968, the first crewed lunar orbit (src: NASA biography, 2026-10-24)"
+      },
+      {
+        "from": "jim-lovell",
+        "line": "- [stated] Flew Gemini 7 and Gemini 12 before Apollo (src: NASA biography, 2026-10-24)"
+      },
+      {
+        "from": "jim-lovell",
+        "line": "- [stated] Had rubella immunity, so the 1970 measles exposure did not affect him (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "fred-haise",
+        "line": "- [stated] Lunar module pilot of Apollo 13 (src: NASA Apollo 13 mission page, 2026-10-24)"
+      },
+      {
+        "from": "fred-haise",
+        "line": "- [stated] Had rubella immunity, probably from childhood exposure (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "fred-haise",
+        "line": "- [stated] Flew the Space Shuttle Enterprise approach and landing tests in 1977 (src: NASA biography, 2026-10-24)"
+      },
+      {
+        "from": "jack-swigert",
+        "line": "- [stated] Apollo 13 role is prime command module pilot (was backup command module pilot, changed 1970-04-10 by KSC management meeting) (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "jack-swigert",
+        "line": "- [stated] Was immune to rubella, which made him eligible to fly (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "jack-swigert",
+        "line": "- [stated] Was elected to the US House of Representatives in 1982 but died before taking office (src: NASA biography, 2026-10-24)"
+      },
+      {
+        "from": "oxygen-tank-2",
+        "line": "- [stated] Exploded on 1970-04-13, about 56 hours into the flight (src: NASA Apollo 13 mission page, 2026-10-24)"
+      },
+      {
+        "from": "oxygen-tank-2",
+        "line": "- [stated] Its thermostatic switches were built to a 1962 specification for 28 volts DC (src: Moonport SP-4204, 2026-10-24)"
+      },
+      {
+        "from": "oxygen-tank-2",
+        "line": "- [stated] The heater specification was revised in 1965 to 65 volts but the switches were not changed (src: Moonport SP-4204, 2026-10-24)"
+      },
+      {
+        "from": "oxygen-tank-2",
+        "line": "- [stated] Before launch it was emptied by running its heaters on 65-volt ground power for about eight hours (src: Moonport SP-4204, 2026-10-24)"
+      },
+      {
+        "from": "lunar-module",
+        "line": "- [stated] Two-stage lander built by Grumman (src: NASA history, 2026-10-24)"
+      },
+      {
+        "from": "lunar-module",
+        "line": "- [stated] Apollo 11's lunar module was Eagle (src: NASA Apollo 11 mission page, 2026-10-24)"
+      },
+      {
+        "from": "lunar-module",
+        "line": "- [stated] Apollo 13's lunar module Aquarius kept the crew alive after the oxygen tank failed (src: NASA Apollo 13 mission page, 2026-10-24)"
+      },
+      {
+        "from": "lunar-module",
+        "line": "- [stated] Its descent engine burn put Apollo 13 back on a free-return path (src: NASA Apollo 13 mission page, 2026-10-24)"
+      },
+      {
+        "from": "apollo-13-review-board",
+        "line": "- [stated] Chaired by Edgar Cortright (src: NASA history, 2026-10-24)"
+      },
+      {
+        "from": "apollo-13-review-board",
+        "line": "- [stated] Traced the explosion to an electrically started fire in oxygen tank No. 2 (src: Apollo 13 Review Board report, 2026-10-24)"
+      },
+      {
+        "from": "apollo-13-review-board",
+        "line": "- [stated] Recommended redesigning the oxygen tank and removing electrical equipment from inside it (src: Apollo 13 Review Board report, 2026-10-24)"
+      },
+      {
+        "from": "rubella-crew-swap",
+        "line": "- [stated] Backup lunar module pilot Charlie Duke caught German measles and exposed the crews (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "rubella-crew-swap",
+        "line": "- [stated] Blood tests from the 1970-04-06 physicals showed Ken Mattingly had no rubella immunity (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "rubella-crew-swap",
+        "line": "- [stated] Flight surgeon Charles Berry worried Mattingly could fall ill alone in the command module in lunar orbit (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "rubella-crew-swap",
+        "line": "- [stated] The swap was decided at a KSC management meeting and announced at a press conference on 1970-04-10 (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "co2-scrubber-adapter",
+        "line": "- [stated] The command module's lithium hydroxide canisters were square and the lunar module's were round (src: NASA Apollo 13 mission page, 2026-10-24)"
+      },
+      {
+        "from": "co2-scrubber-adapter",
+        "line": "- [stated] Engineers devised an adapter from hoses, cardboard, plastic bags and tape (src: NASA Apollo 13 mission page, 2026-10-24)"
+      },
+      {
+        "from": "co2-scrubber-adapter",
+        "line": "- [stated] The crew built it from radioed instructions (src: NASA Apollo 13 mission page, 2026-10-24)"
+      },
+      {
+        "from": "free-return-trajectory",
+        "line": "- [stated] Loops around the Moon and returns to Earth using lunar gravity (src: NASA history, 2026-10-24)"
+      },
+      {
+        "from": "free-return-trajectory",
+        "line": "- [stated] Apollo 13 regained it with a lunar module descent engine burn after the explosion (src: NASA Apollo 13 mission page, 2026-10-24)"
+      },
+      {
+        "from": "apollo-program",
+        "line": "- [stated] Made six crewed lunar landings between July 1969 and December 1972 (src: NASA history, 2026-10-24)"
+      },
+      {
+        "from": "apollo-program",
+        "line": "- [stated] Twelve astronauts walked on the Moon (src: NASA history, 2026-10-24)"
+      },
+      {
+        "from": "apollo-program",
+        "line": "- [stated] Apollo 17 in December 1972 was the last crewed lunar mission (src: NASA history, 2026-10-24)"
+      },
+      {
+        "from": "apollo-program",
+        "line": "- [stated] Adopted lunar orbit rendezvous as its mission mode in 1962 (src: NASA history, 2026-10-24)"
+      },
+      {
+        "from": "charlie-duke",
+        "line": "- [stated] Backup lunar module pilot for Apollo 13 (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "charlie-duke",
+        "line": "- [stated] Caught German measles from a friend's 3-year-old son about three weeks before the Apollo 13 launch (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "charlie-duke",
+        "line": "- [stated] Trained with the other five crew members until 1970-04-03 while still contagious (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "charlie-duke",
+        "line": "- [stated] Was capsule communicator during the Apollo 11 landing (src: NASA Apollo 11 mission page, 2026-10-24)"
+      },
+      {
+        "from": "charlie-duke",
+        "line": "- [stated] Walked on the Moon as Apollo 16 lunar module pilot (src: NASA biography, 2026-10-24)"
+      },
+      {
+        "from": "gene-kranz",
+        "line": "- [stated] Flight director for the Apollo 11 lunar landing (src: NASA history, 2026-10-24)"
+      },
+      {
+        "from": "gene-kranz",
+        "line": "- [stated] His team was on console when Apollo 13's oxygen tank failed (src: NASA history, 2026-10-24)"
+      },
+      {
+        "from": "john-young",
+        "line": "- [stated] Backup commander for Apollo 13 and immune to rubella (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "john-young",
+        "line": "- [stated] Commander of Apollo 16 (src: NASA biography, 2026-10-24)"
+      },
+      {
+        "from": "john-young",
+        "line": "- [stated] Commanded STS-1 in 1981, the first Space Shuttle flight (src: NASA biography, 2026-10-24)"
+      },
+      {
+        "from": "ken-mattingly",
+        "line": "- [stated] Assigned to Apollo 16 as command module pilot (was Apollo 13 command module pilot, changed 1970-04-10 by KSC management meeting) (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "ken-mattingly",
+        "line": "- [stated] Was the only one of the five prime and backup crew members tested without rubella antibodies (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "ken-mattingly",
+        "line": "- [stated] Never contracted German measles (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "ken-mattingly",
+        "line": "- [stated] Helped work out the power procedures the Apollo 13 crew used to return (src: NASA history, 2026-10-24)"
+      },
+      {
+        "from": "ken-mattingly",
+        "line": "- [derived] Being removed kept him off the one Apollo mission that had to abort its landing (src: agent, 2026-10-24)"
+      },
+      {
+        "from": "mission-control-houston",
+        "line": "- [stated] Controlled Apollo flights after launch (src: NASA history, 2026-10-24)"
+      },
+      {
+        "from": "mission-control-houston",
+        "line": "- [stated] Host centre is named Johnson Space Center (was Manned Spacecraft Center, changed 1973-02-19 by renaming in honour of Lyndon B. Johnson) (src: NASA history, 2026-10-24)"
+      },
+      {
+        "from": "mission-control-houston",
+        "line": "- [stated] Engineers there devised the Apollo 13 carbon dioxide scrubber adapter (src: NASA Apollo 13 mission page, 2026-10-24)"
+      }
+    ],
+    "gather_ms": 7.642,
+    "answer": {
+      "full_ms": 1670.023,
+      "input_tokens": 4332,
+      "output_tokens": 238,
+      "cost_usd": 0.0005522000000000001,
+      "text": "The command module pilot was changed because of a rubella (German measles) exposure. Charlie Duke, the backup lunar module pilot, caught German measles, and blood tests from the 1970-04-06 physicals showed Ken Mattingly had no rubella immunity. Flight surgeon Charles Berry worried Mattingly could fall ill alone in the command module in lunar orbit, so a KSC management meeting decided on the swap, announced on 1970-04-10, replacing Mattingly with Jack Swigert (who was immune). Mattingly was reassigned to Apollo 16. (Sources: rubella-crew-swap; apollo-13 fact lines citing the NASA history Apollo 13 measles article.)",
+      "stop_reason": "end_turn",
+      "first_word_ms": 765.818
+    },
+    "first_word_from_start_ms": 773.46,
+    "total": {
+      "end_to_end_ms": 1677.713,
+      "input_tokens": 4332,
+      "output_tokens": 238,
+      "cost_usd": 0.0005522000000000001
+    }
+  }
+}

@@ -1,0 +1,80 @@
+Graph: evals/experiments/retrieval/build/graphify-out/graph.json (78 nodes) | Traversal: BFS depth=2 | Start: ['Apollo 16', 'Apollo 1', 'Apollo 8', 'Apollo 13'] | 30 nodes found
+
+NODE Apollo 16 [src=areas/apollo-16.md loc=None community=Apollo 13 Mission Operations]
+NODE Apollo 1 [src=areas/apollo-1.md loc=None community=Apollo 13 Review Board]
+NODE Apollo 8 [src=areas/apollo-8.md loc=None community=Apollo Program Overview]
+NODE Apollo 13 [src=areas/apollo-13.md loc=None community=Apollo 13 Mission Operations]
+NODE Apollo program [src=areas/apollo-program.md loc=None community=Apollo Program Overview]
+NODE Apollo 13 Review Board [src=areas/apollo-13-review-board.md loc=None community=Apollo 13 Review Board]
+NODE Mission Control Houston [src=areas/mission-control-houston.md loc=None community=Apollo 13 Mission Operations]
+NODE Lunar Module [src=areas/apollo-11.md loc=None community=Apollo 13 Mission Operations]
+NODE Charlie Duke [src=people/charlie-duke.md loc=None community=Apollo 13 Mission Operations]
+NODE Jack Swigert [src=people/jack-swigert.md loc=None community=Apollo 13 Mission Operations]
+NODE Jim Lovell [src=people/jim-lovell.md loc=None community=Apollo 13 Mission Operations]
+NODE North American Aviation [src=areas/north-american-aviation.md loc=None community=Apollo 13 Review Board]
+NODE Oxygen Tank No. 2 [src=areas/apollo-13-review-board.md loc=None community=Apollo 13 Review Board]
+NODE Fred Haise [src=people/fred-haise.md loc=None community=Apollo 13 Mission Operations]
+NODE Gene Kranz [src=people/gene-kranz.md loc=None community=Apollo 13 Mission Operations]
+NODE Rubella crew swap [src=areas/apollo-13.md loc=None community=Apollo 13 Mission Operations]
+NODE CO2 scrubber adapter [src=areas/apollo-13.md loc=None community=Apollo 13 Mission Operations]
+NODE Command/Service Module [src=areas/apollo-1.md loc=None community=Apollo 13 Review Board]
+NODE Ken Mattingly [src=areas/apollo-16.md loc=None community=Apollo 13 Mission Operations]
+NODE Saturn V [src=areas/apollo-8.md loc=None community=Apollo Program Overview]
+NODE Free return trajectory [src=areas/apollo-13.md loc=None community=Apollo 13 Mission Operations]
+NODE John Young [src=areas/apollo-16.md loc=None community=Apollo 13 Mission Operations]
+NODE Apollo 11 [src=areas/apollo-11.md loc=None community=Apollo 11 Moon Landing]
+NODE NASA [src=areas/nasa.md loc=None community=Apollo Program Overview]
+NODE Apollo 13 Review Board Report [src=areas/apollo-13-review-board.md loc=None community=Apollo 13 Review Board]
+NODE Beech Aircraft [src=areas/beech-aircraft.md loc=None community=Apollo 13 Review Board]
+NODE Edgar Cortright [src=sources/apollo-13-review-board-report.md loc=None community=Apollo 13 Accident Investigation]
+NODE Edgar Cortright [src=people/edgar-cortright.md loc=None community=Apollo 13 Review Board]
+NODE Grumman [src=areas/grumman.md loc=None community=Apollo 13 Mission Operations]
+NODE John F. Kennedy [src=areas/apollo-program.md loc=None community=Apollo Program Overview]
+EDGE Apollo 8 --references [EXTRACTED]--> Apollo program
+EDGE Apollo 8 --references [EXTRACTED]--> Jim Lovell
+EDGE Apollo 8 --references [EXTRACTED]--> Saturn V
+EDGE Apollo 1 --references [EXTRACTED]--> Apollo program
+EDGE Apollo 1 --references [EXTRACTED]--> North American Aviation
+EDGE Apollo 1 --references [EXTRACTED]--> Command/Service Module
+EDGE Apollo 16 --references [EXTRACTED]--> Apollo program
+EDGE Apollo 16 --references [EXTRACTED]--> John Young
+EDGE Apollo 16 --references [EXTRACTED]--> Ken Mattingly
+EDGE Apollo 16 --references [EXTRACTED]--> Charlie Duke
+EDGE Rubella crew swap --conceptually_related_to [EXTRACTED]--> Apollo 13
+EDGE Apollo 13 --references [EXTRACTED]--> Apollo 13 Review Board
+EDGE Apollo 13 --references [EXTRACTED]--> CO2 scrubber adapter
+EDGE Apollo 13 --references [EXTRACTED]--> Free return trajectory
+EDGE Apollo 13 --references [EXTRACTED]--> Lunar Module
+EDGE Apollo 13 --references [EXTRACTED]--> Oxygen Tank No. 2
+EDGE Apollo 13 --references [EXTRACTED]--> Fred Haise
+EDGE Apollo 13 --references [EXTRACTED]--> Jack Swigert
+EDGE Apollo 13 --references [EXTRACTED]--> Jim Lovell
+EDGE Apollo program --references [EXTRACTED]--> Apollo 13
+EDGE Mission Control Houston --references [EXTRACTED]--> Apollo 13
+EDGE Charlie Duke --references [EXTRACTED]--> Apollo 13
+EDGE Gene Kranz --references [EXTRACTED]--> Apollo 13
+EDGE Apollo 13 Review Board --references [EXTRACTED]--> Apollo 13 Review Board Report
+EDGE Apollo 13 Review Board --references [EXTRACTED]--> Edgar Cortright
+EDGE Edgar Cortright --references [EXTRACTED]--> Apollo 13 Review Board
+EDGE Mission Control Houston --references [EXTRACTED]--> NASA
+EDGE Gene Kranz --references [EXTRACTED]--> Apollo 11
+EDGE Apollo 11 --references [EXTRACTED]--> Apollo program
+EDGE Apollo program --references [EXTRACTED]--> NASA
+EDGE Apollo program --references [EXTRACTED]--> John F. Kennedy
+EDGE Oxygen Tank No. 2 --conceptually_related_to [INFERRED]--> Beech Aircraft
+EDGE Beech Aircraft --references [EXTRACTED]--> North American Aviation
+EDGE Charlie Duke --references [EXTRACTED]--> Apollo 11
+EDGE Apollo 11 --references [EXTRACTED]--> Lunar Module
+EDGE Grumman --references [EXTRACTED]--> Lunar Module
+EDGE Apollo 13 Review Board --references [EXTRACTED]--> Oxygen Tank No. 2
+EDGE Edgar Cortright --references [EXTRACTED]--> Apollo 13 Review Board Report
+EDGE Apollo program --references [EXTRACTED]--> Saturn V
+EDGE Mission Control Houston --references [EXTRACTED]--> CO2 scrubber adapter
+EDGE Mission Control Houston --references [EXTRACTED]--> Gene Kranz
+EDGE North American Aviation --references [EXTRACTED]--> Command/Service Module
+EDGE Jack Swigert --references [EXTRACTED]--> Ken Mattingly
+EDGE Fred Haise --references [EXTRACTED]--> Lunar Module
+EDGE Charlie Duke --references [EXTRACTED]--> Rubella crew swap
+EDGE Fred Haise --references [EXTRACTED]--> Jim Lovell
+EDGE Jack Swigert --references [EXTRACTED]--> Rubella crew swap
+EDGE Jim Lovell --references [EXTRACTED]--> Jack Swigert

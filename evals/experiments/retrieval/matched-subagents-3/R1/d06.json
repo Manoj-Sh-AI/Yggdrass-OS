@@ -1,0 +1,60 @@
+{
+  "id": "d06",
+  "condition": "R1",
+  "description": "R1 d06",
+  "model": [
+    "claude-opus-5-5"
+  ],
+  "prompt_exact": true,
+  "subagent_type": "Explore",
+  "launch_model": "opus",
+  "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: Why couldn't Apollo 13's command module CO2 canisters be used directly in the lunar module?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+  "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R1\\transcripts\\d06.jsonl",
+  "finalized_transcript_available": true,
+  "agent_id": "aae67a39a726d77c9",
+  "start_utc": "2026-10-25T19:30:57.975Z",
+  "end_utc": "2026-10-25T19:31:05.986Z",
+  "time_s": 8.011,
+  "usage": {
+    "input_tokens": 8,
+    "output_tokens": 421,
+    "cache_read_input_tokens": 52412,
+    "cache_creation_input_tokens": 6109
+  },
+  "total_tokens": 58950,
+  "cost_usd_at_recorded_rates": 0.0494794,
+  "cache_neutral_cost_usd": 0.242536,
+  "tool_calls": [
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\co2-scrubber-adapter.md"
+      }
+    }
+  ],
+  "tool_call_count": 3,
+  "note_read_count": 1,
+  "wiki_read_count": 0,
+  "opened_paths": [
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\co2-scrubber-adapter.md"
+  ],
+  "answers": [
+    "ANSWER: The command module's lithium hydroxide (CO2) canisters were square, but the lunar module's were round, so the square canisters did not fit the lunar module's sockets. To make them fit, engineers designed an adapter out of hoses, cardboard, plastic bags and tape, and the crew built it by following instructions radioed to them. (src: NASA Apollo 13 mission page, 2026-10-24)\nFILES: index.md, topics/co2-scrubber-adapter.md"
+  ],
+  "answer": "ANSWER: The command module's lithium hydroxide (CO2) canisters were square, but the lunar module's were round, so the square canisters did not fit the lunar module's sockets. To make them fit, engineers designed an adapter out of hoses, cardboard, plastic bags and tape, and the crew built it by following instructions radioed to them. (src: NASA Apollo 13 mission page, 2026-10-24)\nFILES: index.md, topics/co2-scrubber-adapter.md",
+  "tool_errors": []
+}

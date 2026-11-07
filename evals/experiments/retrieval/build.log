@@ -1,0 +1,11 @@
+[graphify] chunk of 43 truncated at depth 0, splitting into halves of 21 and 22
+[graphify extract] --force: full re-scan, semantic cache reads skipped
+[graphify extract] scanning C:\Users\shman\yggdras-brain\demo-brain
+[graphify extract] found 0 code, 43 docs, 0 papers, 0 images
+[graphify extract] semantic extraction on 43 files via claude...
+[graphify extract] chunk 1/1 done
+[graphify] WARNING: node 'edgar_cortright' is minted by two different files — keeping 'Edgar Cortright' from 'sources/apollo-13-review-board-report.md', dropping 'Edgar Cortright' from 'areas/apollo-13-review-board.md'. An ID is derived from the source path plus the entity name, so this one does not identify a single entity and the dropped node is lost. To keep them distinct, run 'graphify extract' per subfolder and merge with 'graphify merge-graphs'.
+[graphify extract] wrote C:\Users\shman\OneDrive\Desktop\Yggdrass OS\Yggdrass-OS\evals\experiments\retrieval\build\graphify-out\graph.json: 78 nodes, 112 edges, 10 communities
+[graphify extract] wrote C:\Users\shman\OneDrive\Desktop\Yggdrass OS\Yggdrass-OS\evals\experiments\retrieval\build\graphify-out\.graphify_analysis.json
+[graphify extract] tokens: 26,015 in / 21,465 out, est. cost (~claude): $0.4000
+[graphify extract] next: run `graphify cluster-only C:\Users\shman\OneDrive\Desktop\Yggdrass OS\Yggdrass-OS\evals\experiments\retrieval\build` to generate GRAPH_REPORT.md and name communities

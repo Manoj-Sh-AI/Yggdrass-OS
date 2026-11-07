@@ -1,0 +1,66 @@
+{
+  "id": "n04",
+  "condition": "R1",
+  "description": "R1 n04",
+  "model": [
+    "claude-opus-5-5"
+  ],
+  "prompt_exact": true,
+  "subagent_type": "Explore",
+  "launch_model": "opus",
+  "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: What colour vest did Gene Kranz wear during Apollo 13?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+  "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-2\\R1\\dispatcher.events.jsonl",
+  "agent_id": "a11a8907e183ea69d",
+  "start_utc": "2026-10-25T19:28:15.960Z",
+  "end_utc": "2026-10-25T19:28:25.454Z",
+  "time_s": 9.494,
+  "usage": {
+    "input_tokens": 10,
+    "output_tokens": 202,
+    "cache_read_input_tokens": 68594,
+    "cache_creation_input_tokens": 8003
+  },
+  "total_tokens": 76809,
+  "cost_usd_at_recorded_rates": 0.057813800000000005,
+  "cache_neutral_cost_usd": 0.310468,
+  "tool_calls": [
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\gene-kranz.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-13.md"
+      }
+    }
+  ],
+  "tool_call_count": 4,
+  "note_read_count": 2,
+  "wiki_read_count": 0,
+  "opened_paths": [
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\gene-kranz.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-13.md"
+  ],
+  "answers": [
+    "ANSWER: I don't have that. The Gene Kranz node only says he was flight director for the Apollo 11 landing and that his team was on console when Apollo 13's oxygen tank failed. The Apollo 13 node has the launch date, the abort, the crew swap and the lifeboat return. Neither node says anything about a vest or its colour.\nFILES: index.md, people/gene-kranz.md, areas/apollo-13.md"
+  ],
+  "answer": "ANSWER: I don't have that. The Gene Kranz node only says he was flight director for the Apollo 11 landing and that his team was on console when Apollo 13's oxygen tank failed. The Apollo 13 node has the launch date, the abort, the crew swap and the lifeboat return. Neither node says anything about a vest or its colour.\nFILES: index.md, people/gene-kranz.md, areas/apollo-13.md",
+  "tool_errors": []
+}

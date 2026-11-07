@@ -1,0 +1,104 @@
+{
+  "id": "p02",
+  "condition": "R1",
+  "model": "claude-opus-5-5",
+  "question": "At what altitude did manual control begin on Apollo 11, how far downrange of the aim point did it land, and on which page of the report?",
+  "start_utc": "2026-10-25T19:22:20.951830+00:00",
+  "end_utc": "2026-10-25T19:22:56.119239+00:00",
+  "wall_time_s": 35.16794120000122,
+  "cli_duration_s": 14.218,
+  "api_duration_s": 12.957,
+  "exit_code": 0,
+  "timed_out": false,
+  "success": true,
+  "terminal_reason": "completed",
+  "subtype": "success",
+  "answer": "ANSWER: Manual control began at about 600 feet, and the lunar module landed about 1,100 feet downrange of the initial aim point. This is on page 5-5 of the Apollo 11 Mission Report, in Section 5.3, Powered Descent, which covers pages 5-4 to 5-6. The source line reads: (src: Apollo 11 Mission Report p.5-5, 2026-10-24).\nFILES: index.md, sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+  "usage": {
+    "input_tokens": 10,
+    "cache_creation_input_tokens": 6679,
+    "cache_read_input_tokens": 13125,
+    "output_tokens": 451,
+    "output_tokens_details": {
+      "thinking_tokens": 0
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 6679
+    },
+    "inference_geo": "global",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 178,
+        "cache_read_input_tokens": 7112,
+        "cache_creation_input_tokens": 879,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 879,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "type": "message"
+      }
+    ],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "total_tokens": 20265,
+  "model_usage": {
+    "claude-opus-5-5": {
+      "inputTokens": 10,
+      "outputTokens": 451,
+      "cacheReadInputTokens": 13125,
+      "cacheCreationInputTokens": 6679,
+      "webSearchRequests": 0,
+      "costUSD": 0.045079999999999995,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 0,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "actual_models": [
+    "claude-opus-5-5"
+  ],
+  "cost_usd_cli_reported": 0.045079999999999995,
+  "estimated_cost_usd_at_recorded_rates": 0.04508,
+  "cache_neutral_cost_usd_at_recorded_rates": 0.088276,
+  "permission_denials": [],
+  "tool_calls": [
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\sources\\apollo-11-mission-report\\apollo-11-mission-report-ch-05.md"
+      }
+    }
+  ],
+  "tool_call_count": 3,
+  "read_call_count": 3,
+  "note_read_count": 1,
+  "wiki_read_count": 0,
+  "opened_paths": [
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\sources\\apollo-11-mission-report\\apollo-11-mission-report-ch-05.md"
+  ]
+}

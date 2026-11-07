@@ -1,0 +1,1847 @@
+{
+  "variant": "C",
+  "run": 1,
+  "rows": [
+    {
+      "id": "d01",
+      "question": "When did Apollo 8 launch, and who was its crew?",
+      "expected": "1968-12-21, with Frank Borman, Jim Lovell and Bill Anders.",
+      "picked": [
+        "apollo-8"
+      ],
+      "pick_ms": 1196.978,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "answer",
+      "lines_sent": 22,
+      "calls": [
+        {
+          "uncached_in": 28,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 15,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 2375,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 176,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 5954,
+      "cached_in": 3551,
+      "billed_equiv_in": 2758.1,
+      "output_tokens": 191,
+      "cost_usd": 0.00037131,
+      "first_token_ms": 2037.932,
+      "end_to_end_ms": 2556.825,
+      "answer": "Apollo 8 launched on December 21, 1968, with Frank Borman, Jim Lovell and Bill Anders as its crew. Launched 1968-12-21 with Frank Borman, Jim Lovell and Bill Anders (src: NASA history, 2026-10-24)\n\nThe mission was flown in December 1968, and Flew Apollo 8 in December 1968, the first crewed lunar orbit.",
+      "citations": {
+        "sentences": 2,
+        "cited": 1,
+        "uncited": [
+          "Apollo 8 launched on December 21, 1968, with Frank Borman, Jim Lovell and Bill Anders as its crew."
+        ],
+        "sources": [
+          "apollo-8",
+          "jim-lovell"
+        ]
+      },
+      "set": "old",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "d02",
+      "question": "Which company built the Apollo service module oxygen tanks?",
+      "expected": "Beech Aircraft, as a subcontractor to North American Aviation.",
+      "picked": [
+        "beech-aircraft"
+      ],
+      "pick_ms": 764.302,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "answer",
+      "lines_sent": 13,
+      "calls": [
+        {
+          "uncached_in": 28,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 17,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 1920,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 440,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 5499,
+      "cached_in": 3551,
+      "billed_equiv_in": 2303.1,
+      "output_tokens": 457,
+      "cost_usd": 0.00045881,
+      "first_token_ms": 2719.706,
+      "end_to_end_ms": 3493.835,
+      "answer": "The answer is Beech Aircraft. A subcontractor working for North American Aviation was responsible for fabricating the service module's oxygen tanks (Beech Aircraft, which built the service module oxygen tanks under North American Aviation). North American Aviation was the prime contractor for the Apollo command and service module, and it subcontracted Beech Aircraft.",
+      "citations": {
+        "sentences": 3,
+        "cited": 2,
+        "uncited": [
+          "The answer is Beech Aircraft."
+        ],
+        "sources": [
+          "beech-aircraft",
+          "north-american-aviation"
+        ]
+      },
+      "set": "old",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "d03",
+      "question": "When did NASA announce lunar orbit rendezvous as the Apollo mission mode?",
+      "expected": "1962-07-11, chosen over direct ascent and Earth orbit rendezvous.",
+      "picked": [
+        "lunar-orbit-rendezvous"
+      ],
+      "pick_ms": 1125.329,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "answer",
+      "lines_sent": 18,
+      "calls": [
+        {
+          "uncached_in": 38,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 23,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 2275,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 158,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 5864,
+      "cached_in": 3551,
+      "billed_equiv_in": 2668.1,
+      "output_tokens": 181,
+      "cost_usd": 0.00035731,
+      "first_token_ms": 1764.376,
+      "end_to_end_ms": 2304.087,
+      "answer": "NASA announced lunar orbit rendezvous as the Apollo mission mode on July 11, 1962. NASA announced it as the Apollo mission mode on 1962-07-11 (src: NASA history, 2026-10-24). The Apollo program's own record matches this date, since it adopted lunar orbit rendezvous as its mission mode in 1962.",
+      "citations": {
+        "sentences": 3,
+        "cited": 2,
+        "uncited": [
+          "NASA announced lunar orbit rendezvous as the Apollo mission mode on July 11, 1962."
+        ],
+        "sources": [
+          "apollo-program",
+          "lunar-orbit-rendezvous"
+        ]
+      },
+      "set": "old",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "d04",
+      "question": "What award did Margaret Hamilton receive, and when?",
+      "expected": "The Presidential Medal of Freedom, on 2016-11-22.",
+      "picked": [
+        "margaret-hamilton"
+      ],
+      "pick_ms": 1089.948,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "answer",
+      "lines_sent": 18,
+      "calls": [
+        {
+          "uncached_in": 27,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 18,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 2356,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 86,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 5934,
+      "cached_in": 3551,
+      "billed_equiv_in": 2738.1,
+      "output_tokens": 104,
+      "cost_usd": 0.00032581,
+      "first_token_ms": 1921.56,
+      "end_to_end_ms": 2077.997,
+      "answer": "Margaret Hamilton received the Presidential Medal of Freedom. She received the Presidential Medal of Freedom on 2016-11-22 (src: NASA history, 2026-10-24).",
+      "citations": {
+        "sentences": 2,
+        "cited": 1,
+        "uncited": [
+          "Margaret Hamilton received the Presidential Medal of Freedom."
+        ],
+        "sources": [
+          "margaret-hamilton"
+        ]
+      },
+      "set": "old",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "d05",
+      "question": "How many astronauts walked on the Moon during the Apollo program?",
+      "expected": "Twelve.",
+      "picked": [
+        "apollo-program"
+      ],
+      "pick_ms": 924.89,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "answer",
+      "lines_sent": 51,
+      "calls": [
+        {
+          "uncached_in": 30,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 15,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 4492,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 104,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 8073,
+      "cached_in": 3551,
+      "billed_equiv_in": 4877.1,
+      "output_tokens": 119,
+      "cost_usd": 0.00054721,
+      "first_token_ms": 1906.412,
+      "end_to_end_ms": 2188.091,
+      "answer": "Twelve astronauts walked on the Moon during the Apollo program. Twelve astronauts walked on the Moon, and this came from six crewed lunar landings between July 1969 and December 1972.",
+      "citations": {
+        "sentences": 2,
+        "cited": 1,
+        "uncited": [
+          "Twelve astronauts walked on the Moon during the Apollo program."
+        ],
+        "sources": [
+          "apollo-program"
+        ]
+      },
+      "set": "old",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "d06",
+      "question": "Why couldn't Apollo 13's command module CO2 canisters be used directly in the lunar module?",
+      "expected": "The command module's lithium hydroxide canisters were square and the lunar module's were round.",
+      "picked": [
+        "co2-scrubber-adapter",
+        "lunar-module"
+      ],
+      "pick_ms": 797.374,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "answer",
+      "lines_sent": 39,
+      "calls": [
+        {
+          "uncached_in": 42,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 27,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 4195,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 284,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 7788,
+      "cached_in": 3551,
+      "billed_equiv_in": 4592.1,
+      "output_tokens": 311,
+      "cost_usd": 0.0006147100000000001,
+      "first_token_ms": 3908.283,
+      "end_to_end_ms": 5048.73,
+      "answer": "The search results do answer this, though they describe the mismatch briefly rather than explaining it in depth.\n\nThe core reason is a physical incompatibility. The command module's lithium hydroxide canisters were square and the lunar module's were round. Because the shapes differed, the canisters could not simply be swapped. Ground teams had to work around this: engineers devised an adapter from hoses, cardboard, plastic bags and tape, and the crew built it from radioed instructions. The adapter was designed at Mission Control Houston.\n\nThe results do not explain further why the canisters were designed differently between the two modules, so that part of the question cannot be answered from these sources.",
+      "citations": {
+        "sentences": 7,
+        "cited": 3,
+        "uncited": [
+          "The search results do answer this, though they describe the mismatch briefly rather than explaining it in depth.",
+          "The core reason is a physical incompatibility.",
+          "Because the shapes differed, the canisters could not simply be swapped.",
+          "The results do not explain further why the canisters were designed differently between the two modules, so that part of the question cannot be answered from these sources."
+        ],
+        "sources": [
+          "co2-scrubber-adapter",
+          "mission-control-houston"
+        ]
+      },
+      "set": "old",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "d07",
+      "question": "Where did Apollo 16 land?",
+      "expected": "In the Descartes Highlands.",
+      "picked": [
+        "apollo-16"
+      ],
+      "pick_ms": 1295.322,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "answer",
+      "lines_sent": 28,
+      "calls": [
+        {
+          "uncached_in": 21,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 15,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 2845,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 70,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 6417,
+      "cached_in": 3551,
+      "billed_equiv_in": 3221.1,
+      "output_tokens": 85,
+      "cost_usd": 0.00036461,
+      "first_token_ms": 1945.692,
+      "end_to_end_ms": 2421.418,
+      "answer": "Apollo 16 landed in the Descartes Highlands. Landed in the Descartes Highlands (src: NASA history, 2026-10-24)",
+      "citations": {
+        "sentences": 2,
+        "cited": 1,
+        "uncited": [
+          "Apollo 16 landed in the Descartes Highlands."
+        ],
+        "sources": [
+          "apollo-16"
+        ]
+      },
+      "set": "old",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "d08",
+      "question": "Why did the Apollo Guidance Computer keep flying through the Apollo 11 alarms?",
+      "expected": "An agent concluded it was the software's priority scheduling; this is a derived inference, not a stated fact.",
+      "picked": [
+        "apollo-guidance-computer",
+        "program-alarms-1201-1202"
+      ],
+      "pick_ms": 1238.264,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "answer",
+      "lines_sent": 29,
+      "calls": [
+        {
+          "uncached_in": 41,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 32,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 3382,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 768,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 6974,
+      "cached_in": 3551,
+      "billed_equiv_in": 3778.1,
+      "output_tokens": 800,
+      "cost_usd": 0.0007778100000000001,
+      "first_token_ms": 8011.007,
+      "end_to_end_ms": 8744.745,
+      "answer": "The search results offer one explanation, but it is an inference rather than an established finding. An agent-derived note attributes the computer's continued operation to the software's task ranking, which let it press on through the alarms (The software's priority scheduling is why the computer kept flying through the Apollo 11 alarms). The results do not include a NASA source confirming this.\n\nThe Apollo 11 Mission Report does establish the effect of the alarms: they did not degrade any primary guidance or control function. They did, however, interfere with the crew's early assessment of the landing approach.",
+      "citations": {
+        "sentences": 5,
+        "cited": 3,
+        "uncited": [
+          "The search results offer one explanation, but it is an inference rather than an established finding.",
+          "The results do not include a NASA source confirming this."
+        ],
+        "sources": [
+          "margaret-hamilton",
+          "program-alarms-1201-1202"
+        ]
+      },
+      "set": "old",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "d09",
+      "question": "What happened at Launch Complex 34 on 1967-01-27?",
+      "expected": "The Apollo 1 cabin fire during a launch rehearsal killed Gus Grissom, Ed White and Roger Chaffee.",
+      "picked": [
+        "apollo-1"
+      ],
+      "pick_ms": 1170.013,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "answer",
+      "lines_sent": 19,
+      "calls": [
+        {
+          "uncached_in": 31,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 15,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 2244,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 174,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 5826,
+      "cached_in": 3551,
+      "billed_equiv_in": 2630.1,
+      "output_tokens": 189,
+      "cost_usd": 0.00035751,
+      "first_token_ms": 1719.786,
+      "end_to_end_ms": 2268.133,
+      "answer": "A cabin fire during a launch rehearsal test on January 27, 1967 killed Gus Grissom, Ed White and Roger Chaffee. The event happened at Launch Complex 34 at Cape Kennedy.\n\nIt also had lasting consequences for the spacecraft: the disaster led to a command module redesign that included a quick-opening hatch.",
+      "citations": {
+        "sentences": 3,
+        "cited": 3,
+        "uncited": [],
+        "sources": [
+          "apollo-1"
+        ]
+      },
+      "set": "old",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "m01",
+      "question": "Who commanded the mission that the astronaut who caught German measles was a backup for?",
+      "expected": "Jim Lovell, commander of Apollo 13 (Charlie Duke was its backup lunar module pilot).",
+      "picked": [
+        "charlie-duke",
+        "apollo-13"
+      ],
+      "pick_ms": 1169.198,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "answer",
+      "lines_sent": 71,
+      "calls": [
+        {
+          "uncached_in": 35,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 22,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 6949,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 440,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 10535,
+      "cached_in": 3551,
+      "billed_equiv_in": 7339.1,
+      "output_tokens": 462,
+      "cost_usd": 0.00096491,
+      "first_token_ms": 3417.393,
+      "end_to_end_ms": 3794.556,
+      "answer": "The mission was Apollo 13, and Jim Lovell led it. Charlie Duke served as the backup lunar module pilot for Apollo 13, and he caught German measles from a friend's 3-year-old son about three weeks before the Apollo 13 launch. Lovell held the commander's seat on that flight (Commander of Apollo 13).",
+      "citations": {
+        "sentences": 3,
+        "cited": 2,
+        "uncited": [
+          "The mission was Apollo 13, and Jim Lovell led it."
+        ],
+        "sources": [
+          "charlie-duke",
+          "jim-lovell"
+        ]
+      },
+      "set": "old",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "m02",
+      "question": "Which company's revised specification set the voltage that the Apollo 13 tank switches could not handle?",
+      "expected": "North American Aviation, which revised the heater specification to 65 volts in 1965; the switches were built for 28 volts.",
+      "picked": [
+        "oxygen-tank-2",
+        "beech-aircraft"
+      ],
+      "pick_ms": 957.763,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "answer",
+      "lines_sent": 34,
+      "calls": [
+        {
+          "uncached_in": 40,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 27,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 3570,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 843,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 7161,
+      "cached_in": 3551,
+      "billed_equiv_in": 3965.1,
+      "output_tokens": 870,
+      "cost_usd": 0.00083151,
+      "first_token_ms": 4227.722,
+      "end_to_end_ms": 5192.556,
+      "answer": "The company whose revision mattered is North American Aviation. The 65-volt figure came from its 1965 change to the heater specification, a figure that Revised the oxygen tank heater specification in 1965 to run at 65 volts. The switches had been designed for a much lower standard. Its thermostatic switches were built to a 1962 specification for 28 volts DC, and they were never updated to match the 1965 change.\n\nBeech Aircraft built the tanks, working under North American Aviation. Built the service module oxygen tanks under North American Aviation. Beech Aircraft also left the switches alone when the voltage changed. Did not change the tank thermostatic switches when the heater specification moved to 65 volts.",
+      "citations": {
+        "sentences": 8,
+        "cited": 4,
+        "uncited": [
+          "The company whose revision mattered is North American Aviation.",
+          "The switches had been designed for a much lower standard.",
+          "Beech Aircraft built the tanks, working under North American Aviation.",
+          "Beech Aircraft also left the switches alone when the voltage changed."
+        ],
+        "sources": [
+          "beech-aircraft",
+          "north-american-aviation",
+          "oxygen-tank-2"
+        ]
+      },
+      "set": "old",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "m03",
+      "question": "Which NASA centre was the Apollo 13 Review Board chair directing, and what did the board find caused the explosion?",
+      "expected": "Edgar Cortright directed NASA Langley Research Center; the board traced the explosion to an electrically started fire in oxygen tank No. 2.",
+      "picked": [
+        "edgar-cortright",
+        "apollo-13-review-board-report"
+      ],
+      "pick_ms": 1264.057,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "answer",
+      "lines_sent": 16,
+      "calls": [
+        {
+          "uncached_in": 47,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 29,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 2233,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 658,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 5831,
+      "cached_in": 3551,
+      "billed_equiv_in": 2635.1,
+      "output_tokens": 687,
+      "cost_usd": 0.00060701,
+      "first_token_ms": 4435.434,
+      "end_to_end_ms": 5000.769,
+      "answer": "The chair, Edgar Cortright, was running Langley: he was director of NASA Langley Research Center at the time.\n\nAccording to the board, the blast began in a fire that an electrical spark ignited inside oxygen tank No. 2. The board's findings place the origin of the explosion in that tank's electrically triggered fire Traced the explosion to an electrically started fire in oxygen tank No. 2.",
+      "citations": {
+        "sentences": 3,
+        "cited": 2,
+        "uncited": [
+          "According to the board, the blast began in a fire that an electrical spark ignited inside oxygen tank No."
+        ],
+        "sources": [
+          "apollo-13-review-board",
+          "edgar-cortright"
+        ]
+      },
+      "set": "old",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "m04",
+      "question": "The rocket that first carried a crew on Apollo 8 was developed under whom, and which centre did that person direct?",
+      "expected": "The Saturn V, developed by Wernher von Braun's team; he was the first director of Marshall Space Flight Center.",
+      "picked": [
+        "saturn-v",
+        "wernher-von-braun"
+      ],
+      "pick_ms": 898.948,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "answer",
+      "lines_sent": 22,
+      "calls": [
+        {
+          "uncached_in": 45,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 24,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 2422,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 179,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 6018,
+      "cached_in": 3551,
+      "billed_equiv_in": 2822.1,
+      "output_tokens": 203,
+      "cost_usd": 0.00038371000000000005,
+      "first_token_ms": 1613.042,
+      "end_to_end_ms": 2111.413,
+      "answer": "The rocket was the Saturn V, which first flew a crew on Apollo 8. The Saturn V was developed by Wernher von Braun, and he led the team that developed the Saturn V.\n\nVon Braun directed the centre as first director of NASA Marshall Space Flight Center, from 1960 to 1970.",
+      "citations": {
+        "sentences": 3,
+        "cited": 3,
+        "uncited": [],
+        "sources": [
+          "saturn-v",
+          "wernher-von-braun"
+        ]
+      },
+      "set": "old",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "m05",
+      "question": "Who was capsule communicator during the first Moon landing, and did they later walk on the Moon?",
+      "expected": "Charlie Duke; yes, as Apollo 16 lunar module pilot.",
+      "picked": [
+        "charlie-duke",
+        "apollo-11"
+      ],
+      "pick_ms": 760.15,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "answer",
+      "lines_sent": 59,
+      "calls": [
+        {
+          "uncached_in": 39,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 22,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 5888,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 492,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 9478,
+      "cached_in": 3551,
+      "billed_equiv_in": 6282.1,
+      "output_tokens": 514,
+      "cost_usd": 0.00088521,
+      "first_token_ms": 6162.838,
+      "end_to_end_ms": 6548.154,
+      "answer": "The capsule communicator during Apollo 11's touchdown was Charlie Duke. Was capsule communicator during the Apollo 11 landing.\n\nYes, he did walk on the Moon later. Walked on the Moon as Apollo 16 lunar module pilot.",
+      "citations": {
+        "sentences": 4,
+        "cited": 2,
+        "uncited": [
+          "The capsule communicator during Apollo 11's touchdown was Charlie Duke.",
+          "Yes, he did walk on the Moon later."
+        ],
+        "sources": [
+          "charlie-duke"
+        ]
+      },
+      "set": "old",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "p01",
+      "question": "According to the Apollo 11 Mission Report, how much reaction control propellant was used in powered descent against the prediction, and on which page?",
+      "expected": "About 95 pounds against 40 pounds predicted, on page 5-6.",
+      "picked": [
+        "apollo-11-mission-report-ch-05"
+      ],
+      "pick_ms": 723.749,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "answer",
+      "lines_sent": 29,
+      "calls": [
+        {
+          "uncached_in": 52,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 25,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 3486,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 403,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 7089,
+      "cached_in": 3551,
+      "billed_equiv_in": 3893.1,
+      "output_tokens": 428,
+      "cost_usd": 0.00060331,
+      "first_token_ms": 2574.945,
+      "end_to_end_ms": 2864.932,
+      "answer": "The Apollo 11 Mission Report puts reaction control propellant use during powered descent at roughly 95 pounds, where the plan had called for 40. The figure appears on page 5-6 of the report, in the Section 5.3 Powered Descent entry About 95 pounds of reaction control propellant were used against 40 predicted.",
+      "citations": {
+        "sentences": 3,
+        "cited": 1,
+        "uncited": [
+          "The Apollo 11 Mission Report puts reaction control propellant use during powered descent at roughly 95 pounds, where the plan had called for 40.",
+          "The figure appears on page 5-6 of the report, in the Section 5."
+        ],
+        "sources": [
+          "apollo-11-mission-report-ch-05"
+        ]
+      },
+      "set": "old",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "p02",
+      "question": "At what altitude did manual control begin on Apollo 11, how far downrange of the aim point did it land, and on which page of the report?",
+      "expected": "About 600 feet; about 1100 feet downrange of the initial aim point; page 5-5.",
+      "picked": [
+        "apollo-11-mission-report-ch-05",
+        "apollo-11"
+      ],
+      "pick_ms": 1142.501,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "answer",
+      "lines_sent": 71,
+      "calls": [
+        {
+          "uncached_in": 50,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 31,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 6414,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 307,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 10015,
+      "cached_in": 3551,
+      "billed_equiv_in": 6819.1,
+      "output_tokens": 338,
+      "cost_usd": 0.0008509100000000001,
+      "first_token_ms": 3905.094,
+      "end_to_end_ms": 4771.981,
+      "answer": "Manual control began at about 600 feet, and the craft landed about 1100 feet downrange of the initial aim point. Manual control began at about 600 feet and the craft landed about 1100 feet downrange of the initial aim point (src: Apollo 11 Mission Report p.5-5, 2026-10-24)\n\nThe source for that statement is page 5-5 of the Apollo 11 Mission Report, Section 5.3: Powered Descent. The same altitude is also reported in the Neil Armstrong entry: Switched to attitude-hold and took manual control from about 600 feet during descent (src: Apollo 11 Mission Report p.5-5, 2026-10-24)\n\nThe search results do not give the altitude in a way that is tied to a separate \"aim point\" page reference, so the page cited is 5-5 for both figures.",
+      "citations": {
+        "sentences": 6,
+        "cited": 2,
+        "uncited": [
+          "Manual control began at about 600 feet, and the craft landed about 1100 feet downrange of the initial aim point.",
+          "The source for that statement is page 5-5 of the Apollo 11 Mission Report, Section 5.",
+          "3: Powered Descent.",
+          "The search results do not give the altitude in a way that is tied to a separate \"aim point\" page reference, so the page cited is 5-5 for both figures."
+        ],
+        "sources": [
+          "apollo-11-mission-report-ch-05",
+          "neil-armstrong"
+        ]
+      },
+      "set": "old",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "p03",
+      "question": "Which pages of the Apollo 11 Mission Report cover the powered descent section, and what forced the landing point redesignation?",
+      "expected": "Section 5.3 covers pages 5-4 to 5-6; the approach path led into a large crater (page 5-4).",
+      "picked": [
+        "apollo-11-mission-report-ch-05",
+        "program-alarms-1201-1202"
+      ],
+      "pick_ms": 1080.129,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "answer",
+      "lines_sent": 39,
+      "calls": [
+        {
+          "uncached_in": 49,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 37,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 4385,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 802,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 7985,
+      "cached_in": 3551,
+      "billed_equiv_in": 4789.1,
+      "output_tokens": 839,
+      "cost_usd": 0.00089841,
+      "first_token_ms": 3808.422,
+      "end_to_end_ms": 4849.864,
+      "answer": "The powered descent material in Section 5.3 is spread across pages 5-4 to 5-6 of the report. Section 5.0 begins earlier, on page 5-1. Throttle reduction came at 386 seconds after ignition against 384 predicted on page 5-4, manual control began at about 600 feet on page 5-5, and about 95 pounds of reaction control propellant were used against 40 predicted on page 5-6.\n\nThe landing point change was forced by terrain. Its trajectory ran over a large crater, which required the crew to pick a new target. This is recorded on page 5-4, where the approach path led into a large crater, forcing an unplanned redesignation.",
+      "citations": {
+        "sentences": 8,
+        "cited": 2,
+        "uncited": [
+          "The powered descent material in Section 5.",
+          "3 is spread across pages 5-4 to 5-6 of the report.",
+          "Section 5.",
+          "0 begins earlier, on page 5-1.",
+          "The landing point change was forced by terrain.",
+          "Its trajectory ran over a large crater, which required the crew to pick a new target."
+        ],
+        "sources": [
+          "apollo-11-mission-report-ch-05"
+        ]
+      },
+      "set": "old",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "t01",
+      "question": "What was Apollo 13's mission goal before it changed, what changed it, and when?",
+      "expected": "A lunar landing at Fra Mauro; it became a safe return to Earth on 1970-04-13, by Mission Control's abort decision.",
+      "picked": [
+        "apollo-13",
+        "rubella-crew-swap"
+      ],
+      "pick_ms": 959.055,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "answer",
+      "lines_sent": 84,
+      "calls": [
+        {
+          "uncached_in": 35,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 25,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 7420,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 450,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 11006,
+      "cached_in": 3551,
+      "billed_equiv_in": 7810.1,
+      "output_tokens": 475,
+      "cost_usd": 0.00101851,
+      "first_token_ms": 3982.411,
+      "end_to_end_ms": 4360.308,
+      "answer": "Apollo 13 first aimed to put a crew down on the Moon at Fra Mauro. The mission's aim shifted to a safe return to Earth, a change made on 1970-04-13 through a Mission Control abort decision.",
+      "citations": {
+        "sentences": 2,
+        "cited": 1,
+        "uncited": [
+          "Apollo 13 first aimed to put a crew down on the Moon at Fra Mauro."
+        ],
+        "sources": [
+          "apollo-13"
+        ]
+      },
+      "set": "old",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "t02",
+      "question": "What was Jack Swigert's Apollo 13 role before 1970-04-10, and what is it now?",
+      "expected": "Backup command module pilot; prime command module pilot since 1970-04-10, by a KSC management meeting.",
+      "picked": [
+        "jack-swigert",
+        "rubella-crew-swap"
+      ],
+      "pick_ms": 1122.347,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "answer",
+      "lines_sent": 36,
+      "calls": [
+        {
+          "uncached_in": 42,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 26,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 3858,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 564,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 7451,
+      "cached_in": 3551,
+      "billed_equiv_in": 4255.1,
+      "output_tokens": 590,
+      "cost_usd": 0.0007205099999999999,
+      "first_token_ms": 3637.812,
+      "end_to_end_ms": 4009.632,
+      "answer": "Jack Swigert's role changed on 1970-04-10. He first held the reserve seat, backup command module pilot, and the change came from a KSC management meeting. He now stands as the prime command module pilot for the mission. His rubella immunity was part of why he was eligible to fly: he was immune to rubella, which made him eligible to fly.",
+      "citations": {
+        "sentences": 4,
+        "cited": 3,
+        "uncited": [
+          "Jack Swigert's role changed on 1970-04-10."
+        ],
+        "sources": [
+          "jack-swigert"
+        ]
+      },
+      "set": "old",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "t03",
+      "question": "What was the Houston centre called before it became Johnson Space Center, and when was it renamed?",
+      "expected": "Manned Spacecraft Center; renamed on 1973-02-19 in honour of Lyndon B. Johnson.",
+      "picked": [
+        "mission-control-houston"
+      ],
+      "pick_ms": 770.753,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "answer",
+      "lines_sent": 23,
+      "calls": [
+        {
+          "uncached_in": 38,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 17,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 2702,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 362,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 6291,
+      "cached_in": 3551,
+      "billed_equiv_in": 3095.1,
+      "output_tokens": 379,
+      "cost_usd": 0.0004990099999999999,
+      "first_token_ms": 2833.505,
+      "end_to_end_ms": 3057.119,
+      "answer": "Before taking its current name, the Houston facility was known as the Manned Spacecraft Center. Host centre is named Johnson Space Center (was Manned Spacecraft Center, changed 1973-02-19 by renaming in honour of Lyndon B. Johnson). The change took effect on February 19, 1973, and honoured the former president.",
+      "citations": {
+        "sentences": 4,
+        "cited": 2,
+        "uncited": [
+          "Before taking its current name, the Houston facility was known as the Manned Spacecraft Center.",
+          "The change took effect on February 19, 1973, and honoured the former president."
+        ],
+        "sources": [
+          "mission-control-houston"
+        ]
+      },
+      "set": "old",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "n01",
+      "question": "How much did the Apollo program cost?",
+      "expected": "I don't have that.",
+      "picked": [
+        "apollo-program",
+        "nasa"
+      ],
+      "pick_ms": 1380.465,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "not_in_brain",
+      "lines_sent": 56,
+      "calls": [
+        {
+          "uncached_in": 21,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 19,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 4977,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 120,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 8549,
+      "cached_in": 3551,
+      "billed_equiv_in": 5353.1,
+      "output_tokens": 139,
+      "cost_usd": 0.0006048100000000001,
+      "first_token_ms": 2197.651,
+      "end_to_end_ms": 2592.343,
+      "answer": "NOT IN BRAIN\n\nThe search results do not contain any information about the cost of the Apollo program. They cover the program's crewed lunar landings, the Apollo 1, 8, 11, 13 and 16 missions, the Saturn V launch vehicle, Lunar orbit rendezvous, and NASA's role, but none of them give a budget or cost figure.",
+      "citations": {
+        "sentences": 2,
+        "cited": 0,
+        "uncited": [
+          "The search results do not contain any information about the cost of the Apollo program.",
+          "They cover the program's crewed lunar landings, the Apollo 1, 8, 11, 13 and 16 missions, the Saturn V launch vehicle, Lunar orbit rendezvous, and NASA's role, but none of them give a budget or cost figure."
+        ],
+        "sources": []
+      },
+      "set": "old",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "n02",
+      "question": "Who was the command module pilot of Apollo 12?",
+      "expected": "I don't have that.",
+      "picked": [
+        "apollo-program"
+      ],
+      "pick_ms": 713.032,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "not_in_brain",
+      "lines_sent": 51,
+      "calls": [
+        {
+          "uncached_in": 26,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 15,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 4488,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 142,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 8065,
+      "cached_in": 3551,
+      "billed_equiv_in": 4869.1,
+      "output_tokens": 157,
+      "cost_usd": 0.0005654099999999999,
+      "first_token_ms": 1365.066,
+      "end_to_end_ms": 1951.239,
+      "answer": "NOT IN BRAIN\n\nThe search results do not contain information about Apollo 12 or its command module pilot. They cover the Apollo program in general, Apollo 1, 8, 11, 13 and 16, NASA, John F. Kennedy, the Saturn V, and lunar orbit rendezvous. The only command module pilot named is for Apollo 13, Jack Swigert, which does not answer the question about Apollo 12.",
+      "citations": {
+        "sentences": 4,
+        "cited": 0,
+        "uncited": [
+          "The search results do not contain information about Apollo 12 or its command module pilot.",
+          "They cover the Apollo program in general, Apollo 1, 8, 11, 13 and 16, NASA, John F.",
+          "Kennedy, the Saturn V, and lunar orbit rendezvous.",
+          "The only command module pilot named is for Apollo 13, Jack Swigert, which does not answer the question about Apollo 12."
+        ],
+        "sources": []
+      },
+      "set": "old",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "n03",
+      "question": "What did Michael Collins say about being alone behind the Moon?",
+      "expected": "I don't have that.",
+      "picked": [
+        "michael-collins"
+      ],
+      "pick_ms": 1133.658,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "not_in_brain",
+      "lines_sent": 21,
+      "calls": [
+        {
+          "uncached_in": 29,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 15,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 2414,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 172,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 5994,
+      "cached_in": 3551,
+      "billed_equiv_in": 2798.1,
+      "output_tokens": 187,
+      "cost_usd": 0.00037331,
+      "first_token_ms": 1746.21,
+      "end_to_end_ms": 2355.582,
+      "answer": "NOT IN BRAIN\n\nThe search results do not contain anything Michael Collins said about being alone behind the Moon. They cover his role as command module pilot of Apollo 11, that he stayed in lunar orbit aboard the command module Columbia during the landing, and that he earlier flew Gemini 10 in 1966. None of the entries include a quote or account from him about his time alone on the far side of the Moon.",
+      "citations": {
+        "sentences": 3,
+        "cited": 1,
+        "uncited": [
+          "The search results do not contain anything Michael Collins said about being alone behind the Moon.",
+          "None of the entries include a quote or account from him about his time alone on the far side of the Moon."
+        ],
+        "sources": [
+          "michael-collins"
+        ]
+      },
+      "set": "old",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "n04",
+      "question": "What colour vest did Gene Kranz wear during Apollo 13?",
+      "expected": "I don't have that.",
+      "picked": [
+        "gene-kranz",
+        "apollo-13"
+      ],
+      "pick_ms": 1135.711,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "not_in_brain",
+      "lines_sent": 66,
+      "calls": [
+        {
+          "uncached_in": 32,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 22,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 6619,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 136,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 10202,
+      "cached_in": 3551,
+      "billed_equiv_in": 7006.1,
+      "output_tokens": 158,
+      "cost_usd": 0.0007796100000000001,
+      "first_token_ms": 1868.758,
+      "end_to_end_ms": 2317.187,
+      "answer": "NOT IN BRAIN\n\nThe search results do not mention what colour vest Gene Kranz wore during Apollo 13. They cover his role as a flight director, that his team was on console when Apollo 13's oxygen tank failed, and that he directed Apollo 13, but nothing about his clothing.",
+      "citations": {
+        "sentences": 2,
+        "cited": 1,
+        "uncited": [
+          "The search results do not mention what colour vest Gene Kranz wore during Apollo 13."
+        ],
+        "sources": [
+          "gene-kranz"
+        ]
+      },
+      "set": "old",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "n05",
+      "question": "What landing coordinates did the Lunar Reconnaissance Orbiter later measure for Apollo 11?",
+      "expected": "I don't have that.",
+      "picked": [
+        "tranquility-base",
+        "apollo-11"
+      ],
+      "pick_ms": 1946.784,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "not_in_brain",
+      "lines_sent": 53,
+      "calls": [
+        {
+          "uncached_in": 45,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 22,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 5437,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 177,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 9033,
+      "cached_in": 3551,
+      "billed_equiv_in": 5837.1,
+      "output_tokens": 199,
+      "cost_usd": 0.0006832100000000001,
+      "first_token_ms": 2607.801,
+      "end_to_end_ms": 3159.277,
+      "answer": "NOT IN BRAIN\n\nThe search results do not mention the Lunar Reconnaissance Orbiter or any later measurement of the Apollo 11 landing site. The only landing coordinates given are the ones from the Apollo 11 Mission Report, which describe the actual landing point at 0 degrees 41 minutes 15 seconds north, 23 degrees 26 minutes east. That is the original mission-report figure, not a later orbiter measurement, so it does not answer the question.",
+      "citations": {
+        "sentences": 3,
+        "cited": 1,
+        "uncited": [
+          "The search results do not mention the Lunar Reconnaissance Orbiter or any later measurement of the Apollo 11 landing site.",
+          "That is the original mission-report figure, not a later orbiter measurement, so it does not answer the question."
+        ],
+        "sources": [
+          "tranquility-base"
+        ]
+      },
+      "set": "old",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "h01",
+      "question": "Which company built the craft that kept the Apollo 13 astronauts alive after their main ship was crippled?",
+      "expected": "Grumman, which built the lunar module (Apollo 13's was Aquarius).",
+      "picked": [
+        "grumman"
+      ],
+      "pick_ms": 678.137,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "answer",
+      "lines_sent": 7,
+      "calls": [
+        {
+          "uncached_in": 43,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 13,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 1427,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 437,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 5021,
+      "cached_in": 3551,
+      "billed_equiv_in": 1825.1,
+      "output_tokens": 450,
+      "cost_usd": 0.00040751000000000003,
+      "first_token_ms": 3810.502,
+      "end_to_end_ms": 4309.855,
+      "answer": "The company was Grumman. The craft that sustained the crew was the lunar module Aquarius, and the lunar module is a two-stage lander that Grumman built. Aquarius was the spacecraft that preserved life aboard after an oxygen tank failure.",
+      "citations": {
+        "sentences": 3,
+        "cited": 2,
+        "uncited": [
+          "The company was Grumman."
+        ],
+        "sources": [
+          "lunar-module"
+        ]
+      },
+      "set": "new",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "h02",
+      "question": "What was the mothership called that kept circling the Moon while the first two moonwalkers went down to the surface?",
+      "expected": "Columbia, the Apollo 11 command module, with Michael Collins aboard.",
+      "picked": [
+        "command-service-module"
+      ],
+      "pick_ms": 1167.491,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "answer",
+      "lines_sent": 28,
+      "calls": [
+        {
+          "uncached_in": 42,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 15,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 3025,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 629,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 6618,
+      "cached_in": 3551,
+      "billed_equiv_in": 3422.1,
+      "output_tokens": 644,
+      "cost_usd": 0.00066421,
+      "first_token_ms": 4237.97,
+      "end_to_end_ms": 4628.103,
+      "answer": "The craft was the command module **Columbia**. The Apollo 11 command module carried the name Columbia, and the module pilot, Michael Collins, remained in orbit during the descent. While the two crewmates went to the surface, Collins stayed in lunar orbit aboard Columbia.",
+      "citations": {
+        "sentences": 3,
+        "cited": 2,
+        "uncited": [
+          "The craft was the command module **Columbia**."
+        ],
+        "sources": [
+          "command-service-module",
+          "michael-collins"
+        ]
+      },
+      "set": "new",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "h03",
+      "question": "How tall was the giant rocket that carried Apollo crews toward the Moon, and how many times was it launched?",
+      "expected": "The Saturn V was about 110 metres tall and launched 13 times, between 1967 and 1973.",
+      "picked": [
+        "saturn-v"
+      ],
+      "pick_ms": 1204.08,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "answer",
+      "lines_sent": 20,
+      "calls": [
+        {
+          "uncached_in": 44,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 15,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 2256,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 212,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 5851,
+      "cached_in": 3551,
+      "billed_equiv_in": 2655.1,
+      "output_tokens": 227,
+      "cost_usd": 0.00037901000000000005,
+      "first_token_ms": 1832.758,
+      "end_to_end_ms": 2530.772,
+      "answer": "The rocket was the Saturn V. It was a three-stage launch vehicle about 110 metres tall. It was launched 13 times between 1967 and 1973.\n\nFor context on its role, the first flight was uncrewed on Apollo 4 on 1967-11-09, and it first flew a crew on Apollo 8, which made ten orbits of the Moon.",
+      "citations": {
+        "sentences": 4,
+        "cited": 3,
+        "uncited": [
+          "The rocket was the Saturn V."
+        ],
+        "sources": [
+          "apollo-8",
+          "saturn-v"
+        ]
+      },
+      "set": "new",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "h04",
+      "question": "When did Apollo make its last crewed Moon landing, and how many people walked on the Moon in all?",
+      "expected": "Apollo 17 in December 1972 was the last crewed lunar mission; twelve astronauts walked on the Moon.",
+      "picked": [
+        "apollo-program",
+        "apollo-16"
+      ],
+      "pick_ms": 1197.917,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "answer",
+      "lines_sent": 64,
+      "calls": [
+        {
+          "uncached_in": 41,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 21,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 5594,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 466,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 9186,
+      "cached_in": 3551,
+      "billed_equiv_in": 5990.1,
+      "output_tokens": 487,
+      "cost_usd": 0.00084251,
+      "first_token_ms": 3515.042,
+      "end_to_end_ms": 4039.105,
+      "answer": "The final crewed Moon mission was Apollo 17, which flew in December 1972. Apollo 17 in December 1972 was the last crewed lunar mission. In total, twelve people set foot on the lunar surface, so twelve astronauts walked on the Moon in all Twelve astronauts walked on the Moon.",
+      "citations": {
+        "sentences": 3,
+        "cited": 2,
+        "uncited": [
+          "The final crewed Moon mission was Apollo 17, which flew in December 1972."
+        ],
+        "sources": [
+          "apollo-program"
+        ]
+      },
+      "set": "new",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "h05",
+      "question": "Which Gemini missions had the commander flown before the mission that used Aquarius as a lifeboat?",
+      "expected": "Jim Lovell, commander of Apollo 13, flew Gemini 7 and Gemini 12.",
+      "picked": [
+        "apollo-13",
+        "lunar-module"
+      ],
+      "pick_ms": 1328.222,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "answer",
+      "lines_sent": 90,
+      "calls": [
+        {
+          "uncached_in": 42,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 34,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 7933,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 386,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 11526,
+      "cached_in": 3551,
+      "billed_equiv_in": 8330.1,
+      "output_tokens": 420,
+      "cost_usd": 0.00104301,
+      "first_token_ms": 3293.021,
+      "end_to_end_ms": 3690.283,
+      "answer": "The commander of Apollo 13, Jim Lovell, had earlier flown two Gemini missions. Lovell's pre-Apollo spaceflights included Gemini 7 and Gemini 12. The Apollo 13 crew used the lunar module Aquarius as a lifeboat, and Lovell was the commander of Apollo 13.",
+      "citations": {
+        "sentences": 3,
+        "cited": 2,
+        "uncited": [
+          "The commander of Apollo 13, Jim Lovell, had earlier flown two Gemini missions."
+        ],
+        "sources": [
+          "jim-lovell"
+        ]
+      },
+      "set": "new",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "h06",
+      "question": "The company that built the Apollo 1 spacecraft handed part of the work to a subcontractor. Which company was that, and what did it build?",
+      "expected": "Beech Aircraft, which built the service module oxygen tanks under North American Aviation.",
+      "picked": [
+        "apollo-1",
+        "north-american-aviation"
+      ],
+      "pick_ms": 1093.69,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "answer",
+      "lines_sent": 21,
+      "calls": [
+        {
+          "uncached_in": 52,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 31,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 2474,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 467,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 6077,
+      "cached_in": 3551,
+      "billed_equiv_in": 2881.1,
+      "output_tokens": 498,
+      "cost_usd": 0.0005371099999999999,
+      "first_token_ms": 2549.055,
+      "end_to_end_ms": 3431.631,
+      "answer": "The prime contractor was North American Aviation, which built Apollo 1. It was also the prime contractor for the Apollo command and service module.\n\nThe subcontractor was Beech Aircraft. Its work was on the spacecraft's service module, where it produced the oxygen tanks, working under North American Aviation. The tanks were relevant to the 1967 disaster: North American revised the oxygen tank heater specification in 1965 to run at 65 volts, and Beech did not change the tank thermostatic switches when the heater specification moved to 65 volts.",
+      "citations": {
+        "sentences": 5,
+        "cited": 4,
+        "uncited": [
+          "The subcontractor was Beech Aircraft."
+        ],
+        "sources": [
+          "apollo-1",
+          "beech-aircraft",
+          "north-american-aviation"
+        ]
+      },
+      "set": "new",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "h07",
+      "question": "One of the Apollo 8 crew later commanded another Moon mission. How did that later mission's lunar module pilot come to be immune to rubella?",
+      "expected": "Fred Haise, Apollo 13 lunar module pilot under Jim Lovell, had rubella immunity, probably from childhood exposure.",
+      "picked": [
+        "jim-lovell",
+        "apollo-13"
+      ],
+      "pick_ms": 1007.061,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "answer",
+      "lines_sent": 69,
+      "calls": [
+        {
+          "uncached_in": 56,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 39,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 6718,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 582,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 10325,
+      "cached_in": 3551,
+      "billed_equiv_in": 7129.1,
+      "output_tokens": 621,
+      "cost_usd": 0.0010234100000000002,
+      "first_token_ms": 3853.6,
+      "end_to_end_ms": 4483.036,
+      "answer": "Jim Lovell, who flew on Apollo 8, later commanded Apollo 13. Fred Haise served as lunar module pilot of Apollo 13.\n\nThe sources don't describe a test or a specific infection. They say only that Haise had rubella immunity, probably from childhood exposure. In other words, his immunity most likely came from a bout of the illness early in life, though the sources don't confirm it.",
+      "citations": {
+        "sentences": 5,
+        "cited": 2,
+        "uncited": [
+          "Jim Lovell, who flew on Apollo 8, later commanded Apollo 13.",
+          "The sources don't describe a test or a specific infection.",
+          "In other words, his immunity most likely came from a bout of the illness early in life, though the sources don't confirm it."
+        ],
+        "sources": [
+          "fred-haise"
+        ]
+      },
+      "set": "new",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "h08",
+      "question": "Kennedy set the goal for a programme. When did that programme's launch vehicle first fly, uncrewed, and on which mission?",
+      "expected": "The Saturn V first launched uncrewed on Apollo 4, on 1967-11-09.",
+      "picked": [
+        "john-f-kennedy",
+        "saturn-v"
+      ],
+      "pick_ms": 774.82,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "answer",
+      "lines_sent": 24,
+      "calls": [
+        {
+          "uncached_in": 51,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 30,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 2570,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 375,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 6172,
+      "cached_in": 3551,
+      "billed_equiv_in": 2976.1,
+      "output_tokens": 405,
+      "cost_usd": 0.00050011,
+      "first_token_ms": 2322.336,
+      "end_to_end_ms": 2782.342,
+      "answer": "Kennedy set the goal for the Apollo program. Link: Apollo program (apollo-program) goal set by John F. Kennedy\n\nApollo's launch vehicle was the Saturn V. Its debut came without a crew on Apollo 4, on 9 November 1967. First launched uncrewed on Apollo 4 on 1967-11-09",
+      "citations": {
+        "sentences": 5,
+        "cited": 2,
+        "uncited": [
+          "Kennedy set the goal for the Apollo program.",
+          "Apollo's launch vehicle was the Saturn V.",
+          "Its debut came without a crew on Apollo 4, on 9 November 1967."
+        ],
+        "sources": [
+          "john-f-kennedy",
+          "saturn-v"
+        ]
+      },
+      "set": "new",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "h09",
+      "question": "Who was the backup commander for Apollo 16?",
+      "expected": "I don't have that.",
+      "picked": [
+        "john-young",
+        "apollo-16"
+      ],
+      "pick_ms": 1240.607,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "not_in_brain",
+      "lines_sent": 29,
+      "calls": [
+        {
+          "uncached_in": 25,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 19,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 3163,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 259,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 6739,
+      "cached_in": 3551,
+      "billed_equiv_in": 3543.1,
+      "output_tokens": 278,
+      "cost_usd": 0.00049331,
+      "first_token_ms": 2699.523,
+      "end_to_end_ms": 3049.909,
+      "answer": "NOT IN BRAIN\n\nThe search results don't say who was backup commander for Apollo 16. They name John Young as the Apollo 16 commander and as the backup commander for Apollo 13, but they give no backup crew for Apollo 16.",
+      "citations": {
+        "sentences": 2,
+        "cited": 0,
+        "uncited": [
+          "The search results don't say who was backup commander for Apollo 16.",
+          "They name John Young as the Apollo 16 commander and as the backup commander for Apollo 13, but they give no backup crew for Apollo 16."
+        ],
+        "sources": []
+      },
+      "set": "new",
+      "correct": true,
+      "miss": ""
+    },
+    {
+      "id": "h10",
+      "question": "What was the name of Apollo 8's command module?",
+      "expected": "I don't have that.",
+      "picked": [
+        "apollo-8",
+        "command-service-module"
+      ],
+      "pick_ms": 1287.356,
+      "need": null,
+      "need_status": null,
+      "hops": 0,
+      "status": "not_in_brain",
+      "lines_sent": 50,
+      "calls": [
+        {
+          "uncached_in": 24,
+          "cache_write": 0,
+          "cache_read": 3551,
+          "output_tokens": 21,
+          "stop_reason": "end_turn"
+        },
+        {
+          "uncached_in": 4494,
+          "cache_write": 0,
+          "cache_read": 0,
+          "output_tokens": 271,
+          "stop_reason": "end_turn"
+        }
+      ],
+      "total_in": 8069,
+      "cached_in": 3551,
+      "billed_equiv_in": 4873.1,
+      "output_tokens": 292,
+      "cost_usd": 0.0006333100000000001,
+      "first_token_ms": 2753.871,
+      "end_to_end_ms": 3134.554,
+      "answer": "NOT IN BRAIN\n\nThe search results don't name Apollo 8's command module. They do cover Apollo 8's crew, launch, and Saturn V, but not its spacecraft name. They name the command modules for Apollo 11 and Apollo 13, which don't answer your question.",
+      "citations": {
+        "sentences": 3,
+        "cited": 0,
+        "uncited": [
+          "The search results don't name Apollo 8's command module.",
+          "They do cover Apollo 8's crew, launch, and Saturn V, but not its spacecraft name.",
+          "They name the command modules for Apollo 11 and Apollo 13, which don't answer your question."
+        ],
+        "sources": []
+      },
+      "set": "new",
+      "correct": true,
+      "miss": ""
+    }
+  ]
+}

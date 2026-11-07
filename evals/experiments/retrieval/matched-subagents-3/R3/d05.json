@@ -1,0 +1,60 @@
+{
+  "id": "d05",
+  "condition": "R3",
+  "description": "R3 d05",
+  "model": [
+    "claude-opus-5-5"
+  ],
+  "prompt_exact": true,
+  "subagent_type": "Explore",
+  "launch_model": "opus",
+  "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly, with one change: use graphify query as your navigation entry point instead of the brain's index. After reading the skill, call the Bash tool exactly once to run this command, using the question exactly as given:\ngraphify query \"How many astronauts walked on the Moon during the Apollo program?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"\nQuestion logging is disabled by the environment. This query is local and does not call a model. Use only the note paths named by this query's NODE lines to choose the notes to read. Do not change the query, raise the budget, request other subgraphs, or work around an empty or truncated result. You may read index.md only if the query itself names it. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only the skill file plus files inside the brain root that the query names. Do not use Glob, Grep, ls or any search across files or folders. Do not read graph.json, the wiki, or anything else. The Bash tool is allowed only for the single graphify query command above.\n\nQuestion: How many astronauts walked on the Moon during the Apollo program?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+  "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R3\\transcripts\\d05.jsonl",
+  "finalized_transcript_available": true,
+  "agent_id": "ad4c47b872011bea5",
+  "start_utc": "2026-10-25T19:36:27.928Z",
+  "end_utc": "2026-10-25T19:36:39.126Z",
+  "time_s": 11.198,
+  "usage": {
+    "input_tokens": 8,
+    "output_tokens": 449,
+    "cache_read_input_tokens": 53114,
+    "cache_creation_input_tokens": 8589
+  },
+  "total_tokens": 62160,
+  "cost_usd_at_recorded_rates": 0.0625798,
+  "cache_neutral_cost_usd": 0.255824,
+  "tool_calls": [
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "graphify query \"How many astronauts walked on the Moon during the Apollo program?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"",
+        "description": "Run graphify query for the question"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-program.md"
+      }
+    }
+  ],
+  "tool_call_count": 3,
+  "note_read_count": 1,
+  "wiki_read_count": 0,
+  "opened_paths": [
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-program.md"
+  ],
+  "answers": [
+    "ANSWER: Twelve astronauts walked on the Moon during the Apollo program. The program made six crewed lunar landings between July 1969 and December 1972. Both are stated facts (src: NASA history, 2026-10-24).\nFILES: areas/apollo-program.md"
+  ],
+  "answer": "ANSWER: Twelve astronauts walked on the Moon during the Apollo program. The program made six crewed lunar landings between July 1969 and December 1972. Both are stated facts (src: NASA history, 2026-10-24).\nFILES: areas/apollo-program.md",
+  "tool_errors": []
+}

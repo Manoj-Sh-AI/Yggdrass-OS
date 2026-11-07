@@ -1,0 +1,19 @@
+Graph: evals/experiments/retrieval/build/graphify-out/graph.json (78 nodes) | Traversal: BFS depth=2 | Start: ['NASA history: 50 Years Ago, Apollo 13 and German Measles', 'Mission Control Houston', 'Apollo 11 Mission Report (MSC-00171)'] | 32 nodes found
+
+[!] TRUNCATED: showing 14 of 32 nodes (~500-token budget). The answer may be among the 18 cut nodes — raise the token budget to 1078 to get all 32 (CLI: --budget 1078, MCP: token_budget=1078) or narrow the query (e.g. context_filter=['call'], or get_node for a specific symbol).
+
+NODE NASA history: 50 Years Ago, Apollo 13 and German Measles [src=sources/apollo-13-measles-article.md loc=None community=Apollo 13 Crew Swap]
+NODE Mission Control Houston [src=areas/mission-control-houston.md loc=None community=Apollo 13 Mission Operations]
+NODE Apollo 11 Mission Report (MSC-00171) [src=sources/apollo-11-mission-report.md loc=None community=Apollo 11 Landing Software Alarms]
+NODE Apollo 13 [src=areas/apollo-13.md loc=None community=Apollo 13 Mission Operations]
+NODE Apollo 11 [src=people/michael-collins.md loc=None community=Apollo 11 Landing Software Alarms]
+NODE Ken Mattingly [src=people/ken-mattingly.md loc=None community=Apollo 13 Crew Swap]
+NODE Apollo 13 crew swap [src=topics/rubella-crew-swap.md loc=None community=Apollo 13 Crew Swap]
+NODE Apollo 11 Mission Report, Section 5.3: Powered Descent [src=sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md loc=None community=Apollo 11 Landing Software Alarms]
+NODE NASA [src=areas/nasa.md loc=None community=Apollo Program Overview]
+NODE Gene Kranz [src=people/gene-kranz.md loc=None community=Apollo 13 Mission Operations]
+NODE CO2 scrubber adapter [src=areas/apollo-13.md loc=None community=Apollo 13 Mission Operations]
+NODE Apollo 11 [src=areas/apollo-11.md loc=None community=Apollo 11 Moon Landing]
+NODE Apollo program [src=areas/apollo-program.md loc=None community=Apollo Program Overview]
+NODE Apollo 13 [src=people/john-young.md loc=None community=Apollo 13 Crew Swap]
+... (truncated — 18 more nodes cut by ~500-token budget. Narrow with context_filter=['call'] or use get_node for a specific symbol)

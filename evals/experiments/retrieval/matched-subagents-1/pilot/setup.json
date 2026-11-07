@@ -1,0 +1,14 @@
+{
+  "model": "claude-opus-5-5",
+  "runner_version": "2.1.308",
+  "agent_type": "Explore",
+  "one_parent_process": true,
+  "bare": true,
+  "state_directory": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\build\\runner-state\\matched-subagents-1\\pilot",
+  "batch_sizes": [
+    1
+  ],
+  "no_prior_session": true,
+  "query_logging_disabled": true,
+  "baseline_rerun_reason": "Fresh API parent context differs from the previous desktop session."
+}

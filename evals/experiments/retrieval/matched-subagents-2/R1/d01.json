@@ -1,0 +1,59 @@
+{
+  "id": "d01",
+  "condition": "R1",
+  "description": "R1 d01",
+  "model": [
+    "claude-opus-5-5"
+  ],
+  "prompt_exact": true,
+  "subagent_type": "Explore",
+  "launch_model": "opus",
+  "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: When did Apollo 8 launch, and who was its crew?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+  "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-2\\R1\\dispatcher.events.jsonl",
+  "agent_id": "a05222eb1a758de16",
+  "start_utc": "2026-10-25T19:27:03.352Z",
+  "end_utc": "2026-10-25T19:27:14.066Z",
+  "time_s": 10.714,
+  "usage": {
+    "input_tokens": 8,
+    "output_tokens": 164,
+    "cache_read_input_tokens": 51214,
+    "cache_creation_input_tokens": 7184
+  },
+  "total_tokens": 58570,
+  "cost_usd_at_recorded_rates": 0.049474800000000006,
+  "cache_neutral_cost_usd": 0.236904,
+  "tool_calls": [
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-8.md"
+      }
+    }
+  ],
+  "tool_call_count": 3,
+  "note_read_count": 1,
+  "wiki_read_count": 0,
+  "opened_paths": [
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-8.md"
+  ],
+  "answers": [
+    "ANSWER: Apollo 8 launched on 1968-12-21. Its crew was Frank Borman, Jim Lovell and Bill Anders (src: NASA history, 2026-10-24). It was the first crewed flight of the Saturn V and made ten orbits of the Moon.\nFILES: index.md, areas/apollo-8.md"
+  ],
+  "answer": "ANSWER: Apollo 8 launched on 1968-12-21. Its crew was Frank Borman, Jim Lovell and Bill Anders (src: NASA history, 2026-10-24). It was the first crewed flight of the Saturn V and made ten orbits of the Moon.\nFILES: index.md, areas/apollo-8.md",
+  "tool_errors": []
+}

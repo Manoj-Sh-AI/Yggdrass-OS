@@ -1,0 +1,220 @@
+[
+  {
+    "batch": 1,
+    "question_count": 20,
+    "exit_code": 0,
+    "start_utc": "2026-10-25T19:36:00.593767+00:00",
+    "end_utc": "2026-10-25T19:37:57.299435+00:00",
+    "wall_time_s": 116.70570479999878,
+    "result": {
+      "duration_api_ms": 279562,
+      "stop_reason": "end_turn",
+      "session_id": "2d0cf1e2-c5e5-4004-b160-5a74ae6c65af",
+      "total_cost_usd": 1.6663266,
+      "usage": {
+        "input_tokens": 4,
+        "cache_creation_input_tokens": 36632,
+        "cache_read_input_tokens": 61463,
+        "output_tokens": 14903,
+        "output_tokens_details": {
+          "thinking_tokens": 39
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 0,
+          "ephemeral_5m_input_tokens": 36632
+        },
+        "inference_geo": "global",
+        "iterations": [
+          {
+            "input_tokens": 2,
+            "output_tokens": 44,
+            "cache_read_input_tokens": 38505,
+            "cache_creation_input_tokens": 21085,
+            "cache_creation": {
+              "ephemeral_5m_input_tokens": 21085,
+              "ephemeral_1h_input_tokens": 0
+            },
+            "type": "message"
+          }
+        ],
+        "speed": "standard",
+        "fallback_credit": null
+      },
+      "modelUsage": {
+        "claude-opus-5-5": {
+          "inputTokens": 174,
+          "outputTokens": 26439,
+          "cacheReadInputTokens": 1191103,
+          "cacheCreationInputTokens": 179726,
+          "webSearchRequests": 0,
+          "costUSD": 1.6663266,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 521,
+          "canonicalModel": "claude-opus-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "permission_denials": [],
+      "terminal_reason": "completed",
+      "fast_mode_state": "off",
+      "fast_mode_disabled_reason": "sdk_opt_in_required",
+      "subagent_stats": {
+        "spawned": 20,
+        "requested": {
+          "background": 0,
+          "foreground": 20,
+          "unset": 0
+        },
+        "started_in_background": 0,
+        "max_depth": 1,
+        "spawned_by_subagents": 0,
+        "completed": 20,
+        "failed": 0,
+        "killed": {
+          "parent": 0,
+          "user": 0,
+          "system": 0
+        },
+        "refused": {
+          "depth_limit": 0,
+          "concurrency_limit": 0,
+          "budget": 0
+        },
+        "by_type": {
+          "Explore": 20
+        }
+      },
+      "safety_stops": 0,
+      "is_error": false,
+      "num_turns": 21,
+      "subtype": "success",
+      "api_error_status": null,
+      "result": "All 21 jobs ran and finished; none failed. I didn't retry anything, change any prompts, read any files or grade the answers.",
+      "ttft_ms": 2893,
+      "type": "result",
+      "duration_ms": 114162,
+      "uuid": "7db8a7df-2008-4c08-9e39-7be98907da3c",
+      "ttft_stream_ms": 2516,
+      "time_to_request_ms": 391,
+      "first_content_frame_ms": 2517,
+      "queued_turn_count": 0,
+      "result_index": 0
+    }
+  },
+  {
+    "batch": 2,
+    "question_count": 5,
+    "exit_code": 0,
+    "start_utc": "2026-10-25T19:37:57.303597+00:00",
+    "end_utc": "2026-10-25T19:38:40.667417+00:00",
+    "wall_time_s": 43.3641572000015,
+    "result": {
+      "duration_api_ms": 80674,
+      "stop_reason": "end_turn",
+      "session_id": "01d5a598-c760-4217-a151-0e913648808a",
+      "total_cost_usd": 0.4607038,
+      "usage": {
+        "input_tokens": 4,
+        "cache_creation_input_tokens": 10822,
+        "cache_read_input_tokens": 51313,
+        "output_tokens": 3683,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 0,
+          "ephemeral_5m_input_tokens": 10822
+        },
+        "inference_geo": "global",
+        "iterations": [
+          {
+            "input_tokens": 2,
+            "output_tokens": 49,
+            "cache_read_input_tokens": 28355,
+            "cache_creation_input_tokens": 5425,
+            "cache_creation": {
+              "ephemeral_5m_input_tokens": 5425,
+              "ephemeral_1h_input_tokens": 0
+            },
+            "type": "message"
+          }
+        ],
+        "speed": "standard",
+        "fallback_credit": null
+      },
+      "modelUsage": {
+        "claude-opus-5-5": {
+          "inputTokens": 52,
+          "outputTokens": 7061,
+          "cacheReadInputTokens": 384454,
+          "cacheCreationInputTokens": 48477,
+          "webSearchRequests": 0,
+          "costUSD": 0.4607038,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 232,
+          "canonicalModel": "claude-opus-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "permission_denials": [],
+      "terminal_reason": "completed",
+      "fast_mode_state": "off",
+      "fast_mode_disabled_reason": "sdk_opt_in_required",
+      "subagent_stats": {
+        "spawned": 5,
+        "requested": {
+          "background": 0,
+          "foreground": 5,
+          "unset": 0
+        },
+        "started_in_background": 0,
+        "max_depth": 1,
+        "spawned_by_subagents": 0,
+        "completed": 5,
+        "failed": 0,
+        "killed": {
+          "parent": 0,
+          "user": 0,
+          "system": 0
+        },
+        "refused": {
+          "depth_limit": 0,
+          "concurrency_limit": 0,
+          "budget": 0
+        },
+        "by_type": {
+          "Explore": 5
+        }
+      },
+      "safety_stops": 0,
+      "is_error": false,
+      "num_turns": 6,
+      "subtype": "success",
+      "api_error_status": null,
+      "result": "I dispatched all 5 jobs (R3 n01–n05) in one parallel batch, and all 5 finished. None failed and none were retried.",
+      "ttft_ms": 6603,
+      "type": "result",
+      "duration_ms": 41012,
+      "uuid": "d292435d-cbb3-4afb-96a2-b69b69d5888d",
+      "ttft_stream_ms": 2160,
+      "time_to_request_ms": 201,
+      "first_content_frame_ms": 2161,
+      "queued_turn_count": 0,
+      "result_index": 0
+    }
+  }
+]

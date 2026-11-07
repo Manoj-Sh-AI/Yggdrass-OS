@@ -1,0 +1,272 @@
+{
+  "part": "code",
+  "arm": "B",
+  "run": 2,
+  "spent": 0.02183004,
+  "rows": [
+    {
+      "id": "c1",
+      "question": "Trace how a question goes from retrieve.py to the final answer shown to the user.",
+      "answer": "ANSWER: The path runs entirely inside `retrieve.py`, in three model-free and model steps, and the shown answer is produced by `main`.\n\n1. **Entry.** `main(argv)` handles `ask <brain> \"<question>\"` and calls `Retriever(Path(brain)).ask(question)`. `Retriever.__init__` calls `build_map(brain)` (imported from `yggdras.data.graph.structural`, not read here), sorts the node slugs, and builds the cached system block: one line per node (`slug | name | aka aliases | description`), with the first fact line used when a note has no description.\n2. **Pick (Haiku call 1).** `ask` calls `pick(...)`, which streams a Haiku call with a JSON schema whose `notes` items are enum-restricted to the real slugs. It keeps the first two valid, de-duplicated slugs. An empty result is retried once. If both tries are empty, `picked` is empty and the flow continues with no blocks.\n3. **Gather (no model).** `search_results(brain, graph, picked)` reads each picked note's `## Facts` lines and adds its neighbours' fact lines. Picked nodes get `Link: ...` lines from `edges_of`, which covers edges in both directions. Each node becomes a `search_result` block (source = slug, title = name, one text block per line, citations on). Picked nodes come first and duplicates are skipped.\n4. **Answer (Haiku call 2).** `answer(...)` sends those blocks plus the instruction \"answer from these search results only, citing them; if absent, start with NOT IN BRAIN\". It collects `citations` (source and cited text) and per-block `cited` flags from the response.\n5. **Post-processing in `ask`.** `status_of(raw)` returns `not_in_brain` if the raw reply starts with `NOT IN BRAIN`, otherwise `answer`. `display_text(raw)` strips every `(src: ...)` tail with `SRC_TAIL`, and that stripped text becomes `answer`. The result dict also carries picks, usage, timings, and cost.\n6. **What the user sees.** `main` prints `result[\"answer\"]`, then a `Sources:` line. That line is the de-duplicated `source` values from `citations`, or `none`. It is not parsed from the answer text.\n\nNotes:\n- The `eval` subcommand runs the same `ask` per question and writes `{\"variant\": \"C\", \"rows\": [...]}` JSON, and does not print the answer.\n- `first_token_ms` is the pick's full duration plus the answer's time to first streamed text.\n- I did not read `yggdras.data.graph.structural.build_map`, so the graph shape (`nodes`, `edges`, `from`/`to`/`reason`, `path`) is inferred from how `retrieve.py` uses it.\n- I did not edit anything.\n\nFILES: `evals/experiments/speed-test-one-query/retrieve.py` (under the scratchpad `code-B` directory)",
+      "is_error": false,
+      "subtype": "success",
+      "num_turns": 3,
+      "tool_calls": 2,
+      "tool_names": {
+        "Glob": 1,
+        "Read": 1
+      },
+      "tokens_total": 83161,
+      "model_usage": {
+        "claude-haiku-5-5": {
+          "inputTokens": 6,
+          "outputTokens": 1686,
+          "cacheReadInputTokens": 69833,
+          "cacheCreationInputTokens": 11636,
+          "webSearchRequests": 0,
+          "costUSD": 0.0029964299999999996,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 463,
+          "canonicalModel": "claude-haiku-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "cost_usd": 0.0029964299999999996,
+      "seconds": 15.12,
+      "stderr": ""
+    },
+    {
+      "id": "c2",
+      "question": "How does the structural pass build the map from a brain folder?",
+      "answer": "ANSWER: The structural pass is `build_map(root)` in `app/src/yggdras/data/graph/structural.py`. It reads the brain folder and writes a JSON map, with no model or database involved, and the same input gives byte-identical output.\n\n1. **Find nodes:** `node_files` takes every `*.md` under the brain (recursively, sorted), skipping the top-level `index.md`.\n2. **Parse each file:** `parse_node` requires a `---` frontmatter block with `id`, `slug`, `name` and `type`. It also reads optional `aliases`. Files that fail any of these become entries in `errors` rather than nodes, as do duplicate slugs.\n3. **Read links:** only `[[...]]` lines of the form `- reason [[target]]` inside the `## Links` section count, up to the next heading. Each becomes `(line, reason, written_as)`.\n4. **Build a lookup:** each node's slug and aliases are normalized (lowercased, accents stripped, spaces and underscores to hyphens, punctuation dropped) and mapped to node ids.\n5. **Resolve links:** an exact slug match wins. Otherwise the normalized key is looked up. Two or more matches are recorded as an ambiguity error. No match goes to `dangling`. A single match becomes an edge with `resolved_via` set to `slug` or `alias`.\n6. **Emit:** the result is a dict with `schema: \"yggdras-map/1\"`, `nodes` (sorted by slug), `edges`, `dangling` and `errors`, all sorted. `render` dumps it as JSON with sorted keys.\n\n`main` (run as `python -m yggdras.data.graph.structural BRAIN_ROOT [--out PATH]`) checks the path is a folder and writes to `--out`, or by default to `<brain parent>/.map/graph.json`. It never writes into the brain. It also counts every `[[...]]` in the raw files, independently of the parser. If any appear outside `## Links`, it prints a STOP message and exits 1, and it also exits 1 when there are errors.\n\nFILES: `app/src/yggdras/data/graph/structural.py`. I did not open `requirements/spec-phase-1b-structural-pass.md` or the decision records (D5, D6, D8, D02, D31) that the code cites.",
+      "is_error": false,
+      "subtype": "success",
+      "num_turns": 5,
+      "tool_calls": 4,
+      "tool_names": {
+        "Grep": 2,
+        "Glob": 1,
+        "Read": 1
+      },
+      "tokens_total": 84722,
+      "model_usage": {
+        "claude-haiku-5-5": {
+          "inputTokens": 6,
+          "outputTokens": 1725,
+          "cacheReadInputTokens": 70604,
+          "cacheCreationInputTokens": 12387,
+          "webSearchRequests": 0,
+          "costUSD": 0.003117515,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 182,
+          "canonicalModel": "claude-haiku-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "cost_usd": 0.003117515,
+      "seconds": 15.78,
+      "stderr": ""
+    },
+    {
+      "id": "c3",
+      "question": "How does the eval runner record a run?",
+      "answer": "ANSWER: The runner never grades. A person supplies each verdict, either typed at the prompt or read from a YAML file (`--verdicts`) that maps question id to `{pass, files_opened, notes}`. `record` then does four things:\n\n1. **Loads the question set** and checks the verdict file, if one is given, so `pass` must be a boolean.\n2. **Builds the result** in `build_result`. It refuses to continue if any question has no verdict or any verdict has an unknown id. Each entry keeps the id, kind, exit flag, pass, files opened and notes. The summary holds total, passed and failed counts. `gate_met` is true only when every question passed. The record also stores today's date, the questions file path and the brain path.\n3. **Writes a new YAML file** in `write_result`, named `<date>-run-<n>.yaml` inside `--out`. It takes the lowest free `n`, so earlier runs are never overwritten.\n4. **Prints** `X/Y passed; gate met|NOT met` and the file path. It exits 0 if the gate is met and 1 if not.\n\nThe stored example, `evals/fixture-results/2026-10-24-run-1.yaml`, has 19 of 20 passing with `gate_met: false`. Its failed question (m02) is noted as an eval-set bug, since a valid route was not in `expected_nodes`.\n\nFILES: app/src/yggdras/tooling/eval_runner.py, evals/README.md, evals/fixture-results/2026-10-24-run-1.yaml, app/tests/test_eval_runner.py",
+      "is_error": false,
+      "subtype": "success",
+      "num_turns": 6,
+      "tool_calls": 5,
+      "tool_names": {
+        "Grep": 1,
+        "Read": 4
+      },
+      "tokens_total": 89432,
+      "model_usage": {
+        "claude-haiku-5-5": {
+          "inputTokens": 6,
+          "outputTokens": 1613,
+          "cacheReadInputTokens": 70472,
+          "cacheCreationInputTokens": 17341,
+          "webSearchRequests": 0,
+          "costUSD": 0.003679445,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 216,
+          "canonicalModel": "claude-haiku-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "cost_usd": 0.003679445,
+      "seconds": 12.97,
+      "stderr": ""
+    },
+    {
+      "id": "c4",
+      "question": "Where is `normalize` defined, and where is it used?",
+      "answer": "ANSWER: `normalize` is defined at `app\\src\\yggdras\\data\\graph\\structural.py:29` as `def normalize(text: str) -> str`. It strips accents by NFKD-decomposing the text and dropping combining characters (line 32, which also calls `unicodedata.normalize`, the stdlib function, not this one).\n\nIt is used in:\n- `app\\src\\yggdras\\data\\graph\\structural.py:127` (indexing `node.slug` into the `keys` map)\n- `app\\src\\yggdras\\data\\graph\\structural.py:129` (indexing each alias)\n- `app\\src\\yggdras\\data\\graph\\structural.py:138` (normalizing the `written` name during lookup)\n- `app\\tests\\test_structural_map.py:280` (`st.normalize(text) == expected`, a direct unit test)\n\n`rationale\\decisions\\D02-node-identity.md:18` describes the same behavior in prose: resolution and uniqueness checks normalize both sides before comparing. It doesn't reference the function by name.\n\nFILES: I searched the whole working directory with a ripgrep content search for `\\bnormalize\\b`. The matches I inspected were `app\\src\\yggdras\\data\\graph\\structural.py`, `app\\tests\\test_structural_map.py`, and `rationale\\decisions\\D02-node-identity.md`. I did not open any file in full, so the answer rests on the matched lines and their surrounding context from search output.",
+      "is_error": false,
+      "subtype": "success",
+      "num_turns": 2,
+      "tool_calls": 1,
+      "tool_names": {
+        "Grep": 1
+      },
+      "tokens_total": 52072,
+      "model_usage": {
+        "claude-haiku-5-5": {
+          "inputTokens": 4,
+          "outputTokens": 805,
+          "cacheReadInputTokens": 44357,
+          "cacheCreationInputTokens": 6906,
+          "webSearchRequests": 0,
+          "costUSD": 0.00170972,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 105,
+          "canonicalModel": "claude-haiku-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "cost_usd": 0.00170972,
+      "seconds": 11.03,
+      "stderr": ""
+    },
+    {
+      "id": "c5",
+      "question": "Where is `fact_lines` defined, and which files call it?",
+      "answer": "ANSWER: `fact_lines` is defined at `evals\\experiments\\speed-test-one-query\\retrieve.py:62` as `def fact_lines(text: str) -> list[str]`. It is called from:\n- `evals\\experiments\\speed-test-one-query\\retrieve.py:85` (inside `retrieve.py`)\n- `evals\\experiments\\speed-test-one-query\\retrieve.py:121` (inside `retrieve.py`)\n- `evals\\experiments\\speed-test-one-query\\variant_a.py:28` (import) and `:61` (call)\n- `evals\\experiments\\speed-test-one-query\\test_retrieve.py:16` (import) and `:43-44` (asserts, in `test_fact_lines_take_only_the_facts_section`)\n\nFILES: I did not open any files. I ran a single repo-wide ripgrep for `fact_lines` under the working directory, and the matches above come from that search output. The call sites' surrounding code was not read, so I haven't confirmed the exact enclosing functions beyond the line numbers.",
+      "is_error": false,
+      "subtype": "success",
+      "num_turns": 2,
+      "tool_calls": 1,
+      "tool_names": {
+        "Grep": 1
+      },
+      "tokens_total": 52087,
+      "model_usage": {
+        "claude-haiku-5-5": {
+          "inputTokens": 4,
+          "outputTokens": 704,
+          "cacheReadInputTokens": 44359,
+          "cacheCreationInputTokens": 7020,
+          "webSearchRequests": 0,
+          "costUSD": 0.00167349,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 128,
+          "canonicalModel": "claude-haiku-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "cost_usd": 0.00167349,
+      "seconds": 9.45,
+      "stderr": ""
+    },
+    {
+      "id": "c6",
+      "question": "Where is a link line like `- replaced by [[jack-swigert]]` parsed?",
+      "answer": "ANSWER: The link line is parsed in `parse_node`, at the loop over `links_section(...)` (line 94\u201397 of `app/src/yggdras/data/graph/structural.py`). Each line in a node's `## Links` section is matched against the regex `LINK_LINE = r\"^- (.*?)\\[\\[([^\\]]+)\\]\\]\"` (line 25). The group 1 text becomes the reason (`\"replaced by\"` for your example) and group 2 becomes the `written_as` slug (`jack-swigert`). `links_section` (line 61) is what limits matching to the `## Links` section. Downstream, `build_map` (around line 134) resolves the slug to a node.\n\nFILES: \n- app/src/yggdras/data/graph/structural.py\n- requirements/spec-phase-1b-structural-pass.md (grep hit only, for the spec's link-line rules)\n- rationale/decisions/D02-node-identity.md (grep hit only, for the link-line format)\n- app/tests/test_structural_map.py (grep hit only, for test cases)",
+      "is_error": false,
+      "subtype": "success",
+      "num_turns": 4,
+      "tool_calls": 3,
+      "tool_names": {
+        "Grep": 2,
+        "Read": 1
+      },
+      "tokens_total": 121968,
+      "model_usage": {
+        "claude-haiku-5-5": {
+          "inputTokens": 8,
+          "outputTokens": 1129,
+          "cacheReadInputTokens": 107079,
+          "cacheCreationInputTokens": 13752,
+          "webSearchRequests": 0,
+          "costUSD": 0.0033550900000000002,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 76,
+          "canonicalModel": "claude-haiku-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "cost_usd": 0.0033550900000000002,
+      "seconds": 14.25,
+      "stderr": ""
+    },
+    {
+      "id": "c7",
+      "question": "What breaks if `LINKS_HEADING` is changed to \"## Related\"?",
+      "answer": "ANSWER: Nothing crashes, but every link written under the existing `## Links` headings silently drops out of the map, and the tool then reports an error.\n\n- `links_section()` (`structural.py:61-70`) only collects lines under a heading that equals `LINKS_HEADING`. Existing notes whose links sit under `## Links` stop yielding edges, and they don't show up as dangling or errors either. They vanish from `graph.json`.\n- `count_raw_links()` (`structural.py:194-205`) uses the same `links_section()`, so `inside_links` drops to 0 while `total` stays the same. `main()` then sees `outside_links > 0`, prints the \"STOP: links found outside ## Links sections\u2026 (D31)\" message to stderr, and returns exit code 1. That message is misleading, since the links are inside a section, just not the one the parser now looks for.\n- The map is still written to `.map/graph.json` before the exit code is set, so the output is incomplete but present.\n- Notes that already use `## Related` would start being parsed. Any `[[...]]` links under other headings are still reported as outside `## Links`, so a mixed brain gets the same STOP.\n- The `startswith(\"## \")` check is unchanged, so only the exact heading string matters.\n\nThe fix is to change the constant and the notes together, or to accept both headings. I didn't read the test suite, so I can't say whether tests pin the `\"## Links\"` string.\n\nFILES: `app\\src\\yggdras\\data\\graph\\structural.py`",
+      "is_error": false,
+      "subtype": "success",
+      "num_turns": 3,
+      "tool_calls": 2,
+      "tool_names": {
+        "Grep": 1,
+        "Read": 1
+      },
+      "tokens_total": 82013,
+      "model_usage": {
+        "claude-haiku-5-5": {
+          "inputTokens": 6,
+          "outputTokens": 1302,
+          "cacheReadInputTokens": 70072,
+          "cacheCreationInputTokens": 10633,
+          "webSearchRequests": 0,
+          "costUSD": 0.002681445,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 407,
+          "canonicalModel": "claude-haiku-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "cost_usd": 0.002681445,
+      "seconds": 13.22,
+      "stderr": ""
+    },
+    {
+      "id": "c8",
+      "question": "What breaks if `display_text` is deleted from retrieve.py?",
+      "answer": "ANSWER: Deleting `display_text` breaks two things, and neither failure is silent:\n\n1. **Runtime:** `Retriever.ask()` calls `display_text(...)` at `retrieve.py:250` to build the `\"answer\"` field. With the function gone, every `ask()` call raises `NameError` after the two model calls have already run, so the call costs tokens and then returns nothing usable.\n2. **Tests:** `test_retrieve.py:14` imports `display_text` by name. Without it, the import fails and pytest can't collect the module, so every test in that file fails, including the unrelated `status_of` and `fact_lines` checks.\n\nNothing else in the repo references `display_text`. The `SRC_TAIL` regex it uses (defined elsewhere in `retrieve.py`) would be left unused. The function has no other callers, so the blast radius is limited to `ask()` and that one test file.\n\nFILES: `evals/experiments/speed-test-one-query/retrieve.py` (lines 137\u2013139, 223\u2013263), `evals/experiments/speed-test-one-query/test_retrieve.py` (lines 1\u201335). I also ran a repo-wide grep for `display_text`, which found only those hits.",
+      "is_error": false,
+      "subtype": "success",
+      "num_turns": 5,
+      "tool_calls": 4,
+      "tool_names": {
+        "Grep": 1,
+        "Glob": 1,
+        "Read": 2
+      },
+      "tokens_total": 81741,
+      "model_usage": {
+        "claude-haiku-5-5": {
+          "inputTokens": 6,
+          "outputTokens": 1273,
+          "cacheReadInputTokens": 70243,
+          "cacheCreationInputTokens": 10219,
+          "webSearchRequests": 0,
+          "costUSD": 0.002616905,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 304,
+          "canonicalModel": "claude-haiku-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "cost_usd": 0.002616905,
+      "seconds": 12.05,
+      "stderr": ""
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+Graph: evals/experiments/retrieval/build/graphify-out/graph.json (78 nodes) | Traversal: BFS depth=2 | Start: ['Mission Control Houston'] | Context: call (heuristic) | 1 nodes found
+
+NODE Mission Control Houston [src=areas/mission-control-houston.md loc=None community=Apollo 13 Mission Operations]

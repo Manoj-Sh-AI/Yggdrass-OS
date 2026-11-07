@@ -1,0 +1,59 @@
+{
+  "id": "p02",
+  "condition": "R1",
+  "description": "R1 p02",
+  "model": [
+    "claude-opus-5-5"
+  ],
+  "prompt_exact": true,
+  "subagent_type": "Explore",
+  "launch_model": "opus",
+  "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: At what altitude did manual control begin on Apollo 11, how far downrange of the aim point did it land, and on which page of the report?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+  "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-2\\R1\\dispatcher.events.jsonl",
+  "agent_id": "a9bb2b2f2607f55e4",
+  "start_utc": "2026-10-25T19:27:44.827Z",
+  "end_utc": "2026-10-25T19:27:53.814Z",
+  "time_s": 8.987,
+  "usage": {
+    "input_tokens": 8,
+    "output_tokens": 213,
+    "cache_read_input_tokens": 51295,
+    "cache_creation_input_tokens": 7605
+  },
+  "total_tokens": 59121,
+  "cost_usd_at_recorded_rates": 0.052576,
+  "cache_neutral_cost_usd": 0.239892,
+  "tool_calls": [
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\sources\\apollo-11-mission-report\\apollo-11-mission-report-ch-05.md"
+      }
+    }
+  ],
+  "tool_call_count": 3,
+  "note_read_count": 1,
+  "wiki_read_count": 0,
+  "opened_paths": [
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\sources\\apollo-11-mission-report\\apollo-11-mission-report-ch-05.md"
+  ],
+  "answers": [
+    "ANSWER: Manual control began at about 600 feet, and the lunar module landed about 1100 feet downrange of the initial aim point. Both facts are on page 5-5 of the Apollo 11 Mission Report (src: Apollo 11 Mission Report p.5-5), in Section 5.3, Powered Descent, which covers pages 5-4 to 5-6.\nFILES: index.md, sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md"
+  ],
+  "answer": "ANSWER: Manual control began at about 600 feet, and the lunar module landed about 1100 feet downrange of the initial aim point. Both facts are on page 5-5 of the Apollo 11 Mission Report (src: Apollo 11 Mission Report p.5-5), in Section 5.3, Powered Descent, which covers pages 5-4 to 5-6.\nFILES: index.md, sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+  "tool_errors": []
+}

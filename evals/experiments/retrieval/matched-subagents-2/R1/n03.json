@@ -1,0 +1,66 @@
+{
+  "id": "n03",
+  "condition": "R1",
+  "description": "R1 n03",
+  "model": [
+    "claude-opus-5-5"
+  ],
+  "prompt_exact": true,
+  "subagent_type": "Explore",
+  "launch_model": "opus",
+  "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: What did Michael Collins say about being alone behind the Moon?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+  "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-2\\R1\\dispatcher.events.jsonl",
+  "agent_id": "af79bebadf3fca083",
+  "start_utc": "2026-10-25T19:28:13.214Z",
+  "end_utc": "2026-10-25T19:28:26.352Z",
+  "time_s": 13.138,
+  "usage": {
+    "input_tokens": 10,
+    "output_tokens": 243,
+    "cache_read_input_tokens": 68632,
+    "cache_creation_input_tokens": 7874
+  },
+  "total_tokens": 76759,
+  "cost_usd_at_recorded_rates": 0.057996400000000004,
+  "cache_neutral_cost_usd": 0.310924,
+  "tool_calls": [
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\michael-collins.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-11.md"
+      }
+    }
+  ],
+  "tool_call_count": 4,
+  "note_read_count": 2,
+  "wiki_read_count": 0,
+  "opened_paths": [
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\michael-collins.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-11.md"
+  ],
+  "answers": [
+    "ANSWER: I don't have that. The brain has no quote or statement from Michael Collins about being alone behind the Moon. I checked his node (people/michael-collins.md). It only says he was Apollo 11's command module pilot, that he stayed in lunar orbit aboard Columbia during the landing, and that he flew Gemini 10 in 1966. The Apollo 11 node (areas/apollo-11.md) has only launch, landing, splashdown and spacecraft details.\nFILES: index.md, people/michael-collins.md, areas/apollo-11.md"
+  ],
+  "answer": "ANSWER: I don't have that. The brain has no quote or statement from Michael Collins about being alone behind the Moon. I checked his node (people/michael-collins.md). It only says he was Apollo 11's command module pilot, that he stayed in lunar orbit aboard Columbia during the landing, and that he flew Gemini 10 in 1966. The Apollo 11 node (areas/apollo-11.md) has only launch, landing, splashdown and spacecraft details.\nFILES: index.md, people/michael-collins.md, areas/apollo-11.md",
+  "tool_errors": []
+}

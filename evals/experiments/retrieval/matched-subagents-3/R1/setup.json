@@ -1,0 +1,16 @@
+{
+  "model": "claude-opus-5-5",
+  "runner_version": "2.1.308",
+  "agent_type": "Explore",
+  "one_parent_process_per_batch": true,
+  "bare": false,
+  "state_directory": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\build\\runner-state\\matched-subagents-3\\R1",
+  "batch_barrier": "External Python runner waits for the first dispatcher process to exit before starting the second.",
+  "batch_sizes": [
+    20,
+    5
+  ],
+  "no_prior_session": true,
+  "query_logging_disabled": true,
+  "baseline_rerun_reason": "Fresh API parent context differs from the previous desktop session."
+}

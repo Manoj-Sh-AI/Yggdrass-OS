@@ -1,0 +1,74 @@
+{
+  "id": "m04",
+  "condition": "R2",
+  "description": "R2 m04",
+  "model": [
+    "claude-opus-5-5"
+  ],
+  "prompt_exact": true,
+  "subagent_type": "Explore",
+  "launch_model": "opus",
+  "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly, with one change: you may start from the brain's wiki, C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\build\\graphify-out\\wiki\\index.md. It lists topic articles in that same wiki folder; each article names notes by path relative to the brain root. You may use wiki/index.md and the wiki articles it links to choose a starting note, then read the notes. With the wiki, reading the brain's index.md is optional. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root plus the skill file and files in the wiki folder. Do not use Glob, Grep, ls or any search across files or folders. Do not open anything else.\n\nQuestion: The rocket that first carried a crew on Apollo 8 was developed under whom, and which centre did that person direct?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, in order: paths inside the brain relative to the brain root, and wiki files as wiki/<name>.md>",
+  "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R2\\transcripts\\m04.jsonl",
+  "finalized_transcript_available": true,
+  "agent_id": "aa48d60700e035c6d",
+  "start_utc": "2026-10-25T19:34:12.021Z",
+  "end_utc": "2026-10-25T19:34:26.324Z",
+  "time_s": 14.303,
+  "usage": {
+    "input_tokens": 12,
+    "output_tokens": 638,
+    "cache_read_input_tokens": 79017,
+    "cache_creation_input_tokens": 5590
+  },
+  "total_tokens": 85257,
+  "cost_usd_at_recorded_rates": 0.056561400000000005,
+  "cache_neutral_cost_usd": 0.351236,
+  "tool_calls": [
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\build\\graphify-out\\wiki\\index.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\build\\graphify-out\\wiki\\Apollo_Program_Leadership.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\saturn-v.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\wernher-von-braun.md"
+      }
+    }
+  ],
+  "tool_call_count": 5,
+  "note_read_count": 2,
+  "wiki_read_count": 2,
+  "opened_paths": [
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\build\\graphify-out\\wiki\\index.md",
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\build\\graphify-out\\wiki\\Apollo_Program_Leadership.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\saturn-v.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\wernher-von-braun.md"
+  ],
+  "answers": [
+    "ANSWER: The rocket was the Saturn V, which first flew a crew on Apollo 8. It was developed by a team led by Wernher von Braun. He was the first director of NASA's Marshall Space Flight Center, from 1960 to 1970.\nFILES: wiki/index.md, wiki/Apollo_Program_Leadership.md, topics/saturn-v.md, people/wernher-von-braun.md"
+  ],
+  "answer": "ANSWER: The rocket was the Saturn V, which first flew a crew on Apollo 8. It was developed by a team led by Wernher von Braun. He was the first director of NASA's Marshall Space Flight Center, from 1960 to 1970.\nFILES: wiki/index.md, wiki/Apollo_Program_Leadership.md, topics/saturn-v.md, people/wernher-von-braun.md",
+  "tool_errors": []
+}

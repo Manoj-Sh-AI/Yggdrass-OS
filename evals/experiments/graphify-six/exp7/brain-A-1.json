@@ -1,0 +1,338 @@
+{
+  "part": "brain",
+  "arm": "A",
+  "run": 1,
+  "spent": 0.031803265,
+  "rows": [
+    {
+      "id": "d01",
+      "question": "When did Apollo 8 launch, and who was its crew?",
+      "answer": "ANSWER: Apollo 8 launched on 1968-12-21. Its crew was Frank Borman, Jim Lovell and Bill Anders.\n\nFILES: areas/apollo-8.md",
+      "is_error": false,
+      "subtype": "success",
+      "num_turns": 5,
+      "tool_calls": 4,
+      "tool_names": {
+        "Bash": 3,
+        "Read": 1
+      },
+      "tokens_total": 86793,
+      "model_usage": {
+        "claude-haiku-5-5": {
+          "inputTokens": 6,
+          "outputTokens": 758,
+          "cacheReadInputTokens": 73917,
+          "cacheCreationInputTokens": 12112,
+          "webSearchRequests": 0,
+          "costUSD": 0.00263277,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 217,
+          "canonicalModel": "claude-haiku-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "cost_usd": 0.00263277,
+      "seconds": 30.87,
+      "stderr": ""
+    },
+    {
+      "id": "d07",
+      "question": "Where did Apollo 16 land?",
+      "answer": "ANSWER: Apollo 16 landed in the Descartes Highlands (April 1972). The note also gives the launch date as 1972-04-16 and the crew as John Young, Ken Mattingly and Charlie Duke.\n\nFILES: areas/apollo-16.md",
+      "is_error": false,
+      "subtype": "success",
+      "num_turns": 5,
+      "tool_calls": 4,
+      "tool_names": {
+        "Bash": 3,
+        "Read": 1
+      },
+      "tokens_total": 83992,
+      "model_usage": {
+        "claude-haiku-5-5": {
+          "inputTokens": 6,
+          "outputTokens": 574,
+          "cacheReadInputTokens": 72631,
+          "cacheCreationInputTokens": 10781,
+          "webSearchRequests": 0,
+          "costUSD": 0.0023615349999999997,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 0,
+          "canonicalModel": "claude-haiku-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "cost_usd": 0.0023615349999999997,
+      "seconds": 30.08,
+      "stderr": ""
+    },
+    {
+      "id": "m01",
+      "question": "Who commanded the mission that the astronaut who caught German measles was a backup for?",
+      "answer": "ANSWER: Jim Lovell commanded Apollo 13, the mission Charlie Duke was backup lunar module pilot for. Duke is the astronaut in the notes who caught German measles. (Ken Mattingly was the one removed from the crew, but the notes say he never contracted the disease.)\n\nFILES: sources/apollo-13-measles-article.md, topics/rubella-crew-swap.md, people/charlie-duke.md, people/ken-mattingly.md, areas/apollo-13.md, people/jim-lovell.md",
+      "is_error": false,
+      "subtype": "success",
+      "num_turns": 9,
+      "tool_calls": 8,
+      "tool_names": {
+        "Bash": 2,
+        "Read": 6
+      },
+      "tokens_total": 121806,
+      "model_usage": {
+        "claude-haiku-5-5": {
+          "inputTokens": 8,
+          "outputTokens": 1768,
+          "cacheReadInputTokens": 104846,
+          "cacheCreationInputTokens": 15184,
+          "webSearchRequests": 0,
+          "costUSD": 0.0038312599999999995,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 413,
+          "canonicalModel": "claude-haiku-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "cost_usd": 0.0038312599999999995,
+      "seconds": 34.22,
+      "stderr": ""
+    },
+    {
+      "id": "m03",
+      "question": "Which NASA centre was the Apollo 13 Review Board chair directing, and what did the board find caused the explosion?",
+      "answer": "ANSWER: The board, chaired by Edgar Cortright, was directing NASA's Langley Research Center. It traced the explosion to an electrically started fire in oxygen tank No. 2. The tank's thermostatic switches were built to a 1962 specification for 28 volts DC, but the heater specification was revised in 1965 to 65 volts and the switches were not changed. The notes say the board called this a serious oversight that all parties share.\n\nFILES: areas/apollo-13-review-board.md, sources/apollo-13-review-board-report.md, topics/oxygen-tank-2.md, people/edgar-cortright.md",
+      "is_error": false,
+      "subtype": "success",
+      "num_turns": 3,
+      "tool_calls": 2,
+      "tool_names": {
+        "Bash": 2
+      },
+      "tokens_total": 86603,
+      "model_usage": {
+        "claude-haiku-5-5": {
+          "inputTokens": 6,
+          "outputTokens": 614,
+          "cacheReadInputTokens": 73670,
+          "cacheCreationInputTokens": 12313,
+          "webSearchRequests": 0,
+          "costUSD": 0.0025834250000000003,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 111,
+          "canonicalModel": "claude-haiku-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "cost_usd": 0.0025834250000000003,
+      "seconds": 25.57,
+      "stderr": ""
+    },
+    {
+      "id": "m04",
+      "question": "The rocket that first carried a crew on Apollo 8 was developed under whom, and which centre did that person direct?",
+      "answer": "ANSWER: Wernher von Braun developed the Saturn V, the rocket that first carried a crew on Apollo 8. He directed NASA's Marshall Space Flight Center, as its first director, from 1960 to 1970.\n\nFILES: areas/apollo-8.md, topics/saturn-v.md, people/wernher-von-braun.md",
+      "is_error": false,
+      "subtype": "success",
+      "num_turns": 5,
+      "tool_calls": 4,
+      "tool_names": {
+        "Bash": 4
+      },
+      "tokens_total": 144127,
+      "model_usage": {
+        "claude-haiku-5-5": {
+          "inputTokens": 10,
+          "outputTokens": 681,
+          "cacheReadInputTokens": 131461,
+          "cacheCreationInputTokens": 11975,
+          "webSearchRequests": 0,
+          "costUSD": 0.0031529850000000005,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 61,
+          "canonicalModel": "claude-haiku-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "cost_usd": 0.0031529850000000005,
+      "seconds": 29.6,
+      "stderr": ""
+    },
+    {
+      "id": "h01",
+      "question": "Which company built the craft that kept the Apollo 13 astronauts alive after their main ship was crippled?",
+      "answer": "ANSWER: Grumman built the craft. It was the Apollo lunar module, Aquarius, which the Apollo 13 crew used as a lifeboat after the oxygen tank failure.\n\nFILES: areas/apollo-13.md, areas/grumman.md, areas/apollo-11.md, topics/lunar-module.md",
+      "is_error": false,
+      "subtype": "success",
+      "num_turns": 8,
+      "tool_calls": 7,
+      "tool_names": {
+        "Bash": 3,
+        "Read": 4
+      },
+      "tokens_total": 155177,
+      "model_usage": {
+        "claude-haiku-5-5": {
+          "inputTokens": 10,
+          "outputTokens": 1379,
+          "cacheReadInputTokens": 139323,
+          "cacheCreationInputTokens": 14465,
+          "webSearchRequests": 0,
+          "costUSD": 0.0038918549999999996,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 272,
+          "canonicalModel": "claude-haiku-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "cost_usd": 0.0038918549999999996,
+      "seconds": 30.16,
+      "stderr": ""
+    },
+    {
+      "id": "h03",
+      "question": "How tall was the giant rocket that carried Apollo crews toward the Moon, and how many times was it launched?",
+      "answer": "ANSWER: About 110 metres tall. The Saturn V was launched 13 times, between 1967 and 1973.\n\nFILES: topics/saturn-v.md, areas/apollo-8.md",
+      "is_error": false,
+      "subtype": "success",
+      "num_turns": 4,
+      "tool_calls": 3,
+      "tool_names": {
+        "Bash": 1,
+        "Read": 2
+      },
+      "tokens_total": 86760,
+      "model_usage": {
+        "claude-haiku-5-5": {
+          "inputTokens": 6,
+          "outputTokens": 808,
+          "cacheReadInputTokens": 73774,
+          "cacheCreationInputTokens": 12172,
+          "webSearchRequests": 0,
+          "costUSD": 0.0026638400000000002,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 239,
+          "canonicalModel": "claude-haiku-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "cost_usd": 0.0026638400000000002,
+      "seconds": 22.54,
+      "stderr": ""
+    },
+    {
+      "id": "p02",
+      "question": "At what altitude did manual control begin on Apollo 11, how far downrange of the aim point did it land, and on which page of the report?",
+      "answer": "ANSWER: Manual control began at about 600 feet, and the craft landed about 1100 feet downrange of the initial aim point. That fact is cited to page 5-5 of the Apollo 11 Mission Report (Section 5.3, Powered Descent, pages 5-4 to 5-6).\n\nFILES: `sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md` (read in full); `people/neil-armstrong.md` (surfaced by grep, which also cites p.5-5 for manual control from about 600 feet). I also ran `graphify query` and `graphify explain`, which pointed to the Section 5.3 chunk. I did not edit any files.",
+      "is_error": false,
+      "subtype": "success",
+      "num_turns": 7,
+      "tool_calls": 6,
+      "tool_names": {
+        "Bash": 3,
+        "Glob": 1,
+        "Read": 1,
+        "Grep": 1
+      },
+      "tokens_total": 121964,
+      "model_usage": {
+        "claude-haiku-5-5": {
+          "inputTokens": 8,
+          "outputTokens": 1370,
+          "cacheReadInputTokens": 104518,
+          "cacheCreationInputTokens": 16068,
+          "webSearchRequests": 0,
+          "costUSD": 0.00373948,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 298,
+          "canonicalModel": "claude-haiku-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "cost_usd": 0.00373948,
+      "seconds": 29.71,
+      "stderr": ""
+    },
+    {
+      "id": "n02",
+      "question": "Who was the command module pilot of Apollo 12?",
+      "answer": "NOT IN BRAIN\n\nThe notes do not mention Apollo 12 anywhere. `graphify query` and `graphify explain \"Apollo 12\"` found no Apollo 12 node, and a case-insensitive search of all the markdown notes for \"Apollo 12\" returned no matches. The notes cover Apollo 1, 8, 11, 13 and 16, including Michael Collins as Apollo 11 command module pilot and Jack Swigert as Apollo 13 command module pilot. None of them gives the Apollo 12 command module pilot.\n\nFILES: none of the notes contain the answer. The search surfaced these as the closest related notes: index.md, people\\jack-swigert.md, people\\ken-mattingly.md, areas\\apollo-13.md, people\\michael-collins.md.",
+      "is_error": false,
+      "subtype": "success",
+      "num_turns": 5,
+      "tool_calls": 4,
+      "tool_names": {
+        "Bash": 3,
+        "Grep": 1
+      },
+      "tokens_total": 111109,
+      "model_usage": {
+        "claude-haiku-5-5": {
+          "inputTokens": 8,
+          "outputTokens": 1214,
+          "cacheReadInputTokens": 97082,
+          "cacheCreationInputTokens": 12805,
+          "webSearchRequests": 0,
+          "costUSD": 0.003179245,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 319,
+          "canonicalModel": "claude-haiku-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "cost_usd": 0.003179245,
+      "seconds": 27.53,
+      "stderr": ""
+    },
+    {
+      "id": "n04",
+      "question": "What colour vest did Gene Kranz wear during Apollo 13?",
+      "answer": "NOT IN BRAIN\n\nThe notes don't say what colour vest Gene Kranz wore during Apollo 13. His note only records that he was the Apollo 11 landing flight director and that his team was on console when Apollo 13's oxygen tank failed. A search of every markdown note for \"vest\" returned no matches. I did not answer from outside knowledge.\n\nFILES: people/gene-kranz.md (read in full). The graph queries and a keyword search of all notes also surfaced areas/mission-control-houston.md and areas/apollo-13.md, but I did not read those.",
+      "is_error": false,
+      "subtype": "success",
+      "num_turns": 6,
+      "tool_calls": 5,
+      "tool_names": {
+        "Bash": 4,
+        "Grep": 1
+      },
+      "tokens_total": 152307,
+      "model_usage": {
+        "claude-haiku-5-5": {
+          "inputTokens": 10,
+          "outputTokens": 1056,
+          "cacheReadInputTokens": 136237,
+          "cacheCreationInputTokens": 15004,
+          "webSearchRequests": 0,
+          "costUSD": 0.0037668700000000003,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 204,
+          "canonicalModel": "claude-haiku-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "cost_usd": 0.0037668700000000003,
+      "seconds": 35.71,
+      "stderr": ""
+    }
+  ]
+}

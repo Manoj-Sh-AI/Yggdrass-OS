@@ -1,0 +1,104 @@
+{
+  "id": "d09",
+  "condition": "R1",
+  "model": "claude-opus-5-5",
+  "question": "What happened at Launch Complex 34 on 1967-01-27?",
+  "start_utc": "2026-10-25T19:22:20.949036+00:00",
+  "end_utc": "2026-10-25T19:22:51.575383+00:00",
+  "wall_time_s": 30.62603649999801,
+  "cli_duration_s": 9.481,
+  "api_duration_s": 8.211,
+  "exit_code": 0,
+  "timed_out": false,
+  "success": true,
+  "terminal_reason": "completed",
+  "subtype": "success",
+  "answer": "ANSWER: On 1967-01-27, a cabin fire broke out during a launch rehearsal test for Apollo 1 (AS-204) at Launch Complex 34 at Cape Kennedy. It killed astronauts Gus Grissom, Ed White and Roger Chaffee. The fire led to a redesign of the command module, including a quick-opening hatch. (src: NASA history, 2026-10-24)\nFILES: index.md, areas/apollo-1.md",
+  "usage": {
+    "input_tokens": 10,
+    "cache_creation_input_tokens": 6260,
+    "cache_read_input_tokens": 13068,
+    "output_tokens": 411,
+    "output_tokens_details": {
+      "thinking_tokens": 0
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 6260
+    },
+    "inference_geo": "global",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 159,
+        "cache_read_input_tokens": 7093,
+        "cache_creation_input_tokens": 479,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 479,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "type": "message"
+      }
+    ],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "total_tokens": 19749,
+  "model_usage": {
+    "claude-opus-5-5": {
+      "inputTokens": 10,
+      "outputTokens": 411,
+      "cacheReadInputTokens": 13068,
+      "cacheCreationInputTokens": 6260,
+      "webSearchRequests": 0,
+      "costUSD": 0.042173600000000006,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 0,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "actual_models": [
+    "claude-opus-5-5"
+  ],
+  "cost_usd_cli_reported": 0.042173600000000006,
+  "estimated_cost_usd_at_recorded_rates": 0.0421736,
+  "cache_neutral_cost_usd_at_recorded_rates": 0.085572,
+  "permission_denials": [],
+  "tool_calls": [
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-1.md"
+      }
+    }
+  ],
+  "tool_call_count": 3,
+  "read_call_count": 3,
+  "note_read_count": 1,
+  "wiki_read_count": 0,
+  "opened_paths": [
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-1.md"
+  ]
+}

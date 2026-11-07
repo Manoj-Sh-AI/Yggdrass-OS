@@ -1,0 +1,59 @@
+{
+  "question": "Who replaced Ken Mattingly on Apollo 13, and why?",
+  "map_load_ms_not_counted": 6.9,
+  "stage1": {
+    "first_run_ms": 0.914,
+    "warm_median_ms": 0.409,
+    "warm_max_ms": 1.589,
+    "output": {
+      "noun": "ken-mattingly",
+      "matched_as": "ken mattingly",
+      "other_matches": [
+        "apollo-13",
+        "apollo-program"
+      ],
+      "edges": [
+        "apollo-13-measles-article --mentions--> ken-mattingly",
+        "apollo-16 --crewed by--> ken-mattingly",
+        "jack-swigert --replaced--> ken-mattingly",
+        "ken-mattingly --removed from--> apollo-13",
+        "ken-mattingly --flew--> apollo-16",
+        "ken-mattingly --replaced by--> jack-swigert",
+        "ken-mattingly --part of--> rubella-crew-swap",
+        "rubella-crew-swap --removed--> ken-mattingly"
+      ],
+      "facts": [
+        "- [stated] Assigned to Apollo 16 as command module pilot (was Apollo 13 command module pilot, changed 1970-04-10 by KSC management meeting) (src: NASA history Apollo 13 measles article, 2026-10-24)",
+        "- [stated] Was the only one of the five prime and backup crew members tested without rubella antibodies (src: NASA history Apollo 13 measles article, 2026-10-24)",
+        "- [stated] Never contracted German measles (src: NASA history Apollo 13 measles article, 2026-10-24)",
+        "- [stated] Helped work out the power procedures the Apollo 13 crew used to return (src: NASA history, 2026-10-24)",
+        "- [derived] Being removed kept him off the one Apollo mission that had to abort its landing (src: agent, 2026-10-24)"
+      ]
+    }
+  },
+  "stage2_prompt": "Answer the question using only the links and facts below; add nothing of your own.\nCite the node slug for each point; if they don't contain the answer, say \"I don't have that\".\n\nQuestion: Who replaced Ken Mattingly on Apollo 13, and why?\n\nNode: ken-mattingly\n\nLinks:\n- apollo-13-measles-article --mentions--> ken-mattingly\n- apollo-16 --crewed by--> ken-mattingly\n- jack-swigert --replaced--> ken-mattingly\n- ken-mattingly --removed from--> apollo-13\n- ken-mattingly --flew--> apollo-16\n- ken-mattingly --replaced by--> jack-swigert\n- ken-mattingly --part of--> rubella-crew-swap\n- rubella-crew-swap --removed--> ken-mattingly\n\nFacts from ken-mattingly:\n- [stated] Assigned to Apollo 16 as command module pilot (was Apollo 13 command module pilot, changed 1970-04-10 by KSC management meeting) (src: NASA history Apollo 13 measles article, 2026-10-24)\n- [stated] Was the only one of the five prime and backup crew members tested without rubella antibodies (src: NASA history Apollo 13 measles article, 2026-10-24)\n- [stated] Never contracted German measles (src: NASA history Apollo 13 measles article, 2026-10-24)\n- [stated] Helped work out the power procedures the Apollo 13 crew used to return (src: NASA history, 2026-10-24)\n- [derived] Being removed kept him off the one Apollo mission that had to abort its landing (src: agent, 2026-10-24)",
+  "stage2": {
+    "model": "claude-haiku-5-5",
+    "first_word_s": 2.839,
+    "full_s": 3.748,
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 0,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "inference_geo": "global",
+      "input_tokens": 562,
+      "output_tokens": 635,
+      "output_tokens_details": {
+        "thinking_tokens": 369
+      },
+      "server_tool_use": null,
+      "service_tier": "standard",
+      "speed": "standard"
+    },
+    "cost_usd": 0.0003737,
+    "answer": "**Who:** Jack Swigert replaced Ken Mattingly (`jack-swigert --replaced--> ken-mattingly`; `ken-mattingly --replaced by--> jack-swigert`).\n\n**Why:** The facts say Mattingly was the only one of the five prime and backup crew members tested without rubella antibodies, and that he never contracted German measles (`ken-mattingly`, citing the NASA history Apollo 13 measles article). The swap is listed as `rubella-crew-swap`, which removed him (`rubella-crew-swap --removed--> ken-mattingly`). The facts do not explicitly state that the rubella concern was the cause, so that link is implied rather than stated. The change was made at a KSC management meeting on 1970-04-10 (`ken-mattingly`)."
+  }
+}

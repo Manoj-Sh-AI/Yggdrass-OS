@@ -1,0 +1,15 @@
+Graph: evals/experiments/retrieval/build/graphify-out/graph.json (78 nodes) | Traversal: BFS depth=2 | Start: ['Margaret Hamilton'] | 6 nodes found
+
+NODE Margaret Hamilton [src=people/margaret-hamilton.md loc=None community=Apollo 11 Landing Software Alarms]
+NODE Apollo 11 program alarms 1201 and 1202 [src=topics/program-alarms-1201-1202.md loc=None community=Apollo 11 Landing Software Alarms]
+NODE Apollo Guidance Computer [src=topics/apollo-guidance-computer.md loc=None community=Apollo 11 Landing Software Alarms]
+NODE MIT Instrumentation Laboratory [src=people/margaret-hamilton.md loc=None community=Apollo 11 Landing Software Alarms]
+NODE Apollo 11 [src=people/michael-collins.md loc=None community=Apollo 11 Landing Software Alarms]
+NODE Apollo 11 Mission Report, Section 5.3: Powered Descent [src=sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md loc=None community=Apollo 11 Landing Software Alarms]
+EDGE Margaret Hamilton --references [EXTRACTED]--> MIT Instrumentation Laboratory
+EDGE Margaret Hamilton --references [EXTRACTED]--> Apollo Guidance Computer
+EDGE Margaret Hamilton --references [EXTRACTED]--> Apollo 11 program alarms 1201 and 1202
+EDGE Apollo 11 Mission Report, Section 5.3: Powered Descent --references [EXTRACTED]--> Apollo 11 program alarms 1201 and 1202
+EDGE Apollo 11 program alarms 1201 and 1202 --references [EXTRACTED]--> Apollo 11
+EDGE Apollo Guidance Computer --references [EXTRACTED]--> MIT Instrumentation Laboratory
+EDGE Apollo Guidance Computer --references [EXTRACTED]--> Apollo 11 program alarms 1201 and 1202

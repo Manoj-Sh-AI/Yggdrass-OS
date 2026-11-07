@@ -1,0 +1,83 @@
+{
+  "id": "d07",
+  "condition": "R2",
+  "description": "R2 d07",
+  "model": [
+    "claude-opus-5-5"
+  ],
+  "prompt_exact": true,
+  "subagent_type": "Explore",
+  "launch_model": "opus",
+  "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly, with one change: you may start from the brain's wiki, C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\build\\graphify-out\\wiki\\index.md. It lists topic articles in that same wiki folder; each article names notes by path relative to the brain root. You may use wiki/index.md and the wiki articles it links to choose a starting note, then read the notes. With the wiki, reading the brain's index.md is optional. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root plus the skill file and files in the wiki folder. Do not use Glob, Grep, ls or any search across files or folders. Do not open anything else.\n\nQuestion: Where did Apollo 16 land?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, in order: paths inside the brain relative to the brain root, and wiki files as wiki/<name>.md>",
+  "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R2\\transcripts\\d07.jsonl",
+  "finalized_transcript_available": true,
+  "agent_id": "af8abf2eead15f2d2",
+  "start_utc": "2026-10-25T19:33:48.121Z",
+  "end_utc": "2026-10-25T19:34:06.503Z",
+  "time_s": 18.382,
+  "usage": {
+    "input_tokens": 14,
+    "output_tokens": 814,
+    "cache_read_input_tokens": 97815,
+    "cache_creation_input_tokens": 9688
+  },
+  "total_tokens": 108331,
+  "cost_usd_at_recorded_rates": 0.084339,
+  "cache_neutral_cost_usd": 0.446348,
+  "tool_calls": [
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\build\\graphify-out\\wiki\\index.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\build\\graphify-out\\wiki\\Ken_Mattingly.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\ken-mattingly.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-16.md"
+      }
+    }
+  ],
+  "tool_call_count": 6,
+  "note_read_count": 2,
+  "wiki_read_count": 2,
+  "opened_paths": [
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\build\\graphify-out\\wiki\\index.md",
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\build\\graphify-out\\wiki\\Ken_Mattingly.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\ken-mattingly.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-16.md"
+  ],
+  "answers": [
+    "Apollo 16 might relate to Ken Mattingly (he flew on Apollo 16).",
+    "Next I'll check the brain index for an apollo-16 row.",
+    "ANSWER: Apollo 16 landed in the Descartes Highlands. This is a [stated] fact citing NASA history, 2026-10-24. It launched on 1972-04-16, with John Young, Ken Mattingly and Charlie Duke as crew.\nFILES: wiki/index.md, wiki/Ken_Mattingly.md, people/ken-mattingly.md, index.md, areas/apollo-16.md"
+  ],
+  "answer": "ANSWER: Apollo 16 landed in the Descartes Highlands. This is a [stated] fact citing NASA history, 2026-10-24. It launched on 1972-04-16, with John Young, Ken Mattingly and Charlie Duke as crew.\nFILES: wiki/index.md, wiki/Ken_Mattingly.md, people/ken-mattingly.md, index.md, areas/apollo-16.md",
+  "tool_errors": []
+}

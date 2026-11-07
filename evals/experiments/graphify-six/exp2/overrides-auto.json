@@ -1,0 +1,72 @@
+{
+ "A-1.json": {
+  "x16": [
+   true,
+   "hand-graded: dates written in another format"
+  ]
+ },
+ "A-2.json": {
+  "x15": [
+   true,
+   "hand-graded: dates written in another format"
+  ],
+  "x16": [
+   true,
+   "hand-graded: dates written in another format"
+  ]
+ },
+ "B-1.json": {
+  "x12": [
+   true,
+   "hand-graded: dates written in another format"
+  ]
+ },
+ "C-1.json": {
+  "x12": [
+   true,
+   "hand-graded: dates written in another format"
+  ],
+  "x15": [
+   true,
+   "hand-graded: dates written in another format"
+  ]
+ },
+ "C-2.json": {
+  "x16": [
+   true,
+   "hand-graded: dates written in another format"
+  ]
+ },
+ "C-3.json": {
+  "x12": [
+   true,
+   "hand-graded: dates written in another format"
+  ],
+  "x15": [
+   true,
+   "hand-graded: dates written in another format"
+  ],
+  "x16": [
+   true,
+   "hand-graded: dates written in another format"
+  ]
+ },
+ "D-1.json": {
+  "x16": [
+   true,
+   "hand-graded: dates written in another format"
+  ]
+ },
+ "D-2.json": {
+  "x14": [
+   true,
+   "hand-graded: dates written in another format"
+  ]
+ },
+ "D-3.json": {
+  "x16": [
+   true,
+   "hand-graded: dates written in another format"
+  ]
+ }
+}

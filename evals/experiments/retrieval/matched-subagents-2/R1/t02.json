@@ -1,0 +1,59 @@
+{
+  "id": "t02",
+  "condition": "R1",
+  "description": "R1 t02",
+  "model": [
+    "claude-opus-5-5"
+  ],
+  "prompt_exact": true,
+  "subagent_type": "Explore",
+  "launch_model": "opus",
+  "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: What was Jack Swigert's Apollo 13 role before 1970-04-10, and what is it now?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+  "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-2\\R1\\dispatcher.events.jsonl",
+  "agent_id": "ac0ea003efae528f1",
+  "start_utc": "2026-10-25T19:27:53.233Z",
+  "end_utc": "2026-10-25T19:27:59.703Z",
+  "time_s": 6.47,
+  "usage": {
+    "input_tokens": 8,
+    "output_tokens": 175,
+    "cache_read_input_tokens": 51268,
+    "cache_creation_input_tokens": 7228
+  },
+  "total_tokens": 58679,
+  "cost_usd_at_recorded_rates": 0.0499256,
+  "cache_neutral_cost_usd": 0.237516,
+  "tool_calls": [
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\jack-swigert.md"
+      }
+    }
+  ],
+  "tool_call_count": 3,
+  "note_read_count": 1,
+  "wiki_read_count": 0,
+  "opened_paths": [
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\jack-swigert.md"
+  ],
+  "answers": [
+    "ANSWER: Before 1970-04-10, Jack Swigert was Apollo 13's backup command module pilot. He is now listed as Apollo 13's prime command module pilot. A KSC management meeting made the change on 1970-04-10. (src: NASA history Apollo 13 measles article, 2026-10-24)\nFILES: index.md, people/jack-swigert.md"
+  ],
+  "answer": "ANSWER: Before 1970-04-10, Jack Swigert was Apollo 13's backup command module pilot. He is now listed as Apollo 13's prime command module pilot. A KSC management meeting made the change on 1970-04-10. (src: NASA history Apollo 13 measles article, 2026-10-24)\nFILES: index.md, people/jack-swigert.md",
+  "tool_errors": []
+}

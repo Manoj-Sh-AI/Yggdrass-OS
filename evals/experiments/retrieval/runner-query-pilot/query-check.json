@@ -1,0 +1,97 @@
+{
+  "id": "query-check",
+  "condition": "R3",
+  "model": "claude-opus-5-5",
+  "question": "When did Apollo 8 launch, and who was its crew?",
+  "start_utc": "2026-10-25T19:21:26.272758+00:00",
+  "end_utc": "2026-10-25T19:22:03.740328+00:00",
+  "wall_time_s": 37.467783000000054,
+  "cli_duration_s": 25.488,
+  "api_duration_s": 8.489,
+  "exit_code": 0,
+  "timed_out": false,
+  "success": true,
+  "terminal_reason": "completed",
+  "subtype": "success",
+  "answer": "I read the skill file, then ran the command exactly as given. It ran without errors.\n\nThe header says it found **41 nodes**, out of 78 in the graph. It also noted the output was about 2,665 tokens, over the 2,000-token budget you asked for, and printed all 41 nodes anyway.\n\nAs you asked, I opened no other files and haven't answered the Apollo 8 question.",
+  "usage": {
+    "input_tokens": 8,
+    "cache_creation_input_tokens": 6007,
+    "cache_read_input_tokens": 5793,
+    "output_tokens": 411,
+    "output_tokens_details": {
+      "thinking_tokens": 0
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 6007
+    },
+    "inference_geo": "global",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 125,
+        "cache_read_input_tokens": 2895,
+        "cache_creation_input_tokens": 4424,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 4424,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "type": "message"
+      }
+    ],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "total_tokens": 12219,
+  "model_usage": {
+    "claude-opus-5-5": {
+      "inputTokens": 8,
+      "outputTokens": 411,
+      "cacheReadInputTokens": 5793,
+      "cacheCreationInputTokens": 6007,
+      "webSearchRequests": 0,
+      "costUSD": 0.0394456,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 0,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "actual_models": [
+    "claude-opus-5-5"
+  ],
+  "cost_usd_cli_reported": 0.0394456,
+  "estimated_cost_usd_at_recorded_rates": 0.0394456,
+  "cache_neutral_cost_usd_at_recorded_rates": 0.055452,
+  "permission_denials": [],
+  "tool_calls": [
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "graphify query \"When did Apollo 8 launch, and who was its crew?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"",
+        "description": "Run graphify query about Apollo 8 against retrieval graph"
+      }
+    }
+  ],
+  "tool_call_count": 2,
+  "read_call_count": 1,
+  "note_read_count": 0,
+  "wiki_read_count": 0,
+  "opened_paths": [
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+  ]
+}

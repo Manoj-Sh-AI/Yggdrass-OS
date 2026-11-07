@@ -1,0 +1,111 @@
+{
+  "id": "m02",
+  "condition": "R1",
+  "model": "claude-opus-5-5",
+  "question": "Which company's revised specification set the voltage that the Apollo 13 tank switches could not handle?",
+  "start_utc": "2026-10-25T19:22:20.949036+00:00",
+  "end_utc": "2026-10-25T19:22:55.484526+00:00",
+  "wall_time_s": 34.53466050000134,
+  "cli_duration_s": 13.493,
+  "api_duration_s": 12.233,
+  "exit_code": 0,
+  "timed_out": false,
+  "success": true,
+  "terminal_reason": "completed",
+  "subtype": "success",
+  "answer": "ANSWER: North American Aviation. In 1965 it revised the oxygen tank heater specification to 65 volts. Oxygen tank No. 2's thermostatic switches were built to a 1962 specification for 28 volts DC and were never changed, so they failed under 65-volt power. North American's documentation reviews also missed that the switches had not been updated. The tank itself was built by its subcontractor, Beech Aircraft.\nFILES: index.md, topics/oxygen-tank-2.md, areas/north-american-aviation.md",
+  "usage": {
+    "input_tokens": 12,
+    "cache_creation_input_tokens": 6884,
+    "cache_read_input_tokens": 20801,
+    "output_tokens": 542,
+    "output_tokens_details": {
+      "thinking_tokens": 25
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 6884
+    },
+    "inference_geo": "global",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 178,
+        "cache_read_input_tokens": 7706,
+        "cache_creation_input_tokens": 490,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 490,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "type": "message"
+      }
+    ],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "total_tokens": 28239,
+  "model_usage": {
+    "claude-opus-5-5": {
+      "inputTokens": 12,
+      "outputTokens": 542,
+      "cacheReadInputTokens": 20801,
+      "cacheCreationInputTokens": 6884,
+      "webSearchRequests": 0,
+      "costUSD": 0.049468200000000004,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 25,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "actual_models": [
+    "claude-opus-5-5"
+  ],
+  "cost_usd_cli_reported": 0.049468200000000004,
+  "estimated_cost_usd_at_recorded_rates": 0.0494682,
+  "cache_neutral_cost_usd_at_recorded_rates": 0.121628,
+  "permission_denials": [],
+  "tool_calls": [
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\oxygen-tank-2.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\north-american-aviation.md"
+      }
+    }
+  ],
+  "tool_call_count": 4,
+  "read_call_count": 4,
+  "note_read_count": 2,
+  "wiki_read_count": 0,
+  "opened_paths": [
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\oxygen-tank-2.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\north-american-aviation.md"
+  ]
+}

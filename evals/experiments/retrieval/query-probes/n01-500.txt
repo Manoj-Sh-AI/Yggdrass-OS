@@ -1,0 +1,19 @@
+Graph: evals/experiments/retrieval/build/graphify-out/graph.json (78 nodes) | Traversal: BFS depth=2 | Start: ['Apollo program', 'Apollo 11 program alarms 1201 and 1202', 'Apollo 1', 'Apollo 13'] | 47 nodes found
+
+[!] TRUNCATED: showing 14 of 47 nodes (~500-token budget). The answer may be among the 33 cut nodes — raise the token budget to 1562 to get all 47 (CLI: --budget 1562, MCP: token_budget=1562) or narrow the query (e.g. context_filter=['call'], or get_node for a specific symbol).
+
+NODE Apollo program [src=areas/apollo-program.md loc=None community=Apollo Program Overview]
+NODE Apollo 11 program alarms 1201 and 1202 [src=topics/program-alarms-1201-1202.md loc=None community=Apollo 11 Landing Software Alarms]
+NODE Apollo 1 [src=areas/apollo-1.md loc=None community=Apollo 13 Review Board]
+NODE Apollo 13 [src=areas/apollo-13.md loc=None community=Apollo 13 Mission Operations]
+NODE Apollo 11 [src=areas/apollo-11.md loc=None community=Apollo 11 Moon Landing]
+NODE Apollo 11 [src=people/michael-collins.md loc=None community=Apollo 11 Landing Software Alarms]
+NODE Apollo 13 Review Board [src=areas/apollo-13-review-board.md loc=None community=Apollo 13 Review Board]
+NODE Apollo 16 [src=areas/apollo-16.md loc=None community=Apollo 13 Mission Operations]
+NODE Mission Control Houston [src=areas/mission-control-houston.md loc=None community=Apollo 13 Mission Operations]
+NODE Lunar Module [src=areas/apollo-11.md loc=None community=Apollo 13 Mission Operations]
+NODE Charlie Duke [src=people/charlie-duke.md loc=None community=Apollo 13 Mission Operations]
+NODE Jack Swigert [src=people/jack-swigert.md loc=None community=Apollo 13 Mission Operations]
+NODE Jim Lovell [src=people/jim-lovell.md loc=None community=Apollo 13 Mission Operations]
+NODE Apollo 11 Mission Report, Section 5.3: Powered Descent [src=sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md loc=None community=Apollo 11 Landing Software Alarms]
+... (truncated — 33 more nodes cut by ~500-token budget. Narrow with context_filter=['call'] or use get_node for a specific symbol)

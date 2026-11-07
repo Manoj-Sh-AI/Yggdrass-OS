@@ -1,0 +1,60 @@
+{
+  "id": "p03",
+  "condition": "R3",
+  "description": "R3 p03",
+  "model": [
+    "claude-opus-5-5"
+  ],
+  "prompt_exact": true,
+  "subagent_type": "Explore",
+  "launch_model": "opus",
+  "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly, with one change: use graphify query as your navigation entry point instead of the brain's index. After reading the skill, call the Bash tool exactly once to run this command, using the question exactly as given:\ngraphify query \"Which pages of the Apollo 11 Mission Report cover the powered descent section, and what forced the landing point redesignation?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"\nQuestion logging is disabled by the environment. This query is local and does not call a model. Use only the note paths named by this query's NODE lines to choose the notes to read. Do not change the query, raise the budget, request other subgraphs, or work around an empty or truncated result. You may read index.md only if the query itself names it. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only the skill file plus files inside the brain root that the query names. Do not use Glob, Grep, ls or any search across files or folders. Do not read graph.json, the wiki, or anything else. The Bash tool is allowed only for the single graphify query command above.\n\nQuestion: Which pages of the Apollo 11 Mission Report cover the powered descent section, and what forced the landing point redesignation?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+  "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R3\\transcripts\\p03.jsonl",
+  "finalized_transcript_available": true,
+  "agent_id": "a6dcaf13b177b056d",
+  "start_utc": "2026-10-25T19:37:23.935Z",
+  "end_utc": "2026-10-25T19:37:35.331Z",
+  "time_s": 11.396,
+  "usage": {
+    "input_tokens": 8,
+    "output_tokens": 583,
+    "cache_read_input_tokens": 53704,
+    "cache_creation_input_tokens": 9395
+  },
+  "total_tokens": 63690,
+  "cost_usd_at_recorded_rates": 0.0694078,
+  "cache_neutral_cost_usd": 0.264088,
+  "tool_calls": [
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+      }
+    },
+    {
+      "name": "Bash",
+      "input": {
+        "command": "graphify query \"Which pages of the Apollo 11 Mission Report cover the powered descent section, and what forced the landing point redesignation?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"",
+        "description": "Run graphify query for the question"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\sources\\apollo-11-mission-report\\apollo-11-mission-report-ch-05.md"
+      }
+    }
+  ],
+  "tool_call_count": 3,
+  "note_read_count": 1,
+  "wiki_read_count": 0,
+  "opened_paths": [
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\sources\\apollo-11-mission-report\\apollo-11-mission-report-ch-05.md"
+  ],
+  "answers": [
+    "ANSWER: Section 5.3, Powered Descent, covers pages 5-4 to 5-6 of the Apollo 11 Mission Report. The redesignation was forced because the approach path led into a large crater, which made an unplanned redesignation necessary (src: Apollo 11 Mission Report p.5-4). Manual control then began at about 600 feet, and the craft landed about 1100 feet downrange of the initial aim point (p.5-5).\nFILES: sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md"
+  ],
+  "answer": "ANSWER: Section 5.3, Powered Descent, covers pages 5-4 to 5-6 of the Apollo 11 Mission Report. The redesignation was forced because the approach path led into a large crater, which made an unplanned redesignation necessary (src: Apollo 11 Mission Report p.5-4). Manual control then began at about 600 feet, and the craft landed about 1100 feet downrange of the initial aim point (p.5-5).\nFILES: sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+  "tool_errors": []
+}

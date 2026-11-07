@@ -1,0 +1,74 @@
+{
+  "id": "m04",
+  "condition": "R1",
+  "description": "R1 m04",
+  "model": [
+    "claude-opus-5-5"
+  ],
+  "prompt_exact": true,
+  "subagent_type": "Explore",
+  "launch_model": "opus",
+  "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: The rocket that first carried a crew on Apollo 8 was developed under whom, and which centre did that person direct?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+  "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R1\\transcripts\\m04.jsonl",
+  "finalized_transcript_available": true,
+  "agent_id": "a674c5b68864b034b",
+  "start_utc": "2026-10-25T19:31:17.196Z",
+  "end_utc": "2026-10-25T19:31:26.303Z",
+  "time_s": 9.107,
+  "usage": {
+    "input_tokens": 12,
+    "output_tokens": 579,
+    "cache_read_input_tokens": 87841,
+    "cache_creation_input_tokens": 7032
+  },
+  "total_tokens": 95464,
+  "cost_usd_at_recorded_rates": 0.0643562,
+  "cache_neutral_cost_usd": 0.39112,
+  "tool_calls": [
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-8.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\saturn-v.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\wernher-von-braun.md"
+      }
+    }
+  ],
+  "tool_call_count": 5,
+  "note_read_count": 3,
+  "wiki_read_count": 0,
+  "opened_paths": [
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-8.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\saturn-v.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\wernher-von-braun.md"
+  ],
+  "answers": [
+    "ANSWER: The rocket was the Saturn V, and Apollo 8 was its first crewed flight. It was developed under Wernher von Braun, who led the team that built it. He was the first director of NASA's Marshall Space Flight Center, from 1960 to 1970. (All facts are [stated], src: NASA history / NASA biography, 2026-10-24.)\nFILES: index.md, areas/apollo-8.md, topics/saturn-v.md, people/wernher-von-braun.md"
+  ],
+  "answer": "ANSWER: The rocket was the Saturn V, and Apollo 8 was its first crewed flight. It was developed under Wernher von Braun, who led the team that built it. He was the first director of NASA's Marshall Space Flight Center, from 1960 to 1970. (All facts are [stated], src: NASA history / NASA biography, 2026-10-24.)\nFILES: index.md, areas/apollo-8.md, topics/saturn-v.md, people/wernher-von-braun.md",
+  "tool_errors": []
+}

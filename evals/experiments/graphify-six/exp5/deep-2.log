@@ -1,0 +1,11 @@
+[graphify extract] deep mode enabled: richer semantic extraction
+[graphify extract] --force: full re-scan, semantic cache reads skipped
+[graphify extract] scanning C:\Users\shman\AppData\Local\Temp\claude\C--Users-shman-OneDrive-Desktop-Yggdrass-OS-Yggdrass-OS\4def6ebb-4bae-4ed4-85d0-92ed32e7bd0c\scratchpad\exp5\brain-stripped-copy
+[graphify extract] found 0 code, 43 docs, 0 papers, 0 images
+[graphify extract] semantic extraction on 43 files via claude...
+[graphify extract] chunk 1/1 done
+[graphify extract] wrote C:\Users\shman\AppData\Local\Temp\claude\C--Users-shman-OneDrive-Desktop-Yggdrass-OS-Yggdrass-OS\4def6ebb-4bae-4ed4-85d0-92ed32e7bd0c\scratchpad\exp5\deep-2\graphify-out\graph.json: 43 nodes, 72 edges, 9 communities
+[graphify extract] wrote C:\Users\shman\AppData\Local\Temp\claude\C--Users-shman-OneDrive-Desktop-Yggdrass-OS-Yggdrass-OS\4def6ebb-4bae-4ed4-85d0-92ed32e7bd0c\scratchpad\exp5\deep-2\graphify-out\.graphify_analysis.json
+[graphify extract] tokens: 24,065 in / 15,527 out, est. cost (~claude): $0.3051
+[graphify extract] next: run `graphify cluster-only C:\Users\shman\AppData\Local\Temp\claude\C--Users-shman-OneDrive-Desktop-Yggdrass-OS-Yggdrass-OS\4def6ebb-4bae-4ed4-85d0-92ed32e7bd0c\scratchpad\exp5\deep-2` to generate GRAPH_REPORT.md and name communities
+exit 0, seconds 92

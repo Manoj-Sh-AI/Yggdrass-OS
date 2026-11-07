@@ -1,0 +1,59 @@
+{
+  "id": "d07",
+  "condition": "R1",
+  "description": "R1 d07",
+  "model": [
+    "claude-opus-5-5"
+  ],
+  "prompt_exact": true,
+  "subagent_type": "Explore",
+  "launch_model": "opus",
+  "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: Where did Apollo 16 land?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+  "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-2\\R1\\dispatcher.events.jsonl",
+  "agent_id": "a1d58f00d62acd3d5",
+  "start_utc": "2026-10-25T19:27:19.689Z",
+  "end_utc": "2026-10-25T19:27:32.710Z",
+  "time_s": 13.021,
+  "usage": {
+    "input_tokens": 8,
+    "output_tokens": 119,
+    "cache_read_input_tokens": 51197,
+    "cache_creation_input_tokens": 7133
+  },
+  "total_tokens": 58457,
+  "cost_usd_at_recorded_rates": 0.0483164,
+  "cache_neutral_cost_usd": 0.235732,
+  "tool_calls": [
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-16.md"
+      }
+    }
+  ],
+  "tool_call_count": 3,
+  "note_read_count": 1,
+  "wiki_read_count": 0,
+  "opened_paths": [
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-16.md"
+  ],
+  "answers": [
+    "ANSWER: Apollo 16 landed in the Descartes Highlands. This is a [stated] fact citing NASA history, 2026-10-24.\nFILES: index.md, areas/apollo-16.md"
+  ],
+  "answer": "ANSWER: Apollo 16 landed in the Descartes Highlands. This is a [stated] fact citing NASA history, 2026-10-24.\nFILES: index.md, areas/apollo-16.md",
+  "tool_errors": []
+}

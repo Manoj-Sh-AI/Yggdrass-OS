@@ -1,0 +1,75 @@
+{
+  "id": "p01",
+  "condition": "R2",
+  "description": "R2 p01",
+  "model": [
+    "claude-opus-5-5"
+  ],
+  "prompt_exact": true,
+  "subagent_type": "Explore",
+  "launch_model": "opus",
+  "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly, with one change: you may start from the brain's wiki, C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\build\\graphify-out\\wiki\\index.md. It lists topic articles in that same wiki folder; each article names notes by path relative to the brain root. You may use wiki/index.md and the wiki articles it links to choose a starting note, then read the notes. With the wiki, reading the brain's index.md is optional. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root plus the skill file and files in the wiki folder. Do not use Glob, Grep, ls or any search across files or folders. Do not open anything else.\n\nQuestion: According to the Apollo 11 Mission Report, how much reaction control propellant was used in powered descent against the prediction, and on which page?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, in order: paths inside the brain relative to the brain root, and wiki files as wiki/<name>.md>",
+  "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R2\\transcripts\\p01.jsonl",
+  "finalized_transcript_available": true,
+  "agent_id": "a8a9f543dcdf65075",
+  "start_utc": "2026-10-25T19:34:20.255Z",
+  "end_utc": "2026-10-25T19:34:34.336Z",
+  "time_s": 14.081,
+  "usage": {
+    "input_tokens": 12,
+    "output_tokens": 724,
+    "cache_read_input_tokens": 82459,
+    "cache_creation_input_tokens": 9612
+  },
+  "total_tokens": 92807,
+  "cost_usd_at_recorded_rates": 0.0790798,
+  "cache_neutral_cost_usd": 0.382812,
+  "tool_calls": [
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\build\\graphify-out\\wiki\\index.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\build\\graphify-out\\wiki\\Apollo_11_Moon_Landing.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\sources\\apollo-11-mission-report\\apollo-11-mission-report-ch-05.md"
+      }
+    }
+  ],
+  "tool_call_count": 5,
+  "note_read_count": 1,
+  "wiki_read_count": 2,
+  "opened_paths": [
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\build\\graphify-out\\wiki\\index.md",
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\build\\graphify-out\\wiki\\Apollo_11_Moon_Landing.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\sources\\apollo-11-mission-report\\apollo-11-mission-report-ch-05.md"
+  ],
+  "answers": [
+    "Need chunk; read brain index.",
+    "ANSWER: About 95 pounds of reaction control propellant were used in powered descent, against 40 pounds predicted. This is on page 5-6 of the Apollo 11 Mission Report, in Section 5.3, Powered Descent, which covers pages 5-4 to 5-6. The same page says 51 pounds of that was used in manual mode, about 1.5 times the automatic rate.\nFILES: wiki/index.md, wiki/Apollo_11_Moon_Landing.md, index.md, sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md"
+  ],
+  "answer": "ANSWER: About 95 pounds of reaction control propellant were used in powered descent, against 40 pounds predicted. This is on page 5-6 of the Apollo 11 Mission Report, in Section 5.3, Powered Descent, which covers pages 5-4 to 5-6. The same page says 51 pounds of that was used in manual mode, about 1.5 times the automatic rate.\nFILES: wiki/index.md, wiki/Apollo_11_Moon_Landing.md, index.md, sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+  "tool_errors": []
+}

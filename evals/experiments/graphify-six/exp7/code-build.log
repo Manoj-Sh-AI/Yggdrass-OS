@@ -1,0 +1,8 @@
+  warning: 1 code file(s) yielded no symbols (0.00 MB) — a data file, or source this extractor models no symbols for: app/pyproject.toml
+Re-extracting code files in C:\Users\shman\AppData\Local\Temp\claude\C--Users-shman-OneDrive-Desktop-Yggdrass-OS-Yggdrass-OS\4def6ebb-4bae-4ed4-85d0-92ed32e7bd0c\scratchpad\exp7\code-A (no LLM needed)...
+[graphify watch] 5 file(s) not classified (no supported extension or shebang), skipped: .env.example, .gitignore, .gitkeep, .python-version, uv.lock
+[graphify watch] Rebuilt: 586 nodes, 741 edges, 61 communities
+[graphify watch] graph.json, graph.html and GRAPH_REPORT.md updated in C:\Users\shman\AppData\Local\Temp\claude\C--Users-shman-OneDrive-Desktop-Yggdrass-OS-Yggdrass-OS\4def6ebb-4bae-4ed4-85d0-92ed32e7bd0c\scratchpad\exp7\code-A\graphify-out
+Code graph updated. For doc/paper/image changes run /graphify --update in your AI assistant.
+Tip: set GEMINI_API_KEY or GOOGLE_API_KEY to use Gemini for semantic extraction.
+exit 0 ms 12578

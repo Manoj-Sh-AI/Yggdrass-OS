@@ -1,0 +1,33 @@
+Graph: evals/experiments/retrieval/build/graphify-out/graph.json (78 nodes) | Traversal: BFS depth=2 | Start: ['Michael Collins'] | 13 nodes found
+
+NODE Michael Collins [src=people/michael-collins.md loc=None community=Apollo 11 Landing Software Alarms]
+NODE Apollo 11 [src=people/michael-collins.md loc=None community=Apollo 11 Landing Software Alarms]
+NODE Neil Armstrong [src=people/neil-armstrong.md loc=None community=Apollo 11 Landing Software Alarms]
+NODE Command and service module [src=topics/command-service-module.md loc=None community=Apollo 13 Accident Investigation]
+NODE Lunar module [src=topics/lunar-module.md loc=None community=Apollo 13 Crew Swap]
+NODE Oxygen tank No. 2 [src=topics/oxygen-tank-2.md loc=None community=Apollo 13 Accident Investigation]
+NODE Apollo 11 Mission Report, Section 5.3: Powered Descent [src=sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md loc=None community=Apollo 11 Landing Software Alarms]
+NODE Apollo 13 CO2 scrubber adapter [src=topics/co2-scrubber-adapter.md loc=None community=Apollo 13 Crew Swap]
+NODE Apollo 11 program alarms 1201 and 1202 [src=topics/program-alarms-1201-1202.md loc=None community=Apollo 11 Landing Software Alarms]
+NODE Tranquility Base [src=topics/tranquility-base.md loc=None community=Apollo 11 Landing Software Alarms]
+NODE Buzz Aldrin [src=people/neil-armstrong.md loc=None community=Apollo Program Leadership]
+NODE Apollo 11 Mission Report (MSC-00171) [src=sources/apollo-11-mission-report.md loc=None community=Apollo 11 Landing Software Alarms]
+NODE North American Aviation [src=topics/command-service-module.md loc=None community=Apollo 13 Accident Investigation]
+EDGE Michael Collins --references [EXTRACTED]--> Apollo 11
+EDGE Michael Collins --references [EXTRACTED]--> Neil Armstrong
+EDGE Michael Collins --references [EXTRACTED]--> Command and service module
+EDGE Apollo 13 CO2 scrubber adapter --references [EXTRACTED]--> Command and service module
+EDGE Command and service module --references [EXTRACTED]--> North American Aviation
+EDGE Command and service module --references [EXTRACTED]--> Oxygen tank No. 2
+EDGE Apollo 11 Mission Report (MSC-00171) --references [EXTRACTED]--> Apollo 11
+EDGE Lunar module --references [EXTRACTED]--> Apollo 11
+EDGE Apollo 11 program alarms 1201 and 1202 --references [EXTRACTED]--> Apollo 11
+EDGE Tranquility Base --references [EXTRACTED]--> Apollo 11
+EDGE Neil Armstrong --references [EXTRACTED]--> Buzz Aldrin
+EDGE Neil Armstrong --references [EXTRACTED]--> Tranquility Base
+EDGE Apollo 11 Mission Report, Section 5.3: Powered Descent --references [EXTRACTED]--> Neil Armstrong
+EDGE Neil Armstrong --references [EXTRACTED]--> Apollo 11
+EDGE Apollo 11 Mission Report (MSC-00171) --references [EXTRACTED]--> Apollo 11 Mission Report, Section 5.3: Powered Descent
+EDGE Apollo 11 Mission Report, Section 5.3: Powered Descent --references [EXTRACTED]--> Apollo 11 program alarms 1201 and 1202
+EDGE Apollo 11 Mission Report, Section 5.3: Powered Descent --references [EXTRACTED]--> Tranquility Base
+EDGE Apollo 13 CO2 scrubber adapter --references [EXTRACTED]--> Lunar module

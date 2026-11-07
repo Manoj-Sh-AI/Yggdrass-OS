@@ -1,0 +1,8 @@
+[
+  {
+    "description": "pilot tool-check",
+    "subagent_type": "Explore",
+    "model": "opus",
+    "prompt": "Read this single file using the Read tool: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md. Reply only with its first heading. Do not run commands or open any other file."
+  }
+]

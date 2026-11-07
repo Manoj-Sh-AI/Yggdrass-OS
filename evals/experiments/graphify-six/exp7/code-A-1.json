@@ -1,0 +1,275 @@
+{
+  "part": "code",
+  "arm": "A",
+  "run": 1,
+  "spent": 0.024883085,
+  "rows": [
+    {
+      "id": "c1",
+      "question": "Trace how a question goes from retrieve.py to the final answer shown to the user.",
+      "answer": "ANSWER:\n\nThe path is a linear three-step pipeline inside `retrieve.py`. Its entry point is `Retriever.ask` (L240), reached from the CLI `ask` command in `main` (L266).\n\n1. **Setup (`Retriever.__init__`, L223):** `build_map(brain)` from `yggdras.data.graph.structural` builds the structural map. `signposts()` (L77) then writes one line per node (`slug | name | aka \u2026 | description`). That list goes into a cached system block, which the pick call uses.\n\n2. **Pick (`pick`, L165):** One Haiku call returns JSON `{\"notes\": [...]}`, constrained by an enum of valid slugs. Results are filtered to real slugs and capped at two. An empty result is retried once. If both attempts are empty, `picked` is `[]` and the run continues with nothing gathered.\n\n3. **Gather (`search_results`, L111; no model call):** For each picked slug it reads the note's `## Facts` lines (`fact_lines`, L62) and adds the lines of its neighbours. The picked node also gets `Link:` lines built by `edges_of` (L94). Each node becomes a `search_result` block with `source` = slug, `title` = node name, one text block per line, and citations enabled. Picked nodes come first.\n\n4. **Answer (`answer`, L190):** One Haiku call. The blocks plus the instruction \"answer from these search results only, citing them\" go in as user content. A reply starting with `NOT IN BRAIN` is a decline. The raw text and citations are returned.\n\n5. **Shown to the user:** `ask()` (L240\u2013263) builds the result dict. `status` is `not_in_brain` or `answer`. `answer` is `display_text(raw_answer)`, which strips the `(src: \u2026)` tails with `SRC_TAIL` (L48, applied at L139). `main` (L268\u2013273) prints that text, then a `Sources:` line listing the unique citation sources. The `eval` command writes the full dict to JSON instead of printing the answer.\n\nCaveats:\n- The \"user\" here is the stdout of this script. I did not find a connection from this script to the app's `interface/` layer (chat/notifications). The graph's path query from `retrieve.py` to \"chat\" returned nothing, and I did not read `app/src/yggdras/interface/` myself.\n- `build_map` and `structural.py` are imported, not read. I only know their signature from the import.\n\nFILES: `evals/experiments/speed-test-one-query/retrieve.py` (read in full). Graph queries run: `graphify query`, `graphify explain \"retrieve.py\"`, `graphify path \"retrieve.py\" \"chat\"` (no path found).",
+      "is_error": false,
+      "subtype": "success",
+      "num_turns": 3,
+      "tool_calls": 2,
+      "tool_names": {
+        "Bash": 1,
+        "Read": 1
+      },
+      "tokens_total": 94239,
+      "model_usage": {
+        "claude-haiku-5-5": {
+          "inputTokens": 6,
+          "outputTokens": 1854,
+          "cacheReadInputTokens": 82092,
+          "cacheCreationInputTokens": 10287,
+          "webSearchRequests": 0,
+          "costUSD": 0.003034395,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 464,
+          "canonicalModel": "claude-haiku-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "cost_usd": 0.003034395,
+      "seconds": 29.93,
+      "stderr": ""
+    },
+    {
+      "id": "c2",
+      "question": "How does the structural pass build the map from a brain folder?",
+      "answer": "ANSWER: The structural pass (`app/src/yggdras/data/graph/structural.py`) runs as `python -m yggdras.data.graph.structural BRAIN_ROOT [--out PATH]`. It uses no model or database, and its output is byte-identical for unchanged input.\n\n1. **Entry point.** `main()` checks that the argument is a folder, calls `build_map(root)`, and writes the result as JSON to `--out`. The default is `<brain's parent>/.map/graph.json`. The brain itself is never written to.\n2. **Find node files.** `node_files()` takes every `*.md` under the root, sorted, except `index.md` at the root.\n3. **Parse each file.** `parse_node()` does the following:\n   - `_split()` reads the frontmatter block between the leading `---` lines. If there is none, the file becomes an error (\"no frontmatter block\").\n   - YAML is loaded with `yaml.safe_load`. Unparseable YAML is an error.\n   - `id`, `slug`, `name` and `type` are required. Missing fields are an error.\n   - `aliases` is optional.\n   - `links_section()` collects lines under the `## Links` heading, up to the next `## ` heading. `LINK_LINE` then matches `- reason [[target]]` lines into `(line, reason, written_as)` tuples.\n4. **Collect nodes.** Nodes are keyed by `slug`. A second file with the same slug becomes a \"duplicate slug\" error and is dropped.\n5. **Build lookup keys.** Each slug and alias is normalized by `normalize()` (the D02 rule: lowercase, strip accents, map \u00df/\u00f8, collapse spaces and underscores to hyphens, drop punctuation). Each key maps to the node IDs that match it.\n6. **Resolve links.** For each link:\n   - An exact slug match resolves as `slug`.\n   - Otherwise the normalized text is looked up. One match resolves as `slug` or `alias`. Several matches are an \"ambiguous\" error and the link is skipped. No match puts the link in `dangling`.\n   - Resolved links become `edges`, each with its reason, the written text, how it resolved, and its line number.\n7. **Output.** `build_map()` returns `schema: \"yggdras-map/1\"`, with `nodes` sorted by slug, and `edges`, `dangling` and `errors` sorted by source and line. `render()` writes sorted-key JSON with a trailing newline.\n8. **Audit.** `count_raw_links()` counts every `[[...]]` in the whole files by plain text, separately from the parser. If any link sits outside `## Links`, `main()` prints a STOP message and exits 1. The exit code is also 1 when there are any errors.\n\nFILES: `app/src/yggdras/data/graph/structural.py` (read in full). I also used `graphify query`, which returned `app/tests/test_structural_map.py`, and `graphify explain`, which was ambiguous between the test file and `structural.py`. I did not open the test file or the spec `requirements/spec-phase-1b-structural-pass.md`.",
+      "is_error": false,
+      "subtype": "success",
+      "num_turns": 4,
+      "tool_calls": 3,
+      "tool_names": {
+        "Bash": 2,
+        "Read": 1
+      },
+      "tokens_total": 91115,
+      "model_usage": {
+        "claude-haiku-5-5": {
+          "inputTokens": 6,
+          "outputTokens": 1811,
+          "cacheReadInputTokens": 74404,
+          "cacheCreationInputTokens": 14894,
+          "webSearchRequests": 0,
+          "costUSD": 0.00351189,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 169,
+          "canonicalModel": "claude-haiku-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "cost_usd": 0.00351189,
+      "seconds": 25.96,
+      "stderr": ""
+    },
+    {
+      "id": "c3",
+      "question": "How does the eval runner record a run?",
+      "answer": "ANSWER: The `record` subcommand in `main()` builds a result dict, then writes it as a new YAML file.\n\n1. **Verdicts:** It loads them from `--verdicts <file>` via `load_verdicts()`, which requires each entry to have a boolean `pass`. Without that flag, `prompt_verdicts()` asks y/n, files opened, and notes for each question.\n2. **Validation:** `build_result()` raises `ValueError` if any question has no verdict or if a verdict has an unknown id. Nothing is written in that case.\n3. **Result dict:** It contains `date` (today's date, ISO format), `questions_file`, `brain` (from `--brain`, may be null), and `summary` with `total`, `passed`, and `failed`. It also has `gate_met`, which is true only when every question passed, and `results`, one entry per question with `id`, `kind`, `exit`, `pass`, `files_opened`, and `notes`.\n4. **Write:** `write_result()` creates `--out` if needed, then takes the first unused name `<date>-run-<n>.yaml` (n = 1, 2, \u2026). It dumps the dict as YAML, keeping key order and allowing Unicode, and returns the path. Existing runs are never overwritten.\n\nFILES: `app/src/yggdras/tooling/eval_runner.py` (lines 105\u2013214). I did not open the test file; the graph's test-node summaries were the only information I used from `app/tests/test_eval_runner.py`.",
+      "is_error": false,
+      "subtype": "success",
+      "num_turns": 4,
+      "tool_calls": 3,
+      "tool_names": {
+        "Bash": 2,
+        "Read": 1
+      },
+      "tokens_total": 90324,
+      "model_usage": {
+        "claude-haiku-5-5": {
+          "inputTokens": 6,
+          "outputTokens": 1283,
+          "cacheReadInputTokens": 75224,
+          "cacheCreationInputTokens": 13811,
+          "webSearchRequests": 0,
+          "costUSD": 0.0031207150000000005,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 327,
+          "canonicalModel": "claude-haiku-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "cost_usd": 0.0031207150000000005,
+      "seconds": 27.32,
+      "stderr": ""
+    },
+    {
+      "id": "c4",
+      "question": "Where is `normalize` defined, and where is it used?",
+      "answer": "ANSWER: `normalize` is defined at `app/src/yggdras/data/graph/structural.py:29` as `normalize(text: str) -> str`. It applies the D02 normalization: lowercase, strip accents via NFKD, map \u00df/\u00f8, turn whitespace and underscores into hyphens, drop punctuation, and collapse repeated hyphens.\n\nIt is used in three places, all inside `build_map()` in the same file:\n- `structural.py:127` normalizes each node's slug when building the lookup `keys` dict.\n- `structural.py:129` normalizes each alias of a node for the same lookup.\n- `structural.py:138` normalizes the written link text when resolving links.\n\nOutside that file, `app/tests/test_structural_map.py:280` calls `st.normalize(text)` in a test. The graph did not list that test call, and its usage list only showed the `build_map()` call at L127. The grep found the other two `build_map()` call sites (L129, L138).\n\nFILES: graphify-out/graph.json (via `graphify query`, `graphify explain`), app/src/yggdras/data/graph/structural.py (lines 28\u201339 and 124\u2013129), and a grep over the repo for `normalize(` usages.",
+      "is_error": false,
+      "subtype": "success",
+      "num_turns": 5,
+      "tool_calls": 4,
+      "tool_names": {
+        "Bash": 1,
+        "Grep": 1,
+        "Read": 2
+      },
+      "tokens_total": 90105,
+      "model_usage": {
+        "claude-haiku-5-5": {
+          "inputTokens": 6,
+          "outputTokens": 1478,
+          "cacheReadInputTokens": 81995,
+          "cacheCreationInputTokens": 6626,
+          "webSearchRequests": 0,
+          "costUSD": 0.0023878,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 223,
+          "canonicalModel": "claude-haiku-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "cost_usd": 0.0023878,
+      "seconds": 25.43,
+      "stderr": ""
+    },
+    {
+      "id": "c5",
+      "question": "Where is `fact_lines` defined, and which files call it?",
+      "answer": "ANSWER: `fact_lines` is defined at `evals/experiments/speed-test-one-query/retrieve.py:62` as `def fact_lines(text: str) -> list[str]`. It is called from three non-test sites and one test:\n\n- `evals/experiments/speed-test-one-query/retrieve.py:85` in `signposts()`\n- `evals/experiments/speed-test-one-query/retrieve.py:121` in `search_results()`\n- `evals/experiments/speed-test-one-query/variant_a.py:61` in `gather_lines()`. The file also imports it at line 28.\n- `evals/experiments/speed-test-one-query/test_retrieve.py:43` in `test_fact_lines_take_only_the_facts_section()`. The file also imports it at line 16.\n\nThe graph's `structural.py` node at line 62 is a different function, a docstring-labelled helper for the `## Links` section. The grep found no `fact_lines` in `structural.py`, so it is not this function.\n\nFILES: I read no source files directly. I used `graphify query` and `graphify explain \"fact_lines\"` for the graph results, and a ripgrep search over the project for `fact_lines`, whose matches gave the definition and call-site lines above. The files those matches come from are `evals/experiments/speed-test-one-query/retrieve.py`, `variant_a.py`, `test_retrieve.py`, and `graphify-out/graph.json`.",
+      "is_error": false,
+      "subtype": "success",
+      "num_turns": 3,
+      "tool_calls": 2,
+      "tool_names": {
+        "Bash": 1,
+        "Grep": 1
+      },
+      "tokens_total": 85604,
+      "model_usage": {
+        "claude-haiku-5-5": {
+          "inputTokens": 6,
+          "outputTokens": 1250,
+          "cacheReadInputTokens": 73381,
+          "cacheCreationInputTokens": 10967,
+          "webSearchRequests": 0,
+          "costUSD": 0.002730285,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 405,
+          "canonicalModel": "claude-haiku-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "cost_usd": 0.002730285,
+      "seconds": 23.7,
+      "stderr": ""
+    },
+    {
+      "id": "c6",
+      "question": "Where is a link line like `- replaced by [[jack-swigert]]` parsed?",
+      "answer": "ANSWER: The line is parsed in `parse_node()` in `app/src/yggdras/data/graph/structural.py`. `links_section()` (line 61) first collects the lines under `## Links` up to the next heading. Then `parse_node()` (lines 94\u201397) runs each line through the `LINK_LINE` regex defined at line 25:\n\n```python\nLINK_LINE = re.compile(r\"^- (.*?)\\[\\[([^\\]]+)\\]\\]\")\n```\n\nFor `- replaced by [[jack-swigert]]`, group 1 is the reason (`replaced by`) and group 2 is the written target (`jack-swigert`). Each match is stored as a `(line, reason, written_as)` tuple on `Node.links` (dataclass at line 47). `build_map()` (lines 133\u2013135 onward) later resolves `written_as` against slugs and aliases.\n\nI ran `graphify query` and a grep in the same turn, so the grep was not strictly after the graph query as the project rule asks. The graph query is what pointed me to `structural.py`.\n\nFILES: `graphify-out/graph.json` (via `graphify query`), `app/src/yggdras/data/graph/structural.py` (lines 25\u2013150)",
+      "is_error": false,
+      "subtype": "success",
+      "num_turns": 4,
+      "tool_calls": 3,
+      "tool_names": {
+        "Bash": 1,
+        "Grep": 1,
+        "Read": 1
+      },
+      "tokens_total": 91218,
+      "model_usage": {
+        "claude-haiku-5-5": {
+          "inputTokens": 6,
+          "outputTokens": 1110,
+          "cacheReadInputTokens": 75807,
+          "cacheCreationInputTokens": 14295,
+          "webSearchRequests": 0,
+          "costUSD": 0.0031005449999999997,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 241,
+          "canonicalModel": "claude-haiku-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "cost_usd": 0.0031005449999999997,
+      "seconds": 20.84,
+      "stderr": ""
+    },
+    {
+      "id": "c7",
+      "question": "What breaks if `LINKS_HEADING` is changed to \"## Related\"?",
+      "answer": "ANSWER: Nothing fails loudly, but the link map silently goes empty for every existing brain file.\n\n- `links_section()` (`structural.py:61-70`) keys off `LINKS_HEADING` (`:66`). After the change it collects lines only under `## Related`. Every existing node written with `## Links` yields zero edges and zero dangling entries, so `build_map()` (`:105`) drops them without an error.\n- `count_raw_links()` (`:194-205`) uses the same function, so `inside_links` drops to 0. `main()` (`:236-241`) then prints the \"STOP: links found outside ## Links sections\" message, which is misleading since the links are inside `## Links`. It also returns exit code 1.\n- The `[[...]]` counts in the printed summary remain correct. The mismatch is between the heading the files use and the heading the parser reads.\n- The `## Links` heading is part of the node format (the graph references D31, a node-format decision). Changing the constant alone is not a safe fix. The brain files, any fixtures under `evals/` that use `## Links`, and the spec/plan that define the format would all need to change together, and a decision record should be added under `rationale/decisions/`. I did not check the tests for hardcoded `## Links` strings, so that is still unverified.\n\nFILES: `app/src/yggdras/data/graph/structural.py` (only file read in full). Graphify query/explain output and a grep of `*.py` were also used, which surfaced the `evals/` fixture nodes and `planning/locked-plan-v1.md`, but I did not open those.",
+      "is_error": false,
+      "subtype": "success",
+      "num_turns": 3,
+      "tool_calls": 2,
+      "tool_names": {
+        "Bash": 1,
+        "Read": 1
+      },
+      "tokens_total": 94321,
+      "model_usage": {
+        "claude-haiku-5-5": {
+          "inputTokens": 6,
+          "outputTokens": 1391,
+          "cacheReadInputTokens": 76398,
+          "cacheCreationInputTokens": 16526,
+          "webSearchRequests": 0,
+          "costUSD": 0.0035258299999999998,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 429,
+          "canonicalModel": "claude-haiku-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "cost_usd": 0.0035258299999999998,
+      "seconds": 25.28,
+      "stderr": ""
+    },
+    {
+      "id": "c8",
+      "question": "What breaks if `display_text` is deleted from retrieve.py?",
+      "answer": "ANSWER: Deleting `display_text` from `evals/experiments/speed-test-one-query/retrieve.py` breaks two things:\n\n1. **`Retriever.ask()` (retrieve.py:250) raises `NameError` on every call.** It builds the `\"answer\"` field with `display_text(ans[\"raw_answer\"])`. The failure happens after the pick and answer model calls have already run, so the cost is paid and then the call fails. Anything that calls `ask()` will fail, including the `main()` path at retrieve.py:266, which I did not read and am inferring from the graph. Nothing else in the repo references `display_text`, so `variant_a.py` is not affected.\n2. **`test_retrieve.py` fails at import.** It imports `display_text` by name (lines 13\u201320). Collection fails, so every test in that file errors, not only `test_display_text_strips_src_tails_only` (line 26). The test that exercises it directly would also fail.\n\nThe only other reference is a rationale node that describes the function. It is not code.\n\nFILES: graphify-out/graph.json (via `graphify query`, `graphify explain`), graphify-out/GRAPH_REPORT.md (grep match only), evals/experiments/speed-test-one-query/retrieve.py (lines 137\u2013139, 240\u2013259), evals/experiments/speed-test-one-query/test_retrieve.py (lines 1\u201330)",
+      "is_error": false,
+      "subtype": "success",
+      "num_turns": 6,
+      "tool_calls": 5,
+      "tool_names": {
+        "Bash": 1,
+        "Grep": 1,
+        "Read": 3
+      },
+      "tokens_total": 91082,
+      "model_usage": {
+        "claude-haiku-5-5": {
+          "inputTokens": 6,
+          "outputTokens": 2017,
+          "cacheReadInputTokens": 75390,
+          "cacheCreationInputTokens": 13669,
+          "webSearchRequests": 0,
+          "costUSD": 0.003471625,
+          "contextWindow": 1000000,
+          "maxOutputTokens": 128000,
+          "thinkingTokens": 509,
+          "canonicalModel": "claude-haiku-5-5",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "cost_usd": 0.003471625,
+      "seconds": 30.09,
+      "stderr": ""
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "id": "d08",
+  "condition": "R2",
+  "description": "R2 d08",
+  "model": [
+    "claude-opus-5-5"
+  ],
+  "prompt_exact": true,
+  "subagent_type": "Explore",
+  "launch_model": "opus",
+  "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly, with one change: you may start from the brain's wiki, C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\build\\graphify-out\\wiki\\index.md. It lists topic articles in that same wiki folder; each article names notes by path relative to the brain root. You may use wiki/index.md and the wiki articles it links to choose a starting note, then read the notes. With the wiki, reading the brain's index.md is optional. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root plus the skill file and files in the wiki folder. Do not use Glob, Grep, ls or any search across files or folders. Do not open anything else.\n\nQuestion: Why did the Apollo Guidance Computer keep flying through the Apollo 11 alarms?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, in order: paths inside the brain relative to the brain root, and wiki files as wiki/<name>.md>",
+  "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R2\\transcripts\\d08.jsonl",
+  "finalized_transcript_available": true,
+  "agent_id": "a969a4fdaae111b8e",
+  "start_utc": "2026-10-25T19:33:52.123Z",
+  "end_utc": "2026-10-25T19:34:09.695Z",
+  "time_s": 17.572,
+  "usage": {
+    "input_tokens": 14,
+    "output_tokens": 948,
+    "cache_read_input_tokens": 95884,
+    "cache_creation_input_tokens": 6638
+  },
+  "total_tokens": 103484,
+  "cost_usd_at_recorded_rates": 0.0713828,
+  "cache_neutral_cost_usd": 0.429104,
+  "tool_calls": [
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\build\\graphify-out\\wiki\\index.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\build\\graphify-out\\wiki\\Apollo_11_Landing_Software_Alarms.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\program-alarms-1201-1202.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\apollo-guidance-computer.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\margaret-hamilton.md"
+      }
+    }
+  ],
+  "tool_call_count": 6,
+  "note_read_count": 3,
+  "wiki_read_count": 2,
+  "opened_paths": [
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\build\\graphify-out\\wiki\\index.md",
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\build\\graphify-out\\wiki\\Apollo_11_Landing_Software_Alarms.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\program-alarms-1201-1202.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\apollo-guidance-computer.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\margaret-hamilton.md"
+  ],
+  "answers": [
+    "ANSWER: The brain gives no stated reason. The only explanation is a [derived] fact, which means an agent inferred it: an agent concluded that the flight software's priority scheduling is why the computer kept flying through the Apollo 11 alarms (src: agent, 2026-10-24). The stated facts are these. The Apollo Guidance Computer raised five program alarms (1201/1202) during the powered descent, and the first came about 5 minutes after descent initiation. The alarms did not degrade any primary guidance or control function, but they did interfere with the crew's early assessment of the landing approach (src: Apollo 11 Mission Report p.5-4). The software was written by Margaret Hamilton's MIT Instrumentation Laboratory team.\nFILES: wiki/index.md, wiki/Apollo_11_Landing_Software_Alarms.md, topics/program-alarms-1201-1202.md, topics/apollo-guidance-computer.md, people/margaret-hamilton.md"
+  ],
+  "answer": "ANSWER: The brain gives no stated reason. The only explanation is a [derived] fact, which means an agent inferred it: an agent concluded that the flight software's priority scheduling is why the computer kept flying through the Apollo 11 alarms (src: agent, 2026-10-24). The stated facts are these. The Apollo Guidance Computer raised five program alarms (1201/1202) during the powered descent, and the first came about 5 minutes after descent initiation. The alarms did not degrade any primary guidance or control function, but they did interfere with the crew's early assessment of the landing approach (src: Apollo 11 Mission Report p.5-4). The software was written by Margaret Hamilton's MIT Instrumentation Laboratory team.\nFILES: wiki/index.md, wiki/Apollo_11_Landing_Software_Alarms.md, topics/program-alarms-1201-1202.md, topics/apollo-guidance-computer.md, people/margaret-hamilton.md",
+  "tool_errors": []
+}

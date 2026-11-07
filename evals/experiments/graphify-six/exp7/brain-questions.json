@@ -1,0 +1,42 @@
+[
+  {
+    "id": "d01",
+    "question": "When did Apollo 8 launch, and who was its crew?"
+  },
+  {
+    "id": "d07",
+    "question": "Where did Apollo 16 land?"
+  },
+  {
+    "id": "m01",
+    "question": "Who commanded the mission that the astronaut who caught German measles was a backup for?"
+  },
+  {
+    "id": "m03",
+    "question": "Which NASA centre was the Apollo 13 Review Board chair directing, and what did the board find caused the explosion?"
+  },
+  {
+    "id": "m04",
+    "question": "The rocket that first carried a crew on Apollo 8 was developed under whom, and which centre did that person direct?"
+  },
+  {
+    "id": "h01",
+    "question": "Which company built the craft that kept the Apollo 13 astronauts alive after their main ship was crippled?"
+  },
+  {
+    "id": "h03",
+    "question": "How tall was the giant rocket that carried Apollo crews toward the Moon, and how many times was it launched?"
+  },
+  {
+    "id": "p02",
+    "question": "At what altitude did manual control begin on Apollo 11, how far downrange of the aim point did it land, and on which page of the report?"
+  },
+  {
+    "id": "n02",
+    "question": "Who was the command module pilot of Apollo 12?"
+  },
+  {
+    "id": "n04",
+    "question": "What colour vest did Gene Kranz wear during Apollo 13?"
+  }
+]

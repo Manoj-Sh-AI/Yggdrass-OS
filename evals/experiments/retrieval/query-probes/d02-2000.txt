@@ -1,0 +1,7 @@
+Graph: evals/experiments/retrieval/build/graphify-out/graph.json (78 nodes) | Traversal: BFS depth=2 | Start: ['Command and service module', 'Oxygen tank No. 2', 'Command/Service Module', 'Apollo 13', 'Lunar module'] | Context: import (heuristic) | 5 nodes found
+
+NODE Command and service module [src=topics/command-service-module.md loc=None community=Apollo 13 Accident Investigation]
+NODE Oxygen tank No. 2 [src=topics/oxygen-tank-2.md loc=None community=Apollo 13 Accident Investigation]
+NODE Command/Service Module [src=areas/apollo-1.md loc=None community=Apollo 13 Review Board]
+NODE Apollo 13 [src=areas/apollo-13.md loc=None community=Apollo 13 Mission Operations]
+NODE Lunar module [src=topics/lunar-module.md loc=None community=Apollo 13 Crew Swap]

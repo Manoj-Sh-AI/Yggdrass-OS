@@ -1,0 +1,81 @@
+{
+  "id": "d08",
+  "condition": "R1",
+  "description": "R1 d08",
+  "model": [
+    "claude-opus-5-5"
+  ],
+  "prompt_exact": true,
+  "subagent_type": "Explore",
+  "launch_model": "opus",
+  "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: Why did the Apollo Guidance Computer keep flying through the Apollo 11 alarms?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+  "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R1\\transcripts\\d08.jsonl",
+  "finalized_transcript_available": true,
+  "agent_id": "a3923aca0d65d5cf8",
+  "start_utc": "2026-10-25T19:31:03.284Z",
+  "end_utc": "2026-10-25T19:31:20.701Z",
+  "time_s": 17.417,
+  "usage": {
+    "input_tokens": 14,
+    "output_tokens": 969,
+    "cache_read_input_tokens": 107078,
+    "cache_creation_input_tokens": 8255
+  },
+  "total_tokens": 116316,
+  "cost_usd_at_recorded_rates": 0.08212660000000001,
+  "cache_neutral_cost_usd": 0.480768,
+  "tool_calls": [
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\program-alarms-1201-1202.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\apollo-guidance-computer.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\sources\\apollo-11-mission-report\\apollo-11-mission-report-ch-05.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\margaret-hamilton.md"
+      }
+    }
+  ],
+  "tool_call_count": 6,
+  "note_read_count": 4,
+  "wiki_read_count": 0,
+  "opened_paths": [
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\program-alarms-1201-1202.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\apollo-guidance-computer.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\sources\\apollo-11-mission-report\\apollo-11-mission-report-ch-05.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\margaret-hamilton.md"
+  ],
+  "answers": [
+    "ANSWER: The brain gives no stated source for why the computer kept going. The only explanation is an agent's own inference, not a documented fact: an agent concluded that the software's priority scheduling is why the computer kept flying through the Apollo 11 alarms (src: agent, 2026-10-24). This software was written by Margaret Hamilton's team at the MIT Instrumentation Laboratory. The stated facts are these: the Apollo Guidance Computer raised five program alarms (1201/1202) during the powered descent. The first came about 5 minutes after descent initiation. The alarms did not degrade any primary guidance or control function, though they did interfere with the crew's early assessment of the landing approach (src: Apollo 11 Mission Report p.5-4, 2026-10-24). Section 5.3 (pages 5-4 to 5-6) of the mission report records the alarms but gives no cause.\nFILES: index.md, topics/program-alarms-1201-1202.md, topics/apollo-guidance-computer.md, sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md, people/margaret-hamilton.md"
+  ],
+  "answer": "ANSWER: The brain gives no stated source for why the computer kept going. The only explanation is an agent's own inference, not a documented fact: an agent concluded that the software's priority scheduling is why the computer kept flying through the Apollo 11 alarms (src: agent, 2026-10-24). This software was written by Margaret Hamilton's team at the MIT Instrumentation Laboratory. The stated facts are these: the Apollo Guidance Computer raised five program alarms (1201/1202) during the powered descent. The first came about 5 minutes after descent initiation. The alarms did not degrade any primary guidance or control function, though they did interfere with the crew's early assessment of the landing approach (src: Apollo 11 Mission Report p.5-4, 2026-10-24). Section 5.3 (pages 5-4 to 5-6) of the mission report records the alarms but gives no cause.\nFILES: index.md, topics/program-alarms-1201-1202.md, topics/apollo-guidance-computer.md, sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md, people/margaret-hamilton.md",
+  "tool_errors": []
+}

@@ -1,0 +1,46 @@
+{
+  "model": "claude-opus-5-5",
+  "ranking": [
+    [
+      14,
+      "people/ken-mattingly.md"
+    ],
+    [
+      13,
+      "topics/rubella-crew-swap.md"
+    ],
+    [
+      9,
+      "areas/apollo-13.md"
+    ]
+  ],
+  "usage": {
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "inference_geo": "global",
+    "input_tokens": 1814,
+    "output_tokens": 589,
+    "output_tokens_details": {
+      "thinking_tokens": 235
+    },
+    "server_tool_use": null,
+    "service_tier": "standard",
+    "speed": "standard"
+  },
+  "seconds": 6.19,
+  "parts": {
+    "instruction": 51,
+    "question": 26,
+    "notes": {
+      "people/ken-mattingly.md": 524,
+      "topics/rubella-crew-swap.md": 519,
+      "areas/apollo-13.md": 672
+    }
+  },
+  "answer": "**Jack Swigert** replaced Ken Mattingly as Apollo 13 command module pilot (areas/apollo-13.md; people/ken-mattingly.md). The change was decided at a KSC management meeting and announced at a press conference on 1970-04-10 (topics/rubella-crew-swap.md).\n\n**Why:**\n- Backup lunar module pilot Charlie Duke caught German measles and exposed the crews (topics/rubella-crew-swap.md).\n- Blood tests from the 1970-04-06 physicals showed Mattingly had no rubella immunity (topics/rubella-crew-swap.md). He was the only one of the five prime and backup crew members tested who lacked rubella antibodies (people/ken-mattingly.md).\n- Flight surgeon Charles Berry worried Mattingly could fall ill while alone in the command module in lunar orbit (topics/rubella-crew-swap.md).\n\nMattingly never contracted German measles. He later flew on Apollo 16 as command module pilot (people/ken-mattingly.md).",
+  "answer_tokens": 589
+}

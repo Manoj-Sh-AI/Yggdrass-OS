@@ -1,0 +1,256 @@
+{
+  "arm": "pipeline",
+  "run": 2,
+  "file": "held-out-v8.yaml",
+  "spent_after": 0.12031086000000003,
+  "rows": [
+    {
+      "id": "y01",
+      "kind": "bridge",
+      "question": "How far apart, by date, were the first lunar touchdown and the first step onto the surface?",
+      "picked": [
+        "apollo-11",
+        "neil-armstrong"
+      ],
+      "status": "answer",
+      "answer": "The first lunar touchdown and the first step onto the surface were one day apart. The lander touched down on July 20, 1969, and the first step came on July 21, 1969 in UTC, so the two dates differ by one calendar day. The lunar module Eagle touched down on 1969-07-20 in the Sea of Tranquility, while Neil Armstrong was the first person to step onto the lunar surface on 1969-07-21 UTC. The landing date isn't given with a time zone, so the one-day gap is based on the dates as recorded.",
+      "raw_answer": "The first lunar touchdown and the first step onto the surface were one day apart. The lander touched down on July 20, 1969, and the first step came on July 21, 1969 in UTC, so the two dates differ by one calendar day. The lunar module Eagle touched down on 1969-07-20 in the Sea of Tranquility, while Neil Armstrong was the first person to step onto the lunar surface on 1969-07-21 UTC. The landing date isn't given with a time zone, so the one-day gap is based on the dates as recorded.",
+      "cited_sources": [
+        "apollo-11",
+        "neil-armstrong"
+      ],
+      "cache": "warm",
+      "cache_write": 0,
+      "cache_read": 3551,
+      "total_in": 9478,
+      "billed_equiv_in": 6282.1,
+      "output_tokens": 392,
+      "cost_usd": 0.0008242099999999999,
+      "first_token_ms": 2712.659,
+      "end_to_end_ms": 3330.025
+    },
+    {
+      "id": "y02",
+      "kind": "chain",
+      "question": "The flight surgeon's worry led to an astronaut being removed from a crew. Which mission did that astronaut later fly, and who commanded it?",
+      "picked": [
+        "ken-mattingly",
+        "apollo-16"
+      ],
+      "status": "answer",
+      "answer": "Ken Mattingly was the astronaut removed from the Apollo 13 crew. Flight surgeon Charles Berry's concern about him is the link. Berry was concerned that Mattingly could become sick while alone in the command module in lunar orbit. The swap followed blood tests, and he was the only one of the five prime and backup crew members tested without rubella antibodies.\n\nMattingly later flew Apollo 16, which launched on 1972-04-16. Its crew was John Young, Ken Mattingly and Charlie Duke. John Young commanded Apollo 16.",
+      "raw_answer": "Ken Mattingly was the astronaut removed from the Apollo 13 crew. Flight surgeon Charles Berry's concern about him is the link. Berry was concerned that Mattingly could become sick while alone in the command module in lunar orbit. The swap followed blood tests, and he was the only one of the five prime and backup crew members tested without rubella antibodies.\n\nMattingly later flew Apollo 16, which launched on 1972-04-16. Its crew was John Young, Ken Mattingly and Charlie Duke. John Young commanded Apollo 16.",
+      "cited_sources": [
+        "apollo-16",
+        "john-young",
+        "ken-mattingly",
+        "rubella-crew-swap"
+      ],
+      "cache": "warm",
+      "cache_write": 0,
+      "cache_read": 3551,
+      "total_in": 8006,
+      "billed_equiv_in": 4810.1,
+      "output_tokens": 438,
+      "cost_usd": 0.00070001,
+      "first_token_ms": 2352.137,
+      "end_to_end_ms": 3275.549
+    },
+    {
+      "id": "y03",
+      "kind": "unlinked",
+      "question": "Which was earlier, Buzz Aldrin's Gemini flight or the first Saturn V launch?",
+      "picked": [
+        "buzz-aldrin",
+        "saturn-v"
+      ],
+      "status": "answer",
+      "answer": "Aldrin's Gemini flight came first. Gemini 12 was flown in 1966, while the Saturn V's debut came in late 1967, when its first flight, an uncrewed mission on Apollo 4, took place on 1967-11-09.",
+      "raw_answer": "Aldrin's Gemini flight came first. Gemini 12 was flown in 1966, while the Saturn V's debut came in late 1967, when its first flight, an uncrewed mission on Apollo 4, took place on 1967-11-09.",
+      "cited_sources": [
+        "buzz-aldrin",
+        "saturn-v"
+      ],
+      "cache": "warm",
+      "cache_write": 0,
+      "cache_read": 3551,
+      "total_in": 7400,
+      "billed_equiv_in": 4204.1,
+      "output_tokens": 522,
+      "cost_usd": 0.00068141,
+      "first_token_ms": 3068.786,
+      "end_to_end_ms": 3475.948
+    },
+    {
+      "id": "y04",
+      "kind": "trap",
+      "question": "From which launch pad did Apollo 13 lift off?",
+      "picked": [
+        "apollo-13"
+      ],
+      "status": "not_in_brain",
+      "answer": "NOT IN BRAIN\n\nThe search results do not state which launch pad Apollo 13 lifted off from. They give the launch date (1970-04-11) and other details about the mission, but nothing about the launch site or pad.",
+      "raw_answer": "NOT IN BRAIN\n\nThe search results do not state which launch pad Apollo 13 lifted off from. They give the launch date (1970-04-11) and other details about the mission, but nothing about the launch site or pad.",
+      "cited_sources": [],
+      "cache": "warm",
+      "cache_write": 0,
+      "cache_read": 3551,
+      "total_in": 10759,
+      "billed_equiv_in": 7563.1,
+      "output_tokens": 87,
+      "cost_usd": 0.0007998100000000001,
+      "first_token_ms": 1537.426,
+      "end_to_end_ms": 1950.674
+    },
+    {
+      "id": "y05",
+      "kind": "trap",
+      "question": "How many orbits of the Moon did Apollo 11 make?",
+      "picked": [
+        "apollo-11",
+        "michael-collins"
+      ],
+      "status": "not_in_brain",
+      "answer": "NOT IN BRAIN\n\nThe search results do not state how many orbits of the Moon Apollo 11 made. They give the launch date, the lunar landing date, the splashdown date, and the crew roles, and they note that Michael Collins stayed in lunar orbit aboard the command module Columbia during the landing. There is no orbit count in the results, so I can't answer the question from them.",
+      "raw_answer": "NOT IN BRAIN\n\nThe search results do not state how many orbits of the Moon Apollo 11 made. They give the launch date, the lunar landing date, the splashdown date, and the crew roles, and they note that Michael Collins stayed in lunar orbit aboard the command module Columbia during the landing. There is no orbit count in the results, so I can't answer the question from them.",
+      "cited_sources": [
+        "michael-collins"
+      ],
+      "cache": "warm",
+      "cache_write": 0,
+      "cache_read": 3551,
+      "total_in": 9104,
+      "billed_equiv_in": 5908.1,
+      "output_tokens": 164,
+      "cost_usd": 0.0006728099999999999,
+      "first_token_ms": 2005.183,
+      "end_to_end_ms": 2594.793
+    },
+    {
+      "id": "y06",
+      "kind": "reworded",
+      "question": "What did the AS-204 tragedy lead to?",
+      "picked": [
+        "apollo-1"
+      ],
+      "status": "answer",
+      "answer": "The search results don't mention \"AS-204\" by name. They do describe the Apollo 1 fire, which I'll assume is the event you mean. Under that reading, the accident was followed by changes to the spacecraft: after the accident, a hatch that opens rapidly was added to the reworked capsule Led to a command module redesign that included a quick-opening hatch.",
+      "raw_answer": "The search results don't mention \"AS-204\" by name. They do describe the Apollo 1 fire, which I'll assume is the event you mean. Under that reading, the accident was followed by changes to the spacecraft: after the accident, a hatch that opens rapidly was added to the reworked capsule Led to a command module redesign that included a quick-opening hatch.",
+      "cited_sources": [
+        "apollo-1"
+      ],
+      "cache": "warm",
+      "cache_write": 0,
+      "cache_read": 3551,
+      "total_in": 5814,
+      "billed_equiv_in": 2618.1,
+      "output_tokens": 759,
+      "cost_usd": 0.00064131,
+      "first_token_ms": 4364.194,
+      "end_to_end_ms": 4824.933
+    },
+    {
+      "id": "y07",
+      "kind": "reworded",
+      "question": "What is MSC-00171's other report number, and how many pages does the copy read for the brain have?",
+      "picked": [
+        "apollo-11-mission-report"
+      ],
+      "status": "answer",
+      "answer": "The report's other identifier is NASA-TM-X-62633, which appears alongside MSC-00171 in the NTRS record 19700008096. The copy of the PDF that this knowledge base read has 325 pages.",
+      "raw_answer": "The report's other identifier is NASA-TM-X-62633, which appears alongside MSC-00171 in the NTRS record 19700008096. The copy of the PDF that this knowledge base read has 325 pages.",
+      "cited_sources": [
+        "apollo-11-mission-report"
+      ],
+      "cache": "warm",
+      "cache_write": 0,
+      "cache_read": 3551,
+      "total_in": 6154,
+      "billed_equiv_in": 2958.1,
+      "output_tokens": 251,
+      "cost_usd": 0.00042131,
+      "first_token_ms": 2508.62,
+      "end_to_end_ms": 2739.956
+    },
+    {
+      "id": "y08",
+      "kind": "whole_picture",
+      "question": "Who does the brain record as having a part in the Apollo 13 crew swap, and what was each person's part?",
+      "picked": [
+        "apollo-13",
+        "rubella-crew-swap"
+      ],
+      "status": "answer",
+      "answer": "The search results name several people connected to the crew swap, though most of them appear in the context of the measles exposure rather than the swap decision itself.\n\n- **Charlie Duke** was the backup lunar module pilot. He caught German measles from a friend's 3-year-old son about three weeks before the Apollo 13 launch, and he trained with the other five crew members until 1970-04-03 while still contagious. The swap originated with his exposure of the crews, as the backup lunar module pilot caught German measles and exposed the crews.\n\n- **Ken Mattingly** was the crew member removed. He was the only one of the five prime and backup crew members tested without rubella antibodies, and blood tests from the 1970-04-06 physicals established this. He was reassigned to Apollo 16 as command module pilot, a change made on 1970-04-10 by KSC management meeting.\n\n- **Jack Swigert** was the replacement. He was immune to rubella, which made him eligible to fly, and he became the prime command module pilot, having previously been the backup.\n\n- **Charles Berry**, a flight surgeon, is recorded as the person who raised the concern. He worried Mattingly could fall ill alone in the command module in lunar orbit.\n\n- **The KSC management meeting** made the decision. The swap was decided at a KSC management meeting and announced at a press conference on 1970-04-10.\n\nJim Lovell, Fred Haise, and John Young are also listed, but their entries only note their immunity or roles, not any part in the swap itself. Lovell had rubella immunity, so the 1970 measles exposure did not affect him, and Young was immune to rubella.",
+      "raw_answer": "The search results name several people connected to the crew swap, though most of them appear in the context of the measles exposure rather than the swap decision itself.\n\n- **Charlie Duke** was the backup lunar module pilot. He caught German measles from a friend's 3-year-old son about three weeks before the Apollo 13 launch, and he trained with the other five crew members until 1970-04-03 while still contagious. The swap originated with his exposure of the crews, as the backup lunar module pilot caught German measles and exposed the crews.\n\n- **Ken Mattingly** was the crew member removed. He was the only one of the five prime and backup crew members tested without rubella antibodies, and blood tests from the 1970-04-06 physicals established this. He was reassigned to Apollo 16 as command module pilot, a change made on 1970-04-10 by KSC management meeting.\n\n- **Jack Swigert** was the replacement. He was immune to rubella, which made him eligible to fly, and he became the prime command module pilot, having previously been the backup.\n\n- **Charles Berry**, a flight surgeon, is recorded as the person who raised the concern. He worried Mattingly could fall ill alone in the command module in lunar orbit.\n\n- **The KSC management meeting** made the decision. The swap was decided at a KSC management meeting and announced at a press conference on 1970-04-10.\n\nJim Lovell, Fred Haise, and John Young are also listed, but their entries only note their immunity or roles, not any part in the swap itself. Lovell had rubella immunity, so the 1970 measles exposure did not affect him, and Young was immune to rubella.",
+      "cited_sources": [
+        "charlie-duke",
+        "jack-swigert",
+        "jim-lovell",
+        "john-young",
+        "ken-mattingly",
+        "rubella-crew-swap"
+      ],
+      "cache": "warm",
+      "cache_write": 0,
+      "cache_read": 3551,
+      "total_in": 11020,
+      "billed_equiv_in": 7824.1,
+      "output_tokens": 1122,
+      "cost_usd": 0.00134341,
+      "first_token_ms": 2939.87,
+      "end_to_end_ms": 5489.423
+    },
+    {
+      "id": "y09",
+      "kind": "chain",
+      "question": "The craft whose engine put Apollo 13 back on its loop around the Moon was built by which company, and what kind of lander was it?",
+      "picked": [
+        "command-service-module",
+        "lunar-module"
+      ],
+      "status": "answer",
+      "answer": "The craft is the **lunar module**. Its descent engine fired to return Apollo 13 to a free-return path, Apollo 13 regained it with a lunar module descent engine burn after the explosion, and its descent engine burn put Apollo 13 back on a free-return path.\n\nGrumman built it, since the company built the Apollo lunar module. As for its type, the vehicle was a lander with two stages.",
+      "raw_answer": "The craft is the **lunar module**. Its descent engine fired to return Apollo 13 to a free-return path, Apollo 13 regained it with a lunar module descent engine burn after the explosion, and its descent engine burn put Apollo 13 back on a free-return path.\n\nGrumman built it, since the company built the Apollo lunar module. As for its type, the vehicle was a lander with two stages.",
+      "cited_sources": [
+        "free-return-trajectory",
+        "grumman",
+        "lunar-module"
+      ],
+      "cache": "warm",
+      "cache_write": 0,
+      "cache_read": 3551,
+      "total_in": 9177,
+      "billed_equiv_in": 5981.1,
+      "output_tokens": 584,
+      "cost_usd": 0.0008901100000000001,
+      "first_token_ms": 4413.684,
+      "end_to_end_ms": 6624.499
+    },
+    {
+      "id": "y10",
+      "kind": "unlinked",
+      "question": "Charlie Duke and Gene Kranz both had a role in the same event. Which event, and what was each one's role?",
+      "picked": [
+        "apollo-13",
+        "charlie-duke"
+      ],
+      "status": "answer",
+      "answer": "The event was the Apollo 13 mission in 1970.\n\nCharlie Duke served as the backup lunar module pilot, and his illness set off the crew change. Backup lunar module pilot Charlie Duke caught German measles and exposed the crews, which led to the swap announced in April 1970.\n\nGene Kranz led the mission from the flight control side. The results link him to Apollo 13 with the verb \"directed,\" and his team was on console when Apollo 13's oxygen tank failed.",
+      "raw_answer": "The event was the Apollo 13 mission in 1970.\n\nCharlie Duke served as the backup lunar module pilot, and his illness set off the crew change. Backup lunar module pilot Charlie Duke caught German measles and exposed the crews, which led to the swap announced in April 1970.\n\nGene Kranz led the mission from the flight control side. The results link him to Apollo 13 with the verb \"directed,\" and his team was on console when Apollo 13's oxygen tank failed.",
+      "cited_sources": [
+        "gene-kranz",
+        "rubella-crew-swap"
+      ],
+      "cache": "warm",
+      "cache_write": 0,
+      "cache_read": 3551,
+      "total_in": 11385,
+      "billed_equiv_in": 8189.1,
+      "output_tokens": 658,
+      "cost_usd": 0.00114791,
+      "first_token_ms": 3521.947,
+      "end_to_end_ms": 4174.422
+    }
+  ]
+}

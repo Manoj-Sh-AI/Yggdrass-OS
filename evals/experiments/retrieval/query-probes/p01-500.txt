@@ -1,0 +1,18 @@
+Graph: evals/experiments/retrieval/build/graphify-out/graph.json (78 nodes) | Traversal: BFS depth=2 | Start: ['Apollo 11 Mission Report, Section 5.3: Powered Descent', 'Apollo 11 Mission Report (MSC-00171)', 'Apollo 11 Mission Report', 'Mission Control Houston', 'Report of the Apollo 13 Review Board', 'Apollo 13', 'Apollo 11'] | 51 nodes found
+
+[!] TRUNCATED: showing 13 of 51 nodes (~500-token budget). The answer may be among the 38 cut nodes — raise the token budget to 1713 to get all 51 (CLI: --budget 1713, MCP: token_budget=1713) or narrow the query (e.g. context_filter=['call'], or get_node for a specific symbol).
+
+NODE Apollo 11 Mission Report, Section 5.3: Powered Descent [src=sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md loc=None community=Apollo 11 Landing Software Alarms]
+NODE Apollo 11 Mission Report (MSC-00171) [src=sources/apollo-11-mission-report.md loc=None community=Apollo 11 Landing Software Alarms]
+NODE Apollo 11 Mission Report [src=areas/apollo-11.md loc=None community=Apollo 11 Moon Landing]
+NODE Mission Control Houston [src=areas/mission-control-houston.md loc=None community=Apollo 13 Mission Operations]
+NODE Report of the Apollo 13 Review Board [src=sources/apollo-13-review-board-report.md loc=None community=Apollo 13 Accident Investigation]
+NODE Apollo 13 [src=areas/apollo-13.md loc=None community=Apollo 13 Mission Operations]
+NODE Apollo 11 [src=areas/apollo-11.md loc=None community=Apollo 11 Moon Landing]
+NODE Apollo program [src=areas/apollo-program.md loc=None community=Apollo Program Overview]
+NODE Apollo 11 [src=people/michael-collins.md loc=None community=Apollo 11 Landing Software Alarms]
+NODE Apollo 13 Review Board [src=areas/apollo-13-review-board.md loc=None community=Apollo 13 Review Board]
+NODE Neil Armstrong [src=people/neil-armstrong.md loc=None community=Apollo 11 Landing Software Alarms]
+NODE Oxygen tank No. 2 [src=topics/oxygen-tank-2.md loc=None community=Apollo 13 Accident Investigation]
+NODE Lunar Module [src=areas/apollo-11.md loc=None community=Apollo 13 Mission Operations]
+... (truncated — 38 more nodes cut by ~500-token budget. Narrow with context_filter=['call'] or use get_node for a specific symbol)

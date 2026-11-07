@@ -1,0 +1,1596 @@
+[
+  {
+    "id": "d01",
+    "condition": "R3",
+    "description": "R3 d01",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly, with one change: use graphify query as your navigation entry point instead of the brain's index. After reading the skill, call the Bash tool exactly once to run this command, using the question exactly as given:\ngraphify query \"When did Apollo 8 launch, and who was its crew?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"\nQuestion logging is disabled by the environment. This query is local and does not call a model. Use only the note paths named by this query's NODE lines to choose the notes to read. Do not change the query, raise the budget, request other subgraphs, or work around an empty or truncated result. You may read index.md only if the query itself names it. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only the skill file plus files inside the brain root that the query names. Do not use Glob, Grep, ls or any search across files or folders. Do not read graph.json, the wiki, or anything else. The Bash tool is allowed only for the single graphify query command above.\n\nQuestion: When did Apollo 8 launch, and who was its crew?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R3\\transcripts\\d01.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "ae7f4c12eb3b240c4",
+    "start_utc": "2026-10-25T19:36:09.729Z",
+    "end_utc": "2026-10-25T19:36:37.408Z",
+    "time_s": 27.679,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 442,
+      "cache_read_input_tokens": 52387,
+      "cache_creation_input_tokens": 7781
+    },
+    "total_tokens": 60618,
+    "cost_usd_at_recorded_rates": 0.058254400000000005,
+    "cache_neutral_cost_usd": 0.249544,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Bash",
+        "input": {
+          "command": "graphify query \"When did Apollo 8 launch, and who was its crew?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"",
+          "description": "Run graphify query for Apollo 8"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-8.md"
+        }
+      }
+    ],
+    "tool_call_count": 3,
+    "note_read_count": 1,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-8.md"
+    ],
+    "answers": [
+      "ANSWER: Apollo 8 launched on 1968-12-21. Its crew was Frank Borman, Jim Lovell and Bill Anders. (src: NASA history, 2026-10-24)\nFILES: areas/apollo-8.md"
+    ],
+    "answer": "ANSWER: Apollo 8 launched on 1968-12-21. Its crew was Frank Borman, Jim Lovell and Bill Anders. (src: NASA history, 2026-10-24)\nFILES: areas/apollo-8.md",
+    "tool_errors": []
+  },
+  {
+    "id": "d02",
+    "condition": "R3",
+    "description": "R3 d02",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly, with one change: use graphify query as your navigation entry point instead of the brain's index. After reading the skill, call the Bash tool exactly once to run this command, using the question exactly as given:\ngraphify query \"Which company built the Apollo service module oxygen tanks?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"\nQuestion logging is disabled by the environment. This query is local and does not call a model. Use only the note paths named by this query's NODE lines to choose the notes to read. Do not change the query, raise the budget, request other subgraphs, or work around an empty or truncated result. You may read index.md only if the query itself names it. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only the skill file plus files inside the brain root that the query names. Do not use Glob, Grep, ls or any search across files or folders. Do not read graph.json, the wiki, or anything else. The Bash tool is allowed only for the single graphify query command above.\n\nQuestion: Which company built the Apollo service module oxygen tanks?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R3\\transcripts\\d02.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "ab6977aef39d21386",
+    "start_utc": "2026-10-25T19:36:14.284Z",
+    "end_utc": "2026-10-25T19:36:40.500Z",
+    "time_s": 26.216,
+    "usage": {
+      "input_tokens": 10,
+      "output_tokens": 775,
+      "cache_read_input_tokens": 62749,
+      "cache_creation_input_tokens": 4605
+    },
+    "total_tokens": 68139,
+    "cost_usd_at_recorded_rates": 0.0511148,
+    "cache_neutral_cost_usd": 0.284956,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Bash",
+        "input": {
+          "command": "graphify query \"Which company built the Apollo service module oxygen tanks?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"",
+          "description": "Run graphify query for navigation"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\oxygen-tank-2.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\command-service-module.md"
+        }
+      }
+    ],
+    "tool_call_count": 4,
+    "note_read_count": 2,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\oxygen-tank-2.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\command-service-module.md"
+    ],
+    "answers": [
+      "ANSWER: I don't have that. topics/oxygen-tank-2.md has no fact line naming who built the tank. Its Links section does have a \"built by [[beech-aircraft]]\" link, which points to Beech Aircraft. But the query did not name the beech-aircraft node, so I could not open it to check for a fact. topics/command-service-module.md says the command and service module was built by North American Aviation and that its service module carried the oxygen tanks. That is about the module, not who built the tanks.\nFILES: topics/oxygen-tank-2.md, topics/command-service-module.md"
+    ],
+    "answer": "ANSWER: I don't have that. topics/oxygen-tank-2.md has no fact line naming who built the tank. Its Links section does have a \"built by [[beech-aircraft]]\" link, which points to Beech Aircraft. But the query did not name the beech-aircraft node, so I could not open it to check for a fact. topics/command-service-module.md says the command and service module was built by North American Aviation and that its service module carried the oxygen tanks. That is about the module, not who built the tanks.\nFILES: topics/oxygen-tank-2.md, topics/command-service-module.md",
+    "tool_errors": []
+  },
+  {
+    "id": "d03",
+    "condition": "R3",
+    "description": "R3 d03",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly, with one change: use graphify query as your navigation entry point instead of the brain's index. After reading the skill, call the Bash tool exactly once to run this command, using the question exactly as given:\ngraphify query \"When did NASA announce lunar orbit rendezvous as the Apollo mission mode?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"\nQuestion logging is disabled by the environment. This query is local and does not call a model. Use only the note paths named by this query's NODE lines to choose the notes to read. Do not change the query, raise the budget, request other subgraphs, or work around an empty or truncated result. You may read index.md only if the query itself names it. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only the skill file plus files inside the brain root that the query names. Do not use Glob, Grep, ls or any search across files or folders. Do not read graph.json, the wiki, or anything else. The Bash tool is allowed only for the single graphify query command above.\n\nQuestion: When did NASA announce lunar orbit rendezvous as the Apollo mission mode?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R3\\transcripts\\d03.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "a38f56d7a80d57d5b",
+    "start_utc": "2026-10-25T19:36:18.855Z",
+    "end_utc": "2026-10-25T19:36:37.225Z",
+    "time_s": 18.37,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 500,
+      "cache_read_input_tokens": 53684,
+      "cache_creation_input_tokens": 9026
+    },
+    "total_tokens": 63218,
+    "cost_usd_at_recorded_rates": 0.06589880000000001,
+    "cache_neutral_cost_usd": 0.260872,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Bash",
+        "input": {
+          "command": "graphify query \"When did NASA announce lunar orbit rendezvous as the Apollo mission mode?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"",
+          "description": "Run graphify query for the question"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\lunar-orbit-rendezvous.md"
+        }
+      }
+    ],
+    "tool_call_count": 3,
+    "note_read_count": 1,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\lunar-orbit-rendezvous.md"
+    ],
+    "answers": [
+      "ANSWER: NASA announced lunar orbit rendezvous as the Apollo mission mode on 11 July 1962 (1962-07-11). It was picked over direct ascent and Earth orbit rendezvous. The note marks this fact as [stated] and cites NASA history, recorded 2026-10-24.\nFILES: topics/lunar-orbit-rendezvous.md"
+    ],
+    "answer": "ANSWER: NASA announced lunar orbit rendezvous as the Apollo mission mode on 11 July 1962 (1962-07-11). It was picked over direct ascent and Earth orbit rendezvous. The note marks this fact as [stated] and cites NASA history, recorded 2026-10-24.\nFILES: topics/lunar-orbit-rendezvous.md",
+    "tool_errors": []
+  },
+  {
+    "id": "d04",
+    "condition": "R3",
+    "description": "R3 d04",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly, with one change: use graphify query as your navigation entry point instead of the brain's index. After reading the skill, call the Bash tool exactly once to run this command, using the question exactly as given:\ngraphify query \"What award did Margaret Hamilton receive, and when?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"\nQuestion logging is disabled by the environment. This query is local and does not call a model. Use only the note paths named by this query's NODE lines to choose the notes to read. Do not change the query, raise the budget, request other subgraphs, or work around an empty or truncated result. You may read index.md only if the query itself names it. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only the skill file plus files inside the brain root that the query names. Do not use Glob, Grep, ls or any search across files or folders. Do not read graph.json, the wiki, or anything else. The Bash tool is allowed only for the single graphify query command above.\n\nQuestion: What award did Margaret Hamilton receive, and when?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R3\\transcripts\\d04.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "adf5ad7045216f643",
+    "start_utc": "2026-10-25T19:36:23.333Z",
+    "end_utc": "2026-10-25T19:36:36.786Z",
+    "time_s": 13.453,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 428,
+      "cache_read_input_tokens": 48907,
+      "cache_creation_input_tokens": 4324
+    },
+    "total_tokens": 53667,
+    "cost_usd_at_recorded_rates": 0.0399934,
+    "cache_neutral_cost_usd": 0.221516,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Bash",
+        "input": {
+          "command": "graphify query \"What award did Margaret Hamilton receive, and when?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"",
+          "description": "Run graphify query for the question"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\margaret-hamilton.md"
+        }
+      }
+    ],
+    "tool_call_count": 3,
+    "note_read_count": 1,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\margaret-hamilton.md"
+    ],
+    "answers": [
+      "ANSWER: Margaret Hamilton received the Presidential Medal of Freedom on 2016-11-22 (src: NASA history, 2026-10-24).\nFILES: people/margaret-hamilton.md"
+    ],
+    "answer": "ANSWER: Margaret Hamilton received the Presidential Medal of Freedom on 2016-11-22 (src: NASA history, 2026-10-24).\nFILES: people/margaret-hamilton.md",
+    "tool_errors": []
+  },
+  {
+    "id": "d05",
+    "condition": "R3",
+    "description": "R3 d05",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly, with one change: use graphify query as your navigation entry point instead of the brain's index. After reading the skill, call the Bash tool exactly once to run this command, using the question exactly as given:\ngraphify query \"How many astronauts walked on the Moon during the Apollo program?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"\nQuestion logging is disabled by the environment. This query is local and does not call a model. Use only the note paths named by this query's NODE lines to choose the notes to read. Do not change the query, raise the budget, request other subgraphs, or work around an empty or truncated result. You may read index.md only if the query itself names it. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only the skill file plus files inside the brain root that the query names. Do not use Glob, Grep, ls or any search across files or folders. Do not read graph.json, the wiki, or anything else. The Bash tool is allowed only for the single graphify query command above.\n\nQuestion: How many astronauts walked on the Moon during the Apollo program?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R3\\transcripts\\d05.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "ad4c47b872011bea5",
+    "start_utc": "2026-10-25T19:36:27.928Z",
+    "end_utc": "2026-10-25T19:36:39.126Z",
+    "time_s": 11.198,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 449,
+      "cache_read_input_tokens": 53114,
+      "cache_creation_input_tokens": 8589
+    },
+    "total_tokens": 62160,
+    "cost_usd_at_recorded_rates": 0.0625798,
+    "cache_neutral_cost_usd": 0.255824,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Bash",
+        "input": {
+          "command": "graphify query \"How many astronauts walked on the Moon during the Apollo program?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"",
+          "description": "Run graphify query for the question"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-program.md"
+        }
+      }
+    ],
+    "tool_call_count": 3,
+    "note_read_count": 1,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-program.md"
+    ],
+    "answers": [
+      "ANSWER: Twelve astronauts walked on the Moon during the Apollo program. The program made six crewed lunar landings between July 1969 and December 1972. Both are stated facts (src: NASA history, 2026-10-24).\nFILES: areas/apollo-program.md"
+    ],
+    "answer": "ANSWER: Twelve astronauts walked on the Moon during the Apollo program. The program made six crewed lunar landings between July 1969 and December 1972. Both are stated facts (src: NASA history, 2026-10-24).\nFILES: areas/apollo-program.md",
+    "tool_errors": []
+  },
+  {
+    "id": "d06",
+    "condition": "R3",
+    "description": "R3 d06",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly, with one change: use graphify query as your navigation entry point instead of the brain's index. After reading the skill, call the Bash tool exactly once to run this command, using the question exactly as given:\ngraphify query \"Why couldn't Apollo 13's command module CO2 canisters be used directly in the lunar module?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"\nQuestion logging is disabled by the environment. This query is local and does not call a model. Use only the note paths named by this query's NODE lines to choose the notes to read. Do not change the query, raise the budget, request other subgraphs, or work around an empty or truncated result. You may read index.md only if the query itself names it. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only the skill file plus files inside the brain root that the query names. Do not use Glob, Grep, ls or any search across files or folders. Do not read graph.json, the wiki, or anything else. The Bash tool is allowed only for the single graphify query command above.\n\nQuestion: Why couldn't Apollo 13's command module CO2 canisters be used directly in the lunar module?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R3\\transcripts\\d06.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "ac8595705ba49f90d",
+    "start_utc": "2026-10-25T19:36:32.605Z",
+    "end_utc": "2026-10-25T19:36:42.762Z",
+    "time_s": 10.157,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 522,
+      "cache_read_input_tokens": 48628,
+      "cache_creation_input_tokens": 4007
+    },
+    "total_tokens": 53165,
+    "cost_usd_at_recorded_rates": 0.0402326,
+    "cache_neutral_cost_usd": 0.221012,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Bash",
+        "input": {
+          "command": "graphify query \"Why couldn't Apollo 13's command module CO2 canisters be used directly in the lunar module?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"",
+          "description": "Run graphify query for the question"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\co2-scrubber-adapter.md"
+        }
+      }
+    ],
+    "tool_call_count": 3,
+    "note_read_count": 1,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\co2-scrubber-adapter.md"
+    ],
+    "answers": [
+      "ANSWER: The command module's lithium hydroxide CO2 canisters were square, but the lunar module's sockets took round ones, so the square canisters would not fit. Engineers designed an adapter made from hoses, cardboard, plastic bags and tape. The crew built it by following instructions radioed to them. (src: NASA Apollo 13 mission page, 2026-10-24)\nFILES: topics/co2-scrubber-adapter.md"
+    ],
+    "answer": "ANSWER: The command module's lithium hydroxide CO2 canisters were square, but the lunar module's sockets took round ones, so the square canisters would not fit. Engineers designed an adapter made from hoses, cardboard, plastic bags and tape. The crew built it by following instructions radioed to them. (src: NASA Apollo 13 mission page, 2026-10-24)\nFILES: topics/co2-scrubber-adapter.md",
+    "tool_errors": []
+  },
+  {
+    "id": "d07",
+    "condition": "R3",
+    "description": "R3 d07",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly, with one change: use graphify query as your navigation entry point instead of the brain's index. After reading the skill, call the Bash tool exactly once to run this command, using the question exactly as given:\ngraphify query \"Where did Apollo 16 land?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"\nQuestion logging is disabled by the environment. This query is local and does not call a model. Use only the note paths named by this query's NODE lines to choose the notes to read. Do not change the query, raise the budget, request other subgraphs, or work around an empty or truncated result. You may read index.md only if the query itself names it. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only the skill file plus files inside the brain root that the query names. Do not use Glob, Grep, ls or any search across files or folders. Do not read graph.json, the wiki, or anything else. The Bash tool is allowed only for the single graphify query command above.\n\nQuestion: Where did Apollo 16 land?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R3\\transcripts\\d07.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "afc6f4041842c43c2",
+    "start_utc": "2026-10-25T19:36:36.991Z",
+    "end_utc": "2026-10-25T19:36:44.864Z",
+    "time_s": 7.873,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 415,
+      "cache_read_input_tokens": 51081,
+      "cache_creation_input_tokens": 6455
+    },
+    "total_tokens": 57959,
+    "cost_usd_at_recorded_rates": 0.0508232,
+    "cache_neutral_cost_usd": 0.238476,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Bash",
+        "input": {
+          "command": "graphify query \"Where did Apollo 16 land?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"",
+          "description": "Run graphify query for the question"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-16.md"
+        }
+      }
+    ],
+    "tool_call_count": 3,
+    "note_read_count": 1,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-16.md"
+    ],
+    "answers": [
+      "ANSWER: Apollo 16 landed in the Descartes Highlands. This is a [stated] fact (src: NASA history, 2026-10-24).\nFILES: areas/apollo-16.md"
+    ],
+    "answer": "ANSWER: Apollo 16 landed in the Descartes Highlands. This is a [stated] fact (src: NASA history, 2026-10-24).\nFILES: areas/apollo-16.md",
+    "tool_errors": []
+  },
+  {
+    "id": "d08",
+    "condition": "R3",
+    "description": "R3 d08",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly, with one change: use graphify query as your navigation entry point instead of the brain's index. After reading the skill, call the Bash tool exactly once to run this command, using the question exactly as given:\ngraphify query \"Why did the Apollo Guidance Computer keep flying through the Apollo 11 alarms?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"\nQuestion logging is disabled by the environment. This query is local and does not call a model. Use only the note paths named by this query's NODE lines to choose the notes to read. Do not change the query, raise the budget, request other subgraphs, or work around an empty or truncated result. You may read index.md only if the query itself names it. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only the skill file plus files inside the brain root that the query names. Do not use Glob, Grep, ls or any search across files or folders. Do not read graph.json, the wiki, or anything else. The Bash tool is allowed only for the single graphify query command above.\n\nQuestion: Why did the Apollo Guidance Computer keep flying through the Apollo 11 alarms?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R3\\transcripts\\d08.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "a9faceb94b8abe15d",
+    "start_utc": "2026-10-25T19:36:41.634Z",
+    "end_utc": "2026-10-25T19:36:57.494Z",
+    "time_s": 15.86,
+    "usage": {
+      "input_tokens": 12,
+      "output_tokens": 952,
+      "cache_read_input_tokens": 90778,
+      "cache_creation_input_tokens": 9551
+    },
+    "total_tokens": 101293,
+    "cost_usd_at_recorded_rates": 0.08499860000000001,
+    "cache_neutral_cost_usd": 0.420404,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Bash",
+        "input": {
+          "command": "graphify query \"Why did the Apollo Guidance Computer keep flying through the Apollo 11 alarms?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"",
+          "description": "Run graphify query for navigation"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\program-alarms-1201-1202.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\apollo-guidance-computer.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\margaret-hamilton.md"
+        }
+      }
+    ],
+    "tool_call_count": 5,
+    "note_read_count": 3,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\program-alarms-1201-1202.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\apollo-guidance-computer.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\margaret-hamilton.md"
+    ],
+    "answers": [
+      "ANSWER: The brain's only reason comes from an agent's inference, not a stated source. In the Margaret Hamilton node, an agent concluded that the software's priority scheduling is why the computer kept flying through the Apollo 11 alarms. That node marks this fact [derived] and cites it as (src: agent, 2026-10-24). The stated facts are these. The Apollo Guidance Computer, designed at the MIT Instrumentation Laboratory, raised five program alarms (1201/1202) during the Apollo 11 powered descent. The first came about 5 minutes after descent began. The alarms did not degrade any primary guidance or control function, though they interfered with the crew's early assessment of the landing approach (src: Apollo 11 Mission Report p.5-4, 2026-10-24). Hamilton led the MIT Instrumentation Laboratory software engineering division that developed the Apollo on-board flight software (src: NASA history, 2026-10-24).\nFILES: topics/program-alarms-1201-1202.md, topics/apollo-guidance-computer.md, people/margaret-hamilton.md"
+    ],
+    "answer": "ANSWER: The brain's only reason comes from an agent's inference, not a stated source. In the Margaret Hamilton node, an agent concluded that the software's priority scheduling is why the computer kept flying through the Apollo 11 alarms. That node marks this fact [derived] and cites it as (src: agent, 2026-10-24). The stated facts are these. The Apollo Guidance Computer, designed at the MIT Instrumentation Laboratory, raised five program alarms (1201/1202) during the Apollo 11 powered descent. The first came about 5 minutes after descent began. The alarms did not degrade any primary guidance or control function, though they interfered with the crew's early assessment of the landing approach (src: Apollo 11 Mission Report p.5-4, 2026-10-24). Hamilton led the MIT Instrumentation Laboratory software engineering division that developed the Apollo on-board flight software (src: NASA history, 2026-10-24).\nFILES: topics/program-alarms-1201-1202.md, topics/apollo-guidance-computer.md, people/margaret-hamilton.md",
+    "tool_errors": []
+  },
+  {
+    "id": "d09",
+    "condition": "R3",
+    "description": "R3 d09",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly, with one change: use graphify query as your navigation entry point instead of the brain's index. After reading the skill, call the Bash tool exactly once to run this command, using the question exactly as given:\ngraphify query \"What happened at Launch Complex 34 on 1967-01-27?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"\nQuestion logging is disabled by the environment. This query is local and does not call a model. Use only the note paths named by this query's NODE lines to choose the notes to read. Do not change the query, raise the budget, request other subgraphs, or work around an empty or truncated result. You may read index.md only if the query itself names it. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only the skill file plus files inside the brain root that the query names. Do not use Glob, Grep, ls or any search across files or folders. Do not read graph.json, the wiki, or anything else. The Bash tool is allowed only for the single graphify query command above.\n\nQuestion: What happened at Launch Complex 34 on 1967-01-27?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R3\\transcripts\\d09.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "a830b66ca6cbafecd",
+    "start_utc": "2026-10-25T19:36:46.202Z",
+    "end_utc": "2026-10-25T19:36:59.883Z",
+    "time_s": 13.681,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 585,
+      "cache_read_input_tokens": 34926,
+      "cache_creation_input_tokens": 4461
+    },
+    "total_tokens": 39978,
+    "cost_usd_at_recorded_rates": 0.041014199999999994,
+    "cache_neutral_cost_usd": 0.169272,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Bash",
+        "input": {
+          "command": "graphify query \"What happened at Launch Complex 34 on 1967-01-27?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"",
+          "description": "Run graphify query for navigation"
+        }
+      }
+    ],
+    "tool_call_count": 2,
+    "note_read_count": 0,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+    ],
+    "answers": [
+      "ANSWER: I don't have that. The graphify query returned only nodes about Apollo 11: the 1201/1202 program alarms, the Apollo 11 Mission Report and its Section 5.3 on powered descent, Margaret Hamilton, the Apollo Guidance Computer, the lunar module, Neil Armstrong, Michael Collins, Tranquility Base and the MIT Instrumentation Laboratory. None of them is about Launch Complex 34 or 1967-01-27. The skill says not to open a node just to see what is in it, so I opened no brain nodes.\nFILES: (none)"
+    ],
+    "answer": "ANSWER: I don't have that. The graphify query returned only nodes about Apollo 11: the 1201/1202 program alarms, the Apollo 11 Mission Report and its Section 5.3 on powered descent, Margaret Hamilton, the Apollo Guidance Computer, the lunar module, Neil Armstrong, Michael Collins, Tranquility Base and the MIT Instrumentation Laboratory. None of them is about Launch Complex 34 or 1967-01-27. The skill says not to open a node just to see what is in it, so I opened no brain nodes.\nFILES: (none)",
+    "tool_errors": []
+  },
+  {
+    "id": "m01",
+    "condition": "R3",
+    "description": "R3 m01",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly, with one change: use graphify query as your navigation entry point instead of the brain's index. After reading the skill, call the Bash tool exactly once to run this command, using the question exactly as given:\ngraphify query \"Who commanded the mission that the astronaut who caught German measles was a backup for?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"\nQuestion logging is disabled by the environment. This query is local and does not call a model. Use only the note paths named by this query's NODE lines to choose the notes to read. Do not change the query, raise the budget, request other subgraphs, or work around an empty or truncated result. You may read index.md only if the query itself names it. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only the skill file plus files inside the brain root that the query names. Do not use Glob, Grep, ls or any search across files or folders. Do not read graph.json, the wiki, or anything else. The Bash tool is allowed only for the single graphify query command above.\n\nQuestion: Who commanded the mission that the astronaut who caught German measles was a backup for?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R3\\transcripts\\m01.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "abff3f68a3ccfb397",
+    "start_utc": "2026-10-25T19:36:50.842Z",
+    "end_utc": "2026-10-25T19:37:06.320Z",
+    "time_s": 15.478,
+    "usage": {
+      "input_tokens": 10,
+      "output_tokens": 807,
+      "cache_read_input_tokens": 70204,
+      "cache_creation_input_tokens": 9484
+    },
+    "total_tokens": 80505,
+    "cost_usd_at_recorded_rates": 0.07764080000000001,
+    "cache_neutral_cost_usd": 0.334932,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Bash",
+        "input": {
+          "command": "graphify query \"Who commanded the mission that the astronaut who caught German measles was a backup for?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"",
+          "description": "Run graphify query for navigation"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\rubella-crew-swap.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-13.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\charlie-duke.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\jim-lovell.md"
+        }
+      }
+    ],
+    "tool_call_count": 6,
+    "note_read_count": 4,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\rubella-crew-swap.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-13.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\charlie-duke.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\jim-lovell.md"
+    ],
+    "answers": [
+      "ANSWER: Jim Lovell. Charlie Duke caught German measles about three weeks before launch, and he was the backup lunar module pilot for Apollo 13. Jim Lovell commanded Apollo 13.\nFILES: topics/rubella-crew-swap.md, areas/apollo-13.md, people/charlie-duke.md, people/jim-lovell.md"
+    ],
+    "answer": "ANSWER: Jim Lovell. Charlie Duke caught German measles about three weeks before launch, and he was the backup lunar module pilot for Apollo 13. Jim Lovell commanded Apollo 13.\nFILES: topics/rubella-crew-swap.md, areas/apollo-13.md, people/charlie-duke.md, people/jim-lovell.md",
+    "tool_errors": []
+  },
+  {
+    "id": "m02",
+    "condition": "R3",
+    "description": "R3 m02",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly, with one change: use graphify query as your navigation entry point instead of the brain's index. After reading the skill, call the Bash tool exactly once to run this command, using the question exactly as given:\ngraphify query \"Which company's revised specification set the voltage that the Apollo 13 tank switches could not handle?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"\nQuestion logging is disabled by the environment. This query is local and does not call a model. Use only the note paths named by this query's NODE lines to choose the notes to read. Do not change the query, raise the budget, request other subgraphs, or work around an empty or truncated result. You may read index.md only if the query itself names it. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only the skill file plus files inside the brain root that the query names. Do not use Glob, Grep, ls or any search across files or folders. Do not read graph.json, the wiki, or anything else. The Bash tool is allowed only for the single graphify query command above.\n\nQuestion: Which company's revised specification set the voltage that the Apollo 13 tank switches could not handle?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R3\\transcripts\\m02.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "a9e7e5fa742bdc1cd",
+    "start_utc": "2026-10-25T19:36:55.446Z",
+    "end_utc": "2026-10-25T19:37:09.677Z",
+    "time_s": 14.231,
+    "usage": {
+      "input_tokens": 12,
+      "output_tokens": 735,
+      "cache_read_input_tokens": 87116,
+      "cache_creation_input_tokens": 8201
+    },
+    "total_tokens": 96064,
+    "cost_usd_at_recorded_rates": 0.0731762,
+    "cache_neutral_cost_usd": 0.396016,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Bash",
+        "input": {
+          "command": "graphify query \"Which company's revised specification set the voltage that the Apollo 13 tank switches could not handle?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"",
+          "description": "Run graphify query for question"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\oxygen-tank-2.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\beech-aircraft.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\north-american-aviation.md"
+        }
+      }
+    ],
+    "tool_call_count": 5,
+    "note_read_count": 3,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\oxygen-tank-2.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\beech-aircraft.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\north-american-aviation.md"
+    ],
+    "answers": [
+      "Need who revised spec. Check beech-aircraft.",
+      "ANSWER: North American Aviation, the prime contractor for the Apollo command and service module. In 1965 it revised the oxygen tank heater specification to 65 volts. The tank's thermostatic switches were built to a 1962 specification for 28 volts DC. Beech Aircraft, the subcontractor that built the tanks, never changed those switches. (src: Moonport SP-4204, 2026-10-24)\nFILES: topics/oxygen-tank-2.md, areas/beech-aircraft.md, areas/north-american-aviation.md"
+    ],
+    "answer": "ANSWER: North American Aviation, the prime contractor for the Apollo command and service module. In 1965 it revised the oxygen tank heater specification to 65 volts. The tank's thermostatic switches were built to a 1962 specification for 28 volts DC. Beech Aircraft, the subcontractor that built the tanks, never changed those switches. (src: Moonport SP-4204, 2026-10-24)\nFILES: topics/oxygen-tank-2.md, areas/beech-aircraft.md, areas/north-american-aviation.md",
+    "tool_errors": []
+  },
+  {
+    "id": "m03",
+    "condition": "R3",
+    "description": "R3 m03",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly, with one change: use graphify query as your navigation entry point instead of the brain's index. After reading the skill, call the Bash tool exactly once to run this command, using the question exactly as given:\ngraphify query \"Which NASA centre was the Apollo 13 Review Board chair directing, and what did the board find caused the explosion?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"\nQuestion logging is disabled by the environment. This query is local and does not call a model. Use only the note paths named by this query's NODE lines to choose the notes to read. Do not change the query, raise the budget, request other subgraphs, or work around an empty or truncated result. You may read index.md only if the query itself names it. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only the skill file plus files inside the brain root that the query names. Do not use Glob, Grep, ls or any search across files or folders. Do not read graph.json, the wiki, or anything else. The Bash tool is allowed only for the single graphify query command above.\n\nQuestion: Which NASA centre was the Apollo 13 Review Board chair directing, and what did the board find caused the explosion?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R3\\transcripts\\m03.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "ac69102d66d6ac013",
+    "start_utc": "2026-10-25T19:37:00.186Z",
+    "end_utc": "2026-10-25T19:37:11.772Z",
+    "time_s": 11.586,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 590,
+      "cache_read_input_tokens": 57409,
+      "cache_creation_input_tokens": 8228
+    },
+    "total_tokens": 66235,
+    "cost_usd_at_recorded_rates": 0.0644538,
+    "cache_neutral_cost_usd": 0.27438,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Bash",
+        "input": {
+          "command": "graphify query \"Which NASA centre was the Apollo 13 Review Board chair directing, and what did the board find caused the explosion?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"",
+          "description": "Run graphify query for navigation"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-13-review-board.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\edgar-cortright.md"
+        }
+      }
+    ],
+    "tool_call_count": 4,
+    "note_read_count": 2,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-13-review-board.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\edgar-cortright.md"
+    ],
+    "answers": [
+      "ANSWER: The board's chair was Edgar Cortright, who was director of NASA Langley Research Center at the time. The board traced the explosion to a fire in oxygen tank No. 2 that was started electrically. It recommended redesigning the oxygen tank and taking the electrical equipment out of its interior.\nFILES: areas/apollo-13-review-board.md, people/edgar-cortright.md"
+    ],
+    "answer": "ANSWER: The board's chair was Edgar Cortright, who was director of NASA Langley Research Center at the time. The board traced the explosion to a fire in oxygen tank No. 2 that was started electrically. It recommended redesigning the oxygen tank and taking the electrical equipment out of its interior.\nFILES: areas/apollo-13-review-board.md, people/edgar-cortright.md",
+    "tool_errors": []
+  },
+  {
+    "id": "m04",
+    "condition": "R3",
+    "description": "R3 m04",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly, with one change: use graphify query as your navigation entry point instead of the brain's index. After reading the skill, call the Bash tool exactly once to run this command, using the question exactly as given:\ngraphify query \"The rocket that first carried a crew on Apollo 8 was developed under whom, and which centre did that person direct?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"\nQuestion logging is disabled by the environment. This query is local and does not call a model. Use only the note paths named by this query's NODE lines to choose the notes to read. Do not change the query, raise the budget, request other subgraphs, or work around an empty or truncated result. You may read index.md only if the query itself names it. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only the skill file plus files inside the brain root that the query names. Do not use Glob, Grep, ls or any search across files or folders. Do not read graph.json, the wiki, or anything else. The Bash tool is allowed only for the single graphify query command above.\n\nQuestion: The rocket that first carried a crew on Apollo 8 was developed under whom, and which centre did that person direct?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R3\\transcripts\\m04.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "a2cab7edaad4d0b1a",
+    "start_utc": "2026-10-25T19:37:04.936Z",
+    "end_utc": "2026-10-25T19:37:16.116Z",
+    "time_s": 11.18,
+    "usage": {
+      "input_tokens": 10,
+      "output_tokens": 681,
+      "cache_read_input_tokens": 70160,
+      "cache_creation_input_tokens": 8300
+    },
+    "total_tokens": 79151,
+    "cost_usd_at_recorded_rates": 0.069192,
+    "cache_neutral_cost_usd": 0.3275,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Bash",
+        "input": {
+          "command": "graphify query \"The rocket that first carried a crew on Apollo 8 was developed under whom, and which centre did that person direct?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"",
+          "description": "Run graphify query for the question"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-8.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-program.md"
+        }
+      }
+    ],
+    "tool_call_count": 4,
+    "note_read_count": 2,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-8.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-program.md"
+    ],
+    "answers": [
+      "ANSWER: I don't have that. The notes I opened show that Apollo 8, launched on 1968-12-21, was the first crewed flight of the Saturn V. Neither note says who the Saturn V was developed under or which centre that person directed. Both link to a `saturn-v` node, but the query did not name it as a note path, so I did not open it.\nFILES: areas/apollo-8.md, areas/apollo-program.md"
+    ],
+    "answer": "ANSWER: I don't have that. The notes I opened show that Apollo 8, launched on 1968-12-21, was the first crewed flight of the Saturn V. Neither note says who the Saturn V was developed under or which centre that person directed. Both link to a `saturn-v` node, but the query did not name it as a note path, so I did not open it.\nFILES: areas/apollo-8.md, areas/apollo-program.md",
+    "tool_errors": []
+  },
+  {
+    "id": "m05",
+    "condition": "R3",
+    "description": "R3 m05",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly, with one change: use graphify query as your navigation entry point instead of the brain's index. After reading the skill, call the Bash tool exactly once to run this command, using the question exactly as given:\ngraphify query \"Who was capsule communicator during the first Moon landing, and did they later walk on the Moon?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"\nQuestion logging is disabled by the environment. This query is local and does not call a model. Use only the note paths named by this query's NODE lines to choose the notes to read. Do not change the query, raise the budget, request other subgraphs, or work around an empty or truncated result. You may read index.md only if the query itself names it. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only the skill file plus files inside the brain root that the query names. Do not use Glob, Grep, ls or any search across files or folders. Do not read graph.json, the wiki, or anything else. The Bash tool is allowed only for the single graphify query command above.\n\nQuestion: Who was capsule communicator during the first Moon landing, and did they later walk on the Moon?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R3\\transcripts\\m05.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "ac753837789fc3c68",
+    "start_utc": "2026-10-25T19:37:09.584Z",
+    "end_utc": "2026-10-25T19:37:17.390Z",
+    "time_s": 7.806,
+    "usage": {
+      "input_tokens": 6,
+      "output_tokens": 390,
+      "cache_read_input_tokens": 34955,
+      "cache_creation_input_tokens": 3058
+    },
+    "total_tokens": 38409,
+    "cost_usd_at_recorded_rates": 0.030105,
+    "cache_neutral_cost_usd": 0.159876,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Bash",
+        "input": {
+          "command": "graphify query \"Who was capsule communicator during the first Moon landing, and did they later walk on the Moon?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"",
+          "description": "Run graphify query for the question"
+        }
+      }
+    ],
+    "tool_call_count": 2,
+    "note_read_count": 0,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+    ],
+    "answers": [
+      "ANSWER: I don't have that. The graphify query found no matching nodes, so it named no notes for me to open. The instructions don't allow working around an empty result, so I checked no brain files and have nothing to answer from.\nFILES: (none)"
+    ],
+    "answer": "ANSWER: I don't have that. The graphify query found no matching nodes, so it named no notes for me to open. The instructions don't allow working around an empty result, so I checked no brain files and have nothing to answer from.\nFILES: (none)",
+    "tool_errors": [
+      "Exit code 4\nNo matching nodes found."
+    ]
+  },
+  {
+    "id": "p01",
+    "condition": "R3",
+    "description": "R3 p01",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly, with one change: use graphify query as your navigation entry point instead of the brain's index. After reading the skill, call the Bash tool exactly once to run this command, using the question exactly as given:\ngraphify query \"According to the Apollo 11 Mission Report, how much reaction control propellant was used in powered descent against the prediction, and on which page?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"\nQuestion logging is disabled by the environment. This query is local and does not call a model. Use only the note paths named by this query's NODE lines to choose the notes to read. Do not change the query, raise the budget, request other subgraphs, or work around an empty or truncated result. You may read index.md only if the query itself names it. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only the skill file plus files inside the brain root that the query names. Do not use Glob, Grep, ls or any search across files or folders. Do not read graph.json, the wiki, or anything else. The Bash tool is allowed only for the single graphify query command above.\n\nQuestion: According to the Apollo 11 Mission Report, how much reaction control propellant was used in powered descent against the prediction, and on which page?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R3\\transcripts\\p01.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "a66c8b618f89d0b54",
+    "start_utc": "2026-10-25T19:37:14.382Z",
+    "end_utc": "2026-10-25T19:37:25.165Z",
+    "time_s": 10.783,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 569,
+      "cache_read_input_tokens": 53720,
+      "cache_creation_input_tokens": 9400
+    },
+    "total_tokens": 63697,
+    "cost_usd_at_recorded_rates": 0.069156,
+    "cache_neutral_cost_usd": 0.263892,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Bash",
+        "input": {
+          "command": "graphify query \"According to the Apollo 11 Mission Report, how much reaction control propellant was used in powered descent against the prediction, and on which page?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"",
+          "description": "Run graphify query for navigation"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\sources\\apollo-11-mission-report\\apollo-11-mission-report-ch-05.md"
+        }
+      }
+    ],
+    "tool_call_count": 3,
+    "note_read_count": 1,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\sources\\apollo-11-mission-report\\apollo-11-mission-report-ch-05.md"
+    ],
+    "answers": [
+      "ANSWER: About 95 pounds of reaction control propellant were used in powered descent, against 40 pounds predicted. This is on page 5-6 of the Apollo 11 Mission Report, in Section 5.3: Powered Descent, which covers pages 5-4 to 5-6. The same page says manual-mode reaction control use was 51 pounds, about 1.5 times the automatic rate.\nFILES: sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md"
+    ],
+    "answer": "ANSWER: About 95 pounds of reaction control propellant were used in powered descent, against 40 pounds predicted. This is on page 5-6 of the Apollo 11 Mission Report, in Section 5.3: Powered Descent, which covers pages 5-4 to 5-6. The same page says manual-mode reaction control use was 51 pounds, about 1.5 times the automatic rate.\nFILES: sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+    "tool_errors": []
+  },
+  {
+    "id": "p02",
+    "condition": "R3",
+    "description": "R3 p02",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly, with one change: use graphify query as your navigation entry point instead of the brain's index. After reading the skill, call the Bash tool exactly once to run this command, using the question exactly as given:\ngraphify query \"At what altitude did manual control begin on Apollo 11, how far downrange of the aim point did it land, and on which page of the report?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"\nQuestion logging is disabled by the environment. This query is local and does not call a model. Use only the note paths named by this query's NODE lines to choose the notes to read. Do not change the query, raise the budget, request other subgraphs, or work around an empty or truncated result. You may read index.md only if the query itself names it. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only the skill file plus files inside the brain root that the query names. Do not use Glob, Grep, ls or any search across files or folders. Do not read graph.json, the wiki, or anything else. The Bash tool is allowed only for the single graphify query command above.\n\nQuestion: At what altitude did manual control begin on Apollo 11, how far downrange of the aim point did it land, and on which page of the report?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R3\\transcripts\\p02.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "a9f1b55255cea7f13",
+    "start_utc": "2026-10-25T19:37:19.133Z",
+    "end_utc": "2026-10-25T19:37:31.131Z",
+    "time_s": 11.998,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 567,
+      "cache_read_input_tokens": 53709,
+      "cache_creation_input_tokens": 9402
+    },
+    "total_tokens": 63686,
+    "cost_usd_at_recorded_rates": 0.0691238,
+    "cache_neutral_cost_usd": 0.263816,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Bash",
+        "input": {
+          "command": "graphify query \"At what altitude did manual control begin on Apollo 11, how far downrange of the aim point did it land, and on which page of the report?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"",
+          "description": "Run graphify query for navigation"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\sources\\apollo-11-mission-report\\apollo-11-mission-report-ch-05.md"
+        }
+      }
+    ],
+    "tool_call_count": 3,
+    "note_read_count": 1,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\sources\\apollo-11-mission-report\\apollo-11-mission-report-ch-05.md"
+    ],
+    "answers": [
+      "ANSWER: Manual control began at about 600 feet, and the craft landed about 1100 feet downrange of the initial aim point. This is on page 5-5 of the Apollo 11 Mission Report, in Section 5.3: Powered Descent, which covers pages 5-4 to 5-6. Source line: (src: Apollo 11 Mission Report p.5-5, 2026-10-24).\nFILES: sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md"
+    ],
+    "answer": "ANSWER: Manual control began at about 600 feet, and the craft landed about 1100 feet downrange of the initial aim point. This is on page 5-5 of the Apollo 11 Mission Report, in Section 5.3: Powered Descent, which covers pages 5-4 to 5-6. Source line: (src: Apollo 11 Mission Report p.5-5, 2026-10-24).\nFILES: sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+    "tool_errors": []
+  },
+  {
+    "id": "p03",
+    "condition": "R3",
+    "description": "R3 p03",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly, with one change: use graphify query as your navigation entry point instead of the brain's index. After reading the skill, call the Bash tool exactly once to run this command, using the question exactly as given:\ngraphify query \"Which pages of the Apollo 11 Mission Report cover the powered descent section, and what forced the landing point redesignation?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"\nQuestion logging is disabled by the environment. This query is local and does not call a model. Use only the note paths named by this query's NODE lines to choose the notes to read. Do not change the query, raise the budget, request other subgraphs, or work around an empty or truncated result. You may read index.md only if the query itself names it. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only the skill file plus files inside the brain root that the query names. Do not use Glob, Grep, ls or any search across files or folders. Do not read graph.json, the wiki, or anything else. The Bash tool is allowed only for the single graphify query command above.\n\nQuestion: Which pages of the Apollo 11 Mission Report cover the powered descent section, and what forced the landing point redesignation?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R3\\transcripts\\p03.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "a6dcaf13b177b056d",
+    "start_utc": "2026-10-25T19:37:23.935Z",
+    "end_utc": "2026-10-25T19:37:35.331Z",
+    "time_s": 11.396,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 583,
+      "cache_read_input_tokens": 53704,
+      "cache_creation_input_tokens": 9395
+    },
+    "total_tokens": 63690,
+    "cost_usd_at_recorded_rates": 0.0694078,
+    "cache_neutral_cost_usd": 0.264088,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Bash",
+        "input": {
+          "command": "graphify query \"Which pages of the Apollo 11 Mission Report cover the powered descent section, and what forced the landing point redesignation?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"",
+          "description": "Run graphify query for the question"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\sources\\apollo-11-mission-report\\apollo-11-mission-report-ch-05.md"
+        }
+      }
+    ],
+    "tool_call_count": 3,
+    "note_read_count": 1,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\sources\\apollo-11-mission-report\\apollo-11-mission-report-ch-05.md"
+    ],
+    "answers": [
+      "ANSWER: Section 5.3, Powered Descent, covers pages 5-4 to 5-6 of the Apollo 11 Mission Report. The redesignation was forced because the approach path led into a large crater, which made an unplanned redesignation necessary (src: Apollo 11 Mission Report p.5-4). Manual control then began at about 600 feet, and the craft landed about 1100 feet downrange of the initial aim point (p.5-5).\nFILES: sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md"
+    ],
+    "answer": "ANSWER: Section 5.3, Powered Descent, covers pages 5-4 to 5-6 of the Apollo 11 Mission Report. The redesignation was forced because the approach path led into a large crater, which made an unplanned redesignation necessary (src: Apollo 11 Mission Report p.5-4). Manual control then began at about 600 feet, and the craft landed about 1100 feet downrange of the initial aim point (p.5-5).\nFILES: sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+    "tool_errors": []
+  },
+  {
+    "id": "t01",
+    "condition": "R3",
+    "description": "R3 t01",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly, with one change: use graphify query as your navigation entry point instead of the brain's index. After reading the skill, call the Bash tool exactly once to run this command, using the question exactly as given:\ngraphify query \"What was Apollo 13's mission goal before it changed, what changed it, and when?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"\nQuestion logging is disabled by the environment. This query is local and does not call a model. Use only the note paths named by this query's NODE lines to choose the notes to read. Do not change the query, raise the budget, request other subgraphs, or work around an empty or truncated result. You may read index.md only if the query itself names it. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only the skill file plus files inside the brain root that the query names. Do not use Glob, Grep, ls or any search across files or folders. Do not read graph.json, the wiki, or anything else. The Bash tool is allowed only for the single graphify query command above.\n\nQuestion: What was Apollo 13's mission goal before it changed, what changed it, and when?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R3\\transcripts\\t01.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "a5849d4982583c1af",
+    "start_utc": "2026-10-25T19:37:28.546Z",
+    "end_utc": "2026-10-25T19:37:39.345Z",
+    "time_s": 10.799,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 528,
+      "cache_read_input_tokens": 52405,
+      "cache_creation_input_tokens": 8086
+    },
+    "total_tokens": 61027,
+    "cost_usd_at_recorded_rates": 0.061503,
+    "cache_neutral_cost_usd": 0.252556,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Bash",
+        "input": {
+          "command": "graphify query \"What was Apollo 13's mission goal before it changed, what changed it, and when?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"",
+          "description": "Run graphify query for Apollo 13 question"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-13.md"
+        }
+      }
+    ],
+    "tool_call_count": 3,
+    "note_read_count": 1,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-13.md"
+    ],
+    "answers": [
+      "ANSWER: Apollo 13's mission goal was originally a lunar landing at Fra Mauro. A Mission Control abort decision changed it on 1970-04-13. The current goal is a safe return to Earth (src: NASA Apollo 13 mission page, 2026-10-24). The same node also says that Apollo 14 later reached the Fra Mauro landing site in February 1971 (src: NASA history, 2026-10-24).\nFILES: areas/apollo-13.md"
+    ],
+    "answer": "ANSWER: Apollo 13's mission goal was originally a lunar landing at Fra Mauro. A Mission Control abort decision changed it on 1970-04-13. The current goal is a safe return to Earth (src: NASA Apollo 13 mission page, 2026-10-24). The same node also says that Apollo 14 later reached the Fra Mauro landing site in February 1971 (src: NASA history, 2026-10-24).\nFILES: areas/apollo-13.md",
+    "tool_errors": []
+  },
+  {
+    "id": "t02",
+    "condition": "R3",
+    "description": "R3 t02",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly, with one change: use graphify query as your navigation entry point instead of the brain's index. After reading the skill, call the Bash tool exactly once to run this command, using the question exactly as given:\ngraphify query \"What was Jack Swigert's Apollo 13 role before 1970-04-10, and what is it now?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"\nQuestion logging is disabled by the environment. This query is local and does not call a model. Use only the note paths named by this query's NODE lines to choose the notes to read. Do not change the query, raise the budget, request other subgraphs, or work around an empty or truncated result. You may read index.md only if the query itself names it. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only the skill file plus files inside the brain root that the query names. Do not use Glob, Grep, ls or any search across files or folders. Do not read graph.json, the wiki, or anything else. The Bash tool is allowed only for the single graphify query command above.\n\nQuestion: What was Jack Swigert's Apollo 13 role before 1970-04-10, and what is it now?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R3\\transcripts\\t02.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "a2d59d11e2c1c2a7d",
+    "start_utc": "2026-10-25T19:37:33.192Z",
+    "end_utc": "2026-10-25T19:37:44.867Z",
+    "time_s": 11.675,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 538,
+      "cache_read_input_tokens": 51649,
+      "cache_creation_input_tokens": 7005
+    },
+    "total_tokens": 59200,
+    "cost_usd_at_recorded_rates": 0.056146800000000004,
+    "cache_neutral_cost_usd": 0.245408,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Bash",
+        "input": {
+          "command": "graphify query \"What was Jack Swigert's Apollo 13 role before 1970-04-10, and what is it now?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"",
+          "description": "Run graphify query for question"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\jack-swigert.md"
+        }
+      }
+    ],
+    "tool_call_count": 3,
+    "note_read_count": 1,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\jack-swigert.md"
+    ],
+    "answers": [
+      "ANSWER: Before 1970-04-10, Jack Swigert was Apollo 13's backup command module pilot. He is now listed as its prime command module pilot. The change was made on 1970-04-10 at a KSC management meeting. This is a [stated] fact, sourced to the \"NASA history Apollo 13 measles article, 2026-10-24\". The same node says he was immune to rubella, which made him eligible to fly, and that he replaced Ken Mattingly.\nFILES: people/jack-swigert.md"
+    ],
+    "answer": "ANSWER: Before 1970-04-10, Jack Swigert was Apollo 13's backup command module pilot. He is now listed as its prime command module pilot. The change was made on 1970-04-10 at a KSC management meeting. This is a [stated] fact, sourced to the \"NASA history Apollo 13 measles article, 2026-10-24\". The same node says he was immune to rubella, which made him eligible to fly, and that he replaced Ken Mattingly.\nFILES: people/jack-swigert.md",
+    "tool_errors": []
+  },
+  {
+    "id": "t03",
+    "condition": "R3",
+    "description": "R3 t03",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly, with one change: use graphify query as your navigation entry point instead of the brain's index. After reading the skill, call the Bash tool exactly once to run this command, using the question exactly as given:\ngraphify query \"What was the Houston centre called before it became Johnson Space Center, and when was it renamed?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"\nQuestion logging is disabled by the environment. This query is local and does not call a model. Use only the note paths named by this query's NODE lines to choose the notes to read. Do not change the query, raise the budget, request other subgraphs, or work around an empty or truncated result. You may read index.md only if the query itself names it. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only the skill file plus files inside the brain root that the query names. Do not use Glob, Grep, ls or any search across files or folders. Do not read graph.json, the wiki, or anything else. The Bash tool is allowed only for the single graphify query command above.\n\nQuestion: What was the Houston centre called before it became Johnson Space Center, and when was it renamed?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R3\\transcripts\\t03.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "ae46abe97a3c0b97d",
+    "start_utc": "2026-10-25T19:37:37.789Z",
+    "end_utc": "2026-10-25T19:37:53.012Z",
+    "time_s": 15.223,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 480,
+      "cache_read_input_tokens": 48355,
+      "cache_creation_input_tokens": 3736
+    },
+    "total_tokens": 52579,
+    "cost_usd_at_recorded_rates": 0.037983,
+    "cache_neutral_cost_usd": 0.217996,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Bash",
+        "input": {
+          "command": "graphify query \"What was the Houston centre called before it became Johnson Space Center, and when was it renamed?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"",
+          "description": "Run graphify query for navigation"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\mission-control-houston.md"
+        }
+      }
+    ],
+    "tool_call_count": 3,
+    "note_read_count": 1,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\mission-control-houston.md"
+    ],
+    "answers": [
+      "ANSWER: Before it became Johnson Space Center, the Houston centre was called the Manned Spacecraft Center. It was renamed on 1973-02-19, in honour of Lyndon B. Johnson. This is a stated fact from NASA history, recorded 2026-10-24.\nFILES: areas/mission-control-houston.md"
+    ],
+    "answer": "ANSWER: Before it became Johnson Space Center, the Houston centre was called the Manned Spacecraft Center. It was renamed on 1973-02-19, in honour of Lyndon B. Johnson. This is a stated fact from NASA history, recorded 2026-10-24.\nFILES: areas/mission-control-houston.md",
+    "tool_errors": []
+  },
+  {
+    "id": "n01",
+    "condition": "R3",
+    "description": "R3 n01",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly, with one change: use graphify query as your navigation entry point instead of the brain's index. After reading the skill, call the Bash tool exactly once to run this command, using the question exactly as given:\ngraphify query \"How much did the Apollo program cost?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"\nQuestion logging is disabled by the environment. This query is local and does not call a model. Use only the note paths named by this query's NODE lines to choose the notes to read. Do not change the query, raise the budget, request other subgraphs, or work around an empty or truncated result. You may read index.md only if the query itself names it. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only the skill file plus files inside the brain root that the query names. Do not use Glob, Grep, ls or any search across files or folders. Do not read graph.json, the wiki, or anything else. The Bash tool is allowed only for the single graphify query command above.\n\nQuestion: How much did the Apollo program cost?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R3\\transcripts\\n01.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "a5e1c221ef9a0c017",
+    "start_utc": "2026-10-25T19:38:05.717Z",
+    "end_utc": "2026-10-25T19:38:30.669Z",
+    "time_s": 24.952,
+    "usage": {
+      "input_tokens": 10,
+      "output_tokens": 630,
+      "cache_read_input_tokens": 71849,
+      "cache_creation_input_tokens": 9017
+    },
+    "total_tokens": 81506,
+    "cost_usd_at_recorded_rates": 0.0720948,
+    "cache_neutral_cost_usd": 0.336104,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Bash",
+        "input": {
+          "command": "graphify query \"How much did the Apollo program cost?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"",
+          "description": "Run graphify query for Apollo cost"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-program.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\nasa.md"
+        }
+      }
+    ],
+    "tool_call_count": 4,
+    "note_read_count": 2,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-program.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\nasa.md"
+    ],
+    "answers": [
+      "ANSWER: I don't have that. I checked areas/apollo-program.md and areas/nasa.md. Neither gives a cost or budget for the Apollo program. The program node lists only six crewed landings from July 1969 to December 1972, twelve moonwalkers, Apollo 17 as the last mission, and the 1962 choice of lunar orbit rendezvous. The NASA node says only that NASA began operating on 1958-10-01 and ran the program.\nFILES: areas/apollo-program.md, areas/nasa.md"
+    ],
+    "answer": "ANSWER: I don't have that. I checked areas/apollo-program.md and areas/nasa.md. Neither gives a cost or budget for the Apollo program. The program node lists only six crewed landings from July 1969 to December 1972, twelve moonwalkers, Apollo 17 as the last mission, and the 1962 choice of lunar orbit rendezvous. The NASA node says only that NASA began operating on 1958-10-01 and ran the program.\nFILES: areas/apollo-program.md, areas/nasa.md",
+    "tool_errors": []
+  },
+  {
+    "id": "n02",
+    "condition": "R3",
+    "description": "R3 n02",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly, with one change: use graphify query as your navigation entry point instead of the brain's index. After reading the skill, call the Bash tool exactly once to run this command, using the question exactly as given:\ngraphify query \"Who was the command module pilot of Apollo 12?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"\nQuestion logging is disabled by the environment. This query is local and does not call a model. Use only the note paths named by this query's NODE lines to choose the notes to read. Do not change the query, raise the budget, request other subgraphs, or work around an empty or truncated result. You may read index.md only if the query itself names it. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only the skill file plus files inside the brain root that the query names. Do not use Glob, Grep, ls or any search across files or folders. Do not read graph.json, the wiki, or anything else. The Bash tool is allowed only for the single graphify query command above.\n\nQuestion: Who was the command module pilot of Apollo 12?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R3\\transcripts\\n02.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "a05bf1a7ef817977a",
+    "start_utc": "2026-10-25T19:38:10.382Z",
+    "end_utc": "2026-10-25T19:38:30.379Z",
+    "time_s": 19.997,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 649,
+      "cache_read_input_tokens": 48508,
+      "cache_creation_input_tokens": 3984
+    },
+    "total_tokens": 53149,
+    "cost_usd_at_recorded_rates": 0.0426336,
+    "cache_neutral_cost_usd": 0.22298,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Bash",
+        "input": {
+          "command": "graphify query \"Who was the command module pilot of Apollo 12?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"",
+          "description": "Run graphify query for the question"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\command-service-module.md"
+        }
+      }
+    ],
+    "tool_call_count": 3,
+    "note_read_count": 1,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\command-service-module.md"
+    ],
+    "answers": [
+      "ANSWER: I don't have that. The query returned nodes on the command and service module, Apollo 1, the Apollo 11 program alarms, Apollo 13 and the lunar module. None of them covers Apollo 12. I opened only topics/command-service-module.md, the most likely of those notes. It names the command modules of Apollo 11 (Columbia) and Apollo 13 (Odyssey) and links to Michael Collins as a pilot. It says nothing about Apollo 12 or who flew its command module.\nFILES: topics/command-service-module.md"
+    ],
+    "answer": "ANSWER: I don't have that. The query returned nodes on the command and service module, Apollo 1, the Apollo 11 program alarms, Apollo 13 and the lunar module. None of them covers Apollo 12. I opened only topics/command-service-module.md, the most likely of those notes. It names the command modules of Apollo 11 (Columbia) and Apollo 13 (Odyssey) and links to Michael Collins as a pilot. It says nothing about Apollo 12 or who flew its command module.\nFILES: topics/command-service-module.md",
+    "tool_errors": []
+  },
+  {
+    "id": "n03",
+    "condition": "R3",
+    "description": "R3 n03",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly, with one change: use graphify query as your navigation entry point instead of the brain's index. After reading the skill, call the Bash tool exactly once to run this command, using the question exactly as given:\ngraphify query \"What did Michael Collins say about being alone behind the Moon?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"\nQuestion logging is disabled by the environment. This query is local and does not call a model. Use only the note paths named by this query's NODE lines to choose the notes to read. Do not change the query, raise the budget, request other subgraphs, or work around an empty or truncated result. You may read index.md only if the query itself names it. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only the skill file plus files inside the brain root that the query names. Do not use Glob, Grep, ls or any search across files or folders. Do not read graph.json, the wiki, or anything else. The Bash tool is allowed only for the single graphify query command above.\n\nQuestion: What did Michael Collins say about being alone behind the Moon?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R3\\transcripts\\n03.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "ad7a1a2a5789a05fc",
+    "start_utc": "2026-10-25T19:38:14.909Z",
+    "end_utc": "2026-10-25T19:38:30.846Z",
+    "time_s": 15.937,
+    "usage": {
+      "input_tokens": 8,
+      "output_tokens": 558,
+      "cache_read_input_tokens": 49641,
+      "cache_creation_input_tokens": 4998
+    },
+    "total_tokens": 55205,
+    "cost_usd_at_recorded_rates": 0.0461102,
+    "cache_neutral_cost_usd": 0.229748,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Bash",
+        "input": {
+          "command": "graphify query \"What did Michael Collins say about being alone behind the Moon?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"",
+          "description": "Run graphify query for the question"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\michael-collins.md"
+        }
+      }
+    ],
+    "tool_call_count": 3,
+    "note_read_count": 1,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\michael-collins.md"
+    ],
+    "answers": [
+      "ANSWER: I don't have that. The query pointed me to people/michael-collins.md, and that note does not record anything Collins said about being alone behind the Moon. Its facts say he was the Apollo 11 command module pilot, that he stayed in lunar orbit aboard the command module Columbia during the landing, and that he flew Gemini 10 in 1966. None of them gives a quote or statement from him about being alone.\nFILES: people/michael-collins.md"
+    ],
+    "answer": "ANSWER: I don't have that. The query pointed me to people/michael-collins.md, and that note does not record anything Collins said about being alone behind the Moon. Its facts say he was the Apollo 11 command module pilot, that he stayed in lunar orbit aboard the command module Columbia during the landing, and that he flew Gemini 10 in 1966. None of them gives a quote or statement from him about being alone.\nFILES: people/michael-collins.md",
+    "tool_errors": []
+  },
+  {
+    "id": "n04",
+    "condition": "R3",
+    "description": "R3 n04",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly, with one change: use graphify query as your navigation entry point instead of the brain's index. After reading the skill, call the Bash tool exactly once to run this command, using the question exactly as given:\ngraphify query \"What colour vest did Gene Kranz wear during Apollo 13?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"\nQuestion logging is disabled by the environment. This query is local and does not call a model. Use only the note paths named by this query's NODE lines to choose the notes to read. Do not change the query, raise the budget, request other subgraphs, or work around an empty or truncated result. You may read index.md only if the query itself names it. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only the skill file plus files inside the brain root that the query names. Do not use Glob, Grep, ls or any search across files or folders. Do not read graph.json, the wiki, or anything else. The Bash tool is allowed only for the single graphify query command above.\n\nQuestion: What colour vest did Gene Kranz wear during Apollo 13?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R3\\transcripts\\n04.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "aa03fe81a9ae401de",
+    "start_utc": "2026-10-25T19:38:19.309Z",
+    "end_utc": "2026-10-25T19:38:35.545Z",
+    "time_s": 16.236,
+    "usage": {
+      "input_tokens": 10,
+      "output_tokens": 689,
+      "cache_read_input_tokens": 69550,
+      "cache_creation_input_tokens": 8754
+    },
+    "total_tokens": 79003,
+    "cost_usd_at_recorded_rates": 0.0715,
+    "cache_neutral_cost_usd": 0.327036,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Bash",
+        "input": {
+          "command": "graphify query \"What colour vest did Gene Kranz wear during Apollo 13?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"",
+          "description": "Run graphify query"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\gene-kranz.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-13.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\mission-control-houston.md"
+        }
+      }
+    ],
+    "tool_call_count": 5,
+    "note_read_count": 3,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\gene-kranz.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-13.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\mission-control-houston.md"
+    ],
+    "answers": [
+      "ANSWER: I don't have that. The brain says Gene Kranz was flight director for the Apollo 11 landing, and that his team was on console when Apollo 13's oxygen tank failed. None of the three notes I opened mentions a vest or its colour. I checked his person note, the Apollo 13 note and the Mission Control Houston note.\nFILES: people/gene-kranz.md, areas/apollo-13.md, areas/mission-control-houston.md"
+    ],
+    "answer": "ANSWER: I don't have that. The brain says Gene Kranz was flight director for the Apollo 11 landing, and that his team was on console when Apollo 13's oxygen tank failed. None of the three notes I opened mentions a vest or its colour. I checked his person note, the Apollo 13 note and the Mission Control Houston note.\nFILES: people/gene-kranz.md, areas/apollo-13.md, areas/mission-control-houston.md",
+    "tool_errors": []
+  },
+  {
+    "id": "n05",
+    "condition": "R3",
+    "description": "R3 n05",
+    "model": [
+      "claude-opus-5-5"
+    ],
+    "prompt_exact": true,
+    "subagent_type": "Explore",
+    "launch_model": "opus",
+    "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly, with one change: use graphify query as your navigation entry point instead of the brain's index. After reading the skill, call the Bash tool exactly once to run this command, using the question exactly as given:\ngraphify query \"What landing coordinates did the Lunar Reconnaissance Orbiter later measure for Apollo 11?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"\nQuestion logging is disabled by the environment. This query is local and does not call a model. Use only the note paths named by this query's NODE lines to choose the notes to read. Do not change the query, raise the budget, request other subgraphs, or work around an empty or truncated result. You may read index.md only if the query itself names it. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only the skill file plus files inside the brain root that the query names. Do not use Glob, Grep, ls or any search across files or folders. Do not read graph.json, the wiki, or anything else. The Bash tool is allowed only for the single graphify query command above.\n\nQuestion: What landing coordinates did the Lunar Reconnaissance Orbiter later measure for Apollo 11?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+    "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R3\\transcripts\\n05.jsonl",
+    "finalized_transcript_available": true,
+    "agent_id": "a2932c2b902b9fbea",
+    "start_utc": "2026-10-25T19:38:24.012Z",
+    "end_utc": "2026-10-25T19:38:37.358Z",
+    "time_s": 13.346,
+    "usage": {
+      "input_tokens": 12,
+      "output_tokens": 852,
+      "cache_read_input_tokens": 93593,
+      "cache_creation_input_tokens": 10902
+    },
+    "total_tokens": 105359,
+    "cost_usd_at_recorded_rates": 0.09031660000000001,
+    "cache_neutral_cost_usd": 0.435068,
+    "tool_calls": [
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+        }
+      },
+      {
+        "name": "Bash",
+        "input": {
+          "command": "graphify query \"What landing coordinates did the Lunar Reconnaissance Orbiter later measure for Apollo 11?\" --budget 2000 --graph \"C:/Users/shman/OneDrive/Desktop/Yggdrass OS/Yggdrass-OS/evals/experiments/retrieval/build/graphify-out/graph.json\"",
+          "description": "Run graphify query for the question"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\tranquility-base.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-11.md"
+        }
+      },
+      {
+        "name": "Read",
+        "input": {
+          "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\sources\\apollo-11-mission-report\\apollo-11-mission-report-ch-05.md"
+        }
+      }
+    ],
+    "tool_call_count": 5,
+    "note_read_count": 3,
+    "wiki_read_count": 0,
+    "opened_paths": [
+      "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\tranquility-base.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-11.md",
+      "C:\\Users\\shman\\yggdras-brain\\demo-brain\\sources\\apollo-11-mission-report\\apollo-11-mission-report-ch-05.md"
+    ],
+    "answers": [
+      "ANSWER: I don't have that. None of the notes I opened mention the Lunar Reconnaissance Orbiter or any landing coordinates it measured later. The only coordinates in the brain come from the Apollo 11 Mission Report. They put the actual landing point at 0 degrees 41 minutes 15 seconds north, 23 degrees 26 minutes east (src: Apollo 11 Mission Report p.5-6, 2026-10-24). That is not an LRO measurement. I checked the Tranquility Base topic, the Apollo 11 area, and the Mission Report Section 5.3 chunk (pages 5-4 to 5-6).\nFILES: topics/tranquility-base.md, areas/apollo-11.md, sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md"
+    ],
+    "answer": "ANSWER: I don't have that. None of the notes I opened mention the Lunar Reconnaissance Orbiter or any landing coordinates it measured later. The only coordinates in the brain come from the Apollo 11 Mission Report. They put the actual landing point at 0 degrees 41 minutes 15 seconds north, 23 degrees 26 minutes east (src: Apollo 11 Mission Report p.5-6, 2026-10-24). That is not an LRO measurement. I checked the Tranquility Base topic, the Apollo 11 area, and the Mission Report Section 5.3 chunk (pages 5-4 to 5-6).\nFILES: topics/tranquility-base.md, areas/apollo-11.md, sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+    "tool_errors": []
+  }
+]

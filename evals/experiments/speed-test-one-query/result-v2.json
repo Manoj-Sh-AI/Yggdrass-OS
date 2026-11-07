@@ -1,0 +1,86 @@
+{
+  "question": "Who replaced Ken Mattingly on Apollo 13, and why?",
+  "model": "claude-haiku-5-5",
+  "1a": {
+    "ms": 0.183,
+    "noun": "ken-mattingly",
+    "edges": [
+      "NASA history: 50 Years Ago, Apollo 13 and German Measles (apollo-13-measles-article) mentions Ken Mattingly",
+      "Apollo 16 (apollo-16) crewed by Ken Mattingly",
+      "Jack Swigert (jack-swigert) replaced Ken Mattingly",
+      "Ken Mattingly removed from Apollo 13 (apollo-13)",
+      "Ken Mattingly flew Apollo 16 (apollo-16)",
+      "Ken Mattingly replaced by Jack Swigert (jack-swigert)",
+      "Ken Mattingly part of Apollo 13 crew swap (rubella-crew-swap)",
+      "Apollo 13 crew swap (rubella-crew-swap) removed Ken Mattingly"
+    ]
+  },
+  "1b": {
+    "full_ms": 1585.503,
+    "input_tokens": 319,
+    "output_tokens": 24,
+    "cost_usd": 4.39e-05,
+    "text": "jack-swigert\napollo-13\nrubella-crew-swap",
+    "stop_reason": "end_turn",
+    "prompt": "Return the neighbours whose edge fits the question, names only, one per line.\n\nQuestion: Who replaced Ken Mattingly on Apollo 13, and why?\n\nEdges:\n- NASA history: 50 Years Ago, Apollo 13 and German Measles (apollo-13-measles-article) mentions Ken Mattingly\n- Apollo 16 (apollo-16) crewed by Ken Mattingly\n- Jack Swigert (jack-swigert) replaced Ken Mattingly\n- Ken Mattingly removed from Apollo 13 (apollo-13)\n- Ken Mattingly flew Apollo 16 (apollo-16)\n- Ken Mattingly replaced by Jack Swigert (jack-swigert)\n- Ken Mattingly part of Apollo 13 crew swap (rubella-crew-swap)\n- Apollo 13 crew swap (rubella-crew-swap) removed Ken Mattingly",
+    "picked": [
+      "jack-swigert",
+      "apollo-13",
+      "rubella-crew-swap"
+    ]
+  },
+  "1c": {
+    "ms": 8.998,
+    "line_count": 8,
+    "lines": [
+      {
+        "from": "ken-mattingly",
+        "line": "- [stated] Assigned to Apollo 16 as command module pilot (was Apollo 13 command module pilot, changed 1970-04-10 by KSC management meeting) (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "ken-mattingly",
+        "line": "- [stated] Was the only one of the five prime and backup crew members tested without rubella antibodies (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "ken-mattingly",
+        "line": "- [stated] Never contracted German measles (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "ken-mattingly",
+        "line": "- [stated] Helped work out the power procedures the Apollo 13 crew used to return (src: NASA history, 2026-10-24)"
+      },
+      {
+        "from": "ken-mattingly",
+        "line": "- [derived] Being removed kept him off the one Apollo mission that had to abort its landing (src: agent, 2026-10-24)"
+      },
+      {
+        "from": "apollo-13",
+        "line": "- [stated] Command module pilot is Jack Swigert (was Ken Mattingly, changed 1970-04-10 by KSC management meeting) (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "rubella-crew-swap",
+        "line": "- [stated] Blood tests from the 1970-04-06 physicals showed Ken Mattingly had no rubella immunity (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      },
+      {
+        "from": "rubella-crew-swap",
+        "line": "- [stated] Flight surgeon Charles Berry worried Mattingly could fall ill alone in the command module in lunar orbit (src: NASA history Apollo 13 measles article, 2026-10-24)"
+      }
+    ]
+  },
+  "2": {
+    "full_ms": 2053.364,
+    "input_tokens": 614,
+    "output_tokens": 252,
+    "cost_usd": 0.0001874,
+    "text": "Jack Swigert replaced Ken Mattingly as command module pilot on Apollo 13, and the reason was rubella (German measles).\n\n- [rubella-crew-swap] Blood tests from the 1970-04-06 physicals showed Ken Mattingly had no rubella immunity, and flight surgeon Charles Berry worried he could fall ill alone in the command module in lunar orbit.\n- [ken-mattingly] Mattingly was the only one of the five prime and backup crew members tested without rubella antibodies, and he never contracted German measles. He was reassigned to Apollo 16 as command module pilot.\n- [apollo-13] The change was made on 1970-04-10 at a KSC management meeting, making Jack Swigert the command module pilot.",
+    "stop_reason": "end_turn",
+    "first_word_ms": 1341.067,
+    "prompt": "Answer the question from these lines only; cite the node slug for each point.\n\nQuestion: Who replaced Ken Mattingly on Apollo 13, and why?\n\n[ken-mattingly] - [stated] Assigned to Apollo 16 as command module pilot (was Apollo 13 command module pilot, changed 1970-04-10 by KSC management meeting) (src: NASA history Apollo 13 measles article, 2026-10-24)\n[ken-mattingly] - [stated] Was the only one of the five prime and backup crew members tested without rubella antibodies (src: NASA history Apollo 13 measles article, 2026-10-24)\n[ken-mattingly] - [stated] Never contracted German measles (src: NASA history Apollo 13 measles article, 2026-10-24)\n[ken-mattingly] - [stated] Helped work out the power procedures the Apollo 13 crew used to return (src: NASA history, 2026-10-24)\n[ken-mattingly] - [derived] Being removed kept him off the one Apollo mission that had to abort its landing (src: agent, 2026-10-24)\n[apollo-13] - [stated] Command module pilot is Jack Swigert (was Ken Mattingly, changed 1970-04-10 by KSC management meeting) (src: NASA history Apollo 13 measles article, 2026-10-24)\n[rubella-crew-swap] - [stated] Blood tests from the 1970-04-06 physicals showed Ken Mattingly had no rubella immunity (src: NASA history Apollo 13 measles article, 2026-10-24)\n[rubella-crew-swap] - [stated] Flight surgeon Charles Berry worried Mattingly could fall ill alone in the command module in lunar orbit (src: NASA history Apollo 13 measles article, 2026-10-24)"
+  },
+  "total": {
+    "end_to_end_ms": 3649.585,
+    "input_tokens": 933,
+    "output_tokens": 276,
+    "cost_usd": 0.0002313
+  }
+}

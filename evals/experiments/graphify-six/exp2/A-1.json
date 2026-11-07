@@ -1,0 +1,533 @@
+{
+  "arm": "A",
+  "run": 1,
+  "rows": [
+    {
+      "id": "x01",
+      "set": "held-out-v7-hard",
+      "question": "The first crewed lunar orbit mission launched on a rocket developed by whose team, and until what year did that person direct a NASA centre?",
+      "picked": [
+        "apollo-8",
+        "wernher-von-braun"
+      ],
+      "status": "answer",
+      "answer": "The first crewed lunar orbit was flown by Apollo 8, and its launch vehicle was the Saturn V. Jim Lovell flew Apollo 8 in December 1968, and the Saturn V was the rocket that carried it. The Saturn V's first crewed flight was Apollo 8.\n\nThe Saturn V was built under Wernher von Braun. He led the team that developed the Saturn V.\n\nHe directed a NASA centre until 1970. He served as first director of NASA Marshall Space Flight Center, from 1960 to 1970.",
+      "raw_answer": "The first crewed lunar orbit was flown by Apollo 8, and its launch vehicle was the Saturn V. Jim Lovell flew Apollo 8 in December 1968, and the Saturn V was the rocket that carried it. The Saturn V's first crewed flight was Apollo 8.\n\nThe Saturn V was built under Wernher von Braun. He led the team that developed the Saturn V.\n\nHe directed a NASA centre until 1970. He served as first director of NASA Marshall Space Flight Center, from 1960 to 1970.",
+      "cited_sources": [
+        "jim-lovell",
+        "saturn-v",
+        "wernher-von-braun"
+      ],
+      "total_in": 6520,
+      "billed_equiv_in": 7407.8,
+      "output_tokens": 473,
+      "cost_usd": 0.000977275,
+      "first_token_ms": 4432.049,
+      "end_to_end_ms": 5342.595
+    },
+    {
+      "id": "x02",
+      "set": "held-out-v7-hard",
+      "question": "The capsule communicator for the first Moon landing later flew to the Moon under a commander. What was that commander's first Space Shuttle flight, and in which year?",
+      "picked": [
+        "charlie-duke",
+        "john-young"
+      ],
+      "status": "answer",
+      "answer": "The commander was John Young, and his first Space Shuttle flight was STS-1 in 1981. Charlie Duke, the capsule communicator for the Apollo 11 landing, later flew to the Moon on Apollo 16. Duke served as capsule communicator during the Apollo 11 landing. He reached the lunar surface as Apollo 16's lunar module pilot. Young led that mission: he was the commander of Apollo 16. His shuttle debut came later, when he commanded STS-1, the first Space Shuttle flight, in 1981.",
+      "raw_answer": "The commander was John Young, and his first Space Shuttle flight was STS-1 in 1981. Charlie Duke, the capsule communicator for the Apollo 11 landing, later flew to the Moon on Apollo 16. Duke served as capsule communicator during the Apollo 11 landing. He reached the lunar surface as Apollo 16's lunar module pilot. Young led that mission: he was the commander of Apollo 16. His shuttle debut came later, when he commanded STS-1, the first Space Shuttle flight, in 1981.",
+      "cited_sources": [
+        "charlie-duke",
+        "john-young"
+      ],
+      "total_in": 7108,
+      "billed_equiv_in": 3912.1,
+      "output_tokens": 462,
+      "cost_usd": 0.00062221,
+      "first_token_ms": 3274.328,
+      "end_to_end_ms": 4148.96
+    },
+    {
+      "id": "x03",
+      "set": "held-out-v7-hard",
+      "question": "The prime contractor that subcontracted the Apollo service module oxygen tanks also built an earlier Apollo spacecraft. Which mission was that, and what happened to it?",
+      "picked": [
+        "north-american-aviation",
+        "beech-aircraft"
+      ],
+      "status": "answer",
+      "answer": "The prime contractor is North American Aviation, and the earlier Apollo spacecraft was Apollo 1. Prime contractor for the Apollo command and service module, and North American Aviation built Apollo 1. North American Aviation subcontracted Beech Aircraft, which built the service module oxygen tanks under North American Aviation.\n\nApollo 1 did not complete its mission. A cabin fire during a launch rehearsal test on 1967-01-27 killed Gus Grissom, Ed White and Roger Chaffee. It happened at Launch Complex 34 at Cape Kennedy, and it led to a command module redesign that included a quick-opening hatch.",
+      "raw_answer": "The prime contractor is North American Aviation, and the earlier Apollo spacecraft was Apollo 1. Prime contractor for the Apollo command and service module, and North American Aviation built Apollo 1. North American Aviation subcontracted Beech Aircraft, which built the service module oxygen tanks under North American Aviation.\n\nApollo 1 did not complete its mission. A cabin fire during a launch rehearsal test on 1967-01-27 killed Gus Grissom, Ed White and Roger Chaffee. It happened at Launch Complex 34 at Cape Kennedy, and it led to a command module redesign that included a quick-opening hatch.",
+      "cited_sources": [
+        "apollo-1",
+        "beech-aircraft",
+        "north-american-aviation"
+      ],
+      "total_in": 6201,
+      "billed_equiv_in": 3005.1,
+      "output_tokens": 384,
+      "cost_usd": 0.00049251,
+      "first_token_ms": 2206.482,
+      "end_to_end_ms": 3234.517
+    },
+    {
+      "id": "x04",
+      "set": "held-out-v7-hard",
+      "question": "Which laboratory designed the computer that raised alarms during the first Moon landing, and who led that laboratory?",
+      "picked": [
+        "apollo-guidance-computer",
+        "mit-instrumentation-lab"
+      ],
+      "status": "answer",
+      "answer": "The computer was designed by the MIT Instrumentation Laboratory. The Apollo Guidance Computer that raised the alarms is credited to that lab, which is also credited with the broader guidance and navigation system behind it Designed the Apollo guidance and navigation system. The lab was led by Charles Stark Draper: was led by Charles Stark Draper and later became the Charles Stark Draper Laboratory.\n\nThe alarms came from that computer during the lunar landing. Raised five program alarms during the Apollo 11 powered descent, and these are identified as program alarms 1201 and 1202 Apollo 11 program alarms 1201 and 1202 (program-alarms-1201-1202).",
+      "raw_answer": "The computer was designed by the MIT Instrumentation Laboratory. The Apollo Guidance Computer that raised the alarms is credited to that lab, which is also credited with the broader guidance and navigation system behind it Designed the Apollo guidance and navigation system. The lab was led by Charles Stark Draper: was led by Charles Stark Draper and later became the Charles Stark Draper Laboratory.\n\nThe alarms came from that computer during the lunar landing. Raised five program alarms during the Apollo 11 powered descent, and these are identified as program alarms 1201 and 1202 Apollo 11 program alarms 1201 and 1202 (program-alarms-1201-1202).",
+      "cited_sources": [
+        "apollo-guidance-computer",
+        "mit-instrumentation-lab"
+      ],
+      "total_in": 5967,
+      "billed_equiv_in": 2771.1,
+      "output_tokens": 664,
+      "cost_usd": 0.0006091100000000001,
+      "first_token_ms": 3240.035,
+      "end_to_end_ms": 4382.504
+    },
+    {
+      "id": "x05",
+      "set": "held-out-v7-hard",
+      "question": "The flight director for the first lunar landing worked at a centre that was later renamed. What was it called before, and when was it renamed?",
+      "picked": [
+        "gene-kranz",
+        "mission-control-houston"
+      ],
+      "status": "answer",
+      "answer": "The flight director for Apollo 11's lunar landing was Gene Kranz, who held the flight director role for the Apollo 11 lunar landing. He worked at Mission Control Houston, and that centre's host facility was formerly known as the Manned Spacecraft Center. Its present name, Johnson Space Center, took effect on 19 February 1973 and honours Lyndon B. Johnson (was Manned Spacecraft Center, changed 1973-02-19 by renaming in honour of Lyndon B. Johnson).",
+      "raw_answer": "The flight director for Apollo 11's lunar landing was Gene Kranz, who held the flight director role for the Apollo 11 lunar landing. He worked at Mission Control Houston, and that centre's host facility was formerly known as the Manned Spacecraft Center. Its present name, Johnson Space Center, took effect on 19 February 1973 and honours Lyndon B. Johnson (was Manned Spacecraft Center, changed 1973-02-19 by renaming in honour of Lyndon B. Johnson).",
+      "cited_sources": [
+        "gene-kranz",
+        "mission-control-houston"
+      ],
+      "total_in": 6516,
+      "billed_equiv_in": 3320.1,
+      "output_tokens": 659,
+      "cost_usd": 0.00066151,
+      "first_token_ms": 3752.071,
+      "end_to_end_ms": 4568.807
+    },
+    {
+      "id": "x06",
+      "set": "held-out-v7-hard",
+      "question": "Which NASA centre did the chair of the board that investigated the Apollo 13 explosion direct, and when was that board's report published?",
+      "picked": [
+        "edgar-cortright",
+        "apollo-13-review-board-report"
+      ],
+      "status": "answer",
+      "answer": "The chair of the board was Edgar Cortright, and at the time he was director of NASA's Langley Research Center. The board's report was published in June 1970.\n\n**Langley Research Center:** Chaired the Apollo 13 Review Board in 1970, and was director of NASA Langley Research Center at the time.\n\n**Report publication:** Published in June 1970.",
+      "raw_answer": "The chair of the board was Edgar Cortright, and at the time he was director of NASA's Langley Research Center. The board's report was published in June 1970.\n\n**Langley Research Center:** Chaired the Apollo 13 Review Board in 1970, and was director of NASA Langley Research Center at the time.\n\n**Report publication:** Published in June 1970.",
+      "cited_sources": [
+        "apollo-13-review-board-report",
+        "edgar-cortright"
+      ],
+      "total_in": 5837,
+      "billed_equiv_in": 2641.1,
+      "output_tokens": 202,
+      "cost_usd": 0.00036511,
+      "first_token_ms": 3147.285,
+      "end_to_end_ms": 3760.724
+    },
+    {
+      "id": "x07",
+      "set": "held-out-v7-hard",
+      "question": "Which two astronauts in the brain both flew Gemini 12?",
+      "picked": [
+        "buzz-aldrin",
+        "michael-collins"
+      ],
+      "status": "not_in_brain",
+      "answer": "NOT IN BRAIN\n\nThe search results don't name two astronauts who both flew Gemini 12. They list only one Gemini 12 flyer, Buzz Aldrin, and they mention other Gemini flights for Neil Armstrong and Michael Collins, but not Gemini 12.",
+      "raw_answer": "NOT IN BRAIN\n\nThe search results don't name two astronauts who both flew Gemini 12. They list only one Gemini 12 flyer, Buzz Aldrin, and they mention other Gemini flights for Neil Armstrong and Michael Collins, but not Gemini 12.",
+      "cited_sources": [],
+      "total_in": 6838,
+      "billed_equiv_in": 3642.1,
+      "output_tokens": 365,
+      "cost_usd": 0.0005467100000000001,
+      "first_token_ms": 2841.132,
+      "end_to_end_ms": 3197.937
+    },
+    {
+      "id": "x08",
+      "set": "held-out-v7-hard",
+      "question": "Which astronauts in the brain flew a Gemini mission in 1966, and which missions?",
+      "picked": [
+        "jim-lovell",
+        "john-young"
+      ],
+      "status": "answer",
+      "answer": "The search results name one astronaut with Gemini flights, Jim Lovell, but they don't give any dates, so they can't confirm which of his flights took place in 1966. Lovell is credited with Gemini 7 and Gemini 12, both flown before his Apollo missions Flew Gemini 7 and Gemini 12 before Apollo. The results give no year for either flight, so the 1966 part of your question can't be answered from these sources.",
+      "raw_answer": "The search results name one astronaut with Gemini flights, Jim Lovell, but they don't give any dates, so they can't confirm which of his flights took place in 1966. Lovell is credited with Gemini 7 and Gemini 12, both flown before his Apollo missions Flew Gemini 7 and Gemini 12 before Apollo. The results give no year for either flight, so the 1966 part of your question can't be answered from these sources.",
+      "cited_sources": [
+        "jim-lovell"
+      ],
+      "total_in": 7115,
+      "billed_equiv_in": 3919.1,
+      "output_tokens": 714,
+      "cost_usd": 0.00074891,
+      "first_token_ms": 4721.089,
+      "end_to_end_ms": 5400.661
+    },
+    {
+      "id": "x09",
+      "set": "held-out-v7-hard",
+      "question": "Name everyone the brain records as immune to rubella.",
+      "picked": [
+        "ken-mattingly",
+        "rubella-crew-swap"
+      ],
+      "status": "answer",
+      "answer": "The search results name one person as immune to rubella: Jack Swigert. He was immune to rubella, which made him eligible to fly.\n\nKen Mattingly is the opposite case. He was the only one of the five prime and backup crew members tested without rubella antibodies, and blood tests from the 1970-04-06 physicals showed Ken Mattingly had no rubella immunity.\n\nThe results imply that the other four prime and backup crew members had rubella antibodies, but they do not name them, so I can't list them.",
+      "raw_answer": "The search results name one person as immune to rubella: Jack Swigert. He was immune to rubella, which made him eligible to fly.\n\nKen Mattingly is the opposite case. He was the only one of the five prime and backup crew members tested without rubella antibodies, and blood tests from the 1970-04-06 physicals showed Ken Mattingly had no rubella immunity.\n\nThe results imply that the other four prime and backup crew members had rubella antibodies, but they do not name them, so I can't list them.",
+      "cited_sources": [
+        "jack-swigert",
+        "ken-mattingly",
+        "rubella-crew-swap"
+      ],
+      "total_in": 7391,
+      "billed_equiv_in": 4195.1,
+      "output_tokens": 466,
+      "cost_usd": 0.0006525100000000001,
+      "first_token_ms": 3094.766,
+      "end_to_end_ms": 3655.12
+    },
+    {
+      "id": "x10",
+      "set": "held-out-v7-hard",
+      "question": "How long after Michael Collins's Gemini flight did the Saturn V first launch?",
+      "picked": [
+        "michael-collins",
+        "saturn-v"
+      ],
+      "status": "answer",
+      "answer": "The search results don't give an exact interval, but they bracket it. One source notes that Collins flew Gemini 10 in 1966, without a month. Another shows that the Saturn V's first launch came on Apollo 4 on 1967-11-09, which was uncrewed.\n\nBecause the Gemini flight is dated only to a year, the gap falls somewhere between roughly 10 and 23 months, depending on the month of the Gemini 10 flight. A specific answer would require that month.",
+      "raw_answer": "The search results don't give an exact interval, but they bracket it. One source notes that Collins flew Gemini 10 in 1966, without a month. Another shows that the Saturn V's first launch came on Apollo 4 on 1967-11-09, which was uncrewed.\n\nBecause the Gemini flight is dated only to a year, the gap falls somewhere between roughly 10 and 23 months, depending on the month of the Gemini 10 flight. A specific answer would require that month.",
+      "cited_sources": [
+        "michael-collins",
+        "saturn-v"
+      ],
+      "total_in": 7360,
+      "billed_equiv_in": 4164.1,
+      "output_tokens": 658,
+      "cost_usd": 0.00074541,
+      "first_token_ms": 3845.434,
+      "end_to_end_ms": 4630.214
+    },
+    {
+      "id": "x11",
+      "set": "held-out-v7-hard",
+      "question": "Which happened later, Margaret Hamilton's Presidential Medal of Freedom or Fred Haise's Space Shuttle approach and landing tests?",
+      "picked": [
+        "margaret-hamilton",
+        "fred-haise"
+      ],
+      "status": "answer",
+      "answer": "Margaret Hamilton's Presidential Medal of Freedom came later. Received the Presidential Medal of Freedom on 2016-11-22, while Fred Haise flew the Space Shuttle Enterprise approach and landing tests in 1977. That makes the medal about 39 years after the 1977 tests.\n\nNote that the medal date comes from a source listed as \"NASA history,\" and the search results give only the year for the Haise tests, so the comparison rests on the year 1977 rather than an exact date.",
+      "raw_answer": "Margaret Hamilton's Presidential Medal of Freedom came later. Received the Presidential Medal of Freedom on 2016-11-22, while Fred Haise flew the Space Shuttle Enterprise approach and landing tests in 1977. That makes the medal about 39 years after the 1977 tests.\n\nNote that the medal date comes from a source listed as \"NASA history,\" and the search results give only the year for the Haise tests, so the comparison rests on the year 1977 rather than an exact date.",
+      "cited_sources": [
+        "fred-haise",
+        "margaret-hamilton"
+      ],
+      "total_in": 7669,
+      "billed_equiv_in": 4473.1,
+      "output_tokens": 227,
+      "cost_usd": 0.00056081,
+      "first_token_ms": 2593.911,
+      "end_to_end_ms": 3412.677
+    },
+    {
+      "id": "x12",
+      "set": "held-out-v7-hard",
+      "question": "How many days before Apollo 13's launch was the crew swap announced?",
+      "picked": [
+        "rubella-crew-swap",
+        "apollo-13"
+      ],
+      "status": "answer",
+      "answer": "The crew swap was announced one day before the launch. Apollo 13 lifted off on April 11, 1970, and the change was made public on April 10 at a press conference. Launched 1970-04-11, while the announcement followed a KSC management meeting and came at a press conference on 1970-04-10.",
+      "raw_answer": "The crew swap was announced one day before the launch. Apollo 13 lifted off on April 11, 1970, and the change was made public on April 10 at a press conference. Launched 1970-04-11, while the announcement followed a KSC management meeting and came at a press conference on 1970-04-10.",
+      "cited_sources": [
+        "apollo-13",
+        "rubella-crew-swap"
+      ],
+      "total_in": 10414,
+      "billed_equiv_in": 7218.1,
+      "output_tokens": 292,
+      "cost_usd": 0.0008678100000000001,
+      "first_token_ms": 2970.328,
+      "end_to_end_ms": 3308.48
+    },
+    {
+      "id": "x13",
+      "set": "held-out-v7-hard",
+      "question": "How long after NASA began operating did Kennedy ask Congress to commit to a Moon landing?",
+      "picked": [
+        "john-f-kennedy",
+        "nasa"
+      ],
+      "status": "answer",
+      "answer": "NASA began operating on October 1, 1958, Began operating on 1958-10-01. Kennedy later asked Congress on 1961-05-25 to commit to landing a man on the Moon before the decade was out.\n\nThat request came roughly two years and eight months after NASA started operating (about 2 years, 7 months, and 24 days).",
+      "raw_answer": "NASA began operating on October 1, 1958, Began operating on 1958-10-01. Kennedy later asked Congress on 1961-05-25 to commit to landing a man on the Moon before the decade was out.\n\nThat request came roughly two years and eight months after NASA started operating (about 2 years, 7 months, and 24 days).",
+      "cited_sources": [
+        "john-f-kennedy",
+        "nasa"
+      ],
+      "total_in": 6005,
+      "billed_equiv_in": 2809.1,
+      "output_tokens": 344,
+      "cost_usd": 0.00045290999999999994,
+      "first_token_ms": 2723.543,
+      "end_to_end_ms": 3260.433
+    },
+    {
+      "id": "x14",
+      "set": "held-out-v7-hard",
+      "question": "How far into the flight did Apollo 13's oxygen tank explode, and how many days later did the crew splash down?",
+      "picked": [
+        "apollo-13",
+        "oxygen-tank-2"
+      ],
+      "status": "answer",
+      "answer": "The oxygen tank exploded about 56 hours into the flight, on 1970-04-13. The crew splashed down on 1970-04-17, four days after the explosion. The sources give the launch as 1970-04-11, so the splashdown came about six days after launch.",
+      "raw_answer": "The oxygen tank exploded about 56 hours into the flight, on 1970-04-13. The crew splashed down on 1970-04-17, four days after the explosion. The sources give the launch as 1970-04-11, so the splashdown came about six days after launch.",
+      "cited_sources": [
+        "apollo-13",
+        "oxygen-tank-2"
+      ],
+      "total_in": 11578,
+      "billed_equiv_in": 8382.1,
+      "output_tokens": 343,
+      "cost_usd": 0.00100971,
+      "first_token_ms": 3267.963,
+      "end_to_end_ms": 3596.241
+    },
+    {
+      "id": "x15",
+      "set": "held-out-v7-hard",
+      "question": "Put these in order, with dates. The Earthrise photograph, the Apollo 1 fire, the first Saturn V launch.",
+      "picked": [
+        "apollo-1",
+        "saturn-v"
+      ],
+      "status": "answer",
+      "answer": "**Order (earliest to latest):**\n\n1. **Apollo 1 fire, 27 January 1967.** Three astronauts, Grissom, White and Chaffee, died in a cabin fire during a launch rehearsal test on 1967-01-27.\n\n2. **First Saturn V launch, 9 November 1967.** The rocket's debut flight carried no crew and lifted off as Apollo 4 on 1967-11-09.\n\n3. **Earthrise photograph, 24 December 1968.** Anders captured the image on 1968-12-24, during the mission that had flown the crew around the Moon.",
+      "raw_answer": "**Order (earliest to latest):**\n\n1. **Apollo 1 fire, 27 January 1967.** Three astronauts, Grissom, White and Chaffee, died in a cabin fire during a launch rehearsal test on 1967-01-27.\n\n2. **First Saturn V launch, 9 November 1967.** The rocket's debut flight carried no crew and lifted off as Apollo 4 on 1967-11-09.\n\n3. **Earthrise photograph, 24 December 1968.** Anders captured the image on 1968-12-24, during the mission that had flown the crew around the Moon.",
+      "cited_sources": [
+        "apollo-1",
+        "apollo-8",
+        "saturn-v"
+      ],
+      "total_in": 6907,
+      "billed_equiv_in": 3711.1,
+      "output_tokens": 860,
+      "cost_usd": 0.0008011100000000001,
+      "first_token_ms": 7043.061,
+      "end_to_end_ms": 8031.231
+    },
+    {
+      "id": "x16",
+      "set": "held-out-v7-hard",
+      "question": "How many days did Apollo 11 take from launch to splashdown?",
+      "picked": [
+        "apollo-11"
+      ],
+      "status": "answer",
+      "answer": "Apollo 11 took **8 days** from launch to splashdown. The mission lifted off on July 16, 1969, from Kennedy Space Center Launch Complex 39A, and its return to the ocean came on July 24, 1969, in the Pacific (Splashed down in the Pacific on 1969-07-24). Counting from July 16 to July 24 gives 8 days.",
+      "raw_answer": "Apollo 11 took **8 days** from launch to splashdown. The mission lifted off on July 16, 1969, from Kennedy Space Center Launch Complex 39A, and its return to the ocean came on July 24, 1969, in the Pacific (Splashed down in the Pacific on 1969-07-24). Counting from July 16 to July 24 gives 8 days.",
+      "cited_sources": [
+        "apollo-11"
+      ],
+      "total_in": 8808,
+      "billed_equiv_in": 5612.1,
+      "output_tokens": 408,
+      "cost_usd": 0.00076521,
+      "first_token_ms": 4965.585,
+      "end_to_end_ms": 5481.393
+    },
+    {
+      "id": "x17",
+      "set": "held-out-v7-hard",
+      "question": "What did Grumman and North American Aviation each build for Apollo?",
+      "picked": [
+        "grumman",
+        "north-american-aviation"
+      ],
+      "status": "answer",
+      "answer": "Grumman built the Apollo lunar module, and North American Aviation built the Apollo command and service module.\n\nGrumman built the Apollo lunar module, and the lunar module is described as a two-stage lander built by Grumman.\n\nNorth American Aviation was the prime contractor for the Apollo command and service module, and the command and service module was built by North American Aviation.",
+      "raw_answer": "Grumman built the Apollo lunar module, and North American Aviation built the Apollo command and service module.\n\nGrumman built the Apollo lunar module, and the lunar module is described as a two-stage lander built by Grumman.\n\nNorth American Aviation was the prime contractor for the Apollo command and service module, and the command and service module was built by North American Aviation.",
+      "cited_sources": [
+        "command-service-module",
+        "grumman",
+        "lunar-module",
+        "north-american-aviation"
+      ],
+      "total_in": 6293,
+      "billed_equiv_in": 3097.1,
+      "output_tokens": 212,
+      "cost_usd": 0.00041570999999999996,
+      "first_token_ms": 1738.297,
+      "end_to_end_ms": 2305.727
+    },
+    {
+      "id": "x18",
+      "set": "held-out-v7-hard",
+      "question": "What were the command modules of Apollo 11 and Apollo 13 called?",
+      "picked": [
+        "command-service-module"
+      ],
+      "status": "answer",
+      "answer": "The command module of Apollo 11 was Columbia, and the command module of Apollo 13 was Odyssey. Apollo 11's command module was Columbia, and Apollo 13's command module was Odyssey.",
+      "raw_answer": "The command module of Apollo 11 was Columbia, and the command module of Apollo 13 was Odyssey. Apollo 11's command module was Columbia, and Apollo 13's command module was Odyssey.",
+      "cited_sources": [
+        "command-service-module"
+      ],
+      "total_in": 6600,
+      "billed_equiv_in": 3404.1,
+      "output_tokens": 123,
+      "cost_usd": 0.00040191,
+      "first_token_ms": 2070.692,
+      "end_to_end_ms": 2396.267
+    },
+    {
+      "id": "x19",
+      "set": "held-out-v7-hard",
+      "question": "Did Apollo 16 fly before or after the last crewed lunar mission, and where did Apollo 16 land?",
+      "picked": [
+        "apollo-16",
+        "apollo-program"
+      ],
+      "status": "answer",
+      "answer": "Apollo 16 flew before the last crewed lunar mission. It launched in April 1972, while Apollo 17 in December 1972 was the last crewed lunar mission. The launch date comes from its own record, which lists it as launched 1972-04-16.\n\nApollo 16 touched down in the Descartes Highlands, according to the search results, which place its landing there in the Descartes Highlands.",
+      "raw_answer": "Apollo 16 flew before the last crewed lunar mission. It launched in April 1972, while Apollo 17 in December 1972 was the last crewed lunar mission. The launch date comes from its own record, which lists it as launched 1972-04-16.\n\nApollo 16 touched down in the Descartes Highlands, according to the search results, which place its landing there in the Descartes Highlands.",
+      "cited_sources": [
+        "apollo-16",
+        "apollo-program"
+      ],
+      "total_in": 8874,
+      "billed_equiv_in": 5678.1,
+      "output_tokens": 413,
+      "cost_usd": 0.0007743100000000001,
+      "first_token_ms": 2732.604,
+      "end_to_end_ms": 3271.157
+    },
+    {
+      "id": "x20",
+      "set": "held-out-v7-hard",
+      "question": "Who walked on the Moon first, Charlie Duke or Buzz Aldrin, and on which missions?",
+      "picked": [
+        "buzz-aldrin",
+        "charlie-duke"
+      ],
+      "status": "answer",
+      "answer": "Buzz Aldrin walked on the Moon before Charlie Duke. Aldrin was the lunar module pilot on Apollo 11 and is recorded as the second person to walk on the Moon. He served as lunar module pilot of Apollo 11 and was the second person to walk on the Moon. Neil Armstrong was the first, so Aldrin's walk followed his.\n\nDuke's lunar surface time came later, on Apollo 16. He walked on the Moon as the Apollo 16 lunar module pilot. That mission launched on 1972-04-16, and its crew was John Young, Ken Mattingly and Charlie Duke.\n\nSo the answer is Buzz Aldrin, on Apollo 11, and then Charlie Duke, on Apollo 16.",
+      "raw_answer": "Buzz Aldrin walked on the Moon before Charlie Duke. Aldrin was the lunar module pilot on Apollo 11 and is recorded as the second person to walk on the Moon. He served as lunar module pilot of Apollo 11 and was the second person to walk on the Moon. Neil Armstrong was the first, so Aldrin's walk followed his.\n\nDuke's lunar surface time came later, on Apollo 16. He walked on the Moon as the Apollo 16 lunar module pilot. That mission launched on 1972-04-16, and its crew was John Young, Ken Mattingly and Charlie Duke.\n\nSo the answer is Buzz Aldrin, on Apollo 11, and then Charlie Duke, on Apollo 16.",
+      "cited_sources": [
+        "apollo-16",
+        "buzz-aldrin",
+        "charlie-duke"
+      ],
+      "total_in": 7906,
+      "billed_equiv_in": 4710.1,
+      "output_tokens": 663,
+      "cost_usd": 0.0008025100000000001,
+      "first_token_ms": 3352.178,
+      "end_to_end_ms": 4414.718
+    },
+    {
+      "id": "x21",
+      "set": "held-out-v7-hard",
+      "question": "Across the brain, which accidents led to hardware being redesigned, and what was redesigned?",
+      "picked": [
+        "apollo-1",
+        "apollo-13"
+      ],
+      "status": "answer",
+      "answer": "Two accidents led to hardware changes in the results:\n\n1. **Apollo 1 (1967 cabin fire):** Three astronauts died in a fire during a launch rehearsal, and the disaster prompted a command module redesign that included a quick-opening hatch.\n\n2. **Apollo 13 (oxygen tank explosion):** The review panel traced the explosion to an electrically started fire in oxygen tank No. 2. In response, it recommended redesigning the oxygen tank and removing electrical equipment from inside it.",
+      "raw_answer": "Two accidents led to hardware changes in the results:\n\n1. **Apollo 1 (1967 cabin fire):** Three astronauts died in a fire during a launch rehearsal, and the disaster prompted a command module redesign that included a quick-opening hatch.\n\n2. **Apollo 13 (oxygen tank explosion):** The review panel traced the explosion to an electrically started fire in oxygen tank No. 2. In response, it recommended redesigning the oxygen tank and removing electrical equipment from inside it.",
+      "cited_sources": [
+        "apollo-1",
+        "apollo-13-review-board"
+      ],
+      "total_in": 11825,
+      "billed_equiv_in": 8629.1,
+      "output_tokens": 896,
+      "cost_usd": 0.00131091,
+      "first_token_ms": 5076.802,
+      "end_to_end_ms": 5666.063
+    },
+    {
+      "id": "x22",
+      "set": "held-out-v7-hard",
+      "question": "Which statements in the brain are marked as agent inferences rather than stated facts?",
+      "picked": [
+        "apollo-11-mission-report",
+        "apollo-13-review-board-report"
+      ],
+      "status": "not_in_brain",
+      "answer": "NOT IN BRAIN\n\nThe search results contain no statements marked as agent inferences. Every entry that carries a status label is tagged \"[stated]\", and none is tagged as an inference, so the question cannot be answered from these results.",
+      "raw_answer": "NOT IN BRAIN\n\nThe search results contain no statements marked as agent inferences. Every entry that carries a status label is tagged \"[stated]\", and none is tagged as an inference, so the question cannot be answered from these results.",
+      "cited_sources": [],
+      "total_in": 7533,
+      "billed_equiv_in": 4337.1,
+      "output_tokens": 106,
+      "cost_usd": 0.00048671,
+      "first_token_ms": 1751.933,
+      "end_to_end_ms": 2113.202
+    },
+    {
+      "id": "x23",
+      "set": "held-out-v7-hard",
+      "question": "What roles did Mission Control Houston and its people play in Apollo 11 and Apollo 13?",
+      "picked": [
+        "mission-control-houston",
+        "gene-kranz"
+      ],
+      "status": "answer",
+      "answer": "The results describe Mission Control Houston's role in Apollo 13 more fully than in Apollo 11, and they don't give a direct account of the centre's part in Apollo 11.\n\n**Apollo 11:** The results mention Gene Kranz as the flight director for the Apollo 11 lunar landing. They also link him to the centre, noting that he worked in Mission Control Houston, but they don't say what he did there during that mission. The results also describe the centre's general function as having controlled Apollo flights after launch.\n\n**Apollo 13:** The centre's involvement was more direct. Its engineers were behind a key fix, and the centre ran Apollo 13. Engineers there devised the Apollo 13 carbon dioxide scrubber adapter, which the crew then built, since the crew built it from radioed instructions. The adapter was made from hoses, cardboard, plastic bags and tape. Kranz's team also had a central role during the crisis: his team was on console when Apollo 13's oxygen tank failed.",
+      "raw_answer": "The results describe Mission Control Houston's role in Apollo 13 more fully than in Apollo 11, and they don't give a direct account of the centre's part in Apollo 11.\n\n**Apollo 11:** The results mention Gene Kranz as the flight director for the Apollo 11 lunar landing. They also link him to the centre, noting that he worked in Mission Control Houston, but they don't say what he did there during that mission. The results also describe the centre's general function as having controlled Apollo flights after launch.\n\n**Apollo 13:** The centre's involvement was more direct. Its engineers were behind a key fix, and the centre ran Apollo 13. Engineers there devised the Apollo 13 carbon dioxide scrubber adapter, which the crew then built, since the crew built it from radioed instructions. The adapter was made from hoses, cardboard, plastic bags and tape. Kranz's team also had a central role during the crisis: his team was on console when Apollo 13's oxygen tank failed.",
+      "cited_sources": [
+        "co2-scrubber-adapter",
+        "gene-kranz",
+        "mission-control-houston"
+      ],
+      "total_in": 6654,
+      "billed_equiv_in": 3458.1,
+      "output_tokens": 1029,
+      "cost_usd": 0.0008603100000000001,
+      "first_token_ms": 4325.342,
+      "end_to_end_ms": 6171.035
+    },
+    {
+      "id": "x24",
+      "set": "held-out-v7-hard",
+      "question": "In what ways did the lunar module matter to Apollo 13's survival?",
+      "picked": [
+        "lunar-module",
+        "apollo-13"
+      ],
+      "status": "answer",
+      "answer": "The lunar module Aquarius mattered to Apollo 13's survival in three main ways:\n\n- **Life support:** After the oxygen tank failed, Aquarius kept the crew alive, and the crew used it as a lifeboat before they splashed down on 1970-04-17.\n- **Return path:** Its descent engine burn put Apollo 13 back on a free-return path, a route that loops around the Moon and returns to Earth using lunar gravity.\n- **Carbon dioxide control:** The lunar module's lithium hydroxide canisters were a different shape from the command module's, since the command module's were square and the lunar module's were round. To bridge that mismatch, engineers devised an adapter from hoses, cardboard, plastic bags and tape, and the crew built it from radioed instructions.",
+      "raw_answer": "The lunar module Aquarius mattered to Apollo 13's survival in three main ways:\n\n- **Life support:** After the oxygen tank failed, Aquarius kept the crew alive, and the crew used it as a lifeboat before they splashed down on 1970-04-17.\n- **Return path:** Its descent engine burn put Apollo 13 back on a free-return path, a route that loops around the Moon and returns to Earth using lunar gravity.\n- **Carbon dioxide control:** The lunar module's lithium hydroxide canisters were a different shape from the command module's, since the command module's were square and the lunar module's were round. To bridge that mismatch, engineers devised an adapter from hoses, cardboard, plastic bags and tape, and the crew built it from radioed instructions.",
+      "cited_sources": [
+        "apollo-13",
+        "co2-scrubber-adapter",
+        "free-return-trajectory",
+        "lunar-module"
+      ],
+      "total_in": 10873,
+      "billed_equiv_in": 7677.1,
+      "output_tokens": 840,
+      "cost_usd": 0.00118771,
+      "first_token_ms": 3837.185,
+      "end_to_end_ms": 5116.674
+    }
+  ]
+}

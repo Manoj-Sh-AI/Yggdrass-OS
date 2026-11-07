@@ -1,0 +1,87 @@
+{
+ "B": {
+  "correct_per_run": [
+   34,
+   35,
+   35
+  ],
+  "of": 35,
+  "mean": 0.99,
+  "wilson95": [
+   0.948,
+   0.998
+  ],
+  "cost_per_run": [
+   0.01749,
+   0.01678,
+   0.01698
+  ],
+  "seconds_per_run": [
+   97.0,
+   92.3,
+   95.9
+  ],
+  "cost_per_correct": 0.000493,
+  "billed_in_median": 2794,
+  "billed_in_highest": [
+   2810,
+   "h07"
+  ],
+  "e2e_median_s": 2.79,
+  "e2e_slowest_s": [
+   4.88,
+   "d08"
+  ],
+  "misses": [
+   [
+    "t03",
+    "declined an answerable question"
+   ]
+  ],
+  "paired_vs_C": {
+   "mean_diff": -0.01,
+   "clustered_se": 0.01,
+   "ci95": [
+    -0.028,
+    0.009
+   ],
+   "clusters": 27,
+   "beats_ref": false
+  }
+ },
+ "C": {
+  "correct_per_run": [
+   35,
+   35,
+   35
+  ],
+  "of": 35,
+  "mean": 1.0,
+  "wilson95": [
+   0.965,
+   1.0
+  ],
+  "cost_per_run": [
+   0.02197,
+   0.02163,
+   0.02193
+  ],
+  "seconds_per_run": [
+   126.1,
+   117.7,
+   117.6
+  ],
+  "cost_per_correct": 0.000624,
+  "billed_in_median": 3893,
+  "billed_in_highest": [
+   8330,
+   "h05"
+  ],
+  "e2e_median_s": 3.18,
+  "e2e_slowest_s": [
+   8.74,
+   "d08"
+  ],
+  "misses": []
+ }
+}

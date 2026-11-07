@@ -1,0 +1,435 @@
+{
+  "file": "evals/experiments/graphify-six/exp1/check-2.json",
+  "candidates": 96,
+  "accepted": 72,
+  "pairs": 54,
+  "recovered": [
+    [
+      "apollo-11",
+      "lunar-module"
+    ],
+    [
+      "apollo-11",
+      "neil-armstrong"
+    ],
+    [
+      "apollo-13",
+      "ken-mattingly"
+    ],
+    [
+      "apollo-13",
+      "rubella-crew-swap"
+    ],
+    [
+      "apollo-13-review-board",
+      "edgar-cortright"
+    ],
+    [
+      "beech-aircraft",
+      "north-american-aviation"
+    ],
+    [
+      "command-service-module",
+      "michael-collins"
+    ],
+    [
+      "fred-haise",
+      "lunar-module"
+    ],
+    [
+      "grumman",
+      "lunar-module"
+    ],
+    [
+      "neil-armstrong",
+      "tranquility-base"
+    ],
+    [
+      "saturn-v",
+      "wernher-von-braun"
+    ]
+  ],
+  "refound": 31,
+  "new_pairs": [
+    [
+      "apollo-11",
+      "command-service-module"
+    ],
+    [
+      "apollo-11",
+      "margaret-hamilton"
+    ],
+    [
+      "apollo-13",
+      "apollo-13-measles-article"
+    ],
+    [
+      "apollo-13",
+      "command-service-module"
+    ],
+    [
+      "apollo-program",
+      "grumman"
+    ],
+    [
+      "apollo-program",
+      "margaret-hamilton"
+    ],
+    [
+      "apollo-program",
+      "mission-control-houston"
+    ],
+    [
+      "beech-aircraft",
+      "command-service-module"
+    ],
+    [
+      "command-service-module",
+      "jack-swigert"
+    ],
+    [
+      "command-service-module",
+      "rubella-crew-swap"
+    ],
+    [
+      "john-young",
+      "rubella-crew-swap"
+    ],
+    [
+      "lunar-orbit-rendezvous",
+      "nasa"
+    ]
+  ],
+  "verb_scored": 56,
+  "verb_correct": 16,
+  "verb_wrong": [
+    {
+      "from": "apollo-1",
+      "to": "command-service-module",
+      "verb": "built",
+      "gold": [
+        "redesigned"
+      ]
+    },
+    {
+      "from": "apollo-11",
+      "to": "lunar-module",
+      "verb": "landed at",
+      "gold": [
+        "flew"
+      ]
+    },
+    {
+      "from": "apollo-13",
+      "to": "jack-swigert",
+      "verb": "crewed with",
+      "gold": [
+        "crewed by"
+      ]
+    },
+    {
+      "from": "apollo-13",
+      "to": "lunar-module",
+      "verb": "used",
+      "gold": [
+        "saved by"
+      ]
+    },
+    {
+      "from": "apollo-13",
+      "to": "rubella-crew-swap",
+      "verb": "relevant to",
+      "gold": [
+        "affected by"
+      ]
+    },
+    {
+      "from": "apollo-13-measles-article",
+      "to": "rubella-crew-swap",
+      "verb": "describes",
+      "gold": [
+        "tells"
+      ]
+    },
+    {
+      "from": "apollo-13-review-board",
+      "to": "oxygen-tank-2",
+      "verb": "investigated",
+      "gold": [
+        "examined"
+      ]
+    },
+    {
+      "from": "apollo-16",
+      "to": "john-young",
+      "verb": "crewed by",
+      "gold": [
+        "commanded by"
+      ]
+    },
+    {
+      "from": "apollo-8",
+      "to": "jim-lovell",
+      "verb": "crewed with",
+      "gold": [
+        "crewed by"
+      ]
+    },
+    {
+      "from": "apollo-8",
+      "to": "saturn-v",
+      "verb": "flew",
+      "gold": [
+        "launched on"
+      ]
+    },
+    {
+      "from": "apollo-guidance-computer",
+      "to": "mit-instrumentation-lab",
+      "verb": "designed by",
+      "gold": [
+        "built by"
+      ]
+    },
+    {
+      "from": "beech-aircraft",
+      "to": "north-american-aviation",
+      "verb": "built by",
+      "gold": [
+        "worked for"
+      ]
+    },
+    {
+      "from": "charlie-duke",
+      "to": "apollo-13",
+      "verb": "part of",
+      "gold": [
+        "backed up"
+      ]
+    },
+    {
+      "from": "charlie-duke",
+      "to": "rubella-crew-swap",
+      "verb": "relevant to",
+      "gold": [
+        "started"
+      ]
+    },
+    {
+      "from": "charlie-duke",
+      "to": "apollo-11",
+      "verb": "part of",
+      "gold": [
+        "talked to"
+      ]
+    },
+    {
+      "from": "fred-haise",
+      "to": "apollo-13",
+      "verb": "crewed with",
+      "gold": [
+        "flew"
+      ]
+    },
+    {
+      "from": "fred-haise",
+      "to": "lunar-module",
+      "verb": "used by",
+      "gold": [
+        "flew"
+      ]
+    },
+    {
+      "from": "free-return-trajectory",
+      "to": "apollo-13",
+      "verb": "flown on",
+      "gold": [
+        "used by"
+      ]
+    },
+    {
+      "from": "free-return-trajectory",
+      "to": "lunar-module",
+      "verb": "used on",
+      "gold": [
+        "reached with"
+      ]
+    },
+    {
+      "from": "gene-kranz",
+      "to": "apollo-11",
+      "verb": "worked for",
+      "gold": [
+        "directed"
+      ]
+    },
+    {
+      "from": "gene-kranz",
+      "to": "apollo-13",
+      "verb": "worked for",
+      "gold": [
+        "directed"
+      ]
+    },
+    {
+      "from": "jack-swigert",
+      "to": "apollo-13",
+      "verb": "piloted",
+      "gold": [
+        "flew"
+      ]
+    },
+    {
+      "from": "jim-lovell",
+      "to": "apollo-8",
+      "verb": "flown on",
+      "gold": [
+        "flew"
+      ]
+    },
+    {
+      "from": "john-young",
+      "to": "apollo-13",
+      "verb": "commanded",
+      "gold": [
+        "backed up"
+      ]
+    },
+    {
+      "from": "ken-mattingly",
+      "to": "apollo-13",
+      "verb": "used",
+      "gold": [
+        "removed from"
+      ]
+    },
+    {
+      "from": "ken-mattingly",
+      "to": "rubella-crew-swap",
+      "verb": "relevant to",
+      "gold": [
+        "part of"
+      ]
+    },
+    {
+      "from": "lunar-module",
+      "to": "apollo-11",
+      "verb": "landed at",
+      "gold": [
+        "flown on"
+      ]
+    },
+    {
+      "from": "lunar-module",
+      "to": "apollo-13",
+      "verb": "used on",
+      "gold": [
+        "saved"
+      ]
+    },
+    {
+      "from": "lunar-module",
+      "to": "free-return-trajectory",
+      "verb": "affected",
+      "gold": [
+        "used"
+      ]
+    },
+    {
+      "from": "margaret-hamilton",
+      "to": "mit-instrumentation-lab",
+      "verb": "part of",
+      "gold": [
+        "worked at"
+      ]
+    },
+    {
+      "from": "michael-collins",
+      "to": "apollo-11",
+      "verb": "commanded",
+      "gold": [
+        "flew"
+      ]
+    },
+    {
+      "from": "michael-collins",
+      "to": "command-service-module",
+      "verb": "used",
+      "gold": [
+        "piloted"
+      ]
+    },
+    {
+      "from": "mission-control-houston",
+      "to": "apollo-13",
+      "verb": "landed at",
+      "gold": [
+        "ran"
+      ]
+    },
+    {
+      "from": "neil-armstrong",
+      "to": "apollo-11",
+      "verb": "flown by",
+      "gold": [
+        "commanded"
+      ]
+    },
+    {
+      "from": "rubella-crew-swap",
+      "to": "charlie-duke",
+      "verb": "part of",
+      "gold": [
+        "started by"
+      ]
+    },
+    {
+      "from": "rubella-crew-swap",
+      "to": "ken-mattingly",
+      "verb": "affected by",
+      "gold": [
+        "removed"
+      ]
+    },
+    {
+      "from": "saturn-v",
+      "to": "apollo-program",
+      "verb": "part of",
+      "gold": [
+        "used by"
+      ]
+    },
+    {
+      "from": "saturn-v",
+      "to": "apollo-8",
+      "verb": "flown on",
+      "gold": [
+        "launched"
+      ]
+    },
+    {
+      "from": "wernher-von-braun",
+      "to": "nasa",
+      "verb": "worked at",
+      "gold": [
+        "worked for"
+      ]
+    },
+    {
+      "from": "wernher-von-braun",
+      "to": "saturn-v",
+      "verb": "designed",
+      "gold": [
+        "led"
+      ]
+    }
+  ],
+  "recovered_candidates_rejected": [
+    [
+      "co2-scrubber-adapter",
+      "command-service-module"
+    ]
+  ],
+  "seconds": 23.252,
+  "cost_usd": 0.008541900000000002
+}

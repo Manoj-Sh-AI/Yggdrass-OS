@@ -1,0 +1,3396 @@
+{
+  "created_utc": "2026-10-25T19:48:48.722946+00:00",
+  "run": "matched-subagents-3",
+  "grading": "Assistant semantic review against supplied expected_answer and required_facts; required-note and tool audits reported separately. Not an owner-issued release-gate verdict.",
+  "conditions": {
+    "R1": {
+      "condition": "R1",
+      "count": 25,
+      "expected_count": 25,
+      "anomalies": [],
+      "notes_read": 37,
+      "wiki_reads": 0,
+      "tool_calls": 87,
+      "tokens": 1680280,
+      "sum_question_time_s": 239.886,
+      "answering_cost_usd_at_recorded_rates": 1.3394,
+      "cache_neutral_answering_cost_usd": 6.903552,
+      "batches": [
+        {
+          "batch": 1,
+          "count": 20,
+          "start": "2026-10-25T19:30:44.157Z",
+          "end": "2026-10-25T19:31:43.323Z",
+          "span_s": 59.166,
+          "peak_active": 6
+        },
+        {
+          "batch": 2,
+          "count": 5,
+          "start": "2026-10-25T19:31:56.689Z",
+          "end": "2026-10-25T19:32:23.906Z",
+          "span_s": 27.217,
+          "peak_active": 3
+        }
+      ],
+      "answer_content_correct": 25,
+      "required_source_check_passed": 25,
+      "parallel_read_questions": [
+        "m03"
+      ],
+      "dispatcher_wall_time_s": 114.32763400000113,
+      "answering_plus_dispatcher_cost_usd": 1.742945,
+      "dispatcher_cost_usd": 0.40354500000000004,
+      "cache_neutral_answering_plus_dispatcher_cost_usd": 7.674544000000001
+    },
+    "R2": {
+      "condition": "R2",
+      "count": 25,
+      "expected_count": 25,
+      "anomalies": [],
+      "notes_read": 45,
+      "wiki_reads": 49,
+      "tool_calls": 135,
+      "tokens": 2422720,
+      "sum_question_time_s": 376.592,
+      "answering_cost_usd_at_recorded_rates": 1.870106,
+      "cache_neutral_answering_cost_usd": 9.993216,
+      "batches": [
+        {
+          "batch": 1,
+          "count": 20,
+          "start": "2026-10-25T19:33:24.632Z",
+          "end": "2026-10-25T19:34:54.403Z",
+          "span_s": 89.771,
+          "peak_active": 6
+        },
+        {
+          "batch": 2,
+          "count": 5,
+          "start": "2026-10-25T19:35:06.777Z",
+          "end": "2026-10-25T19:35:41.821Z",
+          "span_s": 35.044,
+          "peak_active": 4
+        }
+      ],
+      "answer_content_correct": 25,
+      "required_source_check_passed": 24,
+      "parallel_read_questions": [
+        "m03"
+      ],
+      "dispatcher_wall_time_s": 149.82419759999902,
+      "answering_plus_dispatcher_cost_usd": 2.4261259999999996,
+      "dispatcher_cost_usd": 0.5560199999999995,
+      "cache_neutral_answering_plus_dispatcher_cost_usd": 10.925336
+    },
+    "R3": {
+      "condition": "R3",
+      "count": 25,
+      "expected_count": 25,
+      "anomalies": [],
+      "notes_read": 38,
+      "wiki_reads": 0,
+      "tool_calls": 88,
+      "tokens": 1658662,
+      "sum_question_time_s": 367.11,
+      "answering_cost_usd_at_recorded_rates": 1.4954532,
+      "cache_neutral_answering_cost_usd": 6.873272,
+      "batches": [
+        {
+          "batch": 1,
+          "count": 20,
+          "start": "2026-10-25T19:36:09.729Z",
+          "end": "2026-10-25T19:37:53.012Z",
+          "span_s": 103.283,
+          "peak_active": 6
+        },
+        {
+          "batch": 2,
+          "count": 5,
+          "start": "2026-10-25T19:38:05.717Z",
+          "end": "2026-10-25T19:38:37.358Z",
+          "span_s": 31.641,
+          "peak_active": 5
+        }
+      ],
+      "answer_content_correct": 21,
+      "required_source_check_passed": 21,
+      "parallel_read_questions": [
+        "m01",
+        "n04"
+      ],
+      "dispatcher_wall_time_s": 160.07686549999926,
+      "answering_plus_dispatcher_cost_usd": 2.1270304,
+      "dispatcher_cost_usd": 0.6315772000000002,
+      "cache_neutral_answering_plus_dispatcher_cost_usd": 7.885944
+    }
+  },
+  "per_question": [
+    {
+      "condition": "R1",
+      "id": "d01",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 0,
+        "tool_call_count": 3,
+        "total_tokens": 58774,
+        "time_s": 9.798,
+        "cost_usd_at_recorded_rates": 0.047823,
+        "cache_neutral_cost_usd": 0.240712
+      }
+    },
+    {
+      "condition": "R1",
+      "id": "d02",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 0,
+        "tool_call_count": 3,
+        "total_tokens": 58682,
+        "time_s": 8.578,
+        "cost_usd_at_recorded_rates": 0.0472664,
+        "cache_neutral_cost_usd": 0.2402
+      }
+    },
+    {
+      "condition": "R1",
+      "id": "d03",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 0,
+        "tool_call_count": 3,
+        "total_tokens": 58837,
+        "time_s": 8.489,
+        "cost_usd_at_recorded_rates": 0.0485106,
+        "cache_neutral_cost_usd": 0.241556
+      }
+    },
+    {
+      "condition": "R1",
+      "id": "d04",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 0,
+        "tool_call_count": 3,
+        "total_tokens": 58779,
+        "time_s": 9.408,
+        "cost_usd_at_recorded_rates": 0.0477814,
+        "cache_neutral_cost_usd": 0.24062
+      }
+    },
+    {
+      "condition": "R1",
+      "id": "d05",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 0,
+        "tool_call_count": 3,
+        "total_tokens": 58851,
+        "time_s": 7.614,
+        "cost_usd_at_recorded_rates": 0.0479836,
+        "cache_neutral_cost_usd": 0.240796
+      }
+    },
+    {
+      "condition": "R1",
+      "id": "d06",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 0,
+        "tool_call_count": 3,
+        "total_tokens": 58950,
+        "time_s": 8.011,
+        "cost_usd_at_recorded_rates": 0.0494794,
+        "cache_neutral_cost_usd": 0.242536
+      }
+    },
+    {
+      "condition": "R1",
+      "id": "d07",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 0,
+        "tool_call_count": 3,
+        "total_tokens": 58659,
+        "time_s": 8.353,
+        "cost_usd_at_recorded_rates": 0.04708,
+        "cache_neutral_cost_usd": 0.239868
+      }
+    },
+    {
+      "condition": "R1",
+      "id": "d08",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 4,
+        "wiki_read_count": 0,
+        "tool_call_count": 6,
+        "total_tokens": 116316,
+        "time_s": 17.417,
+        "cost_usd_at_recorded_rates": 0.08212660000000001,
+        "cache_neutral_cost_usd": 0.480768
+      }
+    },
+    {
+      "condition": "R1",
+      "id": "d09",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 0,
+        "tool_call_count": 3,
+        "total_tokens": 58822,
+        "time_s": 10.163,
+        "cost_usd_at_recorded_rates": 0.049098,
+        "cache_neutral_cost_usd": 0.242008
+      }
+    },
+    {
+      "condition": "R1",
+      "id": "m01",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 3,
+        "wiki_read_count": 0,
+        "tool_call_count": 5,
+        "total_tokens": 96680,
+        "time_s": 13.412,
+        "cost_usd_at_recorded_rates": 0.0684376,
+        "cache_neutral_cost_usd": 0.396576
+      }
+    },
+    {
+      "condition": "R1",
+      "id": "m02",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 2,
+        "wiki_read_count": 0,
+        "tool_call_count": 4,
+        "total_tokens": 77160,
+        "time_s": 8.919,
+        "cost_usd_at_recorded_rates": 0.0575696,
+        "cache_neutral_cost_usd": 0.316672
+      }
+    },
+    {
+      "condition": "R1",
+      "id": "m03",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [
+        "Multiple Read requests in one model message, contrary to one-file-at-a-time instruction."
+      ],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [
+          2
+        ],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 2,
+        "wiki_read_count": 0,
+        "tool_call_count": 4,
+        "total_tokens": 59422,
+        "time_s": 7.443,
+        "cost_usd_at_recorded_rates": 0.0525558,
+        "cache_neutral_cost_usd": 0.245224
+      }
+    },
+    {
+      "condition": "R1",
+      "id": "m04",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 3,
+        "wiki_read_count": 0,
+        "tool_call_count": 5,
+        "total_tokens": 95464,
+        "time_s": 9.107,
+        "cost_usd_at_recorded_rates": 0.0643562,
+        "cache_neutral_cost_usd": 0.39112
+      }
+    },
+    {
+      "condition": "R1",
+      "id": "m05",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 0,
+        "tool_call_count": 3,
+        "total_tokens": 58945,
+        "time_s": 7.223,
+        "cost_usd_at_recorded_rates": 0.0483714,
+        "cache_neutral_cost_usd": 0.241284
+      }
+    },
+    {
+      "condition": "R1",
+      "id": "p01",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 0,
+        "tool_call_count": 3,
+        "total_tokens": 59305,
+        "time_s": 7.949,
+        "cost_usd_at_recorded_rates": 0.050940599999999996,
+        "cache_neutral_cost_usd": 0.24378
+      }
+    },
+    {
+      "condition": "R1",
+      "id": "p02",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 0,
+        "tool_call_count": 3,
+        "total_tokens": 59307,
+        "time_s": 7.25,
+        "cost_usd_at_recorded_rates": 0.051263199999999995,
+        "cache_neutral_cost_usd": 0.24406
+      }
+    },
+    {
+      "condition": "R1",
+      "id": "p03",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 0,
+        "tool_call_count": 3,
+        "total_tokens": 59338,
+        "time_s": 7.155,
+        "cost_usd_at_recorded_rates": 0.0518832,
+        "cache_neutral_cost_usd": 0.24468
+      }
+    },
+    {
+      "condition": "R1",
+      "id": "t01",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 0,
+        "tool_call_count": 3,
+        "total_tokens": 59123,
+        "time_s": 8.529,
+        "cost_usd_at_recorded_rates": 0.049622,
+        "cache_neutral_cost_usd": 0.242268
+      }
+    },
+    {
+      "condition": "R1",
+      "id": "t02",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 0,
+        "tool_call_count": 3,
+        "total_tokens": 58874,
+        "time_s": 7.081,
+        "cost_usd_at_recorded_rates": 0.0484088,
+        "cache_neutral_cost_usd": 0.24148
+      }
+    },
+    {
+      "condition": "R1",
+      "id": "t03",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 0,
+        "tool_call_count": 3,
+        "total_tokens": 58852,
+        "time_s": 6.605,
+        "cost_usd_at_recorded_rates": 0.0481956,
+        "cache_neutral_cost_usd": 0.2412
+      }
+    },
+    {
+      "condition": "R1",
+      "id": "n01",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 0,
+        "tool_call_count": 3,
+        "total_tokens": 58898,
+        "time_s": 6.828,
+        "cost_usd_at_recorded_rates": 0.0494726,
+        "cache_neutral_cost_usd": 0.242168
+      }
+    },
+    {
+      "condition": "R1",
+      "id": "n02",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 0,
+        "wiki_read_count": 0,
+        "tool_call_count": 2,
+        "total_tokens": 41332,
+        "time_s": 7.531,
+        "cost_usd_at_recorded_rates": 0.0417656,
+        "cache_neutral_cost_usd": 0.170992
+      }
+    },
+    {
+      "condition": "R1",
+      "id": "n03",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 2,
+        "wiki_read_count": 0,
+        "tool_call_count": 4,
+        "total_tokens": 77008,
+        "time_s": 16.14,
+        "cost_usd_at_recorded_rates": 0.05785,
+        "cache_neutral_cost_usd": 0.31616
+      }
+    },
+    {
+      "condition": "R1",
+      "id": "n04",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 2,
+        "wiki_read_count": 0,
+        "tool_call_count": 4,
+        "total_tokens": 77149,
+        "time_s": 14.873,
+        "cost_usd_at_recorded_rates": 0.0593836,
+        "cache_neutral_cost_usd": 0.317444
+      }
+    },
+    {
+      "condition": "R1",
+      "id": "n05",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 3,
+        "wiki_read_count": 0,
+        "tool_call_count": 5,
+        "total_tokens": 96753,
+        "time_s": 16.01,
+        "cost_usd_at_recorded_rates": 0.0721752,
+        "cache_neutral_cost_usd": 0.39938
+      }
+    },
+    {
+      "condition": "R2",
+      "id": "d01",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 1,
+        "tool_call_count": 4,
+        "total_tokens": 75847,
+        "time_s": 12.087,
+        "cost_usd_at_recorded_rates": 0.0653224,
+        "cache_neutral_cost_usd": 0.31102
+      }
+    },
+    {
+      "condition": "R2",
+      "id": "d02",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 2,
+        "wiki_read_count": 2,
+        "tool_call_count": 6,
+        "total_tokens": 109515,
+        "time_s": 17.682,
+        "cost_usd_at_recorded_rates": 0.08543680000000001,
+        "cache_neutral_cost_usd": 0.450748
+      }
+    },
+    {
+      "condition": "R2",
+      "id": "d03",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 2,
+        "wiki_read_count": 2,
+        "tool_call_count": 6,
+        "total_tokens": 108161,
+        "time_s": 14.234,
+        "cost_usd_at_recorded_rates": 0.0835646,
+        "cache_neutral_cost_usd": 0.445252
+      }
+    },
+    {
+      "condition": "R2",
+      "id": "d04",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 1,
+        "tool_call_count": 3,
+        "total_tokens": 53482,
+        "time_s": 7.686,
+        "cost_usd_at_recorded_rates": 0.0396852,
+        "cache_neutral_cost_usd": 0.220456
+      }
+    },
+    {
+      "condition": "R2",
+      "id": "d05",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 2,
+        "tool_call_count": 4,
+        "total_tokens": 68607,
+        "time_s": 13.417,
+        "cost_usd_at_recorded_rates": 0.047649199999999996,
+        "cache_neutral_cost_usd": 0.282924
+      }
+    },
+    {
+      "condition": "R2",
+      "id": "d06",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 2,
+        "wiki_read_count": 2,
+        "tool_call_count": 6,
+        "total_tokens": 111396,
+        "time_s": 17.97,
+        "cost_usd_at_recorded_rates": 0.08871280000000001,
+        "cache_neutral_cost_usd": 0.458416
+      }
+    },
+    {
+      "condition": "R2",
+      "id": "d07",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 2,
+        "wiki_read_count": 2,
+        "tool_call_count": 6,
+        "total_tokens": 108331,
+        "time_s": 18.382,
+        "cost_usd_at_recorded_rates": 0.084339,
+        "cache_neutral_cost_usd": 0.446348
+      }
+    },
+    {
+      "condition": "R2",
+      "id": "d08",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 3,
+        "wiki_read_count": 2,
+        "tool_call_count": 6,
+        "total_tokens": 103484,
+        "time_s": 17.572,
+        "cost_usd_at_recorded_rates": 0.0713828,
+        "cache_neutral_cost_usd": 0.429104
+      }
+    },
+    {
+      "condition": "R2",
+      "id": "d09",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 2,
+        "wiki_read_count": 2,
+        "tool_call_count": 6,
+        "total_tokens": 109141,
+        "time_s": 18.659,
+        "cost_usd_at_recorded_rates": 0.085629,
+        "cache_neutral_cost_usd": 0.449844
+      }
+    },
+    {
+      "condition": "R2",
+      "id": "m01",
+      "answer_content_correct": true,
+      "required_source_check_passed": false,
+      "grading_notes": [
+        "Correct name, but the commander claim came from a link/index description; people/jim-lovell.md was not opened. Violates the gateway's facts-only grounding rule."
+      ],
+      "audit": {
+        "missing_required_note_paths": [
+          "people/jim-lovell.md"
+        ],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 3,
+        "wiki_read_count": 2,
+        "tool_call_count": 7,
+        "total_tokens": 133447,
+        "time_s": 20.949,
+        "cost_usd_at_recorded_rates": 0.1034968,
+        "cache_neutral_cost_usd": 0.55118
+      }
+    },
+    {
+      "condition": "R2",
+      "id": "m02",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 3,
+        "wiki_read_count": 2,
+        "tool_call_count": 7,
+        "total_tokens": 126953,
+        "time_s": 17.693,
+        "cost_usd_at_recorded_rates": 0.094197,
+        "cache_neutral_cost_usd": 0.522404
+      }
+    },
+    {
+      "condition": "R2",
+      "id": "m03",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [
+        "Required answer facts were supported, but the extra thermostatic-switch explanation was taken from frontmatter description rather than an opened fact line.",
+        "Multiple Read requests in one model message, contrary to one-file-at-a-time instruction."
+      ],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [
+          2
+        ],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 2,
+        "wiki_read_count": 2,
+        "tool_call_count": 5,
+        "total_tokens": 70025,
+        "time_s": 12.501,
+        "cost_usd_at_recorded_rates": 0.0549222,
+        "cache_neutral_cost_usd": 0.291172
+      }
+    },
+    {
+      "condition": "R2",
+      "id": "m04",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 2,
+        "wiki_read_count": 2,
+        "tool_call_count": 5,
+        "total_tokens": 85257,
+        "time_s": 14.303,
+        "cost_usd_at_recorded_rates": 0.056561400000000005,
+        "cache_neutral_cost_usd": 0.351236
+      }
+    },
+    {
+      "condition": "R2",
+      "id": "m05",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 2,
+        "wiki_read_count": 3,
+        "tool_call_count": 7,
+        "total_tokens": 128303,
+        "time_s": 17.665,
+        "cost_usd_at_recorded_rates": 0.097548,
+        "cache_neutral_cost_usd": 0.527916
+      }
+    },
+    {
+      "condition": "R2",
+      "id": "p01",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 2,
+        "tool_call_count": 5,
+        "total_tokens": 92807,
+        "time_s": 14.081,
+        "cost_usd_at_recorded_rates": 0.0790798,
+        "cache_neutral_cost_usd": 0.382812
+      }
+    },
+    {
+      "condition": "R2",
+      "id": "p02",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 2,
+        "tool_call_count": 5,
+        "total_tokens": 92835,
+        "time_s": 12.242,
+        "cost_usd_at_recorded_rates": 0.07938060000000001,
+        "cache_neutral_cost_usd": 0.383116
+      }
+    },
+    {
+      "condition": "R2",
+      "id": "p03",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 2,
+        "tool_call_count": 5,
+        "total_tokens": 92820,
+        "time_s": 14.154,
+        "cost_usd_at_recorded_rates": 0.0795228,
+        "cache_neutral_cost_usd": 0.383216
+      }
+    },
+    {
+      "condition": "R2",
+      "id": "t01",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 2,
+        "tool_call_count": 4,
+        "total_tokens": 69204,
+        "time_s": 10.994,
+        "cost_usd_at_recorded_rates": 0.049877,
+        "cache_neutral_cost_usd": 0.285472
+      }
+    },
+    {
+      "condition": "R2",
+      "id": "t02",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 3,
+        "wiki_read_count": 2,
+        "tool_call_count": 7,
+        "total_tokens": 129337,
+        "time_s": 18.331,
+        "cost_usd_at_recorded_rates": 0.0994774,
+        "cache_neutral_cost_usd": 0.533572
+      }
+    },
+    {
+      "condition": "R2",
+      "id": "t03",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 2,
+        "tool_call_count": 4,
+        "total_tokens": 70002,
+        "time_s": 9.336,
+        "cost_usd_at_recorded_rates": 0.0520868,
+        "cache_neutral_cost_usd": 0.289448
+      }
+    },
+    {
+      "condition": "R2",
+      "id": "n01",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 2,
+        "tool_call_count": 4,
+        "total_tokens": 68619,
+        "time_s": 11.566,
+        "cost_usd_at_recorded_rates": 0.0487316,
+        "cache_neutral_cost_usd": 0.283868
+      }
+    },
+    {
+      "condition": "R2",
+      "id": "n02",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 2,
+        "tool_call_count": 5,
+        "total_tokens": 88890,
+        "time_s": 14.795,
+        "cost_usd_at_recorded_rates": 0.0771222,
+        "cache_neutral_cost_usd": 0.36732
+      }
+    },
+    {
+      "condition": "R2",
+      "id": "n03",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 2,
+        "wiki_read_count": 2,
+        "tool_call_count": 6,
+        "total_tokens": 109220,
+        "time_s": 14.938,
+        "cost_usd_at_recorded_rates": 0.08638760000000001,
+        "cache_neutral_cost_usd": 0.45064
+      }
+    },
+    {
+      "condition": "R2",
+      "id": "n04",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 2,
+        "wiki_read_count": 2,
+        "tool_call_count": 5,
+        "total_tokens": 86403,
+        "time_s": 15.804,
+        "cost_usd_at_recorded_rates": 0.0617712,
+        "cache_neutral_cost_usd": 0.357308
+      }
+    },
+    {
+      "condition": "R2",
+      "id": "n05",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 3,
+        "wiki_read_count": 2,
+        "tool_call_count": 7,
+        "total_tokens": 130634,
+        "time_s": 19.551,
+        "cost_usd_at_recorded_rates": 0.0982218,
+        "cache_neutral_cost_usd": 0.538424
+      }
+    },
+    {
+      "condition": "R3",
+      "id": "d01",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [
+          "areas/apollo-1.md",
+          "areas/apollo-11.md",
+          "areas/apollo-13-review-board.md",
+          "areas/apollo-13.md",
+          "areas/apollo-16.md",
+          "areas/apollo-8.md",
+          "areas/apollo-program.md",
+          "areas/beech-aircraft.md",
+          "areas/grumman.md",
+          "areas/mission-control-houston.md",
+          "areas/nasa.md",
+          "areas/north-american-aviation.md",
+          "people/charlie-duke.md",
+          "people/edgar-cortright.md",
+          "people/fred-haise.md",
+          "people/gene-kranz.md",
+          "people/jack-swigert.md",
+          "people/jim-lovell.md",
+          "people/john-young.md",
+          "people/ken-mattingly.md",
+          "sources/apollo-13-measles-article.md",
+          "sources/apollo-13-review-board-report.md",
+          "topics/co2-scrubber-adapter.md",
+          "topics/free-return-trajectory.md",
+          "topics/lunar-module.md",
+          "topics/oxygen-tank-2.md",
+          "topics/rubella-crew-swap.md"
+        ],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 0,
+        "tool_call_count": 3,
+        "total_tokens": 60618,
+        "time_s": 27.679,
+        "cost_usd_at_recorded_rates": 0.058254400000000005,
+        "cache_neutral_cost_usd": 0.249544
+      }
+    },
+    {
+      "condition": "R3",
+      "id": "d02",
+      "answer_content_correct": false,
+      "required_source_check_passed": false,
+      "grading_notes": [
+        "Refused: the query's import-context heuristic returned five seed notes but omitted areas/beech-aircraft.md. The oxygen note's link names Beech, but its facts do not identify the builder."
+      ],
+      "audit": {
+        "missing_required_note_paths": [
+          "areas/beech-aircraft.md"
+        ],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [
+          "areas/apollo-1.md",
+          "areas/apollo-13.md",
+          "topics/command-service-module.md",
+          "topics/lunar-module.md",
+          "topics/oxygen-tank-2.md"
+        ],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 2,
+        "wiki_read_count": 0,
+        "tool_call_count": 4,
+        "total_tokens": 68139,
+        "time_s": 26.216,
+        "cost_usd_at_recorded_rates": 0.0511148,
+        "cache_neutral_cost_usd": 0.284956
+      }
+    },
+    {
+      "condition": "R3",
+      "id": "d03",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [
+          "areas/apollo-1.md",
+          "areas/apollo-11.md",
+          "areas/apollo-13-review-board.md",
+          "areas/apollo-13.md",
+          "areas/apollo-16.md",
+          "areas/apollo-8.md",
+          "areas/apollo-program.md",
+          "areas/beech-aircraft.md",
+          "areas/grumman.md",
+          "areas/mission-control-houston.md",
+          "areas/nasa.md",
+          "people/charlie-duke.md",
+          "people/edgar-cortright.md",
+          "people/fred-haise.md",
+          "people/gene-kranz.md",
+          "people/jack-swigert.md",
+          "people/jim-lovell.md",
+          "people/john-f-kennedy.md",
+          "people/john-young.md",
+          "people/ken-mattingly.md",
+          "people/michael-collins.md",
+          "people/neil-armstrong.md",
+          "sources/apollo-11-mission-report.md",
+          "sources/apollo-13-measles-article.md",
+          "sources/apollo-13-review-board-report.md",
+          "topics/co2-scrubber-adapter.md",
+          "topics/command-service-module.md",
+          "topics/free-return-trajectory.md",
+          "topics/lunar-module.md",
+          "topics/lunar-orbit-rendezvous.md",
+          "topics/oxygen-tank-2.md",
+          "topics/program-alarms-1201-1202.md",
+          "topics/rubella-crew-swap.md",
+          "topics/saturn-v.md",
+          "topics/tranquility-base.md"
+        ],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 0,
+        "tool_call_count": 3,
+        "total_tokens": 63218,
+        "time_s": 18.37,
+        "cost_usd_at_recorded_rates": 0.06589880000000001,
+        "cache_neutral_cost_usd": 0.260872
+      }
+    },
+    {
+      "condition": "R3",
+      "id": "d04",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [
+          "people/margaret-hamilton.md",
+          "people/michael-collins.md",
+          "sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+          "topics/apollo-guidance-computer.md",
+          "topics/program-alarms-1201-1202.md"
+        ],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 0,
+        "tool_call_count": 3,
+        "total_tokens": 53667,
+        "time_s": 13.453,
+        "cost_usd_at_recorded_rates": 0.0399934,
+        "cache_neutral_cost_usd": 0.221516
+      }
+    },
+    {
+      "condition": "R3",
+      "id": "d05",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [
+          "areas/apollo-1.md",
+          "areas/apollo-11.md",
+          "areas/apollo-13-review-board.md",
+          "areas/apollo-13.md",
+          "areas/apollo-16.md",
+          "areas/apollo-8.md",
+          "areas/apollo-program.md",
+          "areas/beech-aircraft.md",
+          "areas/grumman.md",
+          "areas/mission-control-houston.md",
+          "areas/nasa.md",
+          "areas/north-american-aviation.md",
+          "people/buzz-aldrin.md",
+          "people/charlie-duke.md",
+          "people/edgar-cortright.md",
+          "people/fred-haise.md",
+          "people/gene-kranz.md",
+          "people/jack-swigert.md",
+          "people/jim-lovell.md",
+          "people/margaret-hamilton.md",
+          "people/michael-collins.md",
+          "people/neil-armstrong.md",
+          "sources/apollo-11-mission-report.md",
+          "sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+          "sources/apollo-13-review-board-report.md",
+          "topics/apollo-guidance-computer.md",
+          "topics/lunar-module.md",
+          "topics/program-alarms-1201-1202.md",
+          "topics/tranquility-base.md"
+        ],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 0,
+        "tool_call_count": 3,
+        "total_tokens": 62160,
+        "time_s": 11.198,
+        "cost_usd_at_recorded_rates": 0.0625798,
+        "cache_neutral_cost_usd": 0.255824
+      }
+    },
+    {
+      "condition": "R3",
+      "id": "d06",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [
+          "areas/apollo-13.md",
+          "topics/co2-scrubber-adapter.md",
+          "topics/command-service-module.md",
+          "topics/lunar-module.md"
+        ],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 0,
+        "tool_call_count": 3,
+        "total_tokens": 53165,
+        "time_s": 10.157,
+        "cost_usd_at_recorded_rates": 0.0402326,
+        "cache_neutral_cost_usd": 0.221012
+      }
+    },
+    {
+      "condition": "R3",
+      "id": "d07",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [
+          "areas/apollo-1.md",
+          "areas/apollo-11.md",
+          "areas/apollo-13-review-board.md",
+          "areas/apollo-13.md",
+          "areas/apollo-16.md",
+          "areas/apollo-8.md",
+          "areas/apollo-program.md",
+          "areas/beech-aircraft.md",
+          "areas/grumman.md",
+          "areas/mission-control-houston.md",
+          "areas/nasa.md",
+          "areas/north-american-aviation.md",
+          "people/charlie-duke.md",
+          "people/edgar-cortright.md",
+          "people/fred-haise.md",
+          "people/gene-kranz.md",
+          "people/jack-swigert.md",
+          "people/jim-lovell.md",
+          "sources/apollo-13-review-board-report.md"
+        ],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 0,
+        "tool_call_count": 3,
+        "total_tokens": 57959,
+        "time_s": 7.873,
+        "cost_usd_at_recorded_rates": 0.0508232,
+        "cache_neutral_cost_usd": 0.238476
+      }
+    },
+    {
+      "condition": "R3",
+      "id": "d08",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [
+          "areas/apollo-1.md",
+          "areas/apollo-11.md",
+          "areas/apollo-13-review-board.md",
+          "areas/apollo-13.md",
+          "areas/apollo-16.md",
+          "areas/apollo-8.md",
+          "areas/apollo-program.md",
+          "areas/beech-aircraft.md",
+          "areas/grumman.md",
+          "areas/mission-control-houston.md",
+          "areas/nasa.md",
+          "people/buzz-aldrin.md",
+          "people/charlie-duke.md",
+          "people/edgar-cortright.md",
+          "people/fred-haise.md",
+          "people/gene-kranz.md",
+          "people/jack-swigert.md",
+          "people/jim-lovell.md",
+          "people/margaret-hamilton.md",
+          "people/michael-collins.md",
+          "people/neil-armstrong.md",
+          "sources/apollo-11-mission-report.md",
+          "sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+          "sources/apollo-13-review-board-report.md",
+          "topics/apollo-guidance-computer.md",
+          "topics/lunar-module.md",
+          "topics/program-alarms-1201-1202.md",
+          "topics/tranquility-base.md"
+        ],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 3,
+        "wiki_read_count": 0,
+        "tool_call_count": 5,
+        "total_tokens": 101293,
+        "time_s": 15.86,
+        "cost_usd_at_recorded_rates": 0.08499860000000001,
+        "cache_neutral_cost_usd": 0.420404
+      }
+    },
+    {
+      "condition": "R3",
+      "id": "d09",
+      "answer_content_correct": false,
+      "required_source_check_passed": false,
+      "grading_notes": [
+        "Refused: the Launch Complex 34 / 1967-01-27 question returned only an Apollo 11 alarms/report subgraph, with no Apollo 1 note."
+      ],
+      "audit": {
+        "missing_required_note_paths": [
+          "areas/apollo-1.md"
+        ],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [
+          "people/margaret-hamilton.md",
+          "people/michael-collins.md",
+          "people/neil-armstrong.md",
+          "sources/apollo-11-mission-report.md",
+          "sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+          "topics/apollo-guidance-computer.md",
+          "topics/lunar-module.md",
+          "topics/program-alarms-1201-1202.md",
+          "topics/tranquility-base.md"
+        ],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 0,
+        "wiki_read_count": 0,
+        "tool_call_count": 2,
+        "total_tokens": 39978,
+        "time_s": 13.681,
+        "cost_usd_at_recorded_rates": 0.041014199999999994,
+        "cache_neutral_cost_usd": 0.169272
+      }
+    },
+    {
+      "condition": "R3",
+      "id": "m01",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [
+        "Multiple Read requests in one model message, contrary to one-file-at-a-time instruction."
+      ],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [
+          2,
+          2
+        ],
+        "access_or_query_violations": [],
+        "query_named_paths": [
+          "areas/apollo-11.md",
+          "areas/apollo-13-review-board.md",
+          "areas/apollo-13.md",
+          "areas/apollo-program.md",
+          "areas/mission-control-houston.md",
+          "areas/nasa.md",
+          "people/charlie-duke.md",
+          "people/fred-haise.md",
+          "people/gene-kranz.md",
+          "people/jack-swigert.md",
+          "people/jim-lovell.md",
+          "people/john-young.md",
+          "people/ken-mattingly.md",
+          "people/michael-collins.md",
+          "people/neil-armstrong.md",
+          "sources/apollo-11-mission-report.md",
+          "sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+          "sources/apollo-13-measles-article.md",
+          "topics/lunar-module.md",
+          "topics/program-alarms-1201-1202.md",
+          "topics/rubella-crew-swap.md",
+          "topics/tranquility-base.md"
+        ],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 4,
+        "wiki_read_count": 0,
+        "tool_call_count": 6,
+        "total_tokens": 80505,
+        "time_s": 15.478,
+        "cost_usd_at_recorded_rates": 0.07764080000000001,
+        "cache_neutral_cost_usd": 0.334932
+      }
+    },
+    {
+      "condition": "R3",
+      "id": "m02",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [
+          "areas/apollo-1.md",
+          "areas/apollo-11.md",
+          "areas/apollo-13-review-board.md",
+          "areas/apollo-13.md",
+          "areas/apollo-16.md",
+          "areas/apollo-8.md",
+          "areas/apollo-program.md",
+          "areas/beech-aircraft.md",
+          "areas/grumman.md",
+          "areas/mission-control-houston.md",
+          "areas/nasa.md",
+          "areas/north-american-aviation.md",
+          "people/charlie-duke.md",
+          "people/edgar-cortright.md",
+          "people/fred-haise.md",
+          "people/gene-kranz.md",
+          "people/jack-swigert.md",
+          "people/jim-lovell.md",
+          "people/john-young.md",
+          "sources/apollo-13-review-board-report.md",
+          "topics/command-service-module.md",
+          "topics/oxygen-tank-2.md"
+        ],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 3,
+        "wiki_read_count": 0,
+        "tool_call_count": 5,
+        "total_tokens": 96064,
+        "time_s": 14.231,
+        "cost_usd_at_recorded_rates": 0.0731762,
+        "cache_neutral_cost_usd": 0.396016
+      }
+    },
+    {
+      "condition": "R3",
+      "id": "m03",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [
+          "areas/apollo-1.md",
+          "areas/apollo-11.md",
+          "areas/apollo-13-review-board.md",
+          "areas/apollo-13.md",
+          "areas/apollo-16.md",
+          "areas/apollo-8.md",
+          "areas/apollo-program.md",
+          "areas/beech-aircraft.md",
+          "areas/grumman.md",
+          "areas/mission-control-houston.md",
+          "areas/nasa.md",
+          "people/charlie-duke.md",
+          "people/edgar-cortright.md",
+          "people/fred-haise.md",
+          "people/gene-kranz.md",
+          "people/jack-swigert.md",
+          "people/jim-lovell.md",
+          "people/john-young.md",
+          "people/ken-mattingly.md",
+          "sources/apollo-13-measles-article.md",
+          "sources/apollo-13-review-board-report.md",
+          "topics/command-service-module.md",
+          "topics/oxygen-tank-2.md",
+          "topics/rubella-crew-swap.md"
+        ],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 2,
+        "wiki_read_count": 0,
+        "tool_call_count": 4,
+        "total_tokens": 66235,
+        "time_s": 11.586,
+        "cost_usd_at_recorded_rates": 0.0644538,
+        "cache_neutral_cost_usd": 0.27438
+      }
+    },
+    {
+      "condition": "R3",
+      "id": "m04",
+      "answer_content_correct": false,
+      "required_source_check_passed": false,
+      "grading_notes": [
+        "Refused: retrieved Apollo 8/program notes, but not the Saturn V or Wernher von Braun note needed to identify the developer and centre."
+      ],
+      "audit": {
+        "missing_required_note_paths": [
+          "people/wernher-von-braun.md"
+        ],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [
+          "areas/apollo-1.md",
+          "areas/apollo-11.md",
+          "areas/apollo-13-review-board.md",
+          "areas/apollo-13.md",
+          "areas/apollo-16.md",
+          "areas/apollo-8.md",
+          "areas/apollo-program.md",
+          "areas/beech-aircraft.md",
+          "areas/grumman.md",
+          "areas/mission-control-houston.md",
+          "areas/nasa.md",
+          "people/charlie-duke.md",
+          "people/edgar-cortright.md",
+          "people/fred-haise.md",
+          "people/gene-kranz.md",
+          "people/jack-swigert.md",
+          "people/jim-lovell.md",
+          "people/john-young.md",
+          "people/ken-mattingly.md",
+          "sources/apollo-13-measles-article.md",
+          "sources/apollo-13-review-board-report.md",
+          "topics/co2-scrubber-adapter.md",
+          "topics/free-return-trajectory.md",
+          "topics/lunar-module.md",
+          "topics/oxygen-tank-2.md",
+          "topics/rubella-crew-swap.md"
+        ],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 2,
+        "wiki_read_count": 0,
+        "tool_call_count": 4,
+        "total_tokens": 79151,
+        "time_s": 11.18,
+        "cost_usd_at_recorded_rates": 0.069192,
+        "cache_neutral_cost_usd": 0.3275
+      }
+    },
+    {
+      "condition": "R3",
+      "id": "m05",
+      "answer_content_correct": false,
+      "required_source_check_passed": false,
+      "grading_notes": [
+        "Refused: the unchanged question returned 'No matching nodes found' (CLI exit 4); no notes could be read."
+      ],
+      "audit": {
+        "missing_required_note_paths": [
+          "people/charlie-duke.md"
+        ],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [],
+        "query_no_match": true
+      },
+      "metrics": {
+        "note_read_count": 0,
+        "wiki_read_count": 0,
+        "tool_call_count": 2,
+        "total_tokens": 38409,
+        "time_s": 7.806,
+        "cost_usd_at_recorded_rates": 0.030105,
+        "cache_neutral_cost_usd": 0.159876
+      }
+    },
+    {
+      "condition": "R3",
+      "id": "p01",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [
+          "areas/apollo-1.md",
+          "areas/apollo-11.md",
+          "areas/apollo-13-review-board.md",
+          "areas/apollo-13.md",
+          "areas/apollo-16.md",
+          "areas/apollo-8.md",
+          "areas/apollo-program.md",
+          "areas/beech-aircraft.md",
+          "areas/grumman.md",
+          "areas/mission-control-houston.md",
+          "areas/nasa.md",
+          "people/buzz-aldrin.md",
+          "people/charlie-duke.md",
+          "people/edgar-cortright.md",
+          "people/fred-haise.md",
+          "people/gene-kranz.md",
+          "people/jack-swigert.md",
+          "people/jim-lovell.md",
+          "people/john-young.md",
+          "people/margaret-hamilton.md",
+          "people/michael-collins.md",
+          "people/neil-armstrong.md",
+          "sources/apollo-11-mission-report.md",
+          "sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+          "sources/apollo-13-review-board-report.md",
+          "topics/apollo-guidance-computer.md",
+          "topics/command-service-module.md",
+          "topics/lunar-module.md",
+          "topics/oxygen-tank-2.md",
+          "topics/program-alarms-1201-1202.md",
+          "topics/tranquility-base.md"
+        ],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 0,
+        "tool_call_count": 3,
+        "total_tokens": 63697,
+        "time_s": 10.783,
+        "cost_usd_at_recorded_rates": 0.069156,
+        "cache_neutral_cost_usd": 0.263892
+      }
+    },
+    {
+      "condition": "R3",
+      "id": "p02",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [
+          "areas/apollo-1.md",
+          "areas/apollo-11.md",
+          "areas/apollo-13-review-board.md",
+          "areas/apollo-13.md",
+          "areas/apollo-16.md",
+          "areas/apollo-8.md",
+          "areas/apollo-program.md",
+          "areas/beech-aircraft.md",
+          "areas/grumman.md",
+          "areas/mission-control-houston.md",
+          "areas/nasa.md",
+          "people/buzz-aldrin.md",
+          "people/charlie-duke.md",
+          "people/edgar-cortright.md",
+          "people/fred-haise.md",
+          "people/gene-kranz.md",
+          "people/jack-swigert.md",
+          "people/jim-lovell.md",
+          "people/john-young.md",
+          "people/margaret-hamilton.md",
+          "people/michael-collins.md",
+          "people/neil-armstrong.md",
+          "sources/apollo-11-mission-report.md",
+          "sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+          "sources/apollo-13-review-board-report.md",
+          "topics/apollo-guidance-computer.md",
+          "topics/command-service-module.md",
+          "topics/lunar-module.md",
+          "topics/oxygen-tank-2.md",
+          "topics/program-alarms-1201-1202.md",
+          "topics/tranquility-base.md"
+        ],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 0,
+        "tool_call_count": 3,
+        "total_tokens": 63686,
+        "time_s": 11.998,
+        "cost_usd_at_recorded_rates": 0.0691238,
+        "cache_neutral_cost_usd": 0.263816
+      }
+    },
+    {
+      "condition": "R3",
+      "id": "p03",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [
+          "areas/apollo-1.md",
+          "areas/apollo-11.md",
+          "areas/apollo-13-review-board.md",
+          "areas/apollo-13.md",
+          "areas/apollo-16.md",
+          "areas/apollo-8.md",
+          "areas/apollo-program.md",
+          "areas/beech-aircraft.md",
+          "areas/grumman.md",
+          "areas/mission-control-houston.md",
+          "areas/nasa.md",
+          "people/buzz-aldrin.md",
+          "people/charlie-duke.md",
+          "people/edgar-cortright.md",
+          "people/fred-haise.md",
+          "people/gene-kranz.md",
+          "people/jack-swigert.md",
+          "people/jim-lovell.md",
+          "people/john-young.md",
+          "people/margaret-hamilton.md",
+          "people/michael-collins.md",
+          "people/neil-armstrong.md",
+          "sources/apollo-11-mission-report.md",
+          "sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+          "sources/apollo-13-review-board-report.md",
+          "topics/apollo-guidance-computer.md",
+          "topics/command-service-module.md",
+          "topics/lunar-module.md",
+          "topics/oxygen-tank-2.md",
+          "topics/program-alarms-1201-1202.md",
+          "topics/tranquility-base.md"
+        ],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 0,
+        "tool_call_count": 3,
+        "total_tokens": 63690,
+        "time_s": 11.396,
+        "cost_usd_at_recorded_rates": 0.0694078,
+        "cache_neutral_cost_usd": 0.264088
+      }
+    },
+    {
+      "condition": "R3",
+      "id": "t01",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [
+          "areas/apollo-1.md",
+          "areas/apollo-11.md",
+          "areas/apollo-13-review-board.md",
+          "areas/apollo-13.md",
+          "areas/apollo-16.md",
+          "areas/apollo-8.md",
+          "areas/apollo-program.md",
+          "areas/beech-aircraft.md",
+          "areas/grumman.md",
+          "areas/mission-control-houston.md",
+          "areas/nasa.md",
+          "people/charlie-duke.md",
+          "people/edgar-cortright.md",
+          "people/fred-haise.md",
+          "people/gene-kranz.md",
+          "people/jack-swigert.md",
+          "people/jim-lovell.md",
+          "people/margaret-hamilton.md",
+          "people/michael-collins.md",
+          "people/neil-armstrong.md",
+          "sources/apollo-11-mission-report.md",
+          "sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+          "sources/apollo-13-review-board-report.md",
+          "topics/apollo-guidance-computer.md",
+          "topics/lunar-module.md",
+          "topics/program-alarms-1201-1202.md",
+          "topics/tranquility-base.md"
+        ],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 0,
+        "tool_call_count": 3,
+        "total_tokens": 61027,
+        "time_s": 10.799,
+        "cost_usd_at_recorded_rates": 0.061503,
+        "cache_neutral_cost_usd": 0.252556
+      }
+    },
+    {
+      "condition": "R3",
+      "id": "t02",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [
+          "areas/apollo-1.md",
+          "areas/apollo-11.md",
+          "areas/apollo-13-review-board.md",
+          "areas/apollo-13.md",
+          "areas/apollo-16.md",
+          "areas/apollo-8.md",
+          "areas/apollo-program.md",
+          "areas/beech-aircraft.md",
+          "areas/grumman.md",
+          "areas/mission-control-houston.md",
+          "areas/nasa.md",
+          "people/charlie-duke.md",
+          "people/edgar-cortright.md",
+          "people/fred-haise.md",
+          "people/gene-kranz.md",
+          "people/jack-swigert.md",
+          "people/jim-lovell.md",
+          "people/john-young.md",
+          "sources/apollo-13-review-board-report.md",
+          "topics/command-service-module.md",
+          "topics/oxygen-tank-2.md"
+        ],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 0,
+        "tool_call_count": 3,
+        "total_tokens": 59200,
+        "time_s": 11.675,
+        "cost_usd_at_recorded_rates": 0.056146800000000004,
+        "cache_neutral_cost_usd": 0.245408
+      }
+    },
+    {
+      "condition": "R3",
+      "id": "t03",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [
+          "areas/mission-control-houston.md"
+        ],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 0,
+        "tool_call_count": 3,
+        "total_tokens": 52579,
+        "time_s": 15.223,
+        "cost_usd_at_recorded_rates": 0.037983,
+        "cache_neutral_cost_usd": 0.217996
+      }
+    },
+    {
+      "condition": "R3",
+      "id": "n01",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [
+          "areas/apollo-1.md",
+          "areas/apollo-11.md",
+          "areas/apollo-13-review-board.md",
+          "areas/apollo-13.md",
+          "areas/apollo-16.md",
+          "areas/apollo-8.md",
+          "areas/apollo-program.md",
+          "areas/beech-aircraft.md",
+          "areas/grumman.md",
+          "areas/mission-control-houston.md",
+          "areas/nasa.md",
+          "areas/north-american-aviation.md",
+          "people/buzz-aldrin.md",
+          "people/charlie-duke.md",
+          "people/edgar-cortright.md",
+          "people/fred-haise.md",
+          "people/gene-kranz.md",
+          "people/jack-swigert.md",
+          "people/jim-lovell.md",
+          "people/margaret-hamilton.md",
+          "people/michael-collins.md",
+          "people/neil-armstrong.md",
+          "sources/apollo-11-mission-report.md",
+          "sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+          "sources/apollo-13-review-board-report.md",
+          "topics/apollo-guidance-computer.md",
+          "topics/lunar-module.md",
+          "topics/program-alarms-1201-1202.md",
+          "topics/tranquility-base.md"
+        ],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 2,
+        "wiki_read_count": 0,
+        "tool_call_count": 4,
+        "total_tokens": 81506,
+        "time_s": 24.952,
+        "cost_usd_at_recorded_rates": 0.0720948,
+        "cache_neutral_cost_usd": 0.336104
+      }
+    },
+    {
+      "condition": "R3",
+      "id": "n02",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [
+          "areas/apollo-1.md",
+          "areas/apollo-13.md",
+          "topics/command-service-module.md",
+          "topics/lunar-module.md",
+          "topics/program-alarms-1201-1202.md"
+        ],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 0,
+        "tool_call_count": 3,
+        "total_tokens": 53149,
+        "time_s": 19.997,
+        "cost_usd_at_recorded_rates": 0.0426336,
+        "cache_neutral_cost_usd": 0.22298
+      }
+    },
+    {
+      "condition": "R3",
+      "id": "n03",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [
+          "people/michael-collins.md",
+          "people/neil-armstrong.md",
+          "sources/apollo-11-mission-report.md",
+          "sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+          "topics/co2-scrubber-adapter.md",
+          "topics/command-service-module.md",
+          "topics/lunar-module.md",
+          "topics/oxygen-tank-2.md",
+          "topics/program-alarms-1201-1202.md",
+          "topics/tranquility-base.md"
+        ],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 1,
+        "wiki_read_count": 0,
+        "tool_call_count": 3,
+        "total_tokens": 55205,
+        "time_s": 15.937,
+        "cost_usd_at_recorded_rates": 0.0461102,
+        "cache_neutral_cost_usd": 0.229748
+      }
+    },
+    {
+      "condition": "R3",
+      "id": "n04",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [
+        "Multiple Read requests in one model message, contrary to one-file-at-a-time instruction."
+      ],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [
+          2
+        ],
+        "access_or_query_violations": [],
+        "query_named_paths": [
+          "areas/apollo-1.md",
+          "areas/apollo-11.md",
+          "areas/apollo-13-review-board.md",
+          "areas/apollo-13.md",
+          "areas/apollo-16.md",
+          "areas/apollo-8.md",
+          "areas/apollo-program.md",
+          "areas/beech-aircraft.md",
+          "areas/grumman.md",
+          "areas/mission-control-houston.md",
+          "areas/nasa.md",
+          "people/buzz-aldrin.md",
+          "people/charlie-duke.md",
+          "people/edgar-cortright.md",
+          "people/fred-haise.md",
+          "people/gene-kranz.md",
+          "people/jack-swigert.md",
+          "people/jim-lovell.md",
+          "people/john-young.md",
+          "sources/apollo-13-review-board-report.md",
+          "topics/command-service-module.md",
+          "topics/oxygen-tank-2.md"
+        ],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 3,
+        "wiki_read_count": 0,
+        "tool_call_count": 5,
+        "total_tokens": 79003,
+        "time_s": 16.236,
+        "cost_usd_at_recorded_rates": 0.0715,
+        "cache_neutral_cost_usd": 0.327036
+      }
+    },
+    {
+      "condition": "R3",
+      "id": "n05",
+      "answer_content_correct": true,
+      "required_source_check_passed": true,
+      "grading_notes": [],
+      "audit": {
+        "missing_required_note_paths": [],
+        "parallel_read_request_sizes": [],
+        "access_or_query_violations": [],
+        "query_named_paths": [
+          "areas/apollo-1.md",
+          "areas/apollo-11.md",
+          "areas/apollo-13-review-board.md",
+          "areas/apollo-13.md",
+          "areas/apollo-16.md",
+          "areas/apollo-8.md",
+          "areas/apollo-program.md",
+          "areas/beech-aircraft.md",
+          "areas/grumman.md",
+          "areas/mission-control-houston.md",
+          "areas/nasa.md",
+          "people/buzz-aldrin.md",
+          "people/charlie-duke.md",
+          "people/edgar-cortright.md",
+          "people/fred-haise.md",
+          "people/gene-kranz.md",
+          "people/jack-swigert.md",
+          "people/jim-lovell.md",
+          "people/john-f-kennedy.md",
+          "people/john-young.md",
+          "people/ken-mattingly.md",
+          "people/michael-collins.md",
+          "people/neil-armstrong.md",
+          "sources/apollo-11-mission-report.md",
+          "sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+          "sources/apollo-13-review-board-report.md",
+          "topics/co2-scrubber-adapter.md",
+          "topics/command-service-module.md",
+          "topics/free-return-trajectory.md",
+          "topics/lunar-module.md",
+          "topics/lunar-orbit-rendezvous.md",
+          "topics/oxygen-tank-2.md",
+          "topics/program-alarms-1201-1202.md",
+          "topics/rubella-crew-swap.md",
+          "topics/tranquility-base.md"
+        ],
+        "query_no_match": false
+      },
+      "metrics": {
+        "note_read_count": 3,
+        "wiki_read_count": 0,
+        "tool_call_count": 5,
+        "total_tokens": 105359,
+        "time_s": 13.346,
+        "cost_usd_at_recorded_rates": 0.09031660000000001,
+        "cache_neutral_cost_usd": 0.435068
+      }
+    }
+  ],
+  "final_integrity": {
+    "corpus_unchanged": true,
+    "graphify_source_unchanged": true,
+    "graph_matches_pre_run_hash": true,
+    "gateway_unchanged": true
+  },
+  "query_probes": [
+    {
+      "id": "d01",
+      "budget": 2000,
+      "exit_code": 0,
+      "time_s": 7.816045200001099,
+      "characters": 8530,
+      "approx_tokens_at_graphify_3_chars": 2843.3333333333335,
+      "truncated": false,
+      "over_budget_notice": true,
+      "node_lines": 41,
+      "unique_note_paths": [
+        "areas/apollo-8.md",
+        "topics/rubella-crew-swap.md",
+        "areas/apollo-1.md",
+        "areas/apollo-13.md",
+        "areas/apollo-program.md",
+        "people/john-young.md",
+        "areas/apollo-13-review-board.md",
+        "people/ken-mattingly.md",
+        "areas/mission-control-houston.md",
+        "areas/apollo-11.md",
+        "people/charlie-duke.md",
+        "people/jack-swigert.md",
+        "people/jim-lovell.md",
+        "areas/north-american-aviation.md",
+        "people/fred-haise.md",
+        "people/gene-kranz.md",
+        "sources/apollo-13-measles-article.md",
+        "topics/lunar-module.md",
+        "topics/oxygen-tank-2.md",
+        "areas/apollo-16.md",
+        "topics/co2-scrubber-adapter.md",
+        "areas/nasa.md",
+        "areas/beech-aircraft.md",
+        "sources/apollo-13-review-board-report.md",
+        "people/edgar-cortright.md",
+        "topics/free-return-trajectory.md",
+        "areas/grumman.md"
+      ],
+      "output": "query-probes/d01-2000.txt"
+    },
+    {
+      "id": "d02",
+      "budget": 2000,
+      "exit_code": 0,
+      "time_s": 3.361666900000273,
+      "characters": 760,
+      "approx_tokens_at_graphify_3_chars": 253.33333333333334,
+      "truncated": false,
+      "over_budget_notice": false,
+      "node_lines": 5,
+      "unique_note_paths": [
+        "topics/command-service-module.md",
+        "topics/oxygen-tank-2.md",
+        "areas/apollo-1.md",
+        "areas/apollo-13.md",
+        "topics/lunar-module.md"
+      ],
+      "output": "query-probes/d02-2000.txt"
+    },
+    {
+      "id": "d03",
+      "budget": 2000,
+      "exit_code": 0,
+      "time_s": 2.9299458999994386,
+      "characters": 11059,
+      "approx_tokens_at_graphify_3_chars": 3686.3333333333335,
+      "truncated": false,
+      "over_budget_notice": true,
+      "node_lines": 54,
+      "unique_note_paths": [
+        "topics/lunar-orbit-rendezvous.md",
+        "areas/nasa.md",
+        "sources/apollo-13-measles-article.md",
+        "topics/lunar-module.md",
+        "areas/mission-control-houston.md",
+        "areas/apollo-13.md",
+        "areas/apollo-program.md",
+        "people/john-young.md",
+        "people/michael-collins.md",
+        "areas/apollo-13-review-board.md",
+        "people/ken-mattingly.md",
+        "topics/rubella-crew-swap.md",
+        "areas/apollo-11.md",
+        "people/charlie-duke.md",
+        "people/jack-swigert.md",
+        "people/jim-lovell.md",
+        "topics/co2-scrubber-adapter.md",
+        "people/john-f-kennedy.md",
+        "people/fred-haise.md",
+        "people/gene-kranz.md",
+        "people/neil-armstrong.md",
+        "topics/free-return-trajectory.md",
+        "topics/oxygen-tank-2.md",
+        "areas/apollo-16.md",
+        "topics/command-service-module.md",
+        "topics/program-alarms-1201-1202.md",
+        "areas/apollo-1.md",
+        "areas/apollo-8.md",
+        "topics/saturn-v.md",
+        "topics/tranquility-base.md",
+        "areas/beech-aircraft.md",
+        "sources/apollo-13-review-board-report.md",
+        "people/edgar-cortright.md",
+        "sources/apollo-11-mission-report.md",
+        "areas/grumman.md"
+      ],
+      "output": "query-probes/d03-2000.txt"
+    },
+    {
+      "id": "d04",
+      "budget": 2000,
+      "exit_code": 0,
+      "time_s": 3.164845299997978,
+      "characters": 1573,
+      "approx_tokens_at_graphify_3_chars": 524.3333333333334,
+      "truncated": false,
+      "over_budget_notice": false,
+      "node_lines": 6,
+      "unique_note_paths": [
+        "people/margaret-hamilton.md",
+        "topics/program-alarms-1201-1202.md",
+        "topics/apollo-guidance-computer.md",
+        "people/michael-collins.md",
+        "sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md"
+      ],
+      "output": "query-probes/d04-2000.txt"
+    },
+    {
+      "id": "d05",
+      "budget": 2000,
+      "exit_code": 0,
+      "time_s": 2.9619615000010526,
+      "characters": 10066,
+      "approx_tokens_at_graphify_3_chars": 3355.3333333333335,
+      "truncated": false,
+      "over_budget_notice": true,
+      "node_lines": 47,
+      "unique_note_paths": [
+        "areas/apollo-program.md",
+        "topics/program-alarms-1201-1202.md",
+        "areas/apollo-1.md",
+        "areas/apollo-13.md",
+        "areas/apollo-11.md",
+        "people/michael-collins.md",
+        "areas/apollo-13-review-board.md",
+        "areas/apollo-16.md",
+        "areas/mission-control-houston.md",
+        "people/charlie-duke.md",
+        "people/jack-swigert.md",
+        "people/jim-lovell.md",
+        "sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+        "areas/apollo-8.md",
+        "areas/nasa.md",
+        "areas/north-american-aviation.md",
+        "people/fred-haise.md",
+        "people/gene-kranz.md",
+        "people/margaret-hamilton.md",
+        "topics/apollo-guidance-computer.md",
+        "topics/lunar-module.md",
+        "people/neil-armstrong.md",
+        "people/buzz-aldrin.md",
+        "topics/tranquility-base.md",
+        "areas/beech-aircraft.md",
+        "sources/apollo-13-review-board-report.md",
+        "people/edgar-cortright.md",
+        "sources/apollo-11-mission-report.md",
+        "areas/grumman.md"
+      ],
+      "output": "query-probes/d05-2000.txt"
+    },
+    {
+      "id": "d06",
+      "budget": 2000,
+      "exit_code": 0,
+      "time_s": 5.5917998000004445,
+      "characters": 783,
+      "approx_tokens_at_graphify_3_chars": 261.0,
+      "truncated": false,
+      "over_budget_notice": false,
+      "node_lines": 5,
+      "unique_note_paths": [
+        "topics/co2-scrubber-adapter.md",
+        "topics/command-service-module.md",
+        "topics/lunar-module.md",
+        "areas/apollo-13.md"
+      ],
+      "output": "query-probes/d06-2000.txt"
+    },
+    {
+      "id": "d07",
+      "budget": 2000,
+      "exit_code": 0,
+      "time_s": 8.283275599998888,
+      "characters": 5997,
+      "approx_tokens_at_graphify_3_chars": 1999.0,
+      "truncated": false,
+      "over_budget_notice": false,
+      "node_lines": 30,
+      "unique_note_paths": [
+        "areas/apollo-16.md",
+        "areas/apollo-1.md",
+        "areas/apollo-8.md",
+        "areas/apollo-13.md",
+        "areas/apollo-program.md",
+        "areas/apollo-13-review-board.md",
+        "areas/mission-control-houston.md",
+        "areas/apollo-11.md",
+        "people/charlie-duke.md",
+        "people/jack-swigert.md",
+        "people/jim-lovell.md",
+        "areas/north-american-aviation.md",
+        "people/fred-haise.md",
+        "people/gene-kranz.md",
+        "areas/nasa.md",
+        "areas/beech-aircraft.md",
+        "sources/apollo-13-review-board-report.md",
+        "people/edgar-cortright.md",
+        "areas/grumman.md"
+      ],
+      "output": "query-probes/d07-2000.txt"
+    },
+    {
+      "id": "d08",
+      "budget": 2000,
+      "exit_code": 0,
+      "time_s": 8.370496999999887,
+      "characters": 9492,
+      "approx_tokens_at_graphify_3_chars": 3164.0,
+      "truncated": false,
+      "over_budget_notice": true,
+      "node_lines": 44,
+      "unique_note_paths": [
+        "topics/apollo-guidance-computer.md",
+        "topics/program-alarms-1201-1202.md",
+        "people/margaret-hamilton.md",
+        "areas/apollo-13.md",
+        "areas/apollo-11.md",
+        "areas/apollo-program.md",
+        "people/michael-collins.md",
+        "areas/apollo-13-review-board.md",
+        "areas/mission-control-houston.md",
+        "people/charlie-duke.md",
+        "people/jack-swigert.md",
+        "people/jim-lovell.md",
+        "sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+        "people/buzz-aldrin.md",
+        "people/fred-haise.md",
+        "people/gene-kranz.md",
+        "topics/lunar-module.md",
+        "people/neil-armstrong.md",
+        "areas/apollo-16.md",
+        "areas/apollo-1.md",
+        "areas/apollo-8.md",
+        "areas/nasa.md",
+        "topics/tranquility-base.md",
+        "areas/beech-aircraft.md",
+        "sources/apollo-13-review-board-report.md",
+        "people/edgar-cortright.md",
+        "sources/apollo-11-mission-report.md",
+        "areas/grumman.md"
+      ],
+      "output": "query-probes/d08-2000.txt"
+    },
+    {
+      "id": "d09",
+      "budget": 2000,
+      "exit_code": 0,
+      "time_s": 5.922189900000376,
+      "characters": 2951,
+      "approx_tokens_at_graphify_3_chars": 983.6666666666666,
+      "truncated": false,
+      "over_budget_notice": false,
+      "node_lines": 11,
+      "unique_note_paths": [
+        "topics/program-alarms-1201-1202.md",
+        "sources/apollo-11-mission-report.md",
+        "people/michael-collins.md",
+        "sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+        "people/margaret-hamilton.md",
+        "topics/apollo-guidance-computer.md",
+        "topics/lunar-module.md",
+        "people/neil-armstrong.md",
+        "topics/tranquility-base.md"
+      ],
+      "output": "query-probes/d09-2000.txt"
+    },
+    {
+      "id": "m01",
+      "budget": 2000,
+      "exit_code": 0,
+      "time_s": 8.999451399999089,
+      "characters": 7222,
+      "approx_tokens_at_graphify_3_chars": 2407.3333333333335,
+      "truncated": false,
+      "over_budget_notice": true,
+      "node_lines": 32,
+      "unique_note_paths": [
+        "sources/apollo-13-measles-article.md",
+        "areas/mission-control-houston.md",
+        "sources/apollo-11-mission-report.md",
+        "areas/apollo-13.md",
+        "people/michael-collins.md",
+        "people/ken-mattingly.md",
+        "topics/rubella-crew-swap.md",
+        "sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+        "areas/nasa.md",
+        "people/gene-kranz.md",
+        "areas/apollo-11.md",
+        "areas/apollo-program.md",
+        "people/john-young.md",
+        "topics/lunar-module.md",
+        "areas/apollo-13-review-board.md",
+        "people/neil-armstrong.md",
+        "people/charlie-duke.md",
+        "people/jack-swigert.md",
+        "people/jim-lovell.md",
+        "topics/program-alarms-1201-1202.md",
+        "people/fred-haise.md",
+        "topics/tranquility-base.md"
+      ],
+      "output": "query-probes/m01-2000.txt"
+    },
+    {
+      "id": "m02",
+      "budget": 2000,
+      "exit_code": 0,
+      "time_s": 12.725400499999523,
+      "characters": 7194,
+      "approx_tokens_at_graphify_3_chars": 2398.0,
+      "truncated": false,
+      "over_budget_notice": true,
+      "node_lines": 34,
+      "unique_note_paths": [
+        "areas/apollo-13-review-board.md",
+        "areas/apollo-13.md",
+        "sources/apollo-13-review-board-report.md",
+        "areas/apollo-program.md",
+        "topics/oxygen-tank-2.md",
+        "areas/mission-control-houston.md",
+        "areas/apollo-11.md",
+        "people/charlie-duke.md",
+        "people/jack-swigert.md",
+        "people/jim-lovell.md",
+        "people/fred-haise.md",
+        "people/gene-kranz.md",
+        "areas/beech-aircraft.md",
+        "people/john-young.md",
+        "areas/apollo-16.md",
+        "topics/command-service-module.md",
+        "areas/apollo-1.md",
+        "areas/apollo-8.md",
+        "areas/nasa.md",
+        "areas/north-american-aviation.md",
+        "people/edgar-cortright.md",
+        "areas/grumman.md"
+      ],
+      "output": "query-probes/m02-2000.txt"
+    },
+    {
+      "id": "m03",
+      "budget": 2000,
+      "exit_code": 0,
+      "time_s": 6.036834999998973,
+      "characters": 8407,
+      "approx_tokens_at_graphify_3_chars": 2802.3333333333335,
+      "truncated": false,
+      "over_budget_notice": true,
+      "node_lines": 40,
+      "unique_note_paths": [
+        "sources/apollo-13-review-board-report.md",
+        "areas/apollo-13-review-board.md",
+        "sources/apollo-13-measles-article.md",
+        "areas/nasa.md",
+        "areas/apollo-13.md",
+        "areas/apollo-program.md",
+        "people/ken-mattingly.md",
+        "topics/oxygen-tank-2.md",
+        "topics/rubella-crew-swap.md",
+        "areas/mission-control-houston.md",
+        "areas/apollo-11.md",
+        "people/charlie-duke.md",
+        "people/jack-swigert.md",
+        "people/jim-lovell.md",
+        "people/fred-haise.md",
+        "people/gene-kranz.md",
+        "people/edgar-cortright.md",
+        "people/john-young.md",
+        "areas/apollo-16.md",
+        "topics/command-service-module.md",
+        "areas/apollo-1.md",
+        "areas/apollo-8.md",
+        "areas/beech-aircraft.md",
+        "areas/grumman.md"
+      ],
+      "output": "query-probes/m03-2000.txt"
+    },
+    {
+      "id": "m04",
+      "budget": 2000,
+      "exit_code": 0,
+      "time_s": 5.39828370000032,
+      "characters": 8052,
+      "approx_tokens_at_graphify_3_chars": 2684.0,
+      "truncated": false,
+      "over_budget_notice": true,
+      "node_lines": 39,
+      "unique_note_paths": [
+        "areas/apollo-8.md",
+        "topics/rubella-crew-swap.md",
+        "areas/apollo-13.md",
+        "areas/apollo-program.md",
+        "people/john-young.md",
+        "areas/apollo-13-review-board.md",
+        "people/ken-mattingly.md",
+        "areas/mission-control-houston.md",
+        "areas/apollo-11.md",
+        "people/charlie-duke.md",
+        "people/jack-swigert.md",
+        "people/jim-lovell.md",
+        "people/fred-haise.md",
+        "people/gene-kranz.md",
+        "sources/apollo-13-measles-article.md",
+        "topics/lunar-module.md",
+        "topics/oxygen-tank-2.md",
+        "areas/apollo-16.md",
+        "topics/co2-scrubber-adapter.md",
+        "areas/apollo-1.md",
+        "areas/nasa.md",
+        "areas/beech-aircraft.md",
+        "sources/apollo-13-review-board-report.md",
+        "people/edgar-cortright.md",
+        "topics/free-return-trajectory.md",
+        "areas/grumman.md"
+      ],
+      "output": "query-probes/m04-2000.txt"
+    },
+    {
+      "id": "m05",
+      "budget": 2000,
+      "exit_code": 4,
+      "time_s": 5.223793400000432,
+      "characters": 25,
+      "approx_tokens_at_graphify_3_chars": 8.333333333333334,
+      "truncated": false,
+      "over_budget_notice": false,
+      "node_lines": 0,
+      "unique_note_paths": [],
+      "output": "query-probes/m05-2000.txt"
+    },
+    {
+      "id": "p01",
+      "budget": 2000,
+      "exit_code": 0,
+      "time_s": 6.904771499997878,
+      "characters": 10952,
+      "approx_tokens_at_graphify_3_chars": 3650.6666666666665,
+      "truncated": false,
+      "over_budget_notice": true,
+      "node_lines": 51,
+      "unique_note_paths": [
+        "sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+        "sources/apollo-11-mission-report.md",
+        "areas/apollo-11.md",
+        "areas/mission-control-houston.md",
+        "sources/apollo-13-review-board-report.md",
+        "areas/apollo-13.md",
+        "areas/apollo-program.md",
+        "people/michael-collins.md",
+        "areas/apollo-13-review-board.md",
+        "people/neil-armstrong.md",
+        "topics/oxygen-tank-2.md",
+        "people/charlie-duke.md",
+        "people/jack-swigert.md",
+        "people/jim-lovell.md",
+        "topics/program-alarms-1201-1202.md",
+        "areas/nasa.md",
+        "people/buzz-aldrin.md",
+        "people/fred-haise.md",
+        "people/gene-kranz.md",
+        "topics/tranquility-base.md",
+        "people/john-young.md",
+        "topics/lunar-module.md",
+        "areas/apollo-16.md",
+        "topics/command-service-module.md",
+        "areas/apollo-1.md",
+        "areas/apollo-8.md",
+        "people/margaret-hamilton.md",
+        "topics/apollo-guidance-computer.md",
+        "areas/beech-aircraft.md",
+        "people/edgar-cortright.md",
+        "areas/grumman.md"
+      ],
+      "output": "query-probes/p01-2000.txt"
+    },
+    {
+      "id": "p02",
+      "budget": 2000,
+      "exit_code": 0,
+      "time_s": 9.390148200000112,
+      "characters": 10952,
+      "approx_tokens_at_graphify_3_chars": 3650.6666666666665,
+      "truncated": false,
+      "over_budget_notice": true,
+      "node_lines": 51,
+      "unique_note_paths": [
+        "sources/apollo-11-mission-report.md",
+        "sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+        "areas/apollo-11.md",
+        "sources/apollo-13-review-board-report.md",
+        "areas/apollo-13.md",
+        "areas/mission-control-houston.md",
+        "areas/apollo-program.md",
+        "people/michael-collins.md",
+        "areas/apollo-13-review-board.md",
+        "people/neil-armstrong.md",
+        "topics/oxygen-tank-2.md",
+        "people/charlie-duke.md",
+        "people/jack-swigert.md",
+        "people/jim-lovell.md",
+        "topics/program-alarms-1201-1202.md",
+        "areas/nasa.md",
+        "people/buzz-aldrin.md",
+        "people/fred-haise.md",
+        "people/gene-kranz.md",
+        "topics/tranquility-base.md",
+        "people/john-young.md",
+        "topics/lunar-module.md",
+        "areas/apollo-16.md",
+        "topics/command-service-module.md",
+        "areas/apollo-1.md",
+        "areas/apollo-8.md",
+        "people/margaret-hamilton.md",
+        "topics/apollo-guidance-computer.md",
+        "areas/beech-aircraft.md",
+        "people/edgar-cortright.md",
+        "areas/grumman.md"
+      ],
+      "output": "query-probes/p02-2000.txt"
+    },
+    {
+      "id": "p03",
+      "budget": 2000,
+      "exit_code": 0,
+      "time_s": 10.448537200001738,
+      "characters": 10952,
+      "approx_tokens_at_graphify_3_chars": 3650.6666666666665,
+      "truncated": false,
+      "over_budget_notice": true,
+      "node_lines": 51,
+      "unique_note_paths": [
+        "sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+        "sources/apollo-11-mission-report.md",
+        "areas/apollo-11.md",
+        "areas/mission-control-houston.md",
+        "sources/apollo-13-review-board-report.md",
+        "areas/apollo-13.md",
+        "areas/apollo-program.md",
+        "people/michael-collins.md",
+        "areas/apollo-13-review-board.md",
+        "people/neil-armstrong.md",
+        "topics/oxygen-tank-2.md",
+        "people/charlie-duke.md",
+        "people/jack-swigert.md",
+        "people/jim-lovell.md",
+        "topics/program-alarms-1201-1202.md",
+        "areas/nasa.md",
+        "people/buzz-aldrin.md",
+        "people/fred-haise.md",
+        "people/gene-kranz.md",
+        "topics/tranquility-base.md",
+        "people/john-young.md",
+        "topics/lunar-module.md",
+        "areas/apollo-16.md",
+        "topics/command-service-module.md",
+        "areas/apollo-1.md",
+        "areas/apollo-8.md",
+        "people/margaret-hamilton.md",
+        "topics/apollo-guidance-computer.md",
+        "areas/beech-aircraft.md",
+        "people/edgar-cortright.md",
+        "areas/grumman.md"
+      ],
+      "output": "query-probes/p03-2000.txt"
+    },
+    {
+      "id": "t01",
+      "budget": 2000,
+      "exit_code": 0,
+      "time_s": 14.804691000001185,
+      "characters": 8540,
+      "approx_tokens_at_graphify_3_chars": 2846.6666666666665,
+      "truncated": false,
+      "over_budget_notice": true,
+      "node_lines": 39,
+      "unique_note_paths": [
+        "sources/apollo-11-mission-report.md",
+        "sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+        "areas/apollo-13.md",
+        "areas/mission-control-houston.md",
+        "areas/apollo-program.md",
+        "people/michael-collins.md",
+        "areas/apollo-13-review-board.md",
+        "people/neil-armstrong.md",
+        "areas/apollo-11.md",
+        "people/charlie-duke.md",
+        "people/jack-swigert.md",
+        "people/jim-lovell.md",
+        "topics/program-alarms-1201-1202.md",
+        "areas/nasa.md",
+        "people/fred-haise.md",
+        "people/gene-kranz.md",
+        "topics/tranquility-base.md",
+        "topics/lunar-module.md",
+        "areas/apollo-16.md",
+        "areas/apollo-1.md",
+        "areas/apollo-8.md",
+        "people/margaret-hamilton.md",
+        "topics/apollo-guidance-computer.md",
+        "areas/beech-aircraft.md",
+        "sources/apollo-13-review-board-report.md",
+        "people/edgar-cortright.md",
+        "areas/grumman.md"
+      ],
+      "output": "query-probes/t01-2000.txt"
+    },
+    {
+      "id": "t02",
+      "budget": 2000,
+      "exit_code": 0,
+      "time_s": 10.622536399998353,
+      "characters": 6941,
+      "approx_tokens_at_graphify_3_chars": 2313.6666666666665,
+      "truncated": false,
+      "over_budget_notice": true,
+      "node_lines": 33,
+      "unique_note_paths": [
+        "people/jack-swigert.md",
+        "areas/apollo-13.md",
+        "sources/apollo-13-review-board-report.md",
+        "areas/apollo-program.md",
+        "areas/apollo-13-review-board.md",
+        "topics/oxygen-tank-2.md",
+        "areas/mission-control-houston.md",
+        "areas/apollo-11.md",
+        "people/charlie-duke.md",
+        "people/jim-lovell.md",
+        "people/fred-haise.md",
+        "people/gene-kranz.md",
+        "areas/apollo-16.md",
+        "people/john-young.md",
+        "topics/command-service-module.md",
+        "areas/apollo-1.md",
+        "areas/apollo-8.md",
+        "areas/nasa.md",
+        "areas/beech-aircraft.md",
+        "people/edgar-cortright.md",
+        "areas/grumman.md"
+      ],
+      "output": "query-probes/t02-2000.txt"
+    },
+    {
+      "id": "t03",
+      "budget": 2000,
+      "exit_code": 0,
+      "time_s": 11.377069599999231,
+      "characters": 299,
+      "approx_tokens_at_graphify_3_chars": 99.66666666666667,
+      "truncated": false,
+      "over_budget_notice": false,
+      "node_lines": 1,
+      "unique_note_paths": [
+        "areas/mission-control-houston.md"
+      ],
+      "output": "query-probes/t03-2000.txt"
+    },
+    {
+      "id": "n01",
+      "budget": 2000,
+      "exit_code": 0,
+      "time_s": 8.017589399998542,
+      "characters": 10066,
+      "approx_tokens_at_graphify_3_chars": 3355.3333333333335,
+      "truncated": false,
+      "over_budget_notice": true,
+      "node_lines": 47,
+      "unique_note_paths": [
+        "areas/apollo-program.md",
+        "topics/program-alarms-1201-1202.md",
+        "areas/apollo-1.md",
+        "areas/apollo-13.md",
+        "areas/apollo-11.md",
+        "people/michael-collins.md",
+        "areas/apollo-13-review-board.md",
+        "areas/apollo-16.md",
+        "areas/mission-control-houston.md",
+        "people/charlie-duke.md",
+        "people/jack-swigert.md",
+        "people/jim-lovell.md",
+        "sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+        "areas/apollo-8.md",
+        "areas/nasa.md",
+        "areas/north-american-aviation.md",
+        "people/fred-haise.md",
+        "people/gene-kranz.md",
+        "people/margaret-hamilton.md",
+        "topics/apollo-guidance-computer.md",
+        "topics/lunar-module.md",
+        "people/neil-armstrong.md",
+        "people/buzz-aldrin.md",
+        "topics/tranquility-base.md",
+        "areas/beech-aircraft.md",
+        "sources/apollo-13-review-board-report.md",
+        "people/edgar-cortright.md",
+        "sources/apollo-11-mission-report.md",
+        "areas/grumman.md"
+      ],
+      "output": "query-probes/n01-2000.txt"
+    },
+    {
+      "id": "n02",
+      "budget": 2000,
+      "exit_code": 0,
+      "time_s": 5.747505399998772,
+      "characters": 814,
+      "approx_tokens_at_graphify_3_chars": 271.3333333333333,
+      "truncated": false,
+      "over_budget_notice": false,
+      "node_lines": 5,
+      "unique_note_paths": [
+        "topics/command-service-module.md",
+        "areas/apollo-1.md",
+        "topics/program-alarms-1201-1202.md",
+        "areas/apollo-13.md",
+        "topics/lunar-module.md"
+      ],
+      "output": "query-probes/n02-2000.txt"
+    },
+    {
+      "id": "n03",
+      "budget": 2000,
+      "exit_code": 0,
+      "time_s": 6.425997300000745,
+      "characters": 3116,
+      "approx_tokens_at_graphify_3_chars": 1038.6666666666667,
+      "truncated": false,
+      "over_budget_notice": false,
+      "node_lines": 13,
+      "unique_note_paths": [
+        "people/michael-collins.md",
+        "people/neil-armstrong.md",
+        "topics/command-service-module.md",
+        "topics/lunar-module.md",
+        "topics/oxygen-tank-2.md",
+        "sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+        "topics/co2-scrubber-adapter.md",
+        "topics/program-alarms-1201-1202.md",
+        "topics/tranquility-base.md",
+        "sources/apollo-11-mission-report.md"
+      ],
+      "output": "query-probes/n03-2000.txt"
+    },
+    {
+      "id": "n04",
+      "budget": 2000,
+      "exit_code": 0,
+      "time_s": 4.053263400001015,
+      "characters": 7747,
+      "approx_tokens_at_graphify_3_chars": 2582.3333333333335,
+      "truncated": false,
+      "over_budget_notice": true,
+      "node_lines": 38,
+      "unique_note_paths": [
+        "people/gene-kranz.md",
+        "areas/apollo-13.md",
+        "sources/apollo-13-review-board-report.md",
+        "areas/apollo-11.md",
+        "areas/apollo-program.md",
+        "areas/apollo-13-review-board.md",
+        "topics/oxygen-tank-2.md",
+        "areas/mission-control-houston.md",
+        "people/charlie-duke.md",
+        "people/jack-swigert.md",
+        "people/jim-lovell.md",
+        "people/fred-haise.md",
+        "people/john-young.md",
+        "areas/apollo-16.md",
+        "topics/command-service-module.md",
+        "areas/apollo-1.md",
+        "areas/apollo-8.md",
+        "areas/nasa.md",
+        "people/buzz-aldrin.md",
+        "areas/beech-aircraft.md",
+        "people/edgar-cortright.md",
+        "areas/grumman.md"
+      ],
+      "output": "query-probes/n04-2000.txt"
+    },
+    {
+      "id": "n05",
+      "budget": 2000,
+      "exit_code": 0,
+      "time_s": 5.977351600002294,
+      "characters": 11275,
+      "approx_tokens_at_graphify_3_chars": 3758.3333333333335,
+      "truncated": false,
+      "over_budget_notice": true,
+      "node_lines": 54,
+      "unique_note_paths": [
+        "areas/apollo-11.md",
+        "sources/apollo-11-mission-report.md",
+        "topics/lunar-module.md",
+        "areas/apollo-13.md",
+        "areas/apollo-program.md",
+        "people/john-young.md",
+        "people/michael-collins.md",
+        "areas/apollo-13-review-board.md",
+        "areas/mission-control-houston.md",
+        "people/charlie-duke.md",
+        "people/jack-swigert.md",
+        "people/jim-lovell.md",
+        "sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+        "topics/co2-scrubber-adapter.md",
+        "people/buzz-aldrin.md",
+        "people/fred-haise.md",
+        "people/gene-kranz.md",
+        "topics/lunar-orbit-rendezvous.md",
+        "topics/free-return-trajectory.md",
+        "people/ken-mattingly.md",
+        "people/neil-armstrong.md",
+        "topics/oxygen-tank-2.md",
+        "topics/rubella-crew-swap.md",
+        "areas/apollo-16.md",
+        "topics/command-service-module.md",
+        "topics/program-alarms-1201-1202.md",
+        "people/john-f-kennedy.md",
+        "areas/apollo-1.md",
+        "areas/apollo-8.md",
+        "areas/nasa.md",
+        "topics/tranquility-base.md",
+        "areas/beech-aircraft.md",
+        "sources/apollo-13-review-board-report.md",
+        "people/edgar-cortright.md",
+        "areas/grumman.md"
+      ],
+      "output": "query-probes/n05-2000.txt"
+    },
+    {
+      "id": "d01",
+      "budget": 500,
+      "exit_code": 0,
+      "time_s": 5.234219000001758,
+      "characters": 2019,
+      "approx_tokens_at_graphify_3_chars": 673.0,
+      "truncated": true,
+      "over_budget_notice": false,
+      "node_lines": 15,
+      "unique_note_paths": [
+        "areas/apollo-8.md",
+        "topics/rubella-crew-swap.md",
+        "areas/apollo-1.md",
+        "areas/apollo-13.md",
+        "areas/apollo-program.md",
+        "people/john-young.md",
+        "areas/apollo-13-review-board.md",
+        "people/ken-mattingly.md",
+        "areas/mission-control-houston.md",
+        "areas/apollo-11.md",
+        "people/charlie-duke.md",
+        "people/jack-swigert.md",
+        "people/jim-lovell.md",
+        "areas/north-american-aviation.md"
+      ],
+      "output": "query-probes/d01-500.txt"
+    },
+    {
+      "id": "d02",
+      "budget": 500,
+      "exit_code": 0,
+      "time_s": 5.677249200001825,
+      "characters": 760,
+      "approx_tokens_at_graphify_3_chars": 253.33333333333334,
+      "truncated": false,
+      "over_budget_notice": false,
+      "node_lines": 5,
+      "unique_note_paths": [
+        "topics/command-service-module.md",
+        "topics/oxygen-tank-2.md",
+        "areas/apollo-1.md",
+        "areas/apollo-13.md",
+        "topics/lunar-module.md"
+      ],
+      "output": "query-probes/d02-500.txt"
+    },
+    {
+      "id": "m01",
+      "budget": 500,
+      "exit_code": 0,
+      "time_s": 5.846910400003253,
+      "characters": 2144,
+      "approx_tokens_at_graphify_3_chars": 714.6666666666666,
+      "truncated": true,
+      "over_budget_notice": false,
+      "node_lines": 14,
+      "unique_note_paths": [
+        "sources/apollo-13-measles-article.md",
+        "areas/mission-control-houston.md",
+        "sources/apollo-11-mission-report.md",
+        "areas/apollo-13.md",
+        "people/michael-collins.md",
+        "people/ken-mattingly.md",
+        "topics/rubella-crew-swap.md",
+        "sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+        "areas/nasa.md",
+        "people/gene-kranz.md",
+        "areas/apollo-11.md",
+        "areas/apollo-program.md",
+        "people/john-young.md"
+      ],
+      "output": "query-probes/m01-500.txt"
+    },
+    {
+      "id": "p01",
+      "budget": 500,
+      "exit_code": 0,
+      "time_s": 3.684264899999107,
+      "characters": 2208,
+      "approx_tokens_at_graphify_3_chars": 736.0,
+      "truncated": true,
+      "over_budget_notice": false,
+      "node_lines": 13,
+      "unique_note_paths": [
+        "sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+        "sources/apollo-11-mission-report.md",
+        "areas/apollo-11.md",
+        "areas/mission-control-houston.md",
+        "sources/apollo-13-review-board-report.md",
+        "areas/apollo-13.md",
+        "areas/apollo-program.md",
+        "people/michael-collins.md",
+        "areas/apollo-13-review-board.md",
+        "people/neil-armstrong.md",
+        "topics/oxygen-tank-2.md"
+      ],
+      "output": "query-probes/p01-500.txt"
+    },
+    {
+      "id": "n01",
+      "budget": 500,
+      "exit_code": 0,
+      "time_s": 5.038199300000997,
+      "characters": 2077,
+      "approx_tokens_at_graphify_3_chars": 692.3333333333334,
+      "truncated": true,
+      "over_budget_notice": false,
+      "node_lines": 14,
+      "unique_note_paths": [
+        "areas/apollo-program.md",
+        "topics/program-alarms-1201-1202.md",
+        "areas/apollo-1.md",
+        "areas/apollo-13.md",
+        "areas/apollo-11.md",
+        "people/michael-collins.md",
+        "areas/apollo-13-review-board.md",
+        "areas/apollo-16.md",
+        "areas/mission-control-houston.md",
+        "people/charlie-duke.md",
+        "people/jack-swigert.md",
+        "people/jim-lovell.md",
+        "sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md"
+      ],
+      "output": "query-probes/n01-500.txt"
+    }
+  ]
+}

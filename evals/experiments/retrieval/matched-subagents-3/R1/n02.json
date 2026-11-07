@@ -1,0 +1,53 @@
+{
+  "id": "n02",
+  "condition": "R1",
+  "description": "R1 n02",
+  "model": [
+    "claude-opus-5-5"
+  ],
+  "prompt_exact": true,
+  "subagent_type": "Explore",
+  "launch_model": "opus",
+  "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: Who was the command module pilot of Apollo 12?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+  "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-3\\R1\\transcripts\\n02.jsonl",
+  "finalized_transcript_available": true,
+  "agent_id": "adb925e0f5ef5bb31",
+  "start_utc": "2026-10-25T19:31:59.513Z",
+  "end_utc": "2026-10-25T19:32:07.044Z",
+  "time_s": 7.531,
+  "usage": {
+    "input_tokens": 6,
+    "output_tokens": 354,
+    "cache_read_input_tokens": 35458,
+    "cache_creation_input_tokens": 5514
+  },
+  "total_tokens": 41332,
+  "cost_usd_at_recorded_rates": 0.0417656,
+  "cache_neutral_cost_usd": 0.170992,
+  "tool_calls": [
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+      }
+    }
+  ],
+  "tool_call_count": 2,
+  "note_read_count": 0,
+  "wiki_read_count": 0,
+  "opened_paths": [
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+  ],
+  "answers": [
+    "I couldn't find the Apollo 12 command module pilot in the brain. The index has no Apollo 12 node, and none of the people, missions or topics listed mention Apollo 12. Following the skill, I stopped there rather than opening nodes just to look.\n\nANSWER: I don't have that.\nFILES: index.md"
+  ],
+  "answer": "I couldn't find the Apollo 12 command module pilot in the brain. The index has no Apollo 12 node, and none of the people, missions or topics listed mention Apollo 12. Following the skill, I stopped there rather than opening nodes just to look.\n\nANSWER: I don't have that.\nFILES: index.md",
+  "tool_errors": []
+}

@@ -1,0 +1,59 @@
+{
+  "id": "p03",
+  "condition": "R1",
+  "description": "R1 p03",
+  "model": [
+    "claude-opus-5-5"
+  ],
+  "prompt_exact": true,
+  "subagent_type": "Explore",
+  "launch_model": "opus",
+  "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: Which pages of the Apollo 11 Mission Report cover the powered descent section, and what forced the landing point redesignation?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+  "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-2\\R1\\dispatcher.events.jsonl",
+  "agent_id": "a1f74f687b155d40d",
+  "start_utc": "2026-10-25T19:27:48.217Z",
+  "end_utc": "2026-10-25T19:27:56.012Z",
+  "time_s": 7.795,
+  "usage": {
+    "input_tokens": 8,
+    "output_tokens": 243,
+    "cache_read_input_tokens": 51294,
+    "cache_creation_input_tokens": 7604
+  },
+  "total_tokens": 59149,
+  "cost_usd_at_recorded_rates": 0.053170800000000004,
+  "cache_neutral_cost_usd": 0.240484,
+  "tool_calls": [
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\sources\\apollo-11-mission-report\\apollo-11-mission-report-ch-05.md"
+      }
+    }
+  ],
+  "tool_call_count": 3,
+  "note_read_count": 1,
+  "wiki_read_count": 0,
+  "opened_paths": [
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\sources\\apollo-11-mission-report\\apollo-11-mission-report-ch-05.md"
+  ],
+  "answers": [
+    "ANSWER: The powered descent is Section 5.3 of the Apollo 11 Mission Report, on pages 5-4 to 5-6. The redesignation was forced because the approach path led into a large crater, so the crew had to make an unplanned redesignation of the landing point (src: Apollo 11 Mission Report p.5-4). Manual control then began at about 600 feet, and the craft landed about 1100 feet downrange of the first aim point (p.5-5).\nFILES: index.md, sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md"
+  ],
+  "answer": "ANSWER: The powered descent is Section 5.3 of the Apollo 11 Mission Report, on pages 5-4 to 5-6. The redesignation was forced because the approach path led into a large crater, so the crew had to make an unplanned redesignation of the landing point (src: Apollo 11 Mission Report p.5-4). Manual control then began at about 600 feet, and the craft landed about 1100 feet downrange of the first aim point (p.5-5).\nFILES: index.md, sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+  "tool_errors": []
+}

@@ -1,0 +1,125 @@
+{
+  "id": "d08",
+  "condition": "R1",
+  "model": "claude-opus-5-5",
+  "question": "Why did the Apollo Guidance Computer keep flying through the Apollo 11 alarms?",
+  "start_utc": "2026-10-25T19:22:20.949036+00:00",
+  "end_utc": "2026-10-25T19:22:58.233520+00:00",
+  "wall_time_s": 37.283841700002085,
+  "cli_duration_s": 16.172,
+  "api_duration_s": 14.903,
+  "exit_code": 0,
+  "timed_out": false,
+  "success": true,
+  "terminal_reason": "completed",
+  "subtype": "success",
+  "answer": "ANSWER: The brain says the five Apollo 11 descent alarms (the first came about 5 minutes after descent began) \"did not degrade any primary guidance or control function.\" They did get in the way of the crew's early assessment of the landing approach (Apollo 11 Mission Report p.5-4). As for why the computer kept working, no stated fact gives the reason. One fact is only an agent's inference: an agent concluded that the flight software's priority scheduling, from Margaret Hamilton's MIT Instrumentation Laboratory team, is why the computer kept flying through the alarms (src: agent, 2026-10-24). The pages I opened from the mission report (chunk, pp. 5-4 to 5-6) do not state the cause.\nFILES: index.md, topics/apollo-guidance-computer.md, topics/program-alarms-1201-1202.md, sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md, people/margaret-hamilton.md",
+  "usage": {
+    "input_tokens": 14,
+    "cache_creation_input_tokens": 8382,
+    "cache_read_input_tokens": 30484,
+    "output_tokens": 919,
+    "output_tokens_details": {
+      "thinking_tokens": 66
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 8382
+    },
+    "inference_geo": "global",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 328,
+        "cache_read_input_tokens": 9150,
+        "cache_creation_input_tokens": 544,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 544,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "type": "message"
+      }
+    ],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "total_tokens": 39799,
+  "model_usage": {
+    "claude-opus-5-5": {
+      "inputTokens": 14,
+      "outputTokens": 919,
+      "cacheReadInputTokens": 30484,
+      "cacheCreationInputTokens": 8382,
+      "webSearchRequests": 0,
+      "costUSD": 0.06644280000000001,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 66,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "actual_models": [
+    "claude-opus-5-5"
+  ],
+  "cost_usd_cli_reported": 0.06644280000000001,
+  "estimated_cost_usd_at_recorded_rates": 0.0664428,
+  "cache_neutral_cost_usd_at_recorded_rates": 0.1739,
+  "permission_denials": [],
+  "tool_calls": [
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\apollo-guidance-computer.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\program-alarms-1201-1202.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\sources\\apollo-11-mission-report\\apollo-11-mission-report-ch-05.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\margaret-hamilton.md"
+      }
+    }
+  ],
+  "tool_call_count": 6,
+  "read_call_count": 6,
+  "note_read_count": 4,
+  "wiki_read_count": 0,
+  "opened_paths": [
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\apollo-guidance-computer.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\topics\\program-alarms-1201-1202.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\sources\\apollo-11-mission-report\\apollo-11-mission-report-ch-05.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\people\\margaret-hamilton.md"
+  ]
+}

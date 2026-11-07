@@ -1,0 +1,33 @@
+{
+  "condition": "R1",
+  "count": 25,
+  "expected_count": 25,
+  "anomalies": [
+    "Second batch overlapped the first"
+  ],
+  "notes_read": 38,
+  "wiki_reads": 0,
+  "tool_calls": 88,
+  "tokens": 1674947,
+  "sum_question_time_s": 253.243,
+  "answering_cost_usd_at_recorded_rates": 1.350349,
+  "cache_neutral_answering_cost_usd": 6.778316,
+  "batches": [
+    {
+      "batch": 1,
+      "count": 20,
+      "start": "2026-10-25T19:27:03.352Z",
+      "end": "2026-10-25T19:28:02.070Z",
+      "span_s": 58.718,
+      "peak_active": 6
+    },
+    {
+      "batch": 2,
+      "count": 5,
+      "start": "2026-10-25T19:27:58.586Z",
+      "end": "2026-10-25T19:28:29.815Z",
+      "span_s": 31.229,
+      "peak_active": 4
+    }
+  ]
+}

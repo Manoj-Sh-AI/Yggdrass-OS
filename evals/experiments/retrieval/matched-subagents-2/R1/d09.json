@@ -1,0 +1,59 @@
+{
+  "id": "d09",
+  "condition": "R1",
+  "description": "R1 d09",
+  "model": [
+    "claude-opus-5-5"
+  ],
+  "prompt_exact": true,
+  "subagent_type": "Explore",
+  "launch_model": "opus",
+  "prompt": "You are being evaluated on retrieving answers from a markdown knowledge base. You start with no other context.\n\n1. Read the skill file first: C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md\n2. Follow it exactly. The brain root is: C:\\Users\\shman\\yggdras-brain\\demo-brain\n3. Open files only with the Read tool, one file at a time, and only files inside the brain root (plus the skill file). Do not use Glob, Grep, ls or any search across files or folders. Do not open anything outside the brain root.\n\nQuestion: What happened at Launch Complex 34 on 1967-01-27?\n\nReply in exactly this shape:\nANSWER: <your answer, from opened nodes only>\nFILES: <comma-separated paths you opened, relative to the brain root, in order>",
+  "source": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\evals\\experiments\\retrieval\\matched-subagents-2\\R1\\dispatcher.events.jsonl",
+  "agent_id": "adc73043a17ef98a8",
+  "start_utc": "2026-10-25T19:27:25.337Z",
+  "end_utc": "2026-10-25T19:27:38.115Z",
+  "time_s": 12.778,
+  "usage": {
+    "input_tokens": 8,
+    "output_tokens": 214,
+    "cache_read_input_tokens": 51231,
+    "cache_creation_input_tokens": 7179
+  },
+  "total_tokens": 58632,
+  "cost_usd_at_recorded_rates": 0.0504532,
+  "cache_neutral_cost_usd": 0.237952,
+  "tool_calls": [
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md"
+      }
+    },
+    {
+      "name": "Read",
+      "input": {
+        "file_path": "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-1.md"
+      }
+    }
+  ],
+  "tool_call_count": 3,
+  "note_read_count": 1,
+  "wiki_read_count": 0,
+  "opened_paths": [
+    "C:\\Users\\shman\\OneDrive\\Desktop\\Yggdrass OS\\Yggdrass-OS\\skills\\gateway\\SKILL.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\index.md",
+    "C:\\Users\\shman\\yggdras-brain\\demo-brain\\areas\\apollo-1.md"
+  ],
+  "answers": [
+    "ANSWER: On 1967-01-27, the Apollo 1 (AS-204) cabin fire happened at Launch Complex 34 at Cape Kennedy. It broke out during a launch rehearsal test and killed astronauts Gus Grissom, Ed White and Roger Chaffee. Afterwards the command module was redesigned, and the redesign included a quick-opening hatch. (src: NASA history, 2026-10-24)\nFILES: index.md, areas/apollo-1.md"
+  ],
+  "answer": "ANSWER: On 1967-01-27, the Apollo 1 (AS-204) cabin fire happened at Launch Complex 34 at Cape Kennedy. It broke out during a launch rehearsal test and killed astronauts Gus Grissom, Ed White and Roger Chaffee. Afterwards the command module was redesigned, and the redesign included a quick-opening hatch. (src: NASA history, 2026-10-24)\nFILES: index.md, areas/apollo-1.md",
+  "tool_errors": []
+}

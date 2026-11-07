@@ -1,0 +1,31 @@
+{
+  "condition": "R3",
+  "count": 25,
+  "expected_count": 25,
+  "anomalies": [],
+  "notes_read": 38,
+  "wiki_reads": 0,
+  "tool_calls": 88,
+  "tokens": 1658662,
+  "sum_question_time_s": 367.11,
+  "answering_cost_usd_at_recorded_rates": 1.4954532,
+  "cache_neutral_answering_cost_usd": 6.873272,
+  "batches": [
+    {
+      "batch": 1,
+      "count": 20,
+      "start": "2026-10-25T19:36:09.729Z",
+      "end": "2026-10-25T19:37:53.012Z",
+      "span_s": 103.283,
+      "peak_active": 6
+    },
+    {
+      "batch": 2,
+      "count": 5,
+      "start": "2026-10-25T19:38:05.717Z",
+      "end": "2026-10-25T19:38:37.358Z",
+      "span_s": 31.641,
+      "peak_active": 5
+    }
+  ]
+}

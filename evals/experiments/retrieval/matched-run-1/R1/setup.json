@@ -1,0 +1,50 @@
+{
+  "model": "claude-opus-5-5",
+  "agent": "Explore",
+  "runner_version": "2.1.308",
+  "bare": true,
+  "tool_schema_for_every_condition": [
+    "Read",
+    "Bash"
+  ],
+  "batch_sizes": [
+    20,
+    5
+  ],
+  "question_order": [
+    "d01",
+    "d02",
+    "d03",
+    "d04",
+    "d05",
+    "d06",
+    "d07",
+    "d08",
+    "d09",
+    "m01",
+    "m02",
+    "m03",
+    "m04",
+    "m05",
+    "p01",
+    "p02",
+    "p03",
+    "t01",
+    "t02",
+    "t03",
+    "n01",
+    "n02",
+    "n03",
+    "n04",
+    "n05"
+  ],
+  "question_timeout_s": 240,
+  "question_budget_usd": 1.0,
+  "privacy": {
+    "query_logging_disabled": true,
+    "session_persistence": false
+  },
+  "comparability": "R1 must be rerun: bare API runner has a different starting context from the original desktop subagents.",
+  "gateway_sha256": "0691b6d1e0e32b0697014d5a63fb0b7fc42a938bc865aa0bc850dc994849eee0",
+  "graph_sha256": "a9d2edf715f99564a5656173eeebca7f9cd8005ed6415f999b5a5cb752a26cea"
+}
