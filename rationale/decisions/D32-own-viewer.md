@@ -36,3 +36,12 @@ The page offers three layouts (sidebar "Layout", or `#layout=force|radial|circle
 **Ported, not vendored.** Circlepack uses d3-hierarchy's `packSiblings` and `packEnclose` (ISC), the same algorithm graphology-layout's `circlepack` (MIT) uses, ported into the template as about 120 lines. Vendoring graphology-layout would need graphology itself, `graphology-utils` and `pandemonium`, plus a bundling step. The viewer has no build step today and doesn't use a graphology graph. The result is the same circles; the port is covered by tests (every note inside its own circle and the outer one).
 
 Radial sectors is our own: sectors sized by note count with a 7% floor, ordered so the most-linked groups are neighbours, the area hub at 55% of the radius, more-linked notes inward, and a short relax that keeps link springs but holds each note in its sector and the disc.
+
+## Amendment 2026-11-07: 3D by default; one layout; no Muted style
+
+At Manoj's request (2026-11-07):
+
+- **One layout.** Radial sectors and circlepack are removed, and with them the "Layout" menu, the "Show ring and area names" toggle and `#layout=` / `#ring=`. The force layout is the only one. The circle-packing port from the 2026-11-01 amendment goes with it.
+- **No "Muted areas" style.** Classic (the default), Graphite and Area clouds remain.
+- **3D is the default map.** A remembered choice (the 2D | 3D switch, stored per browser) still wins, so someone who picked 2D keeps it.
+- **The 3D map turns slowly** about its upright axis, about one turn in 100 s. It stops while a note is hovered or selected, and never turns with "reduce motion" on. This replaces the earlier "nothing moves on its own" rule for 3D only; 2D still never moves on its own.
