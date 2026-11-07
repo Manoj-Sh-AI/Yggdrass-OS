@@ -310,5 +310,7 @@ def build_change(root: Path, flat: bool, ops: list[dict], today: str, title: str
             raise OpError(f"unknown operation {kind!r}")
         handler(op)
     b.change.slugs = list(dict.fromkeys(b.change.slugs))
-    b.change.title = title or "; ".join(dict.fromkeys(b.change.log))
+    upload = next((op.get("filename") for op in ops if op.get("op") == "keep_raw"), None)
+    default = f"ingest {upload}" if upload else "; ".join(dict.fromkeys(b.change.log))
+    b.change.title = title or default
     return b.change

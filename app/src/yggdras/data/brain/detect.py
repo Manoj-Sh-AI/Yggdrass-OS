@@ -3,8 +3,9 @@
 - A likely duplicate note: an exact match of the normalised name or an alias against an
   existing note's slug, name or aliases always asks; so does a word overlap of 0.6 or more
   between names (Jaccard over their words).
-- A conflicting fact: a new fact whose words match an existing fact's (overlap 0.6 or more,
-  dates and figures left out) but whose dates or figures differ.
+- A conflicting fact: a new fact whose words match an existing fact's (shared words over
+  the shorter fact's words 0.6 or more, dates, figures and tags left out) but whose dates or
+  figures differ.
 """
 
 from __future__ import annotations
@@ -20,7 +21,8 @@ OVERLAP = 0.6
 NUMBER = re.compile(r"\b\d+(?:[.,:/-]\d+)*\b")
 STOP = frozenset(
     "a an and the of to in on at for by with from is are was were be been my me i you your "
-    "his her their its it this that as or not no".split()
+    "his her their its it this that as or not no "
+    "stated derived inferred".split()  # the Apollo demo's fact tags
 )
 
 
@@ -31,8 +33,24 @@ MONTHS = frozenset(
 )
 
 
+# A short number right after a name is part of the name ("Apollo 11", "Gemini 12"), not a
+# figure: it is joined to the name ("apollo11"). Years (four digits) and months stay figures.
+NAME_NUMBER = re.compile(r"\b([A-Z][A-Za-z]+)[ -](\d{1,3})\b")
+
+
+def _names(text: str) -> str:
+    def join(m):
+        word = m.group(1)
+        if word.lower() in MONTHS or word.lower() in STOP:
+            return m.group(0)
+        return f"{word}{m.group(2)}"
+
+    return NAME_NUMBER.sub(join, text)
+
+
 def words(text: str) -> set[str]:
     """Content words: no stop words, no figures, no month names (those are dates)."""
+    text = _names(text)
     found = {w for w in st.normalize(NUMBER.sub(" ", text)).split("-") if len(w) > 1}
     return found - STOP - MONTHS
 
@@ -70,7 +88,7 @@ def likely_duplicates(
 
 def numbers(text: str) -> set[str]:
     """A fact's dates and figures: its numbers and month names."""
-    unit = checks.quote_unit(text)
+    unit = _names(checks.quote_unit(text))
     months = {w for w in st.normalize(unit).split("-") if w in MONTHS}
     return set(NUMBER.findall(unit)) | months
 
@@ -85,6 +103,12 @@ def conflicting_facts(existing: list[str], new: str) -> list[str]:
         theirs = numbers(line)
         if not theirs or theirs == figures:
             continue
-        if jaccard(words(unit), words(checks.quote_unit(line))) >= OVERLAP:
+        if overlap(words(unit), words(checks.quote_unit(line))) >= OVERLAP:
             out.append(line)
     return out
+
+
+def overlap(a: set[str], b: set[str]) -> float:
+    """Shared words over the shorter fact's words: a terse fact ("Launched 1970-04-11") still
+    matches a longer one about the same thing ("Launched 1970-04-12 from Kennedy...")."""
+    return len(a & b) / min(len(a), len(b)) if a and b else 0.0
