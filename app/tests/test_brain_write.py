@@ -275,6 +275,31 @@ def test_adding_is_direct_and_changing_needs_confirm():
         assert needs_confirm([{"op": "add_fact"}, {"op": op}])
 
 
+def test_a_fact_line_gets_one_full_stop_even_after_a_quote():
+    from yggdras.data.brain.ops import fact_line
+
+    assert fact_line('Log: "Stop now."', TODAY) == f'Log: "Stop now." (src: manoj, {TODAY})'
+    assert fact_line("Ana likes tea.", TODAY) == f"Ana likes tea. (src: manoj, {TODAY})"
+
+
+def test_a_replacement_that_changes_nothing_is_refused(brain):
+    with pytest.raises(OpError, match="use remove_fact"):
+        build_change(
+            brain / "library",
+            False,
+            [
+                {
+                    "op": "replace_fact",
+                    "slug": "masters-thesis",
+                    "old": THESIS_FACT,
+                    "text": "The thesis is due in March 2031",
+                    "mode": "wrong",
+                }
+            ],
+            TODAY,
+        )
+
+
 def test_an_unknown_note_or_fact_is_an_op_error(brain):
     root = brain / "library"
     with pytest.raises(OpError, match="no note"):

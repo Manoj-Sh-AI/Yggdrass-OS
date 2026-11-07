@@ -45,8 +45,9 @@ def needs_confirm(ops: list[dict]) -> bool:
 def fact_line(text: str, today: str, valid: str = "", src: str = "manoj") -> str:
     """One fact line in node.md's form: "<text>. (src: manoj, <today>[; valid: …])"."""
     body = " ".join(text.split()).rstrip(".")
+    ends = body.endswith(('."', '?"', '!"', ".'", "?'", "!'", "?", "!"))
     extra = f"; valid: {valid.strip()}" if valid and valid.strip() else ""
-    return f"{body}. (src: {src}, {today}{extra})"
+    return f"{body}{'' if ends else '.'} (src: {src}, {today}{extra})"
 
 
 def history_tag(mode: str, today: str, reason: str = "") -> str:
@@ -203,6 +204,10 @@ class Builder:
         if not str(op.get("text", "")).strip():
             raise OpError("replace_fact needs the new text")
         new = fact_line(op["text"], self.today, op.get("valid", ""))
+        if checks.quote_unit(new) == checks.quote_unit(str(op.get("old", ""))):
+            raise OpError(
+                "the new text is the same as the old; to take a fact out, use remove_fact"
+            )
         path, old, tag = self._history(op, new)
         slug = Path(path).stem
         self.change.slugs.append(slug)
