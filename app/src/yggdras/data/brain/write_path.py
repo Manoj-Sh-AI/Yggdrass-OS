@@ -8,6 +8,9 @@
   made by hand: they are listed, never stashed or overwritten (generated maps excepted);
 - one git commit per request, with a clear message; Lia never pushes;
 - the maps are rebuilt and committed with the change, so the brain is never left dirty;
+- after the commit (and after every Undo) the viewer's page is re-rendered: the brain's own
+  generated/graph.html (git-ignored) and the note server's copy, so a new note shows up on
+  the next page refresh. Best effort: a viewer failure never undoes a write;
 - on any error mid-write, the files are put back as they were.
 
 Undo is a `git revert` of that commit, as a new commit. If a later commit touched the same
@@ -40,6 +43,7 @@ class Outcome:
     warnings: list[Issue] = field(default_factory=list)
     dirty: list[str] = field(default_factory=list)
     later: list[str] = field(default_factory=list)
+    viewer_error: str = ""  # the viewer couldn't be re-rendered (the write itself stands)
 
 
 class WritePath:
@@ -50,8 +54,12 @@ class WritePath:
         lock_dir: Path,
         flat: bool = False,
         today: str | None = None,
+        viewer_dirs: tuple[Path, ...] = (),
     ):
         self.repo, self.root, self.flat = repo.resolve(), root.resolve(), flat
+        # Where the graph viewer's page lives: the library's own generated/ folder, plus any
+        # copy a note server serves (local-data/viewer).
+        self.viewer_dirs = tuple(viewer_dirs) + (() if flat else (st.generated_dir(self.repo),))
         self.lock_dir = lock_dir
         self.today = today or dt.date.today().isoformat()
         self.root_rel = self.root.relative_to(self.repo).as_posix()
@@ -98,7 +106,24 @@ class WritePath:
                 sha = self._write(change, approved_by, request)
         except git_repo.Busy as exc:
             return Outcome("blocked", str(exc))
-        return Outcome("written", f"committed {sha[:7]}", sha=sha, warnings=verdict.warnings)
+        out = Outcome("written", f"committed {sha[:7]}", sha=sha, warnings=verdict.warnings)
+        out.viewer_error = self.render_viewers()
+        return out
+
+    def render_viewers(self) -> str:
+        """Re-render the graph viewer in every viewer folder from the notes as they are now.
+        Returns "" or what went wrong; never raises (the viewer is a nicety)."""
+        if not self.viewer_dirs:
+            return ""
+        try:
+            from yggdras.data.graph import viewer
+
+            graph = st.build_map(self.root, None if self.flat else st.mapped_shelves())
+            for folder in dict.fromkeys(self.viewer_dirs):
+                viewer.render(graph, self.root, folder)
+        except Exception as exc:  # noqa: BLE001
+            return f"{type(exc).__name__}: {exc}"
+        return ""
 
     def _write(self, change: Change, approved_by: str, request: str) -> str:
         touched: list[str] = []
@@ -245,4 +270,6 @@ class WritePath:
             # Back to before the revert; hand edits elsewhere in the repo are left alone.
             git_repo.git(self.repo, "revert", "--abort", check=False)
             raise
-        return Outcome("written", f"undid {full[:7]}", sha=git_repo.head(self.repo))
+        out = Outcome("written", f"undid {full[:7]}", sha=git_repo.head(self.repo))
+        out.viewer_error = self.render_viewers()
+        return out

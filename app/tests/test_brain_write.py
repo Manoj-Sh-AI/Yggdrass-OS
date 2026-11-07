@@ -100,7 +100,10 @@ def make_brain(tmp_path):
     from yggdras.data.maps.build import run as write_maps
 
     write_maps(repo)
-    (repo / ".gitignore").write_text("library/00-manual/generated/map.json\n", encoding="utf-8")
+    ignored = ("map.json", "*.html", "vis-network.min.js", "*.woff2")  # as the real brain
+    (repo / ".gitignore").write_text(
+        "".join(f"library/00-manual/generated/{p}\n" for p in ignored), encoding="utf-8"
+    )
     git(repo, "add", "-A")
     git(repo, "commit", "-qm", "base")
     return repo
@@ -373,6 +376,43 @@ def test_a_new_note_is_placed_listed_in_its_hub_and_checked(brain, tmp_path):
     assert (brain / "library/11-people/ben-ortiz.md").is_file()
     hub = (brain / "library/04-learning/hub-learning.md").read_text(encoding="utf-8")
     assert "- lists [[ben-ortiz]]" in hub and "Notes so far: 3." in hub
+
+
+def test_a_new_note_is_in_the_viewers_data_after_the_write_and_gone_after_undo(brain, tmp_path):
+    served = tmp_path / "local-data" / "viewer"
+    w = WritePath(brain, brain / "library", tmp_path / "locks", today=TODAY, viewer_dirs=(served,))
+    ops = [
+        {
+            "op": "create_note",
+            "type": "event",
+            "name": "India trip",
+            "area": "02-relationships",
+            "description": "Family trip to India",
+            "aliases": ["India visit"],
+            "links": [{"verb": "related_to", "to": "ana"}],
+        }
+    ]
+    out = w.apply(build_change(w.root, False, ops, TODAY), "test")
+    assert out.status == "written" and out.viewer_error == ""
+    pages = [served / "graph.html", brain / "library/00-manual/generated/graph.html"]
+    for page in pages:
+        assert '"slug": "india-trip"' in page.read_text(encoding="utf-8"), page
+    assert git(brain, "status", "--porcelain") == ""  # the brain's page is git-ignored
+    w.undo(out.sha, "test")
+    for page in pages:
+        assert '"slug": "india-trip"' not in page.read_text(encoding="utf-8"), page
+
+
+def test_a_viewer_failure_never_undoes_the_write(brain, tmp_path, monkeypatch):
+    from yggdras.data.graph import viewer
+
+    def broken(*a, **k):
+        raise OSError("disk full")
+
+    monkeypatch.setattr(viewer, "render", broken)
+    out = apply(brain, tmp_path, [{"op": "add_fact", "slug": "ana", "text": "Ana likes tea"}])
+    assert out.status == "written" and "disk full" in out.viewer_error
+    assert "Ana likes tea" in (brain / "library/11-people/ana.md").read_text(encoding="utf-8")
 
 
 def test_hand_edits_block_the_write_and_nothing_is_written(brain, tmp_path):
