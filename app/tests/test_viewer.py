@@ -537,3 +537,14 @@ def test_reduce_motion_means_no_fly_animation_in_3d(library, tmp_path):
     )
     calm = _body(_dom(html, "dim=3d&select=garden", flags=CALM))
     assert 'data-fly-ms="0"' in calm and "data-error" not in calm
+
+
+@pytest.mark.skipif(not EDGE.exists(), reason="Microsoft Edge is not installed here")
+def test_3d_is_the_2d_map_with_depth(tmp_path):
+    out = tmp_path / "out"
+    viewer.main([str(FIXTURE), "--flat", "--out-dir", str(out)])
+    same = _body_json(_dom(out / "graph.html", "dim=3d&debug=same", flags=CALM), "same")
+    # Head-on, every note is where 2D puts it. Under headless virtual time vis may nudge a note
+    # by under a pixel after it reports the layout done, so allow less than a disc.
+    assert same["off"] < 2
+    assert same["depth"] > 1  # and the map has depth
