@@ -424,3 +424,116 @@ def test_bridge_hue_turns_at_most_twenty_degrees(tmp_path):
     turn = min(turn, 360 - turn)
     assert study["shown"] != study["pure"]
     assert turn <= 21  # 20 degrees, plus rounding to hex
+
+
+# ---------------------------------------------------------------- 3D view
+
+WEBGL = ("--use-angle=swiftshader", "--enable-unsafe-swiftshader")
+CALM = (*WEBGL, "--force-prefers-reduced-motion")
+
+
+def _body(dom: str) -> str:
+    return re.search(r"<body[^>]*>", dom).group(0)
+
+
+def test_render_writes_the_3d_scripts_checked_against_their_pins(library, tmp_path):
+    viewer.render(structural.build_map(library, structural.mapped_shelves()), library, tmp_path)
+    three = (tmp_path / viewer.THREE_SCRIPT).read_bytes()
+    assert three.startswith(b"(function () {") and three.rstrip().endswith(b"})();")
+    assert viewer.checked(viewer.THREE, viewer.THREE_SHA384) in three
+    force = (tmp_path / viewer.FORCE_3D_SCRIPT).read_bytes()
+    assert force == viewer.checked(viewer.FORCE_3D, viewer.FORCE_3D_SHA384)
+
+
+def test_tampered_3d_script_is_refused(tmp_path, monkeypatch):
+    fake = tmp_path / "three.cjs"
+    fake.write_bytes(viewer.THREE.read_bytes() + b"//")
+    monkeypatch.setattr(viewer, "THREE", fake)
+    with pytest.raises(viewer.ViewerError, match="does not match"):
+        viewer.three_script()
+
+
+def test_page_offers_the_2d_3d_switch_and_loads_3d_only_on_demand():
+    template = viewer.TEMPLATE.read_text(encoding="utf-8")
+    assert '<button id="dim-2d"' in template and '<button id="dim-3d"' in template
+    assert '<script src="three.js"' not in template  # loaded lazily, not on page load
+
+
+@pytest.mark.skipif(not EDGE.exists(), reason="Microsoft Edge is not installed here")
+def test_3d_loads_offline_without_errors(library, tmp_path):
+    html = viewer.render(
+        structural.build_map(library, structural.mapped_shelves()), library, tmp_path
+    )
+    body = _body(_dom(html, "dim=3d&select=garden", flags=CALM))
+    assert 'data-ready3d="1"' in body and 'data-dim="3d"' in body
+    assert 'data-selected3d="garden"' in body
+    assert "data-error" not in body
+
+
+@pytest.mark.skipif(not EDGE.exists(), reason="Microsoft Edge is not installed here")
+def test_switching_keeps_the_selected_note(library, tmp_path):
+    html = viewer.render(
+        structural.build_map(library, structural.mapped_shelves()), library, tmp_path
+    )
+    dom = _dom(html, "select=garden&debug=switch", flags=CALM)
+    assert "data-error" not in _body(dom)
+    assert _body_json(dom, "switch") == {"in3d": "garden", "back2d": "garden"}
+
+
+@pytest.mark.skipif(not EDGE.exists(), reason="Microsoft Edge is not installed here")
+def test_a_note_has_the_same_colour_in_2d_and_3d(library, tmp_path):
+    html = viewer.render(
+        structural.build_map(library, structural.mapped_shelves()), library, tmp_path
+    )
+    dom = _dom(html, "dim=3d&colour=area&debug=colours", flags=CALM)
+    flat, deep = _body_json(dom, "colours2d"), _body_json(dom, "colours3d")
+    assert set(deep) == set(flat) and deep == flat
+
+
+@pytest.mark.skipif(not EDGE.exists(), reason="Microsoft Edge is not installed here")
+def test_sensitive_facts_stay_hidden_in_3d(library, tmp_path):
+    html = viewer.render(
+        structural.build_map(library, structural.mapped_shelves()), library, tmp_path
+    )
+    dom = _dom(html, "dim=3d&select=ana", flags=CALM)
+    assert 'data-selected3d="ana"' in _body(dom)
+    info = re.search(r'<div id="info"[^>]*>(.*?)</aside>', dom, re.S) or re.search(
+        r'<div id="info"[^>]*>(.*)', dom, re.S
+    )
+    panel = info.group(1)
+    assert "Ana" in panel and "Show" in panel
+    assert "private fact" not in panel and "Private summary" not in panel
+
+
+@pytest.mark.skipif(not EDGE.exists(), reason="Microsoft Edge is not installed here")
+def test_3d_labels_never_overlap_at_rest(tmp_path):
+    # A crowded brain: 36 notes in three areas, each linked to its next five, so many
+    # labels compete for room around the focused note.
+    root = tmp_path / "brain" / "library"
+    areas = ["04-learning", "06-work", "08-rest-joy"]
+    for i in range(36):
+        area = areas[i % 3]
+        links = "".join(f"- related_to [[note-{(i + k) % 36:02d}]]\n" for k in range(1, 6))
+        body = f"## Facts\n\n- Fact {i}. (src: self, 2030-01-01)\n\n## Links\n\n{links}"
+        path = root / area / f"note-{i:02d}.md"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(note(f"note-{i:02d}", area=area, body=body), encoding="utf-8")
+    html = viewer.render(
+        structural.build_map(root, structural.mapped_shelves()), root, tmp_path / "out"
+    )
+    dom = _dom(html, "dim=3d&select=note-00&debug=labels", flags=CALM)
+    boxes = json.loads(re.search(r'data-boxes3d="([^"]*)"', dom).group(1).replace("&quot;", '"'))
+    assert len(boxes) >= 2
+    for i, a in enumerate(boxes):
+        for b in boxes[i + 1 :]:  # rounded to whole pixels, so allow one
+            overlap = a[0] < b[2] - 1 and a[2] > b[0] + 1 and a[1] < b[3] - 1 and a[3] > b[1] + 1
+            assert not overlap, (a, b)
+
+
+@pytest.mark.skipif(not EDGE.exists(), reason="Microsoft Edge is not installed here")
+def test_reduce_motion_means_no_fly_animation_in_3d(library, tmp_path):
+    html = viewer.render(
+        structural.build_map(library, structural.mapped_shelves()), library, tmp_path
+    )
+    calm = _body(_dom(html, "dim=3d&select=garden", flags=CALM))
+    assert 'data-fly-ms="0"' in calm and "data-error" not in calm

@@ -29,7 +29,11 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; }
 body { background: var(--bg); color: var(--text); font: 13px/1.45 "Inter", system-ui, -apple-system, "Segoe UI", sans-serif; overflow: hidden; }
-#graph { position: absolute; inset: 0 360px 0 0; background: var(--bg); }
+#graph, #graph3d, #labels3d { position: absolute; inset: 0 360px 0 0; background: var(--bg); }
+#labels3d { background: transparent; pointer-events: none; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
+.seg button { border: 0; border-radius: 0; padding: 4px 12px; background: var(--chip); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--panel); font-weight: 600; }
 #side { position: absolute; top: 0; right: 0; bottom: 0; width: 360px; background: var(--panel);
   border-left: 1px solid var(--line); overflow-y: auto; padding: 14px 16px 24px; }
 h1 { font-size: 15px; margin: 0; letter-spacing: 0.01em; font-weight: 600; }
@@ -69,7 +73,7 @@ a { color: var(--accent); }
 #loading { position: absolute; left: 16px; bottom: 14px; color: var(--text-2); font-size: 12px; }
 #stats { color: var(--text-2); font-size: 11px; margin-top: 14px; }
 @media (max-width: 800px) {
-  #graph { inset: 0 0 45vh 0; }
+  #graph, #graph3d, #labels3d { inset: 0 0 45vh 0; }
   #side { top: auto; height: 45vh; width: 100%; border-left: 0; border-top: 1px solid var(--line); }
 }
 </style>
@@ -77,6 +81,8 @@ a { color: var(--accent); }
 </head>
 <body>
 <div id="graph" aria-label="Brain map"></div>
+<div id="graph3d" aria-label="Brain map in 3D" hidden></div>
+<canvas id="labels3d" hidden></canvas>
 <div id="loading">Laying out…</div>
 <aside id="side">
   <div class="row">
@@ -89,6 +95,9 @@ a { color: var(--accent); }
   <ul id="results"></ul>
   <div class="toggles">
     <h3>View</h3>
+    <div class="row"><span>Map</span>
+      <span class="seg" role="group" aria-label="2D or 3D"><button id="dim-2d" type="button" aria-pressed="true">2D</button><button id="dim-3d" type="button" aria-pressed="false">3D</button></span>
+    </div>
     <div class="row"><span>Style</span>
       <select id="style" aria-label="Graph style">
         <option value="classic">Classic</option><option value="graphite">Graphite</option><option value="muted">Muted areas</option><option value="clouds">Area clouds</option>
@@ -421,6 +430,7 @@ function refresh() {
   nodesView.refresh(); edgesView.refresh();
   if (state.selected && !visible.has(state.selected)) { state.selected = null; showInfo(null); }
   network.redraw();
+  if (g3 && g3.graph && state.dim === "3d") update3d();
 }
 
 // ---------------------------------------------------------------- network
@@ -829,6 +839,17 @@ network.on("stabilizationIterationsDone", () => {
   if (hash.get("debug") === "colours") {
     document.body.dataset.colours = JSON.stringify(Object.fromEntries(DATA.nodes.map((n) => [n.slug, { pure: pureColour(n), shown: nodeColour(n, false) }])));
   }
+  if (hash.get("debug") === "switch" && state.dim === "2d") {
+    // Select in 2D, switch to 3D and back, and record what each mode held.
+    const sel = DATA.nodes.find((m) => m.slug === hash.get("select"));
+    if (sel) goTo(sel.id, false);
+    setDim("3d", false).then(() => {
+      const in3d = document.body.dataset.selected3d || null;
+      return setDim("2d", false).then(() => {
+        document.body.dataset.switch = JSON.stringify({ in3d, back2d: state.selected ? byId.get(state.selected).slug : null });
+      });
+    });
+  }
 
 });
 function relayout() {
@@ -1004,11 +1025,8 @@ function tipAt(html, dom) {
   tip.style.left = `${x}px`; tip.style.top = `${Math.min(y, innerHeight - 160)}px`;
 }
 network.on("hoverNode", (p) => {
-  state.hover = p.node; const n = byId.get(p.node);
-  const body = show(n)
-    ? `${n.description ? `<div>${esc(n.description)}</div>` : ""}${n.aliases.length ? `<div class="muted">Also: ${esc(n.aliases.join(", "))}</div>` : ""}`
-    : `<div class="muted">Sensitive note: details hidden. Click it, then "Show".</div>`;
-  tipAt(`<b>${esc(n.name)}</b><div class="muted">${typeArea(n)} · ${n.degree} links</div>${body}`, p.pointer.DOM);
+  state.hover = p.node;
+  tipAt(nodeTipHtml(byId.get(p.node)), p.pointer.DOM);
   setFocus(p.node);
 });
 network.on("blurNode", () => { state.hover = null; tip.hidden = true; setFocus(state.selected); });
@@ -1081,6 +1099,7 @@ function goTo(id, animate) {
     document.querySelectorAll("#f-area input, #f-type input").forEach((cb) => { cb.checked = true; });
     refresh();
   }
+  if (state.dim === "3d" && g3 && g3.graph) { select3d(id, animate); return; }
   network.selectNodes([id]); state.selected = id; showInfo(id); setFocus(id);
   network.focus(id, { scale: Math.max(network.getScale(), 1.3),
     animation: animate && !reduceMotion() ? { duration: 500, easingFunction: "easeInOutQuad" } : false });
@@ -1195,6 +1214,371 @@ function legend() {
   document.querySelectorAll(".swatch[data-k]").forEach((s) => { s.style.background = areaColour({ area: s.dataset.k, shelf: s.dataset.k }); });
 }
 
+// ---------------------------------------------------------------- 3D view
+// The same map in 3D: three.js and 3d-force-graph, loaded on first use. Area clusters sit on an
+// invisible sphere (areas with many links between them side by side), with the grey cross-area
+// notes in the centre. Notes are flat discs facing the camera, in the 2D colours and sizes.
+// Panel, search, filters, focus and "Show" are the 2D ones. Nothing moves on its own: every
+// note has a precomputed position, and only the camera moves, when asked.
+var g3 = { graph: null, loading: null, sprites: new Map(), tex: new Map(), pos: null, R: 0,
+  focus: null, camKey: "", dirty: 0, mouse: { x: 0, y: 0 }, boxes: [] };
+const DIMS = ["2d", "3d"];
+state.dim = DIMS.includes(hash.get("dim")) ? hash.get("dim") : (DIMS.includes(storeGet("yggdras-dim")) ? storeGet("yggdras-dim") : "2d");
+const box3 = document.getElementById("graph3d"), lab3 = document.getElementById("labels3d");
+
+function loadScript(src) {
+  return new Promise((ok, bad) => {
+    const s = document.createElement("script");
+    s.src = src; s.onload = ok; s.onerror = () => bad(new Error(`could not load ${src}`));
+    document.head.appendChild(s);
+  });
+}
+function load3d() {
+  if (!g3.loading) g3.loading = loadScript("three.js").then(() => loadScript("3d-force-graph.min.js"));
+  return g3.loading;
+}
+
+// ---- positions: computed once per page, like the 2D layouts
+const centre3d = (n) => isCentre(n) || (n.type === "hub" && !(colourKey(n) in AREA_HUE));
+function unitVector(rnd) {
+  const z = 2 * rnd() - 1, a = 2 * Math.PI * rnd(), r = Math.sqrt(1 - z * z);
+  return { x: r * Math.cos(a), y: z, z: r * Math.sin(a) };
+}
+function positions3d() {
+  if (g3.pos) return g3.pos;
+  const rnd = lcg(11), R = 70 + 16 * Math.sqrt(N), pos = {};
+  const groups = new Map();
+  for (const n of DATA.nodes) {
+    if (centre3d(n)) continue;
+    const k = colourKey(n);
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(n);
+  }
+  const w = new Map();
+  for (const e of DATA.edges) {
+    if (e.kind === "hub") continue;
+    const a = byId.get(e.from), b = byId.get(e.to);
+    if (centre3d(a) || centre3d(b)) continue;
+    const ka = colourKey(a), kb = colourKey(b);
+    if (ka === kb) continue;
+    const k = ka < kb ? `${ka}|${kb}` : `${kb}|${ka}`;
+    w.set(k, (w.get(k) || 0) + 1);
+  }
+  // Areas in link order go to consecutive points of a Fibonacci sphere, which sit side by side.
+  const order = bestOrder([...groups.keys()].sort(), (a, b) => w.get(a < b ? `${a}|${b}` : `${b}|${a}`) || 0);
+  const anchors = new Map(), golden = Math.PI * (3 - Math.sqrt(5)), m = order.length;
+  order.forEach((k, i) => {
+    const y = m === 1 ? 0 : 1 - (2 * (i + 0.5)) / m, r = Math.sqrt(1 - y * y), th = golden * i;
+    anchors.set(k, { x: Math.cos(th) * r * R, y: y * R, z: Math.sin(th) * r * R });
+  });
+  const fixed = new Set();
+  DATA.nodes.filter(centre3d).sort((a, b) => b.degree - a.degree || a.slug.localeCompare(b.slug)).forEach((n, i) => {
+    if (i === 0) { pos[n.id] = { x: 0, y: 0, z: 0 }; fixed.add(n.id); return; }
+    const v = unitVector(rnd), r = R * 0.16 * Math.cbrt(rnd());
+    pos[n.id] = { x: v.x * r, y: v.y * r, z: v.z * r };
+  });
+  for (const [k, list] of groups) {
+    const a = anchors.get(k), spread = 10 + 7 * Math.sqrt(list.length);
+    for (const n of list) {
+      if (n.type === "hub") { pos[n.id] = { ...a }; fixed.add(n.id); continue; }
+      const v = unitVector(rnd), r = spread * Math.cbrt(rnd());
+      pos[n.id] = { x: a.x + v.x * r, y: a.y + v.y * r, z: a.z + v.z * r };
+    }
+  }
+  // A short, deterministic relaxation: notes of one area push apart, links inside an area
+  // pull together, every note is drawn back towards its area's anchor (or the centre).
+  const home = (n) => (centre3d(n) ? { x: 0, y: 0, z: 0 } : anchors.get(colourKey(n)));
+  const members = [...groups.values(), DATA.nodes.filter(centre3d)];
+  for (let it = 0; it < 90; it++) {
+    const f = new Map(DATA.nodes.map((n) => [n.id, { x: 0, y: 0, z: 0 }]));
+    for (const list of members) {
+      for (let i = 0; i < list.length; i++) {
+        for (let j = i + 1; j < list.length; j++) {
+          const p = pos[list[i].id], q = pos[list[j].id];
+          let dx = p.x - q.x, dy = p.y - q.y, dz = p.z - q.z;
+          const d2 = Math.max(dx * dx + dy * dy + dz * dz, 1), s = 700 / d2;
+          const d = Math.sqrt(d2); dx /= d; dy /= d; dz /= d;
+          const fi = f.get(list[i].id), fj = f.get(list[j].id);
+          fi.x += dx * s; fi.y += dy * s; fi.z += dz * s; fj.x -= dx * s; fj.y -= dy * s; fj.z -= dz * s;
+        }
+      }
+    }
+    for (const e of DATA.edges) {
+      const ea = byId.get(e.from), eb = byId.get(e.to);
+      if (centre3d(ea) || centre3d(eb) || colourKey(ea) !== colourKey(eb)) continue; // areas keep their place
+      const p = pos[e.from], q = pos[e.to];
+      const dx = q.x - p.x, dy = q.y - p.y, dz = q.z - p.z, d = Math.max(Math.hypot(dx, dy, dz), 1);
+      const s = 0.02 * (d - 26) / d;
+      const fa = f.get(e.from), fb = f.get(e.to);
+      fa.x += dx * s; fa.y += dy * s; fa.z += dz * s; fb.x -= dx * s; fb.y -= dy * s; fb.z -= dz * s;
+    }
+    for (const n of DATA.nodes) {
+      if (fixed.has(n.id)) continue;
+      const p = pos[n.id], h = home(n), fi = f.get(n.id);
+      fi.x += (h.x - p.x) * 0.05; fi.y += (h.y - p.y) * 0.05; fi.z += (h.z - p.z) * 0.05;
+      const step = Math.min(1, 6 / Math.max(Math.hypot(fi.x, fi.y, fi.z), 1e-9));
+      p.x += fi.x * step; p.y += fi.y * step; p.z += fi.z * step;
+    }
+  }
+  // Spread the result so discs keep the 2D size rule and still have room between them.
+  const SPREAD = 1.8;
+  for (const id in pos) { pos[id].x *= SPREAD; pos[id].y *= SPREAD; pos[id].z *= SPREAD; }
+  g3.pos = pos; g3.R = R * SPREAD;
+  return pos;
+}
+
+// ---- flat discs facing the camera: one texture per colour (and glow), shared
+function discTexture(colour, glow) {
+  const key = `${colour}|${glow ? 1 : 0}`;
+  if (g3.tex.has(key)) return g3.tex.get(key);
+  const s = 128, c = document.createElement("canvas"); c.width = c.height = s;
+  const x = c.getContext("2d"), r = glow ? s * 0.3 : s * 0.46;
+  if (glow) {
+    const g = x.createRadialGradient(s / 2, s / 2, r * 0.8, s / 2, s / 2, s / 2);
+    g.addColorStop(0, colour); g.addColorStop(1, "rgba(0,0,0,0)");
+    x.globalAlpha = 0.45; x.fillStyle = g; x.fillRect(0, 0, s, s); x.globalAlpha = 1;
+  }
+  x.beginPath(); x.arc(s / 2, s / 2, r, 0, 2 * Math.PI); x.fillStyle = colour; x.fill();
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  g3.tex.set(key, t);
+  return t;
+}
+const glow3d = (n) => n.type === "hub" && !classic();
+const discSize = (n) => (2 * radius(n)) / (glow3d(n) ? 0.6 : 0.92);
+function sprite3d(n) {
+  const colour = nodeColour(n, false);
+  const m = new THREE.SpriteMaterial({ map: discTexture(colour, glow3d(n)), transparent: true, depthWrite: false });
+  const sp = new THREE.Sprite(m);
+  const s = discSize(n); sp.scale.set(s, s, 1);
+  sp.userData = { id: n.id, colour };
+  // A note focused before its sprite existed still dims the rest.
+  if (g3.focus && g3.focus !== n.id && !adj.get(g3.focus).has(n.id)) m.opacity = 0.14;
+  g3.sprites.set(n.id, sp);
+  return sp;
+}
+function restyle3d() {
+  if (!g3.graph) return;
+  for (const [id, sp] of g3.sprites) {
+    const n = byId.get(id), colour = nodeColour(n, false);
+    sp.material.map = discTexture(colour, glow3d(n)); sp.material.needsUpdate = true;
+    const s = discSize(n); sp.scale.set(s, s, 1); sp.userData.colour = colour;
+  }
+  g3.graph.backgroundColor(L.bg);
+  g3.graph.linkColor(g3.graph.linkColor());
+  g3.dirty++;
+  debugColours();
+}
+
+// ---- links: thin and faint; the focused note's links in the accent colour
+const endId = (v) => (typeof v === "object" ? v.id : v);
+function linkColour3d(l) {
+  const s = endId(l.source), t = endId(l.target), f = g3.focus;
+  if (f != null && (s === f || t === f)) return L.accent;
+  const c = new THREE.Color(classic() ? nodeColour(byId.get(s), false) : L.edge.replace(/rgba?\(([^,]+),([^,]+),([^,)]+).*/, "rgb($1,$2,$3)"));
+  if (f != null) c.lerp(new THREE.Color(L.bg), 0.85);
+  return `#${c.getHexString()}`;
+}
+function graphData3d() {
+  const pos = positions3d();
+  const nodes = DATA.nodes.filter((n) => visible.has(n.id)).map((n) => {
+    const p = pos[n.id];
+    return { id: n.id, x: p.x, y: p.y, z: p.z, fx: p.x, fy: p.y, fz: p.z };
+  });
+  const links = edgesView.get().filter((i) => typeof i.id === "number").map((i) => edgeById.get(i.id))
+    .map((e) => ({ id: e.id, source: e.from, target: e.to }));
+  g3.sprites.clear();
+  return { nodes, links };
+}
+
+// ---- focus: neighbours stay bright, the rest fades (no animation, nothing moves)
+function setFocus3d(id) {
+  g3.focus = id || null;
+  const near = id ? new Set([id, ...adj.get(id)]) : null;
+  for (const [nid, sp] of g3.sprites) sp.material.opacity = !near || near.has(nid) ? 1 : 0.14;
+  if (g3.graph) g3.graph.linkColor(g3.graph.linkColor());
+  g3.dirty++;
+}
+function nodeTipHtml(n) {
+  const body = show(n)
+    ? `${n.description ? `<div>${esc(n.description)}</div>` : ""}${n.aliases.length ? `<div class="muted">Also: ${esc(n.aliases.join(", "))}</div>` : ""}`
+    : `<div class="muted">Sensitive note: details hidden. Click it, then "Show".</div>`;
+  return `<b>${esc(n.name)}</b><div class="muted">${typeArea(n)} · ${n.degree} links</div>${body}`;
+}
+function tipAtPage(html, x, y) {
+  tip.innerHTML = html; tip.hidden = false;
+  let left = x + 14;
+  if (left + 340 > innerWidth) left = Math.max(8, innerWidth - 350);
+  tip.style.left = `${left}px`; tip.style.top = `${Math.min(y + 14, innerHeight - 160)}px`;
+}
+function hover3d(d) {
+  state.hover = d ? d.id : null;
+  box3.style.cursor = d ? "pointer" : "";
+  if (d) tipAtPage(nodeTipHtml(byId.get(d.id)), g3.mouse.x, g3.mouse.y); else tip.hidden = true;
+  setFocus3d(focusId());
+}
+function select3d(id, animate) {
+  state.selected = id; showInfo(id); setFocus3d(id);
+  // Fly towards the note along the current line of sight, stopping far enough back that its
+  // neighbours stay in view.
+  const p = positions3d()[id], cam = g3.graph.camera().position;
+  let dir = { x: cam.x - p.x, y: cam.y - p.y, z: cam.z - p.z };
+  const c = Math.hypot(dir.x, dir.y, dir.z);
+  dir = c > 1 ? { x: dir.x / c, y: dir.y / c, z: dir.z / c } : { x: 0, y: 0, z: 1 };
+  const back = g3.R * 0.75;
+  const ms = animate && !reduceMotion() ? 900 : 0;
+  g3.graph.cameraPosition({ x: p.x + dir.x * back, y: p.y + dir.y * back, z: p.z + dir.z * back }, p, ms);
+  document.body.dataset.flyMs = String(ms);
+  document.body.dataset.selected3d = byId.get(id).slug;
+}
+function deselect3d() { state.selected = null; showInfo(null); setFocus3d(state.hover); delete document.body.dataset.selected3d; }
+
+// ---- labels: like 2D. Hubs and the most-linked notes always; more as the camera comes
+// closer; the focused note and its neighbours when focused; never overlapping (the
+// lower-ranked one is left out); any name on hover, in the tooltip.
+function resize3d() {
+  if (!g3.graph) return;
+  const w = box3.clientWidth, h = box3.clientHeight, dpr = devicePixelRatio || 1;
+  g3.graph.width(w).height(h);
+  lab3.width = w * dpr; lab3.height = h * dpr; lab3.style.width = `${w}px`; lab3.style.height = `${h}px`;
+  // Redraw the scene and the labels now, at the new size, so the two never disagree.
+  const cam = g3.graph.camera(), r = g3.graph.renderer();
+  r.setSize(w, h); cam.aspect = w / Math.max(h, 1); cam.updateProjectionMatrix();
+  r.render(g3.graph.scene(), cam);
+  drawLabels3d();
+  g3.dirty++;
+}
+function drawLabels3d() {
+  const ctx = lab3.getContext("2d"), dpr = devicePixelRatio || 1, w = box3.clientWidth, h = box3.clientHeight;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h);
+  const cam = g3.graph.camera(), pos = positions3d(), v = new THREE.Vector3();
+  const near = g3.focus ? new Set([g3.focus, ...adj.get(g3.focus)]) : null;
+  const k = h / (2 * Math.tan((cam.fov * Math.PI) / 360));
+  const cand = [];
+  for (const id of visible) {
+    const p = pos[id], n = byId.get(id);
+    v.set(p.x, p.y, p.z);
+    const dist = cam.position.distanceTo(v);
+    v.project(cam);
+    if (v.z < -1 || v.z > 1) continue;
+    const x = ((v.x + 1) / 2) * w, y = ((1 - v.y) / 2) * h;
+    if (x < 0 || x > w || y < 0 || y > h) continue;
+    const important = n.type === "hub" || n.degree >= ALWAYS_DEGREE;
+    const close = dist < g3.R * 1.3;
+    if (near ? !near.has(id) : !important && !close) continue;
+    const rank = (id === g3.focus ? 1e9 : 0) + (important ? 1e6 : 0) + n.degree * 1000 - dist;
+    cand.push([rank, n, x, y + (radius(n) * k) / Math.max(dist, 1) + 3]);
+  }
+  cand.sort((a, b) => b[0] - a[0]);
+  const boxes = [];
+  ctx.textAlign = "center"; ctx.textBaseline = "top"; ctx.lineJoin = "round";
+  for (const [, n, x, y] of cand) {
+    if (boxes.length > 300) break;
+    const strong = n.id === g3.focus;
+    ctx.font = `${strong ? 600 : 400} ${LABEL_PX}px ${FONT}`;
+    const text = short(n.name), tw = ctx.measureText(text).width, th = LABEL_PX * 1.3;
+    const b = { x0: x - tw / 2 - 2, y0: y, x1: x + tw / 2 + 2, y1: y + th };
+    if (boxes.some((q) => b.x0 < q.x1 && b.x1 > q.x0 && b.y0 < q.y1 && b.y1 > q.y0)) continue;
+    boxes.push(b);
+    ctx.lineWidth = 2.5; ctx.strokeStyle = L.halo; ctx.strokeText(text, x, y);
+    ctx.fillStyle = strong ? L.strong : L.label; ctx.fillText(text, x, y);
+  }
+  g3.boxes = boxes;
+  document.body.dataset.labels3d = String(boxes.length);
+  if (hash.get("debug") === "labels") document.body.dataset.boxes3d = JSON.stringify(boxes.map((b) => [b.x0, b.y0, b.x1, b.y1].map(Math.round)));
+}
+function labelLoop() {
+  if (state.dim === "3d" && g3.graph) {
+    const key = `${g3.graph.camera().matrixWorld.elements.map((e) => e.toFixed(2)).join(",")}|${g3.dirty}`;
+    if (key !== g3.camKey) { g3.camKey = key; drawLabels3d(); }
+  }
+  requestAnimationFrame(labelLoop);
+}
+function debugColours(tries = 0) {
+  if (hash.get("debug") !== "colours") return;
+  document.body.dataset.colours2d = JSON.stringify(Object.fromEntries(DATA.nodes.map((n) => [n.slug, nodeColour(n, false)])));
+  if (!g3.graph) return;
+  // The sprites are made on the first frames after the data is set: wait for all of them.
+  if (g3.sprites.size < visible.size && tries < 120) { requestAnimationFrame(() => debugColours(tries + 1)); return; }
+  document.body.dataset.colours3d = JSON.stringify(Object.fromEntries([...g3.sprites].map(([id, sp]) => [byId.get(id).slug, sp.userData.colour])));
+}
+
+function init3d() {
+  if (g3.graph) return;
+  const G = ForceGraph3D({ controlType: "orbit" })(box3)
+    .backgroundColor(L.bg).showNavInfo(false)
+    .nodeThreeObject((d) => sprite3d(byId.get(d.id)))
+    .nodeLabel(() => "")
+    .linkColor(linkColour3d).linkOpacity(0.25).linkWidth(0)
+    .enableNodeDrag(false).warmupTicks(0).cooldownTicks(1)
+    .onNodeHover(hover3d)
+    .onNodeClick((d) => select3d(d.id, true))
+    .onBackgroundClick(deselect3d);
+  // No forces move anything: every note is pinned. The link force stays, at strength 0,
+  // because it is what joins each link to its two notes.
+  G.d3Force("charge", null); G.d3Force("center", null); G.d3Force("link").strength(0);
+  const controls = G.controls();
+  if (controls) { controls.enableDamping = !reduceMotion(); controls.autoRotate = false; }
+  g3.graph = G;
+  G.graphData(graphData3d());
+  positions3d();
+  // #zoom= and #center= work as in 2D: the camera comes zoom times closer, looking at that note.
+  const zoom = Number(hash.get("zoom")) > 0 ? Number(hash.get("zoom")) : 1;
+  const on = DATA.nodes.find((m) => m.slug === hash.get("center"));
+  const at = on ? positions3d()[on.id] : { x: 0, y: 0, z: 0 };
+  G.cameraPosition({ x: at.x, y: at.y + (g3.R * 0.35) / zoom, z: at.z + (g3.R * 2.6) / zoom }, at, 0);
+  box3.addEventListener("mousemove", (ev) => {
+    g3.mouse = { x: ev.clientX, y: ev.clientY };
+    if (state.hover != null && !tip.hidden) tipAtPage(nodeTipHtml(byId.get(state.hover)), ev.clientX, ev.clientY);
+  });
+  if (window.ResizeObserver) new ResizeObserver(resize3d).observe(box3);
+  else addEventListener("resize", resize3d);
+  requestAnimationFrame(labelLoop);
+}
+function update3d() {
+  if (!g3.graph) return;
+  g3.graph.graphData(graphData3d());
+  setFocus3d(focusId());
+  g3.dirty++;
+  debugColours();
+}
+
+// ---- the switch: same selection, filters and search; the choice is remembered
+function hintLine() {
+  document.getElementById("counts").textContent = `${N} notes, ${DATA.edges.length} links. ` + (state.dim === "3d"
+    ? "Drag to turn, right-drag to pan, wheel to zoom."
+    : "Drag to pan, wheel to zoom, drag a note to move it.");
+}
+function markDim() {
+  for (const d of DIMS) {
+    const b = document.getElementById(`dim-${d}`);
+    b.setAttribute("aria-pressed", String(state.dim === d));
+  }
+  document.body.dataset.dim = state.dim;
+  hintLine();
+}
+async function setDim(d, remember) {
+  state.dim = d;
+  if (remember) storeSet("yggdras-dim", d);
+  markDim();
+  const flat = document.getElementById("graph");
+  if (d === "3d") {
+    try { await load3d(); } catch (err) { document.body.dataset.error = String(err.message || err); return; }
+    if (state.dim !== "3d") return;
+    flat.hidden = true; box3.hidden = false; lab3.hidden = false;
+    init3d(); resize3d(); update3d(); g3.graph.resumeAnimation();
+    if (state.selected && visible.has(state.selected)) select3d(state.selected, false);
+    debugColours();
+    document.body.dataset.ready3d = "1";
+  } else {
+    box3.hidden = true; lab3.hidden = true; tip.hidden = true;
+    if (g3.graph) g3.graph.pauseAnimation();
+    flat.hidden = false; network.setSize("100%", "100%"); network.redraw();
+    if (state.selected && visible.has(state.selected)) goTo(state.selected, false);
+  }
+}
+for (const d of DIMS) document.getElementById(`dim-${d}`).addEventListener("click", () => setDim(d, true));
+
 // ---------------------------------------------------------------- theme and style
 const themeSel = document.getElementById("theme"), styleSel = document.getElementById("style");
 function applyLook(edges = true) {
@@ -1211,6 +1595,7 @@ function applyLook(edges = true) {
   } else if (edges) edgesDS.update(DATA.edges.map((e) => ({ id: e.id, ...edgeStyle(e) })));
   legend(); if (state.selected) showInfo(state.selected);
   network.redraw();
+  if (g3 && g3.graph) restyle3d();
 }
 function applyTheme(t) {
   state.theme = t; themeSel.value = t;
@@ -1255,8 +1640,15 @@ applyLook(false);
 if (hash.get("labels") === "1") { state.edgeLabels = true; document.getElementById("edge-labels").checked = true; }
 if (document.fonts) document.fonts.load(`400 12px "Inter"`).then(() => network.redraw()).catch(() => {});
 document.getElementById("stats").textContent = `${N} notes · ${DATA.edges.length} links`;
-document.getElementById("counts").textContent =
-  `${N} notes, ${DATA.edges.length} links. Drag to pan, wheel to zoom, drag a note to move it.`;
+markDim();
+debugColours();
+if (state.dim === "3d") {
+  setDim("3d", false).then(() => {
+    const sel = DATA.nodes.find((m) => m.slug === hash.get("select"));
+    if (sel && g3.graph) goTo(sel.id, false);
+  });
+}
+hintLine();
 </script>
 </body>
 </html>

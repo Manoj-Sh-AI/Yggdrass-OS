@@ -1,6 +1,7 @@
 """Viewer: draw the brain's map as an interactive page, offline.
 
-Our own page on the vendored vis-network (D32 as amended 2026-10-31: Graphify renders
+Our own page on the vendored vis-network for 2D, and three.js with 3d-force-graph for the
+3D view, loaded only when 3D is chosen (D32 as amended 2026-10-31: Graphify renders
 nothing in Yggdras). The data is our structural map plus each note's summary, facts and
 link lines; nothing else is read and nothing is sent anywhere. Notes marked
 `sensitivity: high` keep their name, type and area visible, and hide description,
@@ -42,6 +43,14 @@ FONTS = {
         "lI+hrOImxNsIljMZ+LxBmjTPRJCqvHKeOmTiKCfLU1X6p6NCfvF38SRH8pIuu2XO"
     ),
 }
+# The 3D view (loaded only when 3D is chosen): three.js's CommonJS build, wrapped at copy time
+# so it sets window.THREE, which 3d-force-graph then shares, and 3d-force-graph itself.
+THREE = VENDOR / "three-0.185.1.cjs"
+THREE_SHA384 = "cYcCosS5mKaWwc2fiRx4UsDXJr/hCkAPQXX04gEuEueyFAzkbkqkyP85vR9nyKF4"
+THREE_SCRIPT = "three.js"
+FORCE_3D = VENDOR / "3d-force-graph-1.80.1.min.js"
+FORCE_3D_SHA384 = "i98VDQKdpyVrtyuFn0fjUWJBLBmxnqHqOANcvYe9HLJUgT2wPixa4ZkLd7Dh3VEk"
+FORCE_3D_SCRIPT = "3d-force-graph.min.js"
 TEMPLATE = Path(__file__).with_name("viewer_template.html")
 DATA_TOKEN = "/*__YGGDRAS_DATA__*/null"
 SUMMARY_HEADING = "## Summary"
@@ -151,6 +160,15 @@ def vis_network_bytes() -> bytes:
     return checked(VIS_NETWORK, VIS_NETWORK_SHA384)
 
 
+def three_script() -> bytes:
+    """three.js for a plain <script> tag: its CommonJS build inside a wrapper that hands the
+    exports to window.THREE. Works offline from file:// (no modules, no imports)."""
+    body = checked(THREE, THREE_SHA384)
+    head = b"(function () {\nvar module = { exports: {} }, exports = module.exports;\n"
+    tail = b"\nwindow.THREE = module.exports;\n})();\n"
+    return head + body + tail
+
+
 def page(view: dict) -> str:
     """The template with the data embedded; every `<` escaped so no value can end the script."""
     template = TEMPLATE.read_text(encoding="utf-8")
@@ -161,13 +179,15 @@ def page(view: dict) -> str:
 
 
 def render(graph: dict, root: Path, out_dir: Path) -> Path:
-    """Write graph.html, and the vis-network and font copies next to it."""
+    """Write graph.html, and the vis-network, three.js, 3d-force-graph and font copies."""
     script = vis_network_bytes()
     fonts = {name: checked(VENDOR / name, sha) for name, sha in FONTS.items()}
     out_dir.mkdir(parents=True, exist_ok=True)
     html = out_dir / "graph.html"
     html.write_text(page(build_view(graph, root, out_dir)), encoding="utf-8", newline="\n")
     (out_dir / LOCAL_SCRIPT).write_bytes(script)
+    (out_dir / THREE_SCRIPT).write_bytes(three_script())
+    (out_dir / FORCE_3D_SCRIPT).write_bytes(checked(FORCE_3D, FORCE_3D_SHA384))
     for name, blob in fonts.items():
         (out_dir / name).write_bytes(blob)
     return html
