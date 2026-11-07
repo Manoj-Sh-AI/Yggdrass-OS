@@ -1246,7 +1246,7 @@ function unitVector(rnd) {
 }
 function positions3d() {
   if (g3.pos) return g3.pos;
-  const rnd = lcg(11), R = 70 + 16 * Math.sqrt(N), pos = {};
+  const rnd = lcg(11), R = 14 * Math.sqrt(N), pos = {};
   const groups = new Map();
   for (const n of DATA.nodes) {
     if (centre3d(n)) continue;
@@ -1271,59 +1271,55 @@ function positions3d() {
     const y = m === 1 ? 0 : 1 - (2 * (i + 0.5)) / m, r = Math.sqrt(1 - y * y), th = golden * i;
     anchors.set(k, { x: Math.cos(th) * r * R, y: y * R, z: Math.sin(th) * r * R });
   });
-  const fixed = new Set();
-  DATA.nodes.filter(centre3d).sort((a, b) => b.degree - a.degree || a.slug.localeCompare(b.slug)).forEach((n, i) => {
-    if (i === 0) { pos[n.id] = { x: 0, y: 0, z: 0 }; fixed.add(n.id); return; }
-    const v = unitVector(rnd), r = R * 0.16 * Math.cbrt(rnd());
-    pos[n.id] = { x: v.x * r, y: v.y * r, z: v.z * r };
-  });
-  for (const [k, list] of groups) {
-    const a = anchors.get(k), spread = 10 + 7 * Math.sqrt(list.length);
-    for (const n of list) {
-      if (n.type === "hub") { pos[n.id] = { ...a }; fixed.add(n.id); continue; }
-      const v = unitVector(rnd), r = spread * Math.cbrt(rnd());
-      pos[n.id] = { x: a.x + v.x * r, y: a.y + v.y * r, z: a.z + v.z * r };
-    }
+  // Seed: each note near its area's anchor, the centre notes near the origin.
+  for (const n of DATA.nodes) {
+    const a = centre3d(n) ? { x: 0, y: 0, z: 0 } : anchors.get(colourKey(n));
+    const v = unitVector(rnd), r = R * 0.25 * Math.cbrt(rnd());
+    pos[n.id] = { x: a.x + v.x * r, y: a.y + v.y * r, z: a.z + v.z * r };
   }
-  // A short, deterministic relaxation: notes of one area push apart, links inside an area
-  // pull together, every note is drawn back towards its area's anchor (or the centre).
+  // A force-directed web (Fruchterman-Reingold in 3D, deterministic, run once): every note
+  // pushes every other away, every link pulls its two notes together (across areas too, so
+  // areas meet where they are linked), and a weak pull keeps each area near its anchor.
+  const K = 46, nodes = DATA.nodes, M = nodes.length;
+  const iters = Math.max(40, Math.min(320, Math.floor(4e7 / Math.max(M * M, 1))));
   const home = (n) => (centre3d(n) ? { x: 0, y: 0, z: 0 } : anchors.get(colourKey(n)));
-  const members = [...groups.values(), DATA.nodes.filter(centre3d)];
-  for (let it = 0; it < 90; it++) {
-    const f = new Map(DATA.nodes.map((n) => [n.id, { x: 0, y: 0, z: 0 }]));
-    for (const list of members) {
-      for (let i = 0; i < list.length; i++) {
-        for (let j = i + 1; j < list.length; j++) {
-          const p = pos[list[i].id], q = pos[list[j].id];
-          let dx = p.x - q.x, dy = p.y - q.y, dz = p.z - q.z;
-          const d2 = Math.max(dx * dx + dy * dy + dz * dz, 1), s = 700 / d2;
-          const d = Math.sqrt(d2); dx /= d; dy /= d; dz /= d;
-          const fi = f.get(list[i].id), fj = f.get(list[j].id);
-          fi.x += dx * s; fi.y += dy * s; fi.z += dz * s; fj.x -= dx * s; fj.y -= dy * s; fj.z -= dz * s;
-        }
+  const ps = nodes.map((n) => pos[n.id]), idx = new Map(nodes.map((n, i) => [n.id, i]));
+  const links = DATA.edges.map((e) => [idx.get(e.from), idx.get(e.to), e.kind === "hub" ? 0.5 : 1]);
+  const dx = new Float64Array(M), dy = new Float64Array(M), dz = new Float64Array(M);
+  let temp = K * 3;
+  for (let it = 0; it < iters; it++) {
+    dx.fill(0); dy.fill(0); dz.fill(0);
+    for (let i = 0; i < M; i++) {
+      const p = ps[i];
+      for (let j = i + 1; j < M; j++) {
+        const q = ps[j];
+        let x = p.x - q.x, y = p.y - q.y, z = p.z - q.z;
+        const d2 = Math.max(x * x + y * y + z * z, 0.01), s = (K * K) / d2;
+        x *= s; y *= s; z *= s;
+        dx[i] += x; dy[i] += y; dz[i] += z; dx[j] -= x; dy[j] -= y; dz[j] -= z;
       }
     }
-    for (const e of DATA.edges) {
-      const ea = byId.get(e.from), eb = byId.get(e.to);
-      if (centre3d(ea) || centre3d(eb) || colourKey(ea) !== colourKey(eb)) continue; // areas keep their place
-      const p = pos[e.from], q = pos[e.to];
-      const dx = q.x - p.x, dy = q.y - p.y, dz = q.z - p.z, d = Math.max(Math.hypot(dx, dy, dz), 1);
-      const s = 0.02 * (d - 26) / d;
-      const fa = f.get(e.from), fb = f.get(e.to);
-      fa.x += dx * s; fa.y += dy * s; fa.z += dz * s; fb.x -= dx * s; fb.y -= dy * s; fb.z -= dz * s;
+    for (const [a, b, w] of links) {
+      const p = ps[a], q = ps[b];
+      const x = q.x - p.x, y = q.y - p.y, z = q.z - p.z, d = Math.hypot(x, y, z), s = (w * d) / K;
+      dx[a] += x * s; dy[a] += y * s; dz[a] += z * s; dx[b] -= x * s; dy[b] -= y * s; dz[b] -= z * s;
     }
-    for (const n of DATA.nodes) {
-      if (fixed.has(n.id)) continue;
-      const p = pos[n.id], h = home(n), fi = f.get(n.id);
-      fi.x += (h.x - p.x) * 0.05; fi.y += (h.y - p.y) * 0.05; fi.z += (h.z - p.z) * 0.05;
-      const step = Math.min(1, 6 / Math.max(Math.hypot(fi.x, fi.y, fi.z), 1e-9));
-      p.x += fi.x * step; p.y += fi.y * step; p.z += fi.z * step;
+    for (let i = 0; i < M; i++) {
+      const p = ps[i], h = home(nodes[i]);
+      const x = h.x - p.x, y = h.y - p.y, z = h.z - p.z, d = Math.hypot(x, y, z), s = (0.12 * d) / K;
+      dx[i] += x * s; dy[i] += y * s; dz[i] += z * s;
+      const len = Math.hypot(dx[i], dy[i], dz[i]);
+      if (len > 0) { const step = Math.min(len, temp) / len; p.x += dx[i] * step; p.y += dy[i] * step; p.z += dz[i] * step; }
     }
+    temp = Math.max(K * 0.05, temp * 0.985);
   }
-  // Spread the result so discs keep the 2D size rule and still have room between them.
-  const SPREAD = 1.8;
-  for (const id in pos) { pos[id].x *= SPREAD; pos[id].y *= SPREAD; pos[id].z *= SPREAD; }
-  g3.pos = pos; g3.R = R * SPREAD;
+  // Centre the web and measure it: the camera and the label distances follow its size.
+  let cx = 0, cy = 0, cz = 0;
+  for (const p of ps) { cx += p.x / M; cy += p.y / M; cz += p.z / M; }
+  for (const p of ps) { p.x -= cx; p.y -= cy; p.z -= cz; }
+  // Size by the 90th percentile, so one far-out note doesn't push the camera away.
+  const radii = ps.map((p) => Math.hypot(p.x, p.y, p.z)).sort((a, b) => a - b);
+  g3.pos = pos; g3.R = Math.max(radii[Math.floor((M - 1) * 0.9)] || 1, 1);
   return pos;
 }
 
@@ -1345,7 +1341,9 @@ function discTexture(colour, glow) {
   return t;
 }
 const glow3d = (n) => n.type === "hub" && !classic();
-const discSize = (n) => (2 * radius(n)) / (glow3d(n) ? 0.6 : 0.92);
+// The 2D size rule, scaled down so notes read as points in the web and the links show.
+const DISC3D = 0.6;
+const discSize = (n) => (DISC3D * 2 * radius(n)) / (glow3d(n) ? 0.6 : 0.92);
 function sprite3d(n) {
   const colour = nodeColour(n, false);
   const m = new THREE.SpriteMaterial({ map: discTexture(colour, glow3d(n)), transparent: true, depthWrite: false });
@@ -1425,7 +1423,7 @@ function select3d(id, animate) {
   let dir = { x: cam.x - p.x, y: cam.y - p.y, z: cam.z - p.z };
   const c = Math.hypot(dir.x, dir.y, dir.z);
   dir = c > 1 ? { x: dir.x / c, y: dir.y / c, z: dir.z / c } : { x: 0, y: 0, z: 1 };
-  const back = g3.R * 0.75;
+  const back = g3.R * 1.2;
   const ms = animate && !reduceMotion() ? 900 : 0;
   g3.graph.cameraPosition({ x: p.x + dir.x * back, y: p.y + dir.y * back, z: p.z + dir.z * back }, p, ms);
   document.body.dataset.flyMs = String(ms);
@@ -1509,7 +1507,7 @@ function init3d() {
     .backgroundColor(L.bg).showNavInfo(false)
     .nodeThreeObject((d) => sprite3d(byId.get(d.id)))
     .nodeLabel(() => "")
-    .linkColor(linkColour3d).linkOpacity(0.25).linkWidth(0)
+    .linkColor(linkColour3d).linkOpacity(0.4).linkWidth(0)
     .enableNodeDrag(false).warmupTicks(0).cooldownTicks(1)
     .onNodeHover(hover3d)
     .onNodeClick((d) => select3d(d.id, true))
@@ -1526,7 +1524,7 @@ function init3d() {
   const zoom = Number(hash.get("zoom")) > 0 ? Number(hash.get("zoom")) : 1;
   const on = DATA.nodes.find((m) => m.slug === hash.get("center"));
   const at = on ? positions3d()[on.id] : { x: 0, y: 0, z: 0 };
-  G.cameraPosition({ x: at.x, y: at.y + (g3.R * 0.35) / zoom, z: at.z + (g3.R * 2.6) / zoom }, at, 0);
+  G.cameraPosition({ x: at.x, y: at.y + (g3.R * 0.3) / zoom, z: at.z + (g3.R * 2.5) / zoom }, at, 0);
   box3.addEventListener("mousemove", (ev) => {
     g3.mouse = { x: ev.clientX, y: ev.clientY };
     if (state.hover != null && !tip.hidden) tipAtPage(nodeTipHtml(byId.get(state.hover)), ev.clientX, ev.clientY);
