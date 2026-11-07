@@ -184,9 +184,17 @@ def run_set(set_name: str, tag: str, budget: Budget, ask_factory) -> dict:
             rows.append(res)
         return res
 
-    one(questions[0])
-    with ThreadPoolExecutor(WORKERS) as pool:
-        list(pool.map(one, questions[1:]))
+    try:
+        one(questions[0])
+        with ThreadPoolExecutor(WORKERS) as pool:
+            list(pool.map(one, questions[1:]))
+    except BudgetStop:
+        # Keep what was answered before the stop line, so a cut-off run can still be read.
+        rows.sort(key=lambda x: x["qid"])
+        partial = {"tag": f"{tag}-partial", "set": set_name, "pin": PIN, "spent": budget.spent,
+                   "rows": rows}  # fmt: skip
+        save(partial, f"{tag}-partial")
+        raise
     rows.sort(key=lambda x: x["qid"])
     return {"tag": tag, "set": set_name, "pin": PIN, "spent": budget.spent, "rows": rows}
 
