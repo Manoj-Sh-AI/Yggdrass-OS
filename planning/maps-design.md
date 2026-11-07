@@ -1,6 +1,6 @@
 # Maps design
 
-> Status: **plan for approval, nothing built.** Drafted by Claude on 2026-11-01. Inputs:
+> Status: **built in #30** (the maps: atlas, shelf map, relationship map, checks). Drafted by Claude on 2026-11-01. Inputs:
 > - the research report "Lia's two maps: research and template" (Manoj, 2026-11-01; called "the report" below);
 > - `planning/maps-proposal.md` (draft PR #25);
 > - `planning/lia-and-connector.md` (PR #28);
