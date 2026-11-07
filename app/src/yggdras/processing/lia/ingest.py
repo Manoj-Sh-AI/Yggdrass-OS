@@ -38,7 +38,9 @@ How to work:
   describe_source (and each chunk with describe_chunk when the file is long).
 - File what the text states: add facts to the existing notes they are about (read_note first;
   use the slugs from the shelf map). A fact goes only into the note it is about; if that thing
-  has no note, keep the fact in the chunk (describe_chunk) instead of filing it elsewhere.
+  has no note, keep the fact in the chunk (describe_chunk), or for a short file in the source
+  note (describe_source facts), instead of filing it elsewhere. Nothing the file states should
+  be left out.
   Create a new note only for a person, place, project, event or idea the file is clearly
   about that has no note yet.
 - Each fact is one plain sentence, subject named, as the file says it; never add a date or
@@ -58,7 +60,8 @@ DESCRIBE_SOURCE = {
     "name": "describe_source",
     "description": "Describe the upload's source note: its name (the document's title), area "
     "(the life area it serves, or cross), a one-line description, aliases, a short summary of "
-    "what the document is, and links to existing notes the text supports.",
+    "what the document is, the facts it states that belong to no existing note (one sentence "
+    "each), and links to existing notes the text supports.",
     "input_schema": {
         "type": "object",
         "properties": {
@@ -67,6 +70,14 @@ DESCRIBE_SOURCE = {
             "description": _STR,
             "aliases": {"type": "array", "items": _STR},
             "summary": _STR,
+            "facts": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {"text": _STR, "valid": _STR},
+                    "required": ["text"],
+                },
+            },
             "links": {
                 "type": "array",
                 "items": {
@@ -135,7 +146,18 @@ class IngestSide(WriteSide):
     def _base_ops(self, state: dict) -> list[dict]:
         """The raw file, the source note and its chunks, from code and Lia's descriptions."""
         up, src = state["upload"], state["source"]
-        name = (src.get("name") or up["slug"].replace("-", " ").title()).strip()
+        # Lia's name for it, else the file's own title (its first "# " line), else the slug. A
+        # "name" that is just the slug ("houseplant-care-guide") counts as none.
+        given = (src.get("name") or "").strip()
+        if given and " " not in given and st.normalize(given) == up["slug"]:
+            given = ""
+        name = (given or up["title"] or up["slug"].replace("-", " ").title()).strip()
+        # Code writes every link between the source and its chunks; Lia's copies are dropped.
+        own = {up["slug"]} | state["chunk_slugs"]
+
+        def hers(links):
+            return [lk for lk in links or [] if lk.get("to") and st.normalize(lk["to"]) not in own]
+
         area = (src.get("area") or "").strip() or (st.CROSS if not self.wp.flat else "")
         summary = (
             f"Uploaded on {self.today} as {up['filename']}; the verbatim file is "
@@ -146,7 +168,8 @@ class IngestSide(WriteSide):
             "op": "create_note", "type": "source", "name": name, "slug": up["slug"],
             "area": area, "description": src.get("description") or f"Upload: {name}",
             "aliases": src.get("aliases") or [], "summary": summary,
-            "links": [lk for lk in src.get("links") or [] if lk.get("to")],
+            "facts": src.get("facts") or [], "src": up["src"],
+            "links": hers(src.get("links")),
         })  # fmt: skip
         chunks = up["chunks"]
         for c in chunks:
@@ -161,7 +184,7 @@ class IngestSide(WriteSide):
                 "description": d.get("description") or f"Section on {c.title}, in {name}",
                 "aliases": [], "summary": d.get("summary", ""),
                 "facts": d.get("facts") or [], "src": up["src"],
-                "links": links + [lk for lk in d.get("links") or [] if lk.get("to")],
+                "links": links + hers(d.get("links")),
             })  # fmt: skip
         return ops
 
@@ -249,6 +272,8 @@ class IngestSide(WriteSide):
             "chunk_slugs": {f"{slug}-ch-{c.n:02d}" for c in chunks},
             "upload": {
                 "filename": filename, "slug": slug, "chunks": chunks,
+                "title": next((ln[2:].strip() for ln in text.splitlines()
+                               if ln.startswith("# ")), ""),
                 "raw": chunk_mod.raw_name(filename, self.today),
                 "b64": base64.b64encode(data).decode(), "src": f"upload {filename}",
             },
