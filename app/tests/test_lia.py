@@ -838,3 +838,11 @@ def test_asking_twice_for_nothing_new_ends_the_reading(library, skills_dir):
     assert result["idle_stop"] and len(client.sent) == 4  # open, two idle rounds, then answer
     assert "You have every note this question needs" in str(client.sent[-1]["messages"][-1])
     assert "three hundred" in result["answer"]
+
+
+def test_talk_about_handed_back_lines_counts_as_draft_talk():
+    leaky = "It is active [1]. The extra line I was given only describes your target work [2]."
+    assert verify.leaks(leaky) == [
+        "The extra line I was given only describes your target work [2]."
+    ]
+    assert verify.leaks("You were given a contract offer [1].") == []

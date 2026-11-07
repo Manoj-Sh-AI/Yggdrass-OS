@@ -228,3 +228,7 @@ Grading: the judge and the key-term grader agree on all 24, and the element rule
 - **The one strong ablation signal is siblings** on life-explore: 3 vs 5 correct, and fact recall 0.46 vs 0.57.
 - **Plan's ablation went the other way on life** (19 without it vs 15.3 with it). That is one run, so it is weak evidence.
 - **The biggest gain came from a bigger model on complex questions** (F7 life-explore: 7.5 vs 5.0, fact recall 0.77 vs 0.57), at a cost the guardrail rules out.
+
+## Known cost issue (2026-11-07, for later)
+
+**Cold cache, round 2.** On the first question after the cache has gone cold, round 2 sometimes reads nothing from the cache (0 tokens) and re-writes the whole prefix. It was seen on Sonnet in two real complex questions; one cost about $0.11 extra. Warm questions read the conversation as intended. The cause isn't found yet. Not a blocker.
