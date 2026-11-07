@@ -262,6 +262,29 @@ def test_undo_needs_the_cards_token_or_the_cli(brain, tmp_path):
     assert commits(brain)[0].startswith("lia: undo")
 
 
+def test_a_validity_date_manoj_never_gave_is_dropped(brain, tmp_path):
+    replies = [
+        [
+            tool_use(
+                "add_fact", {"slug": "ana", "text": "Ana likes tea", "valid": "as of 2026-11-07"}
+            )
+        ],
+        done(),
+    ]
+    s, _ = side(brain, tmp_path, replies)
+    s.tell("Ana likes tea.")
+    ana = (brain / "library/11-people/ana.md").read_text(encoding="utf-8")
+    assert f"- Ana likes tea. (src: manoj, {TODAY})" in ana and "valid:" not in ana
+    kept = [
+        [tool_use("add_fact", {"slug": "ana", "text": "Ana lived in Lyon", "valid": "2019..2021"})],
+        done(),
+    ]
+    s2, _ = side(brain, tmp_path, kept)
+    s2.tell("Ana lived in Lyon from 2019 to 2021.")
+    ana = (brain / "library/11-people/ana.md").read_text(encoding="utf-8")
+    assert "valid: 2019..2021)" in ana
+
+
 def test_the_write_tools_never_include_confirm_or_undo():
     names = {t["name"] for t in TOOLS}
     assert not names & {"confirm_change", "cancel_change", "undo_change", "confirm", "undo"}
@@ -272,3 +295,10 @@ def test_the_rules_teach_until_and_wrong(word):
     from yggdras.processing.lia.write import RULES
 
     assert word in RULES
+
+
+def test_the_fixed_verbs_are_in_the_prompt_even_for_a_flat_brain(brain, tmp_path):
+    s, _ = side(brain, tmp_path, [])
+    prompt = s.system[0]["text"]
+    assert "- related_to" in prompt and "- took_part_in" in prompt and "- lists" not in prompt
+    assert "use related_to" in prompt

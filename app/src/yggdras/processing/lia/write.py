@@ -26,6 +26,7 @@ from yggdras.data.brain import notefile as nf
 from yggdras.data.brain.ops import CHANGING, OpError, build_change, needs_confirm
 from yggdras.data.brain.pending import Store
 from yggdras.data.brain.write_path import Outcome, WritePath
+from yggdras.data.graph import structural as st
 from yggdras.processing.lia.lia import CACHE, with_cache_tail
 from yggdras.processing.lia.library import Library
 from yggdras.processing.lia.models import ModelClient
@@ -34,6 +35,7 @@ MAX_TURNS = 8
 MAX_FIXES = 2  # checker failures Lia may fix before she asks instead
 RUNAWAY_USD = 0.5
 DIGITS = re.compile(r"\d[\d.,:/-]*")
+YEAR = re.compile(r"\b(?:19|20)\d\d\b")  # a validity range must use years Manoj gave
 
 RULES = """You are Lia, the librarian of Manoj's second brain. Manoj asks you to change his
 notes; you plan the change with your tools, and code writes it.
@@ -45,9 +47,11 @@ How to work:
   Manoj's own terms; never add a date or figure he didn't give. Code adds the source.
 - New notes: pick the type and area by the taxonomy and node template above. The description
   is one line, at most 15 words, no dates or figures. Give every alias he might search with.
-  Link the note to existing notes only where his words support it, with verbs from the fixed
-  list. Set sensitive when the taxonomy's rule says so (health, money, legal, private
-  relationships); if you are unsure, ask.
+  A new note always gets at least one link: to every existing note his words name (a mission,
+  a person, a project), only where his words support it. Set sensitive when the taxonomy's
+  rule says so (health, money, legal, private relationships); if you are unsure, ask.
+- Links use only the fixed verbs below, never any other wording, even if older notes use other
+  verbs. Pick the one that fits; when none fits exactly, use related_to.
 - "update", "it changed", "now it's …" → mode until. "correct", "that was wrong", "it was
   never …" → mode wrong. If you can't tell which, ask.
 - Removing and archiving never delete: old facts go to History, archived notes to the archive.
@@ -57,6 +61,17 @@ How to work:
   asks for in his own words.
 - When the plan is complete, reply with one short line to Manoj (no tools). Code then writes it,
   or shows him a preview to confirm."""
+
+
+def verb_list() -> str:
+    """The fixed link verbs (D31, A5), written in the left column; the map adds the right."""
+    rows = "\n".join(
+        f"- {verb} (seen from the other note: {back})"
+        for verb, back in st.VERBS.items()
+        if verb not in st.HUB_VERBS
+    )
+    return f"<link-verbs>\nThe only verbs a link may use:\n{rows}\n</link-verbs>"
+
 
 _STR = {"type": "string"}
 TOOLS = [
@@ -267,7 +282,7 @@ class WriteSide:
         self.system = [
             {
                 "type": "text",
-                "text": f"{RULES}\n\n{library.manual().strip()}",
+                "text": f"{RULES}\n\n{verb_list()}\n\n{library.manual().strip()}",
                 "cache_control": CACHE,
             },
             {
@@ -346,8 +361,28 @@ class WriteSide:
                 )
         return None
 
+    @staticmethod
+    def _own_dates(args: dict, said: str) -> dict:
+        """A validity range is kept only if its figures are in Manoj's words (request or
+        context): Lia never adds a date he didn't give."""
+        given = set(YEAR.findall(said))
+
+        def ok(valid: str) -> bool:
+            years = YEAR.findall(valid or "")
+            return bool(years) and all(y in given for y in years)
+
+        args = dict(args)
+        if args.get("valid") and not ok(args["valid"]):
+            args.pop("valid")
+        if args.get("facts"):
+            args["facts"] = [
+                {k: v for k, v in f.items() if k != "valid" or ok(v)} for f in args["facts"]
+            ]
+        return args
+
     def _plan_step(self, name: str, args: dict, state: dict) -> str:
         try:
+            args = self._own_dates(args, state.get("said", ""))
             op = self._op(name, args)
             stop = self._stops(op)
             if stop:
@@ -417,7 +452,15 @@ class WriteSide:
 
     def tell(self, request: str, context: str = "", app: str = "chat") -> Card:
         start = time.perf_counter()
-        state = {"ops": [], "steps": [], "calls": [], "searches": 0, "question": "", "fixes": 0}
+        state = {
+            "ops": [],
+            "steps": [],
+            "calls": [],
+            "searches": 0,
+            "question": "",
+            "fixes": 0,
+            "said": f"{request}\n{context}",
+        }
         content = []
         if context.strip():
             content.append(
@@ -562,9 +605,14 @@ class WriteSide:
         )
 
     def _links(self, slugs: list[str]) -> str:
+        from yggdras.data.maps.notes import load_notes
+
+        # The notes as written now (a new note has its name only after the write).
+        shelves = None if self.wp.flat else st.mapped_shelves()
+        current = load_notes(self.wp.root, shelves)
         names = []
         for s in slugs:
-            note = self.library.notes.get(s)
+            note = current.get(s) or self.library.notes.get(s)
             name = note.name if note else s
             names.append(
                 f"[{name}]({self.note_url.format(slug=s)})" if self.note_url else f"{name} ({s})"
