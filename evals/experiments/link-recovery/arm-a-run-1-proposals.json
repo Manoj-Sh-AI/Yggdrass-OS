@@ -1,0 +1,638 @@
+{
+  "arm": "A",
+  "run": "run-1",
+  "seconds": 1.11,
+  "cost_usd": 0.0,
+  "proposals": [
+    {
+      "from": "apollo-1",
+      "to": "john-f-kennedy",
+      "reason": "- [stated] Happened at Launch Complex 34 at Cape Kennedy (src: NASA history, 2026-10-24)",
+      "line": 15
+    },
+    {
+      "from": "apollo-1",
+      "to": "command-service-module",
+      "reason": "- [stated] Led to a command module redesign that included a quick-opening hatch (src: NASA history, 2026-10-24)",
+      "line": 16
+    },
+    {
+      "from": "apollo-11",
+      "to": "john-f-kennedy",
+      "reason": "- [stated] Launched 1969-07-16 from Kennedy Space Center Launch Complex 39A (src: NASA Apollo 11 mission page, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "apollo-11",
+      "to": "lunar-module",
+      "reason": "- [stated] Lunar module Eagle landed on 1969-07-20 in the Sea of Tranquility (src: NASA Apollo 11 mission page, 2026-10-24)",
+      "line": 15
+    },
+    {
+      "from": "apollo-11",
+      "to": "command-service-module",
+      "reason": "- [stated] Command module was Columbia and lunar module was Eagle (src: NASA Apollo 11 mission page, 2026-10-24)",
+      "line": 17
+    },
+    {
+      "from": "apollo-11",
+      "to": "lunar-module",
+      "reason": "- [stated] Command module was Columbia and lunar module was Eagle (src: NASA Apollo 11 mission page, 2026-10-24)",
+      "line": 17
+    },
+    {
+      "from": "apollo-11-mission-report",
+      "to": "nasa",
+      "reason": "- [stated] Prepared by the Mission Evaluation Team at the NASA Manned Spacecraft Center, dated November 1969 (src: Apollo 11 Mission Report cover, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "apollo-11-mission-report",
+      "to": "nasa",
+      "reason": "- [stated] Report numbers MSC-00171 and NASA-TM-X-62633 (src: NTRS record 19700008096, 2026-10-24)",
+      "line": 15
+    },
+    {
+      "from": "apollo-13",
+      "to": "mission-control-houston",
+      "reason": "- [stated] Mission goal became a safe return to Earth (was a lunar landing at Fra Mauro, changed 1970-04-13 by Mission Control abort decision) (src: NASA Apollo 13 mission page, 2026-10-24)",
+      "line": 15
+    },
+    {
+      "from": "apollo-13",
+      "to": "command-service-module",
+      "reason": "- [stated] Command module pilot is Jack Swigert (was Ken Mattingly, changed 1970-04-10 by KSC management meeting) (src: NASA history Apollo 13 measles article, 2026-10-24)",
+      "line": 16
+    },
+    {
+      "from": "apollo-13",
+      "to": "jack-swigert",
+      "reason": "- [stated] Command module pilot is Jack Swigert (was Ken Mattingly, changed 1970-04-10 by KSC management meeting) (src: NASA history Apollo 13 measles article, 2026-10-24)",
+      "line": 16
+    },
+    {
+      "from": "apollo-13",
+      "to": "ken-mattingly",
+      "reason": "- [stated] Command module pilot is Jack Swigert (was Ken Mattingly, changed 1970-04-10 by KSC management meeting) (src: NASA history Apollo 13 measles article, 2026-10-24)",
+      "line": 16
+    },
+    {
+      "from": "apollo-13",
+      "to": "lunar-module",
+      "reason": "- [stated] Crew used the lunar module Aquarius as a lifeboat and splashed down on 1970-04-17 (src: NASA Apollo 13 mission page, 2026-10-24)",
+      "line": 17
+    },
+    {
+      "from": "apollo-13",
+      "to": "apollo-program",
+      "reason": "- [stated] The Fra Mauro landing site was later reached by Apollo 14 in February 1971 (src: NASA history, 2026-10-24)",
+      "line": 18
+    },
+    {
+      "from": "apollo-13",
+      "to": "rubella-crew-swap",
+      "reason": "- [derived] The crew swap and the explosion are unrelated: the swap was decided before launch (src: agent, 2026-10-24)",
+      "line": 19
+    },
+    {
+      "from": "apollo-13-measles-article",
+      "to": "apollo-13",
+      "reason": "- [stated] Published by NASA history at nasa.gov/history/50-years-ago-apollo-13-and-german-measles (src: self, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "apollo-13-measles-article",
+      "to": "rubella-crew-swap",
+      "reason": "- [stated] Published by NASA history at nasa.gov/history/50-years-ago-apollo-13-and-german-measles (src: self, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "apollo-13-measles-article",
+      "to": "nasa",
+      "reason": "- [stated] Published by NASA history at nasa.gov/history/50-years-ago-apollo-13-and-german-measles (src: self, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "apollo-13-review-board",
+      "to": "edgar-cortright",
+      "reason": "- [stated] Chaired by Edgar Cortright (src: NASA history, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "apollo-13-review-board",
+      "to": "oxygen-tank-2",
+      "reason": "- [stated] Traced the explosion to an electrically started fire in oxygen tank No. 2 (src: Apollo 13 Review Board report, 2026-10-24)",
+      "line": 15
+    },
+    {
+      "from": "apollo-16",
+      "to": "charlie-duke",
+      "reason": "- [stated] Crew was John Young, Ken Mattingly and Charlie Duke (src: NASA history, 2026-10-24)",
+      "line": 16
+    },
+    {
+      "from": "apollo-16",
+      "to": "john-young",
+      "reason": "- [stated] Crew was John Young, Ken Mattingly and Charlie Duke (src: NASA history, 2026-10-24)",
+      "line": 16
+    },
+    {
+      "from": "apollo-16",
+      "to": "ken-mattingly",
+      "reason": "- [stated] Crew was John Young, Ken Mattingly and Charlie Duke (src: NASA history, 2026-10-24)",
+      "line": 16
+    },
+    {
+      "from": "apollo-8",
+      "to": "jim-lovell",
+      "reason": "- [stated] Launched 1968-12-21 with Frank Borman, Jim Lovell and Bill Anders (src: NASA history, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "apollo-8",
+      "to": "saturn-v",
+      "reason": "- [stated] First crewed flight of the Saturn V (src: NASA history, 2026-10-24)",
+      "line": 16
+    },
+    {
+      "from": "apollo-guidance-computer",
+      "to": "mit-instrumentation-lab",
+      "reason": "- [stated] Designed at the MIT Instrumentation Laboratory (src: NASA history, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "apollo-guidance-computer",
+      "to": "command-service-module",
+      "reason": "- [stated] One unit flew in the command module and one in the lunar module (src: NASA history, 2026-10-24)",
+      "line": 15
+    },
+    {
+      "from": "apollo-guidance-computer",
+      "to": "lunar-module",
+      "reason": "- [stated] One unit flew in the command module and one in the lunar module (src: NASA history, 2026-10-24)",
+      "line": 15
+    },
+    {
+      "from": "apollo-guidance-computer",
+      "to": "apollo-11",
+      "reason": "- [stated] Raised five program alarms during the Apollo 11 powered descent (src: Apollo 11 Mission Report p.5-4, 2026-10-24)",
+      "line": 16
+    },
+    {
+      "from": "apollo-guidance-computer",
+      "to": "program-alarms-1201-1202",
+      "reason": "- [stated] Raised five program alarms during the Apollo 11 powered descent (src: Apollo 11 Mission Report p.5-4, 2026-10-24)",
+      "line": 16
+    },
+    {
+      "from": "apollo-program",
+      "to": "lunar-orbit-rendezvous",
+      "reason": "- [stated] Adopted lunar orbit rendezvous as its mission mode in 1962 (src: NASA history, 2026-10-24)",
+      "line": 17
+    },
+    {
+      "from": "beech-aircraft",
+      "to": "north-american-aviation",
+      "reason": "- [stated] Built the service module oxygen tanks under North American Aviation (src: Moonport SP-4204, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "beech-aircraft",
+      "to": "command-service-module",
+      "reason": "- [stated] Built the service module oxygen tanks under North American Aviation (src: Moonport SP-4204, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "buzz-aldrin",
+      "to": "apollo-11",
+      "reason": "- [stated] Lunar module pilot of Apollo 11 and the second person to walk on the Moon (src: NASA Apollo 11 mission page, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "buzz-aldrin",
+      "to": "lunar-module",
+      "reason": "- [stated] Lunar module pilot of Apollo 11 and the second person to walk on the Moon (src: NASA Apollo 11 mission page, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "charlie-duke",
+      "to": "apollo-13",
+      "reason": "- [stated] Backup lunar module pilot for Apollo 13 (src: NASA history Apollo 13 measles article, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "charlie-duke",
+      "to": "lunar-module",
+      "reason": "- [stated] Backup lunar module pilot for Apollo 13 (src: NASA history Apollo 13 measles article, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "charlie-duke",
+      "to": "apollo-13",
+      "reason": "- [stated] Caught German measles from a friend's 3-year-old son about three weeks before the Apollo 13 launch (src: NASA history Apollo 13 measles article, 2026-10-24)",
+      "line": 15
+    },
+    {
+      "from": "charlie-duke",
+      "to": "rubella-crew-swap",
+      "reason": "- [stated] Caught German measles from a friend's 3-year-old son about three weeks before the Apollo 13 launch (src: NASA history Apollo 13 measles article, 2026-10-24)",
+      "line": 15
+    },
+    {
+      "from": "charlie-duke",
+      "to": "apollo-11",
+      "reason": "- [stated] Was capsule communicator during the Apollo 11 landing (src: NASA Apollo 11 mission page, 2026-10-24)",
+      "line": 17
+    },
+    {
+      "from": "charlie-duke",
+      "to": "apollo-16",
+      "reason": "- [stated] Walked on the Moon as Apollo 16 lunar module pilot (src: NASA biography, 2026-10-24)",
+      "line": 18
+    },
+    {
+      "from": "charlie-duke",
+      "to": "lunar-module",
+      "reason": "- [stated] Walked on the Moon as Apollo 16 lunar module pilot (src: NASA biography, 2026-10-24)",
+      "line": 18
+    },
+    {
+      "from": "command-service-module",
+      "to": "north-american-aviation",
+      "reason": "- [stated] Built by North American Aviation (src: NASA history, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "command-service-module",
+      "to": "apollo-program",
+      "reason": "- [stated] Apollo 11's command module was Columbia (src: NASA Apollo 11 mission page, 2026-10-24)",
+      "line": 15
+    },
+    {
+      "from": "command-service-module",
+      "to": "apollo-program",
+      "reason": "- [stated] Apollo 13's command module was Odyssey (src: NASA Apollo 13 mission page, 2026-10-24)",
+      "line": 16
+    },
+    {
+      "from": "edgar-cortright",
+      "to": "apollo-13-review-board",
+      "reason": "- [stated] Chaired the Apollo 13 Review Board in 1970 (src: NASA history, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "edgar-cortright",
+      "to": "nasa",
+      "reason": "- [stated] Was director of NASA Langley Research Center at the time (src: NASA history, 2026-10-24)",
+      "line": 15
+    },
+    {
+      "from": "fred-haise",
+      "to": "apollo-13",
+      "reason": "- [stated] Lunar module pilot of Apollo 13 (src: NASA Apollo 13 mission page, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "fred-haise",
+      "to": "lunar-module",
+      "reason": "- [stated] Lunar module pilot of Apollo 13 (src: NASA Apollo 13 mission page, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "fred-haise",
+      "to": "rubella-crew-swap",
+      "reason": "- [stated] Had rubella immunity, probably from childhood exposure (src: NASA history Apollo 13 measles article, 2026-10-24)",
+      "line": 15
+    },
+    {
+      "from": "free-return-trajectory",
+      "to": "apollo-13",
+      "reason": "- [stated] Apollo 13 regained it with a lunar module descent engine burn after the explosion (src: NASA Apollo 13 mission page, 2026-10-24)",
+      "line": 15
+    },
+    {
+      "from": "free-return-trajectory",
+      "to": "lunar-module",
+      "reason": "- [stated] Apollo 13 regained it with a lunar module descent engine burn after the explosion (src: NASA Apollo 13 mission page, 2026-10-24)",
+      "line": 15
+    },
+    {
+      "from": "gene-kranz",
+      "to": "apollo-11",
+      "reason": "- [stated] Flight director for the Apollo 11 lunar landing (src: NASA history, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "gene-kranz",
+      "to": "apollo-program",
+      "reason": "- [stated] His team was on console when Apollo 13's oxygen tank failed (src: NASA history, 2026-10-24)",
+      "line": 15
+    },
+    {
+      "from": "grumman",
+      "to": "lunar-module",
+      "reason": "- [stated] Built the Apollo lunar module (src: NASA history, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "grumman",
+      "to": "apollo-program",
+      "reason": "- [stated] Built the Apollo lunar module (src: NASA history, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "jack-swigert",
+      "to": "apollo-13",
+      "reason": "- [stated] Apollo 13 role is prime command module pilot (was backup command module pilot, changed 1970-04-10 by KSC management meeting) (src: NASA history Apollo 13 measles article, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "jack-swigert",
+      "to": "command-service-module",
+      "reason": "- [stated] Apollo 13 role is prime command module pilot (was backup command module pilot, changed 1970-04-10 by KSC management meeting) (src: NASA history Apollo 13 measles article, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "jack-swigert",
+      "to": "rubella-crew-swap",
+      "reason": "- [stated] Was immune to rubella, which made him eligible to fly (src: NASA history Apollo 13 measles article, 2026-10-24)",
+      "line": 15
+    },
+    {
+      "from": "jim-lovell",
+      "to": "apollo-13",
+      "reason": "- [stated] Commander of Apollo 13 (src: NASA Apollo 13 mission page, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "jim-lovell",
+      "to": "apollo-8",
+      "reason": "- [stated] Flew Apollo 8 in December 1968, the first crewed lunar orbit (src: NASA biography, 2026-10-24)",
+      "line": 15
+    },
+    {
+      "from": "jim-lovell",
+      "to": "apollo-program",
+      "reason": "- [stated] Flew Gemini 7 and Gemini 12 before Apollo (src: NASA biography, 2026-10-24)",
+      "line": 16
+    },
+    {
+      "from": "jim-lovell",
+      "to": "rubella-crew-swap",
+      "reason": "- [stated] Had rubella immunity, so the 1970 measles exposure did not affect him (src: NASA history Apollo 13 measles article, 2026-10-24)",
+      "line": 17
+    },
+    {
+      "from": "john-young",
+      "to": "apollo-13",
+      "reason": "- [stated] Backup commander for Apollo 13 and immune to rubella (src: NASA history Apollo 13 measles article, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "john-young",
+      "to": "rubella-crew-swap",
+      "reason": "- [stated] Backup commander for Apollo 13 and immune to rubella (src: NASA history Apollo 13 measles article, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "john-young",
+      "to": "apollo-16",
+      "reason": "- [stated] Commander of Apollo 16 (src: NASA biography, 2026-10-24)",
+      "line": 15
+    },
+    {
+      "from": "ken-mattingly",
+      "to": "apollo-13",
+      "reason": "- [stated] Assigned to Apollo 16 as command module pilot (was Apollo 13 command module pilot, changed 1970-04-10 by KSC management meeting) (src: NASA history Apollo 13 measles article, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "ken-mattingly",
+      "to": "apollo-16",
+      "reason": "- [stated] Assigned to Apollo 16 as command module pilot (was Apollo 13 command module pilot, changed 1970-04-10 by KSC management meeting) (src: NASA history Apollo 13 measles article, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "ken-mattingly",
+      "to": "command-service-module",
+      "reason": "- [stated] Assigned to Apollo 16 as command module pilot (was Apollo 13 command module pilot, changed 1970-04-10 by KSC management meeting) (src: NASA history Apollo 13 measles article, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "ken-mattingly",
+      "to": "rubella-crew-swap",
+      "reason": "- [stated] Was the only one of the five prime and backup crew members tested without rubella antibodies (src: NASA history Apollo 13 measles article, 2026-10-24)",
+      "line": 15
+    },
+    {
+      "from": "ken-mattingly",
+      "to": "rubella-crew-swap",
+      "reason": "- [stated] Never contracted German measles (src: NASA history Apollo 13 measles article, 2026-10-24)",
+      "line": 16
+    },
+    {
+      "from": "ken-mattingly",
+      "to": "apollo-13",
+      "reason": "- [stated] Helped work out the power procedures the Apollo 13 crew used to return (src: NASA history, 2026-10-24)",
+      "line": 17
+    },
+    {
+      "from": "ken-mattingly",
+      "to": "apollo-program",
+      "reason": "- [derived] Being removed kept him off the one Apollo mission that had to abort its landing (src: agent, 2026-10-24)",
+      "line": 18
+    },
+    {
+      "from": "lunar-module",
+      "to": "grumman",
+      "reason": "- [stated] Two-stage lander built by Grumman (src: NASA history, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "lunar-module",
+      "to": "apollo-program",
+      "reason": "- [stated] Apollo 11's lunar module was Eagle (src: NASA Apollo 11 mission page, 2026-10-24)",
+      "line": 15
+    },
+    {
+      "from": "lunar-module",
+      "to": "apollo-program",
+      "reason": "- [stated] Apollo 13's lunar module Aquarius kept the crew alive after the oxygen tank failed (src: NASA Apollo 13 mission page, 2026-10-24)",
+      "line": 16
+    },
+    {
+      "from": "lunar-module",
+      "to": "apollo-13",
+      "reason": "- [stated] Its descent engine burn put Apollo 13 back on a free-return path (src: NASA Apollo 13 mission page, 2026-10-24)",
+      "line": 17
+    },
+    {
+      "from": "lunar-module",
+      "to": "free-return-trajectory",
+      "reason": "- [stated] Its descent engine burn put Apollo 13 back on a free-return path (src: NASA Apollo 13 mission page, 2026-10-24)",
+      "line": 17
+    },
+    {
+      "from": "lunar-orbit-rendezvous",
+      "to": "apollo-program",
+      "reason": "- [stated] NASA announced it as the Apollo mission mode on 1962-07-11 (src: NASA history, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "lunar-orbit-rendezvous",
+      "to": "nasa",
+      "reason": "- [stated] NASA announced it as the Apollo mission mode on 1962-07-11 (src: NASA history, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "lunar-orbit-rendezvous",
+      "to": "lunar-module",
+      "reason": "- [stated] Required a separate lander, which became the lunar module (src: NASA history, 2026-10-24)",
+      "line": 16
+    },
+    {
+      "from": "margaret-hamilton",
+      "to": "mit-instrumentation-lab",
+      "reason": "- [stated] Led the software engineering division at the MIT Instrumentation Laboratory that developed Apollo on-board flight software (src: NASA history, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "margaret-hamilton",
+      "to": "apollo-program",
+      "reason": "- [stated] Led the software engineering division at the MIT Instrumentation Laboratory that developed Apollo on-board flight software (src: NASA history, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "margaret-hamilton",
+      "to": "apollo-11",
+      "reason": "- [derived] The software's priority scheduling is why the computer kept flying through the Apollo 11 alarms (src: agent, 2026-10-24)",
+      "line": 16
+    },
+    {
+      "from": "michael-collins",
+      "to": "apollo-11",
+      "reason": "- [stated] Command module pilot of Apollo 11 (src: NASA Apollo 11 mission page, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "michael-collins",
+      "to": "command-service-module",
+      "reason": "- [stated] Command module pilot of Apollo 11 (src: NASA Apollo 11 mission page, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "michael-collins",
+      "to": "command-service-module",
+      "reason": "- [stated] Stayed in lunar orbit aboard the command module Columbia during the landing (src: NASA Apollo 11 mission page, 2026-10-24)",
+      "line": 15
+    },
+    {
+      "from": "mission-control-houston",
+      "to": "apollo-program",
+      "reason": "- [stated] Controlled Apollo flights after launch (src: NASA history, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "mission-control-houston",
+      "to": "apollo-13",
+      "reason": "- [stated] Engineers there devised the Apollo 13 carbon dioxide scrubber adapter (src: NASA Apollo 13 mission page, 2026-10-24)",
+      "line": 16
+    },
+    {
+      "from": "mit-instrumentation-lab",
+      "to": "apollo-program",
+      "reason": "- [stated] Designed the Apollo guidance and navigation system (src: NASA history, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "nasa",
+      "to": "apollo-program",
+      "reason": "- [stated] Ran the Apollo program (src: NASA history, 2026-10-24)",
+      "line": 15
+    },
+    {
+      "from": "neil-armstrong",
+      "to": "apollo-11",
+      "reason": "- [stated] Commander of Apollo 11 (src: NASA Apollo 11 mission page, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "north-american-aviation",
+      "to": "command-service-module",
+      "reason": "- [stated] Prime contractor for the Apollo command and service module (src: NASA history, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "north-american-aviation",
+      "to": "apollo-program",
+      "reason": "- [stated] Prime contractor for the Apollo command and service module (src: NASA history, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "rubella-crew-swap",
+      "to": "charlie-duke",
+      "reason": "- [stated] Backup lunar module pilot Charlie Duke caught German measles and exposed the crews (src: NASA history Apollo 13 measles article, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "rubella-crew-swap",
+      "to": "lunar-module",
+      "reason": "- [stated] Backup lunar module pilot Charlie Duke caught German measles and exposed the crews (src: NASA history Apollo 13 measles article, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "rubella-crew-swap",
+      "to": "ken-mattingly",
+      "reason": "- [stated] Blood tests from the 1970-04-06 physicals showed Ken Mattingly had no rubella immunity (src: NASA history Apollo 13 measles article, 2026-10-24)",
+      "line": 15
+    },
+    {
+      "from": "rubella-crew-swap",
+      "to": "command-service-module",
+      "reason": "- [stated] Flight surgeon Charles Berry worried Mattingly could fall ill alone in the command module in lunar orbit (src: NASA history Apollo 13 measles article, 2026-10-24)",
+      "line": 16
+    },
+    {
+      "from": "rubella-crew-swap",
+      "to": "ken-mattingly",
+      "reason": "- [stated] Flight surgeon Charles Berry worried Mattingly could fall ill alone in the command module in lunar orbit (src: NASA history Apollo 13 measles article, 2026-10-24)",
+      "line": 16
+    },
+    {
+      "from": "saturn-v",
+      "to": "apollo-program",
+      "reason": "- [stated] First launched uncrewed on Apollo 4 on 1967-11-09 (src: NASA history, 2026-10-24)",
+      "line": 16
+    },
+    {
+      "from": "saturn-v",
+      "to": "apollo-8",
+      "reason": "- [stated] First flew a crew on Apollo 8 (src: NASA history, 2026-10-24)",
+      "line": 17
+    },
+    {
+      "from": "tranquility-base",
+      "to": "neil-armstrong",
+      "reason": "- [stated] Named by Neil Armstrong at touchdown: Houston, Tranquility Base here, the Eagle has landed (src: NASA Apollo 11 mission page, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "tranquility-base",
+      "to": "mission-control-houston",
+      "reason": "- [stated] Named by Neil Armstrong at touchdown: Houston, Tranquility Base here, the Eagle has landed (src: NASA Apollo 11 mission page, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "wernher-von-braun",
+      "to": "nasa",
+      "reason": "- [stated] First director of NASA Marshall Space Flight Center, from 1960 to 1970 (src: NASA biography, 2026-10-24)",
+      "line": 14
+    },
+    {
+      "from": "wernher-von-braun",
+      "to": "saturn-v",
+      "reason": "- [stated] Led the team that developed the Saturn V (src: NASA biography, 2026-10-24)",
+      "line": 15
+    }
+  ]
+}

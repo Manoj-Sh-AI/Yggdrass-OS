@@ -1,0 +1,115 @@
+{
+  "arm": "C",
+  "run": "run-2",
+  "model": "claude-sonnet-5-5",
+  "stop_reason": "end_turn",
+  "seconds": 22.2,
+  "tokens": {
+    "input": 10759,
+    "output": 3614
+  },
+  "cost_usd": 0.0865,
+  "dropped": [],
+  "proposals": [
+    {
+      "from": "apollo-11",
+      "to": "lunar-module",
+      "reason": "Apollo 11 states 'Lunar module Eagle landed on 1969-07-20', and the lunar module note says 'Apollo 11's lunar module was Eagle'."
+    },
+    {
+      "from": "apollo-11",
+      "to": "command-service-module",
+      "reason": "Apollo 11 says 'Command module was Columbia', and the CSM note says 'Apollo 11's command module was Columbia'."
+    },
+    {
+      "from": "apollo-11",
+      "to": "neil-armstrong",
+      "reason": "Neil Armstrong's note states 'Commander of Apollo 11'."
+    },
+    {
+      "from": "apollo-11",
+      "to": "apollo-guidance-computer",
+      "reason": "The AGC note says it 'Raised five program alarms during the Apollo 11 powered descent'."
+    },
+    {
+      "from": "apollo-13",
+      "to": "command-service-module",
+      "reason": "The CSM note says 'Apollo 13's command module was Odyssey'."
+    },
+    {
+      "from": "apollo-13",
+      "to": "ken-mattingly",
+      "reason": "Apollo 13 states 'Command module pilot is Jack Swigert (was Ken Mattingly...)'."
+    },
+    {
+      "from": "apollo-13",
+      "to": "rubella-crew-swap",
+      "reason": "Apollo 13 notes 'The crew swap and the explosion are unrelated: the swap was decided before launch'."
+    },
+    {
+      "from": "apollo-13",
+      "to": "apollo-13-measles-article",
+      "reason": "Apollo 13's command module pilot change is sourced to 'NASA history Apollo 13 measles article', which covers the swap."
+    },
+    {
+      "from": "apollo-13-review-board",
+      "to": "apollo-13-review-board-report",
+      "reason": "The board's findings cite the 'Apollo 13 Review Board report', and the report note carries the same recommendation to remove electrical equipment from the oxygen tank."
+    },
+    {
+      "from": "beech-aircraft",
+      "to": "command-service-module",
+      "reason": "Beech 'Built the service module oxygen tanks', and the CSM's service module 'carried the oxygen tanks'."
+    },
+    {
+      "from": "north-american-aviation",
+      "to": "oxygen-tank-2",
+      "reason": "North American 'Revised the oxygen tank heater specification in 1965 to run at 65 volts', matching the tank note's 'heater specification was revised in 1965 to 65 volts but the switches were not changed'."
+    },
+    {
+      "from": "nasa",
+      "to": "lunar-orbit-rendezvous",
+      "reason": "The LOR note says 'NASA announced it as the Apollo mission mode on 1962-07-11'."
+    },
+    {
+      "from": "mission-control-houston",
+      "to": "tranquility-base",
+      "reason": "Tranquility Base was named in the call 'Houston, Tranquility Base here, the Eagle has landed', addressed to Mission Control."
+    },
+    {
+      "from": "charlie-duke",
+      "to": "apollo-13-measles-article",
+      "reason": "Duke's measles facts are sourced to the 'NASA history Apollo 13 measles article'."
+    },
+    {
+      "from": "fred-haise",
+      "to": "apollo-13-measles-article",
+      "reason": "Haise 'Had rubella immunity', sourced to the NASA Apollo 13 measles article."
+    },
+    {
+      "from": "jim-lovell",
+      "to": "apollo-13-measles-article",
+      "reason": "Lovell 'Had rubella immunity, so the 1970 measles exposure did not affect him', sourced to the measles article."
+    },
+    {
+      "from": "jack-swigert",
+      "to": "apollo-13-measles-article",
+      "reason": "Swigert 'Was immune to rubella, which made him eligible to fly', sourced to the measles article."
+    },
+    {
+      "from": "charlie-duke",
+      "to": "john-young",
+      "reason": "Duke 'Walked on the Moon as Apollo 16 lunar module pilot' and John Young was 'Commander of Apollo 16', so they flew the same mission."
+    },
+    {
+      "from": "nasa",
+      "to": "apollo-11-mission-report",
+      "reason": "The report was 'Prepared by the Mission Evaluation Team at the NASA Manned Spacecraft Center'."
+    },
+    {
+      "from": "gene-kranz",
+      "to": "oxygen-tank-2",
+      "reason": "Kranz's 'team was on console when Apollo 13's oxygen tank failed', and the tank note says it 'Exploded on 1970-04-13'."
+    }
+  ]
+}

@@ -79,6 +79,51 @@ Canonical project: [Graphify-Labs/graphify](https://github.com/Graphify-Labs/gra
    - **Folder (Manoj, 2026-10-25):** our structural output lives in `.map/` in the brain repo, beside `.graphify/`. Both are gitignored (D6).
    - **Next step, held until Manoj has seen the amended register:** build the structural pass, run it over the Apollo demo brain, and compare its edges against the hand-written links.
 
+## Link-recovery experiment (2026-10-25)
+
+Full method and data: `evals/experiments/link-recovery/README.md`, pre-registered and committed before any run. 20 of the Apollo brain's 81 linked pairs were deleted from a copy (fixed seed, stratified, both leaves included), and Graphify discovery was run twice on the identical copy.
+
+| | Run 1 | Run 2 |
+|---|---|---|
+| **Recovered (of 20)** | **9** | **7** (6 in both runs; 4 flip between runs; 10 never) |
+| Plausible (never in the brain) | 0 | 1: `john-young` cites `apollo-13-measles-article`, a real source link |
+| Wrong | 0 | 0 |
+| Pairs proposed (overlap between runs) | 68 | 69 (65 shared, overlap 0.90) |
+| Raw output | 43 nodes, 71 edges | 72 nodes, 91 edges |
+| Time / cost | 182 s / ~$0.30 | 265 s / ~$0.35 |
+
+- **Reasons:** none. Proposals carry only generic labels (`references`, `conceptually_related_to`, `cites`) and a confidence tag, with no per-link reason for review.
+- **What "discovery" did:** it recovered connections already stated in fact lines, and re-found 59–61 of the 61 links still written. It proposed almost nothing new: 0 and 1 new pairs.
+- **Misses:** 10 of the 20 deleted pairs were never recovered, including one stated plainly in the text (`apollo-13`–`ken-mattingly`) and the one hub–hub pair.
+
+The register and plan are unchanged, pending Manoj's ruling on the kill criterion.
+
+### Follow-up: three arms on the same copy (2026-10-25)
+
+Pre-registered and committed before any arm ran. Same copy, answer key and 20 pairs; each arm ran twice. Details: `evals/experiments/link-recovery/README.md`.
+
+| Arm | Recovered of 20 (run 1 / 2) | Noise (pair overlap, flips) | Plausible / wrong per run | Reasons | Cost per run | Time per run |
+|---|---|---|---|---|---|---|
+| Original Graphify | 9 / 7 | 0.90, 4 flips | 0/0, 1/0 | No | ~$0.30–0.35 | 182–265 s |
+| **A, free baseline** (name scan of fact lines, no model) | **11 / 11** | **1.00, 0 flips** | **28 / 6** | **Yes** | **$0** | **~1 s** |
+| B, Graphify + roster, forced one batch | 9 / 6 | 0.93, 3 flips | 2/0, 0/0 | No | ~$0.28–0.29 | 183–229 s |
+| C, cross-batch pass alone | 5 / 5 | 0.90, 0 flips | 13/0, 15/0 | Yes | ~$0.08–0.09 | 22–25 s |
+| Original run 2 + C | 12 / 12 | 0.98, 0 flips | 14/0, 16/0 | C's only | ~$0.44 | ~290 s |
+
+- **Issues at the pinned 0.9.95:**
+  - #65 still applies; it was closed with guidance only, and there is still no cross-batch pass.
+  - #3947 and #4547 are open.
+  - #3094 is fixed.
+- **Arm B was reachable without editing Graphify:** a roster file in a copy of the corpus, plus Graphify's public `GRAPHIFY_MAX_OUTPUT_TOKENS` setting so the batch never split. There is no prompt or instruction option.
+- **Straight call: A matches or beats both B and C.**
+  - A beats B outright, and beats C alone (11 vs 5).
+  - Graphify plus C edges A by one pair (12 vs 11), at about $0.44 and 290 s a run against zero.
+  - A is identical run to run and gives every proposal its sentence.
+  - A's 6 wrong proposals are all spurious name matches ("Cape Kennedy", and "Apollo 11's" read as "Apollo"), each obvious from its reason line.
+- **Coverage:** across all arms, 15 of 20 pairs were recovered at least once. Model arms alone found 4, A alone found 2, and 5 were found by nothing. For those 5, neither note's fact text names the other.
+
+Register and plan unchanged. Ruling is Manoj's.
+
 ## Known gaps
 
 - **Alias resolution has no real-corpus coverage yet (2026-10-25).** Structural-pass criterion 4 is covered by unit tests only (`[[Mattingly]]` resolving to `ken-mattingly`). All 143 Apollo links resolved by slug, because none in that corpus are written as an alias. The Apollo brain is deliberately **not** edited to add alias links, since that would write the test's answer into the corpus. Real coverage comes when Manoj's own brain is in, since he writes links by alias.

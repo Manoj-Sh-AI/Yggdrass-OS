@@ -1,0 +1,11 @@
+[graphify extract] --force: full re-scan, semantic cache reads skipped
+[graphify extract] scanning evals\experiments\link-recovery\arm-b-corpus
+[graphify extract] found 0 code, 44 docs, 0 papers, 0 images
+[graphify extract] semantic extraction on 44 files via claude...
+[graphify extract] chunk 1/1 done
+[graphify] WARNING: 2/44 dispatched file(s) produced no nodes and are absent from the graph: _roster.md, index.md. The model returned a response but omitted them; a re-run will retry them.
+[graphify extract] semantic extraction is incomplete: 2 dispatched file(s) produced no nodes and 0 came back truncated or hollow. None of this run's chunks came back truncated — the model returned complete, well-formed responses that simply did not address every file. Retrying with the same --token-budget will likely omit the same files again; try a smaller --token-budget to split the corpus into more, smaller chunks. The shrink guard stays armed for this write; pass --allow-partial to overwrite a larger existing graph anyway.
+[graphify extract] wrote evals\experiments\link-recovery\arm-b-run-2\graphify-out\graph.json: 42 nodes, 67 edges, 7 communities
+[graphify extract] wrote evals\experiments\link-recovery\arm-b-run-2\graphify-out\.graphify_analysis.json
+[graphify extract] tokens: 25,556 in / 14,192 out, est. cost (~claude): $0.2895
+[graphify extract] next: run `graphify cluster-only evals\experiments\link-recovery\arm-b-run-2` to generate GRAPH_REPORT.md and name communities

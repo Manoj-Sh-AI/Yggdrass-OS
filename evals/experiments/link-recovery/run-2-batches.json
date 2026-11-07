@@ -1,0 +1,52 @@
+{
+  "note": "run 2 batches; paths relative to brain-stripped/",
+  "batches": [
+    [
+      "index.md",
+      "areas/apollo-1.md",
+      "areas/apollo-11.md",
+      "areas/apollo-13-review-board.md",
+      "areas/apollo-13.md",
+      "areas/apollo-16.md",
+      "areas/apollo-8.md",
+      "areas/apollo-program.md",
+      "areas/beech-aircraft.md",
+      "areas/grumman.md",
+      "areas/mission-control-houston.md",
+      "areas/mit-instrumentation-lab.md",
+      "areas/nasa.md",
+      "areas/north-american-aviation.md",
+      "people/buzz-aldrin.md",
+      "people/charlie-duke.md",
+      "people/edgar-cortright.md",
+      "people/fred-haise.md",
+      "people/gene-kranz.md",
+      "people/jack-swigert.md",
+      "people/jim-lovell.md"
+    ],
+    [
+      "people/john-f-kennedy.md",
+      "people/john-young.md",
+      "people/ken-mattingly.md",
+      "people/margaret-hamilton.md",
+      "people/michael-collins.md",
+      "people/neil-armstrong.md",
+      "people/wernher-von-braun.md",
+      "sources/apollo-11-mission-report.md",
+      "sources/apollo-13-measles-article.md",
+      "sources/apollo-13-review-board-report.md",
+      "sources/apollo-11-mission-report/apollo-11-mission-report-ch-05.md",
+      "topics/apollo-guidance-computer.md",
+      "topics/co2-scrubber-adapter.md",
+      "topics/command-service-module.md",
+      "topics/free-return-trajectory.md",
+      "topics/lunar-module.md",
+      "topics/lunar-orbit-rendezvous.md",
+      "topics/oxygen-tank-2.md",
+      "topics/program-alarms-1201-1202.md",
+      "topics/rubella-crew-swap.md",
+      "topics/saturn-v.md",
+      "topics/tranquility-base.md"
+    ]
+  ]
+}

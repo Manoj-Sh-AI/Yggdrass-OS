@@ -1,0 +1,1672 @@
+{
+  "original": {
+    "run_1": {
+      "proposal_pairs": 68,
+      "refound": 59,
+      "recovered": [
+        [
+          "apollo-11",
+          "neil-armstrong"
+        ],
+        [
+          "apollo-11-mission-report-ch-05",
+          "program-alarms-1201-1202"
+        ],
+        [
+          "apollo-13",
+          "rubella-crew-swap"
+        ],
+        [
+          "apollo-13-review-board",
+          "edgar-cortright"
+        ],
+        [
+          "apollo-program",
+          "john-f-kennedy"
+        ],
+        [
+          "beech-aircraft",
+          "north-american-aviation"
+        ],
+        [
+          "beech-aircraft",
+          "oxygen-tank-2"
+        ],
+        [
+          "grumman",
+          "lunar-module"
+        ],
+        [
+          "saturn-v",
+          "wernher-von-braun"
+        ]
+      ],
+      "new": []
+    },
+    "run_2": {
+      "proposal_pairs": 69,
+      "refound": 61,
+      "recovered": [
+        [
+          "apollo-11-mission-report-ch-05",
+          "program-alarms-1201-1202"
+        ],
+        [
+          "apollo-13-review-board",
+          "edgar-cortright"
+        ],
+        [
+          "beech-aircraft",
+          "north-american-aviation"
+        ],
+        [
+          "beech-aircraft",
+          "oxygen-tank-2"
+        ],
+        [
+          "grumman",
+          "lunar-module"
+        ],
+        [
+          "neil-armstrong",
+          "tranquility-base"
+        ],
+        [
+          "saturn-v",
+          "wernher-von-braun"
+        ]
+      ],
+      "new": [
+        {
+          "pair": [
+            "apollo-13-measles-article",
+            "john-young"
+          ],
+          "evidence": [
+            "cites"
+          ]
+        }
+      ]
+    },
+    "noise": {
+      "pairs_both": 65,
+      "pairs_one_run_only": 7,
+      "overlap": 0.903,
+      "recovered_both": 6,
+      "recovered_flips": [
+        [
+          "apollo-11",
+          "neil-armstrong"
+        ],
+        [
+          "apollo-13",
+          "rubella-crew-swap"
+        ],
+        [
+          "apollo-program",
+          "john-f-kennedy"
+        ],
+        [
+          "neil-armstrong",
+          "tranquility-base"
+        ]
+      ]
+    }
+  },
+  "A": {
+    "run_1": {
+      "proposal_pairs": 79,
+      "refound": 34,
+      "recovered": [
+        [
+          "apollo-11",
+          "lunar-module"
+        ],
+        [
+          "apollo-11",
+          "neil-armstrong"
+        ],
+        [
+          "apollo-13",
+          "ken-mattingly"
+        ],
+        [
+          "apollo-13",
+          "rubella-crew-swap"
+        ],
+        [
+          "apollo-13-review-board",
+          "edgar-cortright"
+        ],
+        [
+          "beech-aircraft",
+          "north-american-aviation"
+        ],
+        [
+          "command-service-module",
+          "michael-collins"
+        ],
+        [
+          "fred-haise",
+          "lunar-module"
+        ],
+        [
+          "grumman",
+          "lunar-module"
+        ],
+        [
+          "neil-armstrong",
+          "tranquility-base"
+        ],
+        [
+          "saturn-v",
+          "wernher-von-braun"
+        ]
+      ],
+      "new": [
+        {
+          "pair": [
+            "apollo-1",
+            "john-f-kennedy"
+          ],
+          "evidence": [
+            "- [stated] Happened at Launch Complex 34 at Cape Kennedy (src: NASA history, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-11",
+            "apollo-guidance-computer"
+          ],
+          "evidence": [
+            "- [stated] Raised five program alarms during the Apollo 11 powered descent (src: Apollo 11 Mission Report p.5-4, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-11",
+            "command-service-module"
+          ],
+          "evidence": [
+            "- [stated] Command module was Columbia and lunar module was Eagle (src: NASA Apollo 11 mission page, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-11",
+            "john-f-kennedy"
+          ],
+          "evidence": [
+            "- [stated] Launched 1969-07-16 from Kennedy Space Center Launch Complex 39A (src: NASA Apollo 11 mission page, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-11",
+            "margaret-hamilton"
+          ],
+          "evidence": [
+            "- [derived] The software's priority scheduling is why the computer kept flying through the Apollo 11 alarms (src: agent, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-11-mission-report",
+            "nasa"
+          ],
+          "evidence": [
+            "- [stated] Prepared by the Mission Evaluation Team at the NASA Manned Spacecraft Center, dated November 1969 (src: Apollo 11 Mission Report cover, 2026-10-24)",
+            "- [stated] Report numbers MSC-00171 and NASA-TM-X-62633 (src: NTRS record 19700008096, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-13",
+            "apollo-13-measles-article"
+          ],
+          "evidence": [
+            "- [stated] Published by NASA history at nasa.gov/history/50-years-ago-apollo-13-and-german-measles (src: self, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-13",
+            "command-service-module"
+          ],
+          "evidence": [
+            "- [stated] Command module pilot is Jack Swigert (was Ken Mattingly, changed 1970-04-10 by KSC management meeting) (src: NASA history Apollo 13 measles article, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-13-measles-article",
+            "nasa"
+          ],
+          "evidence": [
+            "- [stated] Published by NASA history at nasa.gov/history/50-years-ago-apollo-13-and-german-measles (src: self, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-guidance-computer",
+            "command-service-module"
+          ],
+          "evidence": [
+            "- [stated] One unit flew in the command module and one in the lunar module (src: NASA history, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-guidance-computer",
+            "lunar-module"
+          ],
+          "evidence": [
+            "- [stated] One unit flew in the command module and one in the lunar module (src: NASA history, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-program",
+            "command-service-module"
+          ],
+          "evidence": [
+            "- [stated] Apollo 11's command module was Columbia (src: NASA Apollo 11 mission page, 2026-10-24)",
+            "- [stated] Apollo 13's command module was Odyssey (src: NASA Apollo 13 mission page, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-program",
+            "gene-kranz"
+          ],
+          "evidence": [
+            "- [stated] His team was on console when Apollo 13's oxygen tank failed (src: NASA history, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-program",
+            "grumman"
+          ],
+          "evidence": [
+            "- [stated] Built the Apollo lunar module (src: NASA history, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-program",
+            "jim-lovell"
+          ],
+          "evidence": [
+            "- [stated] Flew Gemini 7 and Gemini 12 before Apollo (src: NASA biography, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-program",
+            "ken-mattingly"
+          ],
+          "evidence": [
+            "- [derived] Being removed kept him off the one Apollo mission that had to abort its landing (src: agent, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-program",
+            "lunar-module"
+          ],
+          "evidence": [
+            "- [stated] Apollo 11's lunar module was Eagle (src: NASA Apollo 11 mission page, 2026-10-24)",
+            "- [stated] Apollo 13's lunar module Aquarius kept the crew alive after the oxygen tank failed (src: NASA Apollo 13 mission page, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-program",
+            "margaret-hamilton"
+          ],
+          "evidence": [
+            "- [stated] Led the software engineering division at the MIT Instrumentation Laboratory that developed Apollo on-board flight software (src: NASA history, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-program",
+            "mission-control-houston"
+          ],
+          "evidence": [
+            "- [stated] Controlled Apollo flights after launch (src: NASA history, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-program",
+            "mit-instrumentation-lab"
+          ],
+          "evidence": [
+            "- [stated] Designed the Apollo guidance and navigation system (src: NASA history, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-program",
+            "north-american-aviation"
+          ],
+          "evidence": [
+            "- [stated] Prime contractor for the Apollo command and service module (src: NASA history, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "beech-aircraft",
+            "command-service-module"
+          ],
+          "evidence": [
+            "- [stated] Built the service module oxygen tanks under North American Aviation (src: Moonport SP-4204, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "buzz-aldrin",
+            "lunar-module"
+          ],
+          "evidence": [
+            "- [stated] Lunar module pilot of Apollo 11 and the second person to walk on the Moon (src: NASA Apollo 11 mission page, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "charlie-duke",
+            "lunar-module"
+          ],
+          "evidence": [
+            "- [stated] Backup lunar module pilot for Apollo 13 (src: NASA history Apollo 13 measles article, 2026-10-24)",
+            "- [stated] Walked on the Moon as Apollo 16 lunar module pilot (src: NASA biography, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "command-service-module",
+            "jack-swigert"
+          ],
+          "evidence": [
+            "- [stated] Apollo 13 role is prime command module pilot (was backup command module pilot, changed 1970-04-10 by KSC management meeting) (src: NASA history Apollo 13 measles article, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "command-service-module",
+            "ken-mattingly"
+          ],
+          "evidence": [
+            "- [stated] Assigned to Apollo 16 as command module pilot (was Apollo 13 command module pilot, changed 1970-04-10 by KSC management meeting) (src: NASA history Apollo 13 measles article, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "command-service-module",
+            "rubella-crew-swap"
+          ],
+          "evidence": [
+            "- [stated] Flight surgeon Charles Berry worried Mattingly could fall ill alone in the command module in lunar orbit (src: NASA history Apollo 13 measles article, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "edgar-cortright",
+            "nasa"
+          ],
+          "evidence": [
+            "- [stated] Was director of NASA Langley Research Center at the time (src: NASA history, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "fred-haise",
+            "rubella-crew-swap"
+          ],
+          "evidence": [
+            "- [stated] Had rubella immunity, probably from childhood exposure (src: NASA history Apollo 13 measles article, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "jim-lovell",
+            "rubella-crew-swap"
+          ],
+          "evidence": [
+            "- [stated] Had rubella immunity, so the 1970 measles exposure did not affect him (src: NASA history Apollo 13 measles article, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "john-young",
+            "rubella-crew-swap"
+          ],
+          "evidence": [
+            "- [stated] Backup commander for Apollo 13 and immune to rubella (src: NASA history Apollo 13 measles article, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "lunar-module",
+            "rubella-crew-swap"
+          ],
+          "evidence": [
+            "- [stated] Backup lunar module pilot Charlie Duke caught German measles and exposed the crews (src: NASA history Apollo 13 measles article, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "lunar-orbit-rendezvous",
+            "nasa"
+          ],
+          "evidence": [
+            "- [stated] NASA announced it as the Apollo mission mode on 1962-07-11 (src: NASA history, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "mission-control-houston",
+            "tranquility-base"
+          ],
+          "evidence": [
+            "- [stated] Named by Neil Armstrong at touchdown: Houston, Tranquility Base here, the Eagle has landed (src: NASA Apollo 11 mission page, 2026-10-24)"
+          ]
+        }
+      ]
+    },
+    "run_2": {
+      "proposal_pairs": 79,
+      "refound": 34,
+      "recovered": [
+        [
+          "apollo-11",
+          "lunar-module"
+        ],
+        [
+          "apollo-11",
+          "neil-armstrong"
+        ],
+        [
+          "apollo-13",
+          "ken-mattingly"
+        ],
+        [
+          "apollo-13",
+          "rubella-crew-swap"
+        ],
+        [
+          "apollo-13-review-board",
+          "edgar-cortright"
+        ],
+        [
+          "beech-aircraft",
+          "north-american-aviation"
+        ],
+        [
+          "command-service-module",
+          "michael-collins"
+        ],
+        [
+          "fred-haise",
+          "lunar-module"
+        ],
+        [
+          "grumman",
+          "lunar-module"
+        ],
+        [
+          "neil-armstrong",
+          "tranquility-base"
+        ],
+        [
+          "saturn-v",
+          "wernher-von-braun"
+        ]
+      ],
+      "new": [
+        {
+          "pair": [
+            "apollo-1",
+            "john-f-kennedy"
+          ],
+          "evidence": [
+            "- [stated] Happened at Launch Complex 34 at Cape Kennedy (src: NASA history, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-11",
+            "apollo-guidance-computer"
+          ],
+          "evidence": [
+            "- [stated] Raised five program alarms during the Apollo 11 powered descent (src: Apollo 11 Mission Report p.5-4, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-11",
+            "command-service-module"
+          ],
+          "evidence": [
+            "- [stated] Command module was Columbia and lunar module was Eagle (src: NASA Apollo 11 mission page, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-11",
+            "john-f-kennedy"
+          ],
+          "evidence": [
+            "- [stated] Launched 1969-07-16 from Kennedy Space Center Launch Complex 39A (src: NASA Apollo 11 mission page, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-11",
+            "margaret-hamilton"
+          ],
+          "evidence": [
+            "- [derived] The software's priority scheduling is why the computer kept flying through the Apollo 11 alarms (src: agent, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-11-mission-report",
+            "nasa"
+          ],
+          "evidence": [
+            "- [stated] Prepared by the Mission Evaluation Team at the NASA Manned Spacecraft Center, dated November 1969 (src: Apollo 11 Mission Report cover, 2026-10-24)",
+            "- [stated] Report numbers MSC-00171 and NASA-TM-X-62633 (src: NTRS record 19700008096, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-13",
+            "apollo-13-measles-article"
+          ],
+          "evidence": [
+            "- [stated] Published by NASA history at nasa.gov/history/50-years-ago-apollo-13-and-german-measles (src: self, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-13",
+            "command-service-module"
+          ],
+          "evidence": [
+            "- [stated] Command module pilot is Jack Swigert (was Ken Mattingly, changed 1970-04-10 by KSC management meeting) (src: NASA history Apollo 13 measles article, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-13-measles-article",
+            "nasa"
+          ],
+          "evidence": [
+            "- [stated] Published by NASA history at nasa.gov/history/50-years-ago-apollo-13-and-german-measles (src: self, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-guidance-computer",
+            "command-service-module"
+          ],
+          "evidence": [
+            "- [stated] One unit flew in the command module and one in the lunar module (src: NASA history, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-guidance-computer",
+            "lunar-module"
+          ],
+          "evidence": [
+            "- [stated] One unit flew in the command module and one in the lunar module (src: NASA history, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-program",
+            "command-service-module"
+          ],
+          "evidence": [
+            "- [stated] Apollo 11's command module was Columbia (src: NASA Apollo 11 mission page, 2026-10-24)",
+            "- [stated] Apollo 13's command module was Odyssey (src: NASA Apollo 13 mission page, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-program",
+            "gene-kranz"
+          ],
+          "evidence": [
+            "- [stated] His team was on console when Apollo 13's oxygen tank failed (src: NASA history, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-program",
+            "grumman"
+          ],
+          "evidence": [
+            "- [stated] Built the Apollo lunar module (src: NASA history, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-program",
+            "jim-lovell"
+          ],
+          "evidence": [
+            "- [stated] Flew Gemini 7 and Gemini 12 before Apollo (src: NASA biography, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-program",
+            "ken-mattingly"
+          ],
+          "evidence": [
+            "- [derived] Being removed kept him off the one Apollo mission that had to abort its landing (src: agent, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-program",
+            "lunar-module"
+          ],
+          "evidence": [
+            "- [stated] Apollo 11's lunar module was Eagle (src: NASA Apollo 11 mission page, 2026-10-24)",
+            "- [stated] Apollo 13's lunar module Aquarius kept the crew alive after the oxygen tank failed (src: NASA Apollo 13 mission page, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-program",
+            "margaret-hamilton"
+          ],
+          "evidence": [
+            "- [stated] Led the software engineering division at the MIT Instrumentation Laboratory that developed Apollo on-board flight software (src: NASA history, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-program",
+            "mission-control-houston"
+          ],
+          "evidence": [
+            "- [stated] Controlled Apollo flights after launch (src: NASA history, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-program",
+            "mit-instrumentation-lab"
+          ],
+          "evidence": [
+            "- [stated] Designed the Apollo guidance and navigation system (src: NASA history, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "apollo-program",
+            "north-american-aviation"
+          ],
+          "evidence": [
+            "- [stated] Prime contractor for the Apollo command and service module (src: NASA history, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "beech-aircraft",
+            "command-service-module"
+          ],
+          "evidence": [
+            "- [stated] Built the service module oxygen tanks under North American Aviation (src: Moonport SP-4204, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "buzz-aldrin",
+            "lunar-module"
+          ],
+          "evidence": [
+            "- [stated] Lunar module pilot of Apollo 11 and the second person to walk on the Moon (src: NASA Apollo 11 mission page, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "charlie-duke",
+            "lunar-module"
+          ],
+          "evidence": [
+            "- [stated] Backup lunar module pilot for Apollo 13 (src: NASA history Apollo 13 measles article, 2026-10-24)",
+            "- [stated] Walked on the Moon as Apollo 16 lunar module pilot (src: NASA biography, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "command-service-module",
+            "jack-swigert"
+          ],
+          "evidence": [
+            "- [stated] Apollo 13 role is prime command module pilot (was backup command module pilot, changed 1970-04-10 by KSC management meeting) (src: NASA history Apollo 13 measles article, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "command-service-module",
+            "ken-mattingly"
+          ],
+          "evidence": [
+            "- [stated] Assigned to Apollo 16 as command module pilot (was Apollo 13 command module pilot, changed 1970-04-10 by KSC management meeting) (src: NASA history Apollo 13 measles article, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "command-service-module",
+            "rubella-crew-swap"
+          ],
+          "evidence": [
+            "- [stated] Flight surgeon Charles Berry worried Mattingly could fall ill alone in the command module in lunar orbit (src: NASA history Apollo 13 measles article, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "edgar-cortright",
+            "nasa"
+          ],
+          "evidence": [
+            "- [stated] Was director of NASA Langley Research Center at the time (src: NASA history, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "fred-haise",
+            "rubella-crew-swap"
+          ],
+          "evidence": [
+            "- [stated] Had rubella immunity, probably from childhood exposure (src: NASA history Apollo 13 measles article, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "jim-lovell",
+            "rubella-crew-swap"
+          ],
+          "evidence": [
+            "- [stated] Had rubella immunity, so the 1970 measles exposure did not affect him (src: NASA history Apollo 13 measles article, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "john-young",
+            "rubella-crew-swap"
+          ],
+          "evidence": [
+            "- [stated] Backup commander for Apollo 13 and immune to rubella (src: NASA history Apollo 13 measles article, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "lunar-module",
+            "rubella-crew-swap"
+          ],
+          "evidence": [
+            "- [stated] Backup lunar module pilot Charlie Duke caught German measles and exposed the crews (src: NASA history Apollo 13 measles article, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "lunar-orbit-rendezvous",
+            "nasa"
+          ],
+          "evidence": [
+            "- [stated] NASA announced it as the Apollo mission mode on 1962-07-11 (src: NASA history, 2026-10-24)"
+          ]
+        },
+        {
+          "pair": [
+            "mission-control-houston",
+            "tranquility-base"
+          ],
+          "evidence": [
+            "- [stated] Named by Neil Armstrong at touchdown: Houston, Tranquility Base here, the Eagle has landed (src: NASA Apollo 11 mission page, 2026-10-24)"
+          ]
+        }
+      ]
+    },
+    "noise": {
+      "pairs_both": 79,
+      "pairs_one_run_only": 0,
+      "overlap": 1.0,
+      "recovered_both": 11,
+      "recovered_flips": []
+    }
+  },
+  "B": {
+    "run_1": {
+      "proposal_pairs": 72,
+      "refound": 61,
+      "recovered": [
+        [
+          "apollo-11",
+          "neil-armstrong"
+        ],
+        [
+          "apollo-11-mission-report-ch-05",
+          "program-alarms-1201-1202"
+        ],
+        [
+          "apollo-13",
+          "rubella-crew-swap"
+        ],
+        [
+          "apollo-13-review-board",
+          "edgar-cortright"
+        ],
+        [
+          "apollo-program",
+          "john-f-kennedy"
+        ],
+        [
+          "beech-aircraft",
+          "north-american-aviation"
+        ],
+        [
+          "beech-aircraft",
+          "oxygen-tank-2"
+        ],
+        [
+          "grumman",
+          "lunar-module"
+        ],
+        [
+          "saturn-v",
+          "wernher-von-braun"
+        ]
+      ],
+      "new": [
+        {
+          "pair": [
+            "apollo-11-mission-report",
+            "neil-armstrong"
+          ],
+          "evidence": [
+            "cites"
+          ]
+        },
+        {
+          "pair": [
+            "north-american-aviation",
+            "oxygen-tank-2"
+          ],
+          "evidence": [
+            "conceptually_related_to"
+          ]
+        }
+      ]
+    },
+    "run_2": {
+      "proposal_pairs": 67,
+      "refound": 61,
+      "recovered": [
+        [
+          "apollo-11",
+          "neil-armstrong"
+        ],
+        [
+          "apollo-13-review-board",
+          "edgar-cortright"
+        ],
+        [
+          "beech-aircraft",
+          "north-american-aviation"
+        ],
+        [
+          "beech-aircraft",
+          "oxygen-tank-2"
+        ],
+        [
+          "grumman",
+          "lunar-module"
+        ],
+        [
+          "saturn-v",
+          "wernher-von-braun"
+        ]
+      ],
+      "new": []
+    },
+    "noise": {
+      "pairs_both": 67,
+      "pairs_one_run_only": 5,
+      "overlap": 0.931,
+      "recovered_both": 6,
+      "recovered_flips": [
+        [
+          "apollo-11-mission-report-ch-05",
+          "program-alarms-1201-1202"
+        ],
+        [
+          "apollo-13",
+          "rubella-crew-swap"
+        ],
+        [
+          "apollo-program",
+          "john-f-kennedy"
+        ]
+      ]
+    }
+  },
+  "C": {
+    "run_1": {
+      "proposal_pairs": 18,
+      "refound": 0,
+      "recovered": [
+        [
+          "apollo-11",
+          "lunar-module"
+        ],
+        [
+          "apollo-11",
+          "neil-armstrong"
+        ],
+        [
+          "apollo-13",
+          "ken-mattingly"
+        ],
+        [
+          "apollo-13",
+          "rubella-crew-swap"
+        ],
+        [
+          "apollo-13-review-board",
+          "apollo-13-review-board-report"
+        ]
+      ],
+      "new": [
+        {
+          "pair": [
+            "apollo-11",
+            "apollo-guidance-computer"
+          ],
+          "evidence": [
+            "apollo-guidance-computer states it 'Raised five program alarms during the Apollo 11 powered descent'."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-11",
+            "command-service-module"
+          ],
+          "evidence": [
+            "apollo-11 states 'Command module was Columbia', and command-service-module states 'Apollo 11's command module was Columbia'."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-11-mission-report",
+            "nasa"
+          ],
+          "evidence": [
+            "apollo-11-mission-report was 'Prepared by the Mission Evaluation Team at the NASA Manned Spacecraft Center'."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-13",
+            "apollo-13-measles-article"
+          ],
+          "evidence": [
+            "apollo-13 cites 'NASA history Apollo 13 measles article' as the source for the command module pilot change."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-13",
+            "command-service-module"
+          ],
+          "evidence": [
+            "command-service-module states 'Apollo 13's command module was Odyssey'."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-13-measles-article",
+            "charlie-duke"
+          ],
+          "evidence": [
+            "charlie-duke's facts on catching German measles are sourced to 'NASA history Apollo 13 measles article'."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-13-measles-article",
+            "fred-haise"
+          ],
+          "evidence": [
+            "fred-haise states 'Had rubella immunity' citing the NASA history Apollo 13 measles article."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-13-measles-article",
+            "jack-swigert"
+          ],
+          "evidence": [
+            "jack-swigert states he 'Was immune to rubella, which made him eligible to fly' citing the measles article."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-13-measles-article",
+            "jim-lovell"
+          ],
+          "evidence": [
+            "jim-lovell states 'Had rubella immunity, so the 1970 measles exposure did not affect him' citing the measles article."
+          ]
+        },
+        {
+          "pair": [
+            "beech-aircraft",
+            "command-service-module"
+          ],
+          "evidence": [
+            "beech-aircraft 'Built the service module oxygen tanks', and command-service-module says its service module 'carried the oxygen tanks'."
+          ]
+        },
+        {
+          "pair": [
+            "lunar-orbit-rendezvous",
+            "nasa"
+          ],
+          "evidence": [
+            "lunar-orbit-rendezvous states 'NASA announced it as the Apollo mission mode on 1962-07-11'."
+          ]
+        },
+        {
+          "pair": [
+            "mission-control-houston",
+            "tranquility-base"
+          ],
+          "evidence": [
+            "tranquility-base quotes the call 'Houston, Tranquility Base here, the Eagle has landed', addressed to Mission Control."
+          ]
+        },
+        {
+          "pair": [
+            "north-american-aviation",
+            "oxygen-tank-2"
+          ],
+          "evidence": [
+            "north-american-aviation 'Revised the oxygen tank heater specification in 1965 to run at 65 volts', which matches oxygen-tank-2's 'heater specification was revised in 1965 to 65 volts but the switches were not changed'."
+          ]
+        }
+      ]
+    },
+    "run_2": {
+      "proposal_pairs": 20,
+      "refound": 0,
+      "recovered": [
+        [
+          "apollo-11",
+          "lunar-module"
+        ],
+        [
+          "apollo-11",
+          "neil-armstrong"
+        ],
+        [
+          "apollo-13",
+          "ken-mattingly"
+        ],
+        [
+          "apollo-13",
+          "rubella-crew-swap"
+        ],
+        [
+          "apollo-13-review-board",
+          "apollo-13-review-board-report"
+        ]
+      ],
+      "new": [
+        {
+          "pair": [
+            "apollo-11",
+            "apollo-guidance-computer"
+          ],
+          "evidence": [
+            "The AGC note says it 'Raised five program alarms during the Apollo 11 powered descent'."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-11",
+            "command-service-module"
+          ],
+          "evidence": [
+            "Apollo 11 says 'Command module was Columbia', and the CSM note says 'Apollo 11's command module was Columbia'."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-11-mission-report",
+            "nasa"
+          ],
+          "evidence": [
+            "The report was 'Prepared by the Mission Evaluation Team at the NASA Manned Spacecraft Center'."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-13",
+            "apollo-13-measles-article"
+          ],
+          "evidence": [
+            "Apollo 13's command module pilot change is sourced to 'NASA history Apollo 13 measles article', which covers the swap."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-13",
+            "command-service-module"
+          ],
+          "evidence": [
+            "The CSM note says 'Apollo 13's command module was Odyssey'."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-13-measles-article",
+            "charlie-duke"
+          ],
+          "evidence": [
+            "Duke's measles facts are sourced to the 'NASA history Apollo 13 measles article'."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-13-measles-article",
+            "fred-haise"
+          ],
+          "evidence": [
+            "Haise 'Had rubella immunity', sourced to the NASA Apollo 13 measles article."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-13-measles-article",
+            "jack-swigert"
+          ],
+          "evidence": [
+            "Swigert 'Was immune to rubella, which made him eligible to fly', sourced to the measles article."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-13-measles-article",
+            "jim-lovell"
+          ],
+          "evidence": [
+            "Lovell 'Had rubella immunity, so the 1970 measles exposure did not affect him', sourced to the measles article."
+          ]
+        },
+        {
+          "pair": [
+            "beech-aircraft",
+            "command-service-module"
+          ],
+          "evidence": [
+            "Beech 'Built the service module oxygen tanks', and the CSM's service module 'carried the oxygen tanks'."
+          ]
+        },
+        {
+          "pair": [
+            "charlie-duke",
+            "john-young"
+          ],
+          "evidence": [
+            "Duke 'Walked on the Moon as Apollo 16 lunar module pilot' and John Young was 'Commander of Apollo 16', so they flew the same mission."
+          ]
+        },
+        {
+          "pair": [
+            "gene-kranz",
+            "oxygen-tank-2"
+          ],
+          "evidence": [
+            "Kranz's 'team was on console when Apollo 13's oxygen tank failed', and the tank note says it 'Exploded on 1970-04-13'."
+          ]
+        },
+        {
+          "pair": [
+            "lunar-orbit-rendezvous",
+            "nasa"
+          ],
+          "evidence": [
+            "The LOR note says 'NASA announced it as the Apollo mission mode on 1962-07-11'."
+          ]
+        },
+        {
+          "pair": [
+            "mission-control-houston",
+            "tranquility-base"
+          ],
+          "evidence": [
+            "Tranquility Base was named in the call 'Houston, Tranquility Base here, the Eagle has landed', addressed to Mission Control."
+          ]
+        },
+        {
+          "pair": [
+            "north-american-aviation",
+            "oxygen-tank-2"
+          ],
+          "evidence": [
+            "North American 'Revised the oxygen tank heater specification in 1965 to run at 65 volts', matching the tank note's 'heater specification was revised in 1965 to 65 volts but the switches were not changed'."
+          ]
+        }
+      ]
+    },
+    "noise": {
+      "pairs_both": 18,
+      "pairs_one_run_only": 2,
+      "overlap": 0.9,
+      "recovered_both": 5,
+      "recovered_flips": []
+    }
+  },
+  "original_run_2_plus_C": {
+    "run_1": {
+      "proposal_pairs": 87,
+      "refound": 61,
+      "recovered": [
+        [
+          "apollo-11",
+          "lunar-module"
+        ],
+        [
+          "apollo-11",
+          "neil-armstrong"
+        ],
+        [
+          "apollo-11-mission-report-ch-05",
+          "program-alarms-1201-1202"
+        ],
+        [
+          "apollo-13",
+          "ken-mattingly"
+        ],
+        [
+          "apollo-13",
+          "rubella-crew-swap"
+        ],
+        [
+          "apollo-13-review-board",
+          "apollo-13-review-board-report"
+        ],
+        [
+          "apollo-13-review-board",
+          "edgar-cortright"
+        ],
+        [
+          "beech-aircraft",
+          "north-american-aviation"
+        ],
+        [
+          "beech-aircraft",
+          "oxygen-tank-2"
+        ],
+        [
+          "grumman",
+          "lunar-module"
+        ],
+        [
+          "neil-armstrong",
+          "tranquility-base"
+        ],
+        [
+          "saturn-v",
+          "wernher-von-braun"
+        ]
+      ],
+      "new": [
+        {
+          "pair": [
+            "apollo-11",
+            "apollo-guidance-computer"
+          ],
+          "evidence": [
+            "apollo-guidance-computer states it 'Raised five program alarms during the Apollo 11 powered descent'."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-11",
+            "command-service-module"
+          ],
+          "evidence": [
+            "apollo-11 states 'Command module was Columbia', and command-service-module states 'Apollo 11's command module was Columbia'."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-11-mission-report",
+            "nasa"
+          ],
+          "evidence": [
+            "apollo-11-mission-report was 'Prepared by the Mission Evaluation Team at the NASA Manned Spacecraft Center'."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-13",
+            "apollo-13-measles-article"
+          ],
+          "evidence": [
+            "apollo-13 cites 'NASA history Apollo 13 measles article' as the source for the command module pilot change."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-13",
+            "command-service-module"
+          ],
+          "evidence": [
+            "command-service-module states 'Apollo 13's command module was Odyssey'."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-13-measles-article",
+            "charlie-duke"
+          ],
+          "evidence": [
+            "charlie-duke's facts on catching German measles are sourced to 'NASA history Apollo 13 measles article'."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-13-measles-article",
+            "fred-haise"
+          ],
+          "evidence": [
+            "fred-haise states 'Had rubella immunity' citing the NASA history Apollo 13 measles article."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-13-measles-article",
+            "jack-swigert"
+          ],
+          "evidence": [
+            "jack-swigert states he 'Was immune to rubella, which made him eligible to fly' citing the measles article."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-13-measles-article",
+            "jim-lovell"
+          ],
+          "evidence": [
+            "jim-lovell states 'Had rubella immunity, so the 1970 measles exposure did not affect him' citing the measles article."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-13-measles-article",
+            "john-young"
+          ],
+          "evidence": [
+            "cites"
+          ]
+        },
+        {
+          "pair": [
+            "beech-aircraft",
+            "command-service-module"
+          ],
+          "evidence": [
+            "beech-aircraft 'Built the service module oxygen tanks', and command-service-module says its service module 'carried the oxygen tanks'."
+          ]
+        },
+        {
+          "pair": [
+            "lunar-orbit-rendezvous",
+            "nasa"
+          ],
+          "evidence": [
+            "lunar-orbit-rendezvous states 'NASA announced it as the Apollo mission mode on 1962-07-11'."
+          ]
+        },
+        {
+          "pair": [
+            "mission-control-houston",
+            "tranquility-base"
+          ],
+          "evidence": [
+            "tranquility-base quotes the call 'Houston, Tranquility Base here, the Eagle has landed', addressed to Mission Control."
+          ]
+        },
+        {
+          "pair": [
+            "north-american-aviation",
+            "oxygen-tank-2"
+          ],
+          "evidence": [
+            "north-american-aviation 'Revised the oxygen tank heater specification in 1965 to run at 65 volts', which matches oxygen-tank-2's 'heater specification was revised in 1965 to 65 volts but the switches were not changed'."
+          ]
+        }
+      ]
+    },
+    "run_2": {
+      "proposal_pairs": 89,
+      "refound": 61,
+      "recovered": [
+        [
+          "apollo-11",
+          "lunar-module"
+        ],
+        [
+          "apollo-11",
+          "neil-armstrong"
+        ],
+        [
+          "apollo-11-mission-report-ch-05",
+          "program-alarms-1201-1202"
+        ],
+        [
+          "apollo-13",
+          "ken-mattingly"
+        ],
+        [
+          "apollo-13",
+          "rubella-crew-swap"
+        ],
+        [
+          "apollo-13-review-board",
+          "apollo-13-review-board-report"
+        ],
+        [
+          "apollo-13-review-board",
+          "edgar-cortright"
+        ],
+        [
+          "beech-aircraft",
+          "north-american-aviation"
+        ],
+        [
+          "beech-aircraft",
+          "oxygen-tank-2"
+        ],
+        [
+          "grumman",
+          "lunar-module"
+        ],
+        [
+          "neil-armstrong",
+          "tranquility-base"
+        ],
+        [
+          "saturn-v",
+          "wernher-von-braun"
+        ]
+      ],
+      "new": [
+        {
+          "pair": [
+            "apollo-11",
+            "apollo-guidance-computer"
+          ],
+          "evidence": [
+            "The AGC note says it 'Raised five program alarms during the Apollo 11 powered descent'."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-11",
+            "command-service-module"
+          ],
+          "evidence": [
+            "Apollo 11 says 'Command module was Columbia', and the CSM note says 'Apollo 11's command module was Columbia'."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-11-mission-report",
+            "nasa"
+          ],
+          "evidence": [
+            "The report was 'Prepared by the Mission Evaluation Team at the NASA Manned Spacecraft Center'."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-13",
+            "apollo-13-measles-article"
+          ],
+          "evidence": [
+            "Apollo 13's command module pilot change is sourced to 'NASA history Apollo 13 measles article', which covers the swap."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-13",
+            "command-service-module"
+          ],
+          "evidence": [
+            "The CSM note says 'Apollo 13's command module was Odyssey'."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-13-measles-article",
+            "charlie-duke"
+          ],
+          "evidence": [
+            "Duke's measles facts are sourced to the 'NASA history Apollo 13 measles article'."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-13-measles-article",
+            "fred-haise"
+          ],
+          "evidence": [
+            "Haise 'Had rubella immunity', sourced to the NASA Apollo 13 measles article."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-13-measles-article",
+            "jack-swigert"
+          ],
+          "evidence": [
+            "Swigert 'Was immune to rubella, which made him eligible to fly', sourced to the measles article."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-13-measles-article",
+            "jim-lovell"
+          ],
+          "evidence": [
+            "Lovell 'Had rubella immunity, so the 1970 measles exposure did not affect him', sourced to the measles article."
+          ]
+        },
+        {
+          "pair": [
+            "apollo-13-measles-article",
+            "john-young"
+          ],
+          "evidence": [
+            "cites"
+          ]
+        },
+        {
+          "pair": [
+            "beech-aircraft",
+            "command-service-module"
+          ],
+          "evidence": [
+            "Beech 'Built the service module oxygen tanks', and the CSM's service module 'carried the oxygen tanks'."
+          ]
+        },
+        {
+          "pair": [
+            "charlie-duke",
+            "john-young"
+          ],
+          "evidence": [
+            "Duke 'Walked on the Moon as Apollo 16 lunar module pilot' and John Young was 'Commander of Apollo 16', so they flew the same mission."
+          ]
+        },
+        {
+          "pair": [
+            "gene-kranz",
+            "oxygen-tank-2"
+          ],
+          "evidence": [
+            "Kranz's 'team was on console when Apollo 13's oxygen tank failed', and the tank note says it 'Exploded on 1970-04-13'."
+          ]
+        },
+        {
+          "pair": [
+            "lunar-orbit-rendezvous",
+            "nasa"
+          ],
+          "evidence": [
+            "The LOR note says 'NASA announced it as the Apollo mission mode on 1962-07-11'."
+          ]
+        },
+        {
+          "pair": [
+            "mission-control-houston",
+            "tranquility-base"
+          ],
+          "evidence": [
+            "Tranquility Base was named in the call 'Houston, Tranquility Base here, the Eagle has landed', addressed to Mission Control."
+          ]
+        },
+        {
+          "pair": [
+            "north-american-aviation",
+            "oxygen-tank-2"
+          ],
+          "evidence": [
+            "North American 'Revised the oxygen tank heater specification in 1965 to run at 65 volts', matching the tank note's 'heater specification was revised in 1965 to 65 volts but the switches were not changed'."
+          ]
+        }
+      ]
+    },
+    "noise": {
+      "pairs_both": 87,
+      "pairs_one_run_only": 2,
+      "overlap": 0.978,
+      "recovered_both": 12,
+      "recovered_flips": []
+    }
+  }
+}

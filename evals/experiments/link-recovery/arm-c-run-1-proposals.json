@@ -1,0 +1,105 @@
+{
+  "arm": "C",
+  "run": "run-1",
+  "model": "claude-sonnet-5-5",
+  "stop_reason": "end_turn",
+  "seconds": 25.3,
+  "tokens": {
+    "input": 10759,
+    "output": 3225
+  },
+  "cost_usd": 0.0807,
+  "dropped": [],
+  "proposals": [
+    {
+      "from": "apollo-11",
+      "to": "neil-armstrong",
+      "reason": "neil-armstrong states 'Commander of Apollo 11'."
+    },
+    {
+      "from": "apollo-11",
+      "to": "lunar-module",
+      "reason": "apollo-11 states 'Lunar module Eagle landed on 1969-07-20', and lunar-module states 'Apollo 11's lunar module was Eagle'."
+    },
+    {
+      "from": "apollo-11",
+      "to": "command-service-module",
+      "reason": "apollo-11 states 'Command module was Columbia', and command-service-module states 'Apollo 11's command module was Columbia'."
+    },
+    {
+      "from": "apollo-11",
+      "to": "apollo-guidance-computer",
+      "reason": "apollo-guidance-computer states it 'Raised five program alarms during the Apollo 11 powered descent'."
+    },
+    {
+      "from": "apollo-13",
+      "to": "command-service-module",
+      "reason": "command-service-module states 'Apollo 13's command module was Odyssey'."
+    },
+    {
+      "from": "apollo-13",
+      "to": "ken-mattingly",
+      "reason": "apollo-13 states the command module pilot 'was Ken Mattingly, changed 1970-04-10'."
+    },
+    {
+      "from": "apollo-13",
+      "to": "rubella-crew-swap",
+      "reason": "apollo-13 states the pilot change was 'changed 1970-04-10 by KSC management meeting', which is the swap that rubella-crew-swap describes."
+    },
+    {
+      "from": "apollo-13",
+      "to": "apollo-13-measles-article",
+      "reason": "apollo-13 cites 'NASA history Apollo 13 measles article' as the source for the command module pilot change."
+    },
+    {
+      "from": "apollo-13-review-board",
+      "to": "apollo-13-review-board-report",
+      "reason": "The board's finding that it 'Traced the explosion to an electrically started fire in oxygen tank No. 2' is sourced to 'Apollo 13 Review Board report', and both notes cover its recommendation to remove electrical equipment from the tank."
+    },
+    {
+      "from": "beech-aircraft",
+      "to": "command-service-module",
+      "reason": "beech-aircraft 'Built the service module oxygen tanks', and command-service-module says its service module 'carried the oxygen tanks'."
+    },
+    {
+      "from": "north-american-aviation",
+      "to": "oxygen-tank-2",
+      "reason": "north-american-aviation 'Revised the oxygen tank heater specification in 1965 to run at 65 volts', which matches oxygen-tank-2's 'heater specification was revised in 1965 to 65 volts but the switches were not changed'."
+    },
+    {
+      "from": "charlie-duke",
+      "to": "apollo-13-measles-article",
+      "reason": "charlie-duke's facts on catching German measles are sourced to 'NASA history Apollo 13 measles article'."
+    },
+    {
+      "from": "fred-haise",
+      "to": "apollo-13-measles-article",
+      "reason": "fred-haise states 'Had rubella immunity' citing the NASA history Apollo 13 measles article."
+    },
+    {
+      "from": "jim-lovell",
+      "to": "apollo-13-measles-article",
+      "reason": "jim-lovell states 'Had rubella immunity, so the 1970 measles exposure did not affect him' citing the measles article."
+    },
+    {
+      "from": "jack-swigert",
+      "to": "apollo-13-measles-article",
+      "reason": "jack-swigert states he 'Was immune to rubella, which made him eligible to fly' citing the measles article."
+    },
+    {
+      "from": "mission-control-houston",
+      "to": "tranquility-base",
+      "reason": "tranquility-base quotes the call 'Houston, Tranquility Base here, the Eagle has landed', addressed to Mission Control."
+    },
+    {
+      "from": "nasa",
+      "to": "lunar-orbit-rendezvous",
+      "reason": "lunar-orbit-rendezvous states 'NASA announced it as the Apollo mission mode on 1962-07-11'."
+    },
+    {
+      "from": "nasa",
+      "to": "apollo-11-mission-report",
+      "reason": "apollo-11-mission-report was 'Prepared by the Mission Evaluation Team at the NASA Manned Spacecraft Center'."
+    }
+  ]
+}
