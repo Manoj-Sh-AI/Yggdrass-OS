@@ -50,7 +50,7 @@ def service_with(brain, replies, tmp_path):
     return LiaService(root, skills, lambda model: client, traces=tmp_path / "traces"), client
 
 
-MODEL_TOOLS = {"ask_lia", "open_note", "tell_lia"}
+MODEL_TOOLS = {"ask_lia", "open_note", "tell_lia", "ingest_file"}
 APP_TOOLS = {"confirm_change", "cancel_change", "undo_change"}
 
 
@@ -324,3 +324,28 @@ def test_writing_needs_the_brains_own_repo_never_one_further_up(tmp_path):
     assert repo_of(library) is None  # a home folder in git never receives Lia's commits
     subprocess.run(["git", "-C", str(library.parent), "init", "-q"], check=True)
     assert repo_of(library) == library.parent.resolve()
+
+
+def test_ingest_file_reads_a_local_path_and_refuses_other_types(tmp_path, monkeypatch):
+    monkeypatch.setenv("YGGDRAS_LOCAL_DATA", str(tmp_path / "local"))
+    repo = _git_brain(tmp_path)
+    upload = tmp_path / "meeting.md"
+    upload.write_bytes(b"# Meeting\n\nAna will review chapter two.\n")
+    source = {
+        "name": "Meeting notes",
+        "area": "04-learning",
+        "description": "Thesis meeting",
+        "aliases": [],
+        "summary": "A meeting.",
+    }
+    replies = [[tool_use("describe_source", source)], [text("Filed.")]]
+    service = write_service(repo, tmp_path, replies)
+    server = build_server(service)
+    out = call(server, "ingest_file", {"path": str(upload), "instruction": "add it"}, None)
+    assert out.structured_content["kind"] == "summary", out.structured_content["text"]
+    assert (repo / "raw").is_dir()
+    pdf = tmp_path / "paper.pdf"
+    pdf.write_bytes(b"%PDF")
+    no = call(server, "ingest_file", {"path": str(pdf)}, None)
+    assert no.structured_content["kind"] == "refused"
+    assert "markdown" in no.structured_content["text"]

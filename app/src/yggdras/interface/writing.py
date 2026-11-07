@@ -30,9 +30,12 @@ def store():
     return Store(config.local_data() / "yggdras.db")
 
 
-def write_side(library, root: Path, flat: bool, client_factory, note_url: str | None = None):
-    """Lia's writing side over the brain at *root*, or None if it isn't in a git repo."""
+def write_side(library, root: Path, flat: bool, client_factory, note_url: str | None = None,
+               kind: str = "write"):  # fmt: skip
+    """Lia's writing side over the brain at *root* (kind "write" for requests, "ingest" for
+    uploads), or None if the brain isn't in its own git repo."""
     from yggdras.data.brain.write_path import WritePath
+    from yggdras.processing.lia.ingest import IngestSide
     from yggdras.processing.lia.write import WriteSide
 
     repo = repo_of(root, flat)
@@ -42,7 +45,54 @@ def write_side(library, root: Path, flat: bool, client_factory, note_url: str | 
     # "show in graph" shows new notes on refresh. (A flat demo brain has no copy there.)
     viewers = () if flat else (config.local_data() / "viewer",)
     wp = WritePath(repo, root, config.local_data() / "locks", flat=flat, viewer_dirs=viewers)
-    return WriteSide(client_factory(config.lia_model()), library, wp, store(), note_url)
+    side = IngestSide if kind == "ingest" else WriteSide
+    return side(client_factory(config.lia_model()), library, wp, store(), note_url)
+
+
+# ---------------------------------------------------------------- uploads (D37)
+
+CONTENT_CAP = 100_000  # bytes sent as text through the chat model (Claude Desktop)
+PATH_CAP = 5 * 1024 * 1024  # bytes read from a file on this computer (Claude Code, CLI)
+
+
+class UploadError(ValueError):
+    """An upload Lia won't take: shown to Manoj as it is."""
+
+
+def read_upload(filename: str = "", content: str = "", path: str = "") -> tuple[str, bytes]:
+    """The upload's name and bytes, from a local *path* (≤ 5 MB) or its *content* (≤ 100 KB).
+    Markdown only, UTF-8 text."""
+    from yggdras.data.brain.chunk import is_markdown
+
+    if path.strip():
+        p = Path(path.strip().strip('"')).expanduser()
+        if not p.is_file():
+            raise UploadError(f"There is no file at {p}.")
+        name = filename.strip() or p.name
+        if not is_markdown(p.name):
+            raise UploadError(f"{p.name} is not a markdown file; Lia files .md files for now.")
+        if p.stat().st_size > PATH_CAP:
+            raise UploadError(f"{p.name} is over 5 MB; Lia files files up to 5 MB.")
+        data = p.read_bytes()
+    elif content:
+        name = filename.strip()
+        if not name:
+            raise UploadError("Give the file's name with its content.")
+        data = content.encode("utf-8")
+        if len(data) > CONTENT_CAP:
+            raise UploadError(
+                f"{name} is {len(data) // 1000} KB; sent as text, Lia takes up to 100 KB. Pass "
+                "the file's path on this computer instead (up to 5 MB)."
+            )
+    else:
+        raise UploadError("Pass the file's path, or its name and content.")
+    if not is_markdown(name):
+        raise UploadError(f"{name} is not a markdown file; Lia files .md files for now.")
+    try:
+        data.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        raise UploadError(f"{name} is not UTF-8 text.") from None
+    return name, data
 
 
 def trace(card, folder: Path | None = None) -> Path:

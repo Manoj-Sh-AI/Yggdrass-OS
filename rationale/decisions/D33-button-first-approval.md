@@ -53,3 +53,7 @@ Decided by Manoj on 2026-11-07, for the first write round (D36):
 
 **Why:** a fact Manoj states himself needs no second click, and adding is always one Undo away. Changing or removing loses the current line from Facts, so it waits for him. Even then nothing is deleted: the line goes to History.
 
+## Amendment 2026-11-07 (2): uploads
+
+Uploads follow the same rule as direct requests (D37). Manoj's upload together with his request ("add this to my notes") is the approval for adding: new notes, new facts and new links are written at once, with a summary and Undo. A conflicting fact, a replaced fact or a merge into an existing note is a preview first.
+

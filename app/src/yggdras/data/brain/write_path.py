@@ -78,7 +78,7 @@ class WritePath:
         return (PurePosixPath(self.root_rel) / st.GENERATED).as_posix()
 
     def _dirty(self) -> list[str]:
-        return git_repo.dirty(self.repo, [self.root_rel, "archive"], [self.generated])
+        return git_repo.dirty(self.repo, [self.root_rel, "archive", "raw"], [self.generated])
 
     # ---------------------------------------------------------------- check and apply
 
@@ -139,6 +139,16 @@ class WritePath:
         for path in [*generated.glob("*"), self.root / LOG]:
             keep(path)
         try:
+            for repo_rel, data in change.raw.items():  # uploads, verbatim, outside the library
+                if not repo_rel.startswith("raw/") or ".." in repo_rel:
+                    raise ValueError(f"raw files live in raw/, not {repo_rel}")
+                target = self.repo / repo_rel
+                if target.exists():
+                    raise ValueError(f"{repo_rel} already exists")
+                keep(target)
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(data)
+                touched.append(repo_rel)
             for lib_rel, text in change.archive.items():
                 target = self.repo / self.archive_path(lib_rel)
                 keep(target)
