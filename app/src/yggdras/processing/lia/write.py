@@ -275,14 +275,17 @@ class WriteSide:
         store: Store,
         note_url: str | None = None,
         today: str | None = None,
+        rules: str = RULES,
+        tools: list[dict] | None = None,
     ):
         self.client, self.library, self.wp, self.store = client, library, write_path, store
         self.note_url = note_url  # e.g. "http://127.0.0.1:8765/note/{slug}"
         self.today = today or dt.date.today().isoformat()
+        self.tools = tools or TOOLS
         self.system = [
             {
                 "type": "text",
-                "text": f"{RULES}\n\n{verb_list()}\n\n{library.manual().strip()}",
+                "text": f"{rules}\n\n{verb_list()}\n\n{library.manual().strip()}",
                 "cache_control": CACHE,
             },
             {
@@ -388,7 +391,8 @@ class WriteSide:
             if stop:
                 state["question"] = stop
                 return "Stopped: this needs Manoj's answer first. Reply with one short line."
-            build_change(self.wp.root, self.wp.flat, state["ops"] + [op], self.today)
+            ops = self._context_ops(state) + state["ops"] + [op]
+            build_change(self.wp.root, self.wp.flat, ops, self.today)
         except OpError as exc:
             return f"Not planned: {exc}. Fix it and call the tool again, or ask_manoj."
         except KeyError as exc:
@@ -396,6 +400,11 @@ class WriteSide:
         state["ops"].append(op)
         confirm = " (Manoj will confirm this first)" if name in CHANGING else ""
         return f"Planned{confirm}."
+
+    def _context_ops(self, state: dict) -> list[dict]:
+        """Operations planned by code around Lia's (an upload's source note and chunks), so
+        each of her steps is checked together with them. None for a plain request."""
+        return []
 
     def _tool(self, call: dict, state: dict) -> str:
         name, args = call["name"], dict(call.get("input") or {})
@@ -419,13 +428,13 @@ class WriteSide:
             return self._plan_step(name, args, state)
         return f"Unknown tool {name}."
 
-    def _loop(self, messages: list, state: dict) -> str:
+    def _loop(self, messages: list, state: dict, max_turns: int = MAX_TURNS) -> str:
         reply = None
-        for _ in range(MAX_TURNS):
+        for _ in range(max_turns):
             if sum(c["cost_usd"] for c in state["calls"]) >= RUNAWAY_USD:
                 break
             reply = self.client.send(
-                system=self.system, tools=TOOLS, messages=with_cache_tail(messages)
+                system=self.system, tools=self.tools, messages=with_cache_tail(messages)
             )
             state["calls"].append(reply.usage.as_dict())
             messages.append({"role": "assistant", "content": reply.content or reply.blocks})

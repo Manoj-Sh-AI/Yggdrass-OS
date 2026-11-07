@@ -46,7 +46,9 @@ INSTRUCTIONS = (
     "from general knowledge, and "
     "never present a guess as something the brain holds. Use open_note when the user wants to "
     "check a citation. When the user asks to add, change, link or remove something in their "
-    "notes, pass their request to tell_lia in their own words; never edit notes yourself. You "
+    "notes, pass their request to tell_lia in their own words; when they upload a markdown "
+    "file and ask to add it, give it to ingest_file (its path if it is on this computer, else "
+    "its content); never edit notes yourself. You "
     "can't confirm, cancel or undo changes: only the user can, with the card's buttons, a form "
     "or the yggdras command."
 )
@@ -57,6 +59,15 @@ TELL_DESCRIPTION = (
     "checks the change. Adding is written at once (with Undo); changing or removing shows a "
     "preview the user confirms themselves. The result holds Lia's card in a <lia_reply> "
     "block: show it exactly as written. You can't confirm or undo anything."
+)
+INGEST_DESCRIPTION = (
+    "Give Lia a markdown file the user uploaded and asked to add to their second brain. In "
+    "Claude Code, or whenever the file is on this computer, pass its `path` (up to 5 MB; the "
+    "text never goes through you). Otherwise pass `filename` and the file's full `content` "
+    "exactly as uploaded (up to 100 KB). Pass the user's words as `instruction`. Markdown "
+    "(.md) only for now. Lia keeps the file verbatim, files its facts into notes, links them "
+    "and returns her card in a <lia_reply> block: show it exactly as written. Adding is "
+    "written at once with Undo; a change to existing notes waits for the user's own confirm."
 )
 UI_URI = "ui://yggdras/change-card.html"
 UI_MIME = "text/html;profile=mcp-app"
@@ -144,7 +155,7 @@ class LiaService:
         self.traces = traces or config.local_data() / "traces"
         self._lock = threading.Lock()
         self._lia, self._print = None, None
-        self._write, self.note_url = None, None
+        self._write, self._ingest, self.note_url = None, None, None
 
     def lia(self):
         from yggdras.processing.lia.lia import default_lia
@@ -155,7 +166,7 @@ class LiaService:
             if self._lia is None or now != self._print:
                 library = Library(self.root, flat=self.flat)
                 self._lia = default_lia(library, self.skills, self.client_factory, self.config)
-                self._write = None  # rebuilt on the next request, on the new maps
+                self._write = self._ingest = None  # rebuilt on the next request, new maps
                 self._print = now
             return self._lia
 
@@ -170,6 +181,35 @@ class LiaService:
                     lia.library, self.root, self.flat, self.client_factory, self.note_url
                 )
             return self._write
+
+    def ingester(self):
+        """Lia's upload filing on the current maps (None if the brain isn't a git repo)."""
+        from yggdras.interface import writing
+
+        lia = self.lia()
+        with self._lock:
+            if self._ingest is None:
+                self._ingest = writing.write_side(
+                    lia.library, self.root, self.flat, self.client_factory, self.note_url,
+                    kind="ingest",
+                )  # fmt: skip
+            return self._ingest
+
+    def ingest(self, filename: str, content: str, path: str, instruction: str, app: str):
+        from yggdras.interface import writing
+        from yggdras.processing.lia.write import Card
+
+        try:
+            name, data = writing.read_upload(filename, content, path)
+        except writing.UploadError as exc:
+            return Card("refused", str(exc))
+        side = self.ingester()
+        if side is None:
+            return Card("refused", "Writing is off: this brain is not in a git repository.")
+        card = side.ingest(name, data, instruction, app)
+        card.trace["source"] = "mcp"
+        writing.trace(card, self.traces)
+        return card
 
     def tell(self, request: str, context: str = "", app: str = "chat"):
         from yggdras.interface import writing
@@ -256,19 +296,43 @@ def build_server(service: LiaService):
 
         app = app_name(ctx)
         card = await anyio.to_thread.run_sync(lambda: service.tell(request, context, app))
+        return result(await confirm_by_form(card, ctx, app))
+
+    async def confirm_by_form(card, ctx, app: str):
+        """Claude Code: a preview is confirmed in a form Manoj answers; the model never sees a
+        confirm tool. Other clients get the card (buttons) or the CLI line."""
+        import anyio
+
         caps = ctx.client_capabilities if ctx is not None else None
-        if card.kind == "preview" and caps is not None and caps.elicitation is not None:
-            # Claude Code: Manoj answers a form; the model never sees a confirm tool.
-            answer = await ctx.elicit(f"{card.text}\n\nWrite these changes?", schema=Confirm)
-            side = service.writer()
-            if answer.action == "accept" and answer.data is not None and answer.data.write:
-                pid, token = card.pending_id, card.token
-                card = await anyio.to_thread.run_sync(
-                    lambda: side.confirm(pid, token, f"{app} (form)")
-                )
-            else:
-                card = side.cancel(card.pending_id, card.token)
-        return result(card)
+        if card.kind != "preview" or caps is None or caps.elicitation is None:
+            return card
+        answer = await ctx.elicit(f"{card.text}\n\nWrite these changes?", schema=Confirm)
+        side = service.writer()
+        if answer.action == "accept" and answer.data is not None and answer.data.write:
+            pid, token = card.pending_id, card.token
+            return await anyio.to_thread.run_sync(lambda: side.confirm(pid, token, f"{app} (form)"))
+        return side.cancel(card.pending_id, card.token)
+
+    @server.tool(
+        name="ingest_file",
+        description=INGEST_DESCRIPTION,
+        annotations=write_hints,
+        meta={"ui": {"resourceUri": UI_URI}},
+    )
+    async def ingest_file(
+        filename: str = "",
+        content: str = "",
+        path: str = "",
+        instruction: str = "",
+        ctx: Context = None,
+    ) -> CallToolResult:
+        import anyio
+
+        app = app_name(ctx)
+        card = await anyio.to_thread.run_sync(
+            lambda: service.ingest(filename, content, path, instruction, app)
+        )
+        return result(await confirm_by_form(card, ctx, app))
 
     def off():
         from yggdras.processing.lia.write import Card

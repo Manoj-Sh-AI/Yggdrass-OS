@@ -19,6 +19,7 @@ needs Manoj's confirm first (D33 as amended).
 
 from __future__ import annotations
 
+import base64
 import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -29,7 +30,7 @@ from yggdras.data.graph import structural as st
 from yggdras.data.maps import checks
 from yggdras.data.maps.notes import load_notes
 
-ADDING = ("create_note", "add_fact", "link")
+ADDING = ("create_note", "add_fact", "link", "keep_raw")
 CHANGING = ("replace_fact", "remove_fact", "unlink", "archive_note")
 MODES = ("until", "wrong")
 
@@ -66,6 +67,7 @@ class Change:
     title: str
     notes: dict[str, str | None] = field(default_factory=dict)
     archive: dict[str, str] = field(default_factory=dict)
+    raw: dict[str, bytes] = field(default_factory=dict)  # repo path → verbatim bytes (uploads)
     lines: list[str] = field(default_factory=list)
     slugs: list[str] = field(default_factory=list)  # notes created or changed, for the card
     log: list[str] = field(default_factory=list)  # one entry per operation, for log.md
@@ -132,14 +134,20 @@ class Builder:
             )
         else:
             folder = shelf_for(type_, area)
+        parent = str(op.get("parent") or "").strip()
+        if parent:  # a chunk: <sources folder>/<parent>/<parent>-ch-<nn>.md (node.md)
+            if type_ != "source":
+                raise OpError("only a source note can be a chunk of another source")
+            folder = f"{folder}/{parent}"
         if not folder:
             raise OpError(f"the placement rules don't settle where a {type_} in area {area} goes")
         links = []
         for item in op.get("links") or []:
             verb, to = str(item.get("verb", "")).strip(), str(item.get("to", "")).strip()
             links.append((verb, self.slug_of(to) if to in self.notes or self._known(to) else to))
+        src = str(op.get("src") or "manoj")
         facts = [
-            fact_line(f["text"], self.today, f.get("valid", "")) for f in op.get("facts") or []
+            fact_line(f["text"], self.today, f.get("valid", ""), src) for f in op.get("facts") or []
         ]
         path = f"{folder}/{slug}.md"
         text = nf.new_note(
@@ -163,7 +171,7 @@ class Builder:
             f"new note {name} ({path}): {len(facts)} facts, {len(links)} links"
         )
         self.change.log.append(f"create {slug}")
-        hub = None if self.flat else self.hub_of(area)
+        hub = None if self.flat or parent else self.hub_of(area)
         if hub:
             self.put(hub, nf.hub_listing(self.text(hub), slug, add=True))
             self.change.lines.append(f"listed in {Path(hub).stem}")
@@ -177,7 +185,8 @@ class Builder:
 
     def add_fact(self, op: dict) -> None:
         path = self.path_of(op["slug"])
-        line = fact_line(str(op.get("text", "")), self.today, op.get("valid", ""))
+        src = str(op.get("src") or "manoj")
+        line = fact_line(str(op.get("text", "")), self.today, op.get("valid", ""), src)
         if not op.get("text", "").strip():
             raise OpError("add_fact needs the fact's text")
         text = self.text(path)
@@ -203,7 +212,7 @@ class Builder:
     def replace_fact(self, op: dict) -> None:
         if not str(op.get("text", "")).strip():
             raise OpError("replace_fact needs the new text")
-        new = fact_line(op["text"], self.today, op.get("valid", ""))
+        new = fact_line(op["text"], self.today, op.get("valid", ""), op.get("src") or "manoj")
         if checks.quote_unit(new) == checks.quote_unit(str(op.get("old", ""))):
             raise OpError(
                 "the new text is the same as the old; to take a fact out, use remove_fact"
@@ -252,6 +261,16 @@ class Builder:
             f"unlink: {Path(a).stem} {verb or '(any verb)'} {Path(b).stem} (line in {where})"
         )
         self.change.log.append(f"unlink {Path(a).stem} {Path(b).stem}")
+
+    def keep_raw(self, op: dict) -> None:
+        """An upload, kept verbatim in the brain's raw/ folder (outside the library; D31)."""
+        name = str(op.get("name", "")).strip()
+        if not name or "/" in name or "\\" in name or name.startswith("."):
+            raise OpError("a raw file needs a plain file name")
+        path = f"raw/{name}"
+        self.change.raw[path] = base64.b64decode(op.get("b64", ""))
+        self.change.lines.append(f"kept the upload verbatim: {path}")
+        self.change.log.append(f"keep upload {name}")
 
     def archive_note(self, op: dict) -> None:
         path = self.path_of(op["slug"])

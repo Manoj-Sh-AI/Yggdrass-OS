@@ -2,6 +2,7 @@
 
     yggdras ask "<question>" [--brain REPO] [--flat ROOT] [--model M] [--skills DIR]
     yggdras tell "<change request>" [--brain REPO] [--flat ROOT]
+    yggdras ingest <file.md> [--instruction "<what to do>"] [--brain REPO] [--flat ROOT]
     yggdras confirm <preview id> | cancel <preview id> | undo <commit> | pending
     yggdras mcp [--brain REPO] [--flat ROOT] [--model M] [--skills DIR]
 
@@ -66,6 +67,10 @@ def main(argv: list[str] | None = None) -> int:
     tell = sub.add_parser("tell", help="ask Lia to change your notes")
     tell.add_argument("request")
     _brain_args(tell)
+    ingest = sub.add_parser("ingest", help="give Lia a markdown file to file (up to 5 MB)")
+    ingest.add_argument("path")
+    ingest.add_argument("--instruction", default="")
+    _brain_args(ingest)
     for name, what in (("confirm", "write a preview"), ("cancel", "drop a preview")):
         p = sub.add_parser(name, help=what)
         p.add_argument("id")
@@ -85,6 +90,8 @@ def main(argv: list[str] | None = None) -> int:
     config.load_env_file()
     if args.command == "pending":
         return _pending()
+    if args.command == "ingest":
+        return _ingest(args)
     if args.command in ("tell", "confirm", "cancel", "undo"):
         side = _writer(args)
         if side is None:
@@ -101,6 +108,29 @@ def main(argv: list[str] | None = None) -> int:
             return _print_card(side.cancel(args.id, None))
         return _print_card(side.undo(args.sha, None, "cli"))
     return _ask(args)
+
+
+def _ingest(args) -> int:
+    from yggdras.interface import writing
+    from yggdras.processing.lia.library import Library
+    from yggdras.processing.lia.models import AnthropicClient
+
+    try:
+        name, data = writing.read_upload(path=args.path)
+    except writing.UploadError as exc:
+        print(exc, file=sys.stderr)
+        return 2
+    root, flat = _root(args)
+    if root is None:
+        print("no brain: pass --brain or set YGGDRAS_BRAIN", file=sys.stderr)
+        return 2
+    side = writing.write_side(Library(root, flat=flat), root, flat, AnthropicClient, kind="ingest")
+    if side is None:
+        print("writing is off: this brain is not in a git repository", file=sys.stderr)
+        return 2
+    card = side.ingest(name, data, args.instruction, "cli")
+    writing.trace(card)
+    return _print_card(card)
 
 
 def _pending() -> int:
