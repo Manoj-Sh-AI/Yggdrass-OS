@@ -234,7 +234,7 @@ GOOD = ("correct", "correct_abstain")
 
 
 def keyterm_grade(q: dict, row: dict) -> str:
-    answer = (row.get("answer") or "").lower()
+    answer = (row.get("answer_full") or row.get("answer") or "").lower()
     declined = row.get("abstain") or answer.lstrip().startswith(("not in your brain", "i don't have that"))
     if q["abstain"]:
         return "correct_abstain" if declined else "wrong"
@@ -297,7 +297,7 @@ def fresh_citations(payload: dict) -> tuple[int, int, int, int]:
                 verified += c["line"] in forms[slug]
                 invented += c["line"] not in forms[slug]
             continue
-        answer = row.get("answer") or ""
+        answer = row.get("answer_full") or row.get("answer") or ""
         opened = {s: library.note_text(s) for s in row.get("opened", [])}
         for c in checks.check_citations(answer.replace(" [unverified]", ""), opened):
             shown += 1

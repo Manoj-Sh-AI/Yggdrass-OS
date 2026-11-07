@@ -70,10 +70,7 @@ def test_ask_returns_the_cited_answer_a_cost_note_and_writes_a_trace(brain, tmp_
     replies = [[tool_use("open_notes", {"slugs": ["garden-plan"]})], reply]
     service, _ = service_with(brain, replies, tmp_path)
     out = service.ask("What is the garden budget?")
-    answer = (
-        "Three hundred euros. [1]\n\n"
-        "[1] [[garden-plan]] «The garden plan has a budget of three hundred euros»"
-    )
+    answer = "Three hundred euros. [1]\n\n[1] Garden Plan (garden-plan)"
     assert out.startswith(f"{VERBATIM}\n<lia_reply>\n{answer}\n\n— Lia · $")
     assert out.endswith(" s · ✓ 1/1\n</lia_reply>")
     (trace,) = (tmp_path / "traces").glob("mcp-*.json")
