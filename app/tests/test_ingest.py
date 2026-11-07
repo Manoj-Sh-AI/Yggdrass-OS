@@ -195,3 +195,53 @@ def test_chunks_follow_the_files_own_headings():
     assert [t for c in found for t in c.titles] == [f"Part {i}" for i in range(1, 7)]
     assert all(len(c.text) <= chunk_mod.PAGE_CHARS + 1800 for c in found)
     assert not chunk_mod.is_long("# Short\n\n## A\n\nx\n## B\n\ny\n## C\n\nz\n")
+
+
+def test_a_terse_old_fact_still_conflicts_with_a_longer_new_one():
+    from yggdras.data.brain import detect
+
+    old = "[stated] Launched 1970-04-11 (src: NASA, 2026-10-24)"
+    new = "Launched 1970-04-12 from Kennedy Space Center, according to a flight log summary."
+    assert detect.conflicting_facts([old], new) == [old]
+    assert detect.conflicting_facts(["Visited Paris in 2019."], "Visited Rome in 2021.") == []
+
+
+def test_lia_fixes_what_the_checker_refused_before_asking(brain, tmp_path):
+    bad = {**SOURCE, "description": "Notes from meeting 2 with Ana"}
+    replies = [[tool_use("describe_source", bad)], done(),
+               [tool_use("describe_source", SOURCE)], done()]  # fmt: skip
+    s, client = side(brain, tmp_path, replies)
+    card = s.ingest("meeting.md", SHORT)
+    assert card.kind == "summary", card.text
+    assert "checker refused" in str(client.sent[2]["messages"][0]["content"])
+
+
+def test_a_number_in_a_name_is_not_a_figure():
+    from yggdras.data.brain import detect
+
+    old = "[stated] Apollo 11's command module was Columbia (src: NASA, 2026-10-24)"
+    new = "After the Apollo 13 explosion the crew shut down the command module to save power."
+    assert detect.conflicting_facts([old], new) == []
+    assert detect.conflicting_facts([THESIS_FACT], "The thesis is due in May 2031.") == [
+        THESIS_FACT
+    ]
+
+
+def test_a_fix_that_sends_one_field_keeps_the_rest_and_a_confirmed_upload_is_one_ingest(
+    brain, tmp_path
+):
+    bad = {**SOURCE, "description": "Notes from meeting 2 with Ana"}
+    replies = [
+        [tool_use("describe_source", bad)],
+        [tool_use("add_fact", {"slug": "masters-thesis", "text": "The thesis is due in May 2031"})],
+        done(),
+        [tool_use("describe_source", {"description": "Notes from a thesis meeting with Ana"})],
+        done(),
+    ]
+    s, _ = side(brain, tmp_path, replies)
+    card = s.ingest("meeting.md", SHORT)
+    assert card.kind == "preview"
+    s.confirm(card.pending_id, card.token, "test")
+    assert commits(brain)[0] == "lia: ingest meeting.md"
+    source = (brain / "library/13-sources/meeting.md").read_text(encoding="utf-8")
+    assert 'name: "Thesis meeting notes"' in source

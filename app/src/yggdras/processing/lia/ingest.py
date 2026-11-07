@@ -37,12 +37,15 @@ How to work:
 - Code keeps the file verbatim and makes a source note for it; you describe that note with
   describe_source (and each chunk with describe_chunk when the file is long).
 - File what the text states: add facts to the existing notes they are about (read_note first;
-  use the slugs from the shelf map). Create a new note only for a person, place, project,
-  event or idea the file is clearly about that has no note yet.
+  use the slugs from the shelf map). A fact goes only into the note it is about; if that thing
+  has no note, keep the fact in the chunk (describe_chunk) instead of filing it elsewhere.
+  Create a new note only for a person, place, project, event or idea the file is clearly
+  about that has no note yet.
 - Each fact is one plain sentence, subject named, as the file says it; never add a date or
   figure the file doesn't give. Code adds the source (the upload).
-- Descriptions: one line, at most 15 words, in the words he would search with, no dates or
-  figures.
+- Descriptions: one line, at most 15 words, in the words he would search with, and no
+  digits at all (not even in a name like a mission number: say "the rescue flight" or leave
+  the number out).
 - Links: only where the text supports them, only from the upload's new notes (the source,
   its chunks, notes you create), using only the fixed verbs below.
 - If the file contradicts a fact already in a note, file the new fact anyway: code shows
@@ -81,10 +84,12 @@ DESCRIBE_CHUNK = {
     "name": "describe_chunk",
     "description": "Describe the chunk you are reading: a one-line description that carries its "
     "own context ('Section on how X handles Y, in <document>'), a short summary, the facts it "
-    "states (one sentence each), and links to existing notes the text supports.",
+    "states (one sentence each), and links to existing notes the text supports. Give `chunk` "
+    "(its number) only when fixing an earlier chunk's description.",
     "input_schema": {
         "type": "object",
         "properties": {
+            "chunk": {"type": "integer"},
             "description": _STR,
             "summary": _STR,
             "facts": {
@@ -136,7 +141,7 @@ class IngestSide(WriteSide):
             f"Uploaded on {self.today} as {up['filename']}; the verbatim file is "
             f"raw/{up['raw']}. {src.get('summary', '').strip()}"
         ).strip()
-        ops = [{"op": "keep_raw", "name": up["raw"], "b64": up["b64"]}]
+        ops = [{"op": "keep_raw", "name": up["raw"], "filename": up["filename"], "b64": up["b64"]}]
         ops.append({
             "op": "create_note", "type": "source", "name": name, "slug": up["slug"],
             "area": area, "description": src.get("description") or f"Upload: {name}",
@@ -169,13 +174,14 @@ class IngestSide(WriteSide):
         name, args = call["name"], dict(call.get("input") or {})
         if name == "describe_source":
             state["steps"].append({"tool": name, "input": args})
-            state["source"] = args
+            state["source"] = {**state["source"], **args}  # a fix may send one field only
             return "Noted."
         if name == "describe_chunk":
             state["steps"].append({"tool": name, "input": args})
-            if state.get("at") is None:
-                return "Not noted: this file has no chunks; use describe_source."
-            state["chunks"][state["at"]] = args
+            n = args.pop("chunk", None) or state.get("at")
+            if n is None or n not in {c.n for c in state["upload"]["chunks"]}:
+                return "Not noted: this file has no such chunk; use describe_source."
+            state["chunks"][n] = {**state["chunks"].get(n, {}), **args}
             return "Noted."
         if name in ("create_note", "add_fact", "link"):
             args["src"] = state["upload"]["src"]
@@ -301,6 +307,23 @@ class IngestSide(WriteSide):
         verdict = self.wp.check(change)
         if not verdict.ok:
             lines = "\n".join(f"- {i}" for i in verdict.hard)
+            if state["fixes"] < 2:  # Lia fixes what the checker refused, at most twice
+                state["fixes"] += 1
+                state["at"] = None
+                titles = "\n".join(
+                    f"- chunk {c.n}: {c.title} (description now: "
+                    f"{state['chunks'].get(c.n, {}).get('description', '')!r})"
+                    for c in state["upload"]["chunks"]
+                )
+                msg = (
+                    f"The note checker refused filing {filename}, so nothing was written:\n"
+                    f"{lines}\nFix it: call describe_source, or describe_chunk with `chunk`, "
+                    f"again with corrected values. Source description now: "
+                    f"{state['source'].get('description', '')!r}."
+                    + (f"\nChunks:\n{titles}" if titles else "")
+                )
+                self._loop([{"role": "user", "content": msg}], state, MAX_TURNS_CHUNK)
+                return self._file(filename, instruction, app, line, state)
             return Card("question", self.question_card(
                 f"The note checker refused filing {filename}:\n{lines}\n"
                 "Should I try another way, or cancel?"))  # fmt: skip
