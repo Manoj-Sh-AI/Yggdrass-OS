@@ -251,7 +251,8 @@ def judge(client: AnthropicClient, q: dict, row: dict) -> str:
     schema = {"type": "object", "additionalProperties": False, "required": ["grade"],
               "properties": {"grade": {"type": "string", "enum": ["correct", "partly_correct", "wrong",
                                                                     "correct_abstain", "wrong_abstain"]}}}  # fmt: skip
-    msg = f"Question: {q['question']}\n\nKey: {key}\n\nAnswer to grade:\n{row.get('answer', '')}"
+    answer = row.get("answer_full") or row.get("answer", "")
+    msg = f"Question: {q['question']}\n\nKey: {key}\n\nAnswer to grade:\n{answer}"
     r = client._client.messages.create(model=JUDGE, max_tokens=512, system=RUBRIC,
                                        output_config={"effort": "low", "format": {"type": "json_schema", "schema": schema}},
                                        messages=[{"role": "user", "content": msg}])  # fmt: skip
