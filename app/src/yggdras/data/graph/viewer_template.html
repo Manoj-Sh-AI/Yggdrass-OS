@@ -555,15 +555,25 @@ network.on("stabilizationIterationsDone", () => {
     document.body.dataset.colours = JSON.stringify(Object.fromEntries(DATA.nodes.map((n) => [n.slug, { pure: pureColour(n), shown: nodeColour(n, false) }])));
   }
   if (hash.get("debug") === "switch" && state.dim === "2d") {
-    // Select in 2D, switch to 3D and back, and record what each mode held.
+    // Select, filter (#filter=<type>) and search (#q=<text>) in 2D, switch to 3D and back,
+    // and record what each mode held.
     const sel = DATA.nodes.find((m) => m.slug === hash.get("select"));
     if (sel) goTo(sel.id, false);
+    if (hash.get("filter")) { state.typeOff.add(hash.get("filter")); refresh(); }
+    if (hash.get("q")) { search.value = hash.get("q"); search.dispatchEvent(new Event("input")); }
+    const snap = () => ({
+      selected: state.selected ? byId.get(state.selected).slug : null,
+      typeOff: [...state.typeOff].sort(), search: search.value,
+      results: results.children.length, visible: visible.size,
+    });
+    const before = snap();
     setDim("3d", false).then(() => {
       const in3d = document.body.dataset.selected3d || null;
+      const during = { ...snap(), shown3d: g3.graph.graphData().nodes.length };
       return setDim("2d", false).then(() => {
-        document.body.dataset.switch = JSON.stringify({ in3d, back2d: state.selected ? byId.get(state.selected).slug : null });
+        document.body.dataset.switch = JSON.stringify({ in3d, back2d: state.selected ? byId.get(state.selected).slug : null, before, during, after: snap() });
       });
-    });
+    }).catch((err) => { document.body.dataset.error = String(err && err.stack || err); });
   }
 
 });
@@ -910,11 +920,10 @@ function legend() {
 }
 
 // ---------------------------------------------------------------- 3D view
-// The same map in 3D: three.js and 3d-force-graph, loaded on first use. Area clusters sit on an
-// invisible sphere (areas with many links between them side by side), with the grey cross-area
-// notes in the centre. Notes are flat discs facing the camera, in the 2D colours and sizes.
-// Panel, search, filters, focus and "Show" are the 2D ones. Nothing moves on its own: every
-// note has a precomputed position, and only the camera moves, when asked.
+// three.js and 3d-force-graph, loaded on first use.
+// The 3D map is the 2D map with depth (positions3d). Notes are flat discs facing the camera,
+// in the 2D colours and sizes. Panel, search, filters, focus and "Show" are the 2D ones. Notes
+// never move; the camera turns slowly until Manoj interacts (spin3d), never with reduce motion.
 var g3 = { graph: null, loading: null, sprites: new Map(), tex: new Map(), pos: null, R: 0,
   focus: null, camKey: "", dirty: 0, mouse: { x: 0, y: 0 }, boxes: [] };
 const DIMS = ["2d", "3d"];
@@ -937,13 +946,30 @@ function load3d() {
 // Tuned on the real brain: head-on stays close to 2D (mean shift 0.15 of the map radius)
 // while depth reaches about 0.85 of the map width.
 const ANCHOR3D = 0.3;
+// Every note's 2D place. Notes hidden by a filter aren't in the 2D network, so each note keeps
+// its last known place; one never shown yet sits at the middle of its linked notes (or 0,0).
+function flatPositions() {
+  g3.flat = Object.assign(g3.flat || {}, network.getPositions());
+  const out = {};
+  for (const n of DATA.nodes) {
+    let p = g3.flat[n.id];
+    if (!p) {
+      const near = [...adj.get(n.id)].map((id) => g3.flat[id]).filter(Boolean);
+      p = near.length
+        ? { x: near.reduce((s, q) => s + q.x, 0) / near.length, y: near.reduce((s, q) => s + q.y, 0) / near.length }
+        : { x: 0, y: 0 };
+    }
+    out[n.id] = p;
+  }
+  return out;
+}
 function positions3d() {
   if (g3.pos) return g3.pos;
   // A real 3D web that starts from the 2D map: every note begins at its 2D place with a
   // depth spread as wide as the map, then a deterministic 3D force layout runs (notes push
   // apart in every direction, links pull their two notes together). A gentle pull towards each note's 2D place keeps the head-on view
   // recognisably the 2D map, while turning it shows depth as deep as the map is wide.
-  const flat = network.getPositions(), nodes = DATA.nodes, M = nodes.length, rnd = lcg(11);
+  const flat = flatPositions(), nodes = DATA.nodes, M = nodes.length, rnd = lcg(11);
   const ps = nodes.map((n) => ({ x: flat[n.id].x, y: -flat[n.id].y, z: 0 }));
   let cx = 0, cy = 0;
   for (const q of ps) { cx += q.x / M; cy += q.y / M; }
@@ -1095,10 +1121,22 @@ function graphData3d() {
 // It stops while a note is hovered or selected (so it holds still to be read or clicked),
 // and never turns with "reduce motion" on. Dragging turns it by hand; it then carries on.
 const SPIN3D = 0.6; // OrbitControls speed: 2 is one turn in 30 s
+// Any interaction stops the turn: hovering or selecting a note, a click, a drag, the wheel. It
+// stays stopped while Manoj interacts and starts again after SPIN_RESUME_MS of quiet (never
+// while a note is selected or hovered).
+const SPIN_RESUME_MS = 6000;
+function touched3d() {
+  g3.quietFrom = performance.now() + SPIN_RESUME_MS;
+  spin3d();
+  clearTimeout(g3.resume);
+  g3.resume = setTimeout(spin3d, SPIN_RESUME_MS + 50);
+}
 function spin3d() {
   const c = g3.graph && g3.graph.controls();
   if (!c) return;
-  const on = state.dim === "3d" && !reduceMotion() && state.selected == null && state.hover == null;
+  const busy = g3.dragging || performance.now() < (g3.quietFrom || 0);
+  const on = state.dim === "3d" && !reduceMotion() && state.selected == null && state.hover == null
+    && !busy;
   c.autoRotate = on; c.autoRotateSpeed = SPIN3D;
   document.body.dataset.spin = on ? "1" : "0";
 }
@@ -1229,7 +1267,13 @@ function init3d() {
   // because it is what joins each link to its two notes.
   G.d3Force("charge", null); G.d3Force("center", null); G.d3Force("link").strength(0);
   const controls = G.controls();
-  if (controls) controls.enableDamping = !reduceMotion();
+  if (controls) {
+    controls.enableDamping = !reduceMotion();
+    // A drag or the wheel (OrbitControls' start/end) stops the turn while it lasts.
+    controls.addEventListener("start", () => { g3.dragging = true; touched3d(); });
+    controls.addEventListener("end", () => { g3.dragging = false; touched3d(); });
+  }
+  box3.addEventListener("pointerdown", touched3d);
   g3.graph = G;
   G.graphData(graphData3d());
   box3.addEventListener("mousemove", (ev) => {
@@ -1280,12 +1324,19 @@ async function setDim(d, remember) {
     debugColours();
     if (hash.get("debug") === "same") {
       // How far each 3D note sits from its 2D place (y flipped, both centred): should be 0.
-      const flat = network.getPositions(), pos = positions3d(), ids = DATA.nodes.map((n) => n.id);
+      const flat = flatPositions(), pos = positions3d(), ids = DATA.nodes.map((n) => n.id);
       const mx = ids.reduce((s, id) => s + flat[id].x, 0) / ids.length, my = ids.reduce((s, id) => s + flat[id].y, 0) / ids.length;
       const off = ids.reduce((s, id) => s + Math.hypot(pos[id].x - (flat[id].x - mx), pos[id].y + (flat[id].y - my)), 0) / ids.length;
       const span = (k) => Math.max(...ids.map((id) => pos[id][k])) - Math.min(...ids.map((id) => pos[id][k]));
       const far = Math.max(...ids.map((id) => Math.hypot(pos[id].x, pos[id].y, pos[id].z))) / g3.R;
       document.body.dataset.same = JSON.stringify({ off: off / g3.R, depth: span("z") / Math.max(span("x"), span("y")), far });
+    }
+    if (hash.get("debug") === "interact" && g3.graph.controls()) {
+      // Record the turn before, during and right after a drag (the tests read these).
+      const c = g3.graph.controls(), out = { before: document.body.dataset.spin };
+      c.dispatchEvent({ type: "start" }); out.during = document.body.dataset.spin;
+      c.dispatchEvent({ type: "end" }); out.after = document.body.dataset.spin;
+      document.body.dataset.interact = JSON.stringify(out);
     }
     document.body.dataset.ready3d = "1";
   } else {
@@ -1362,6 +1413,8 @@ if (state.dim === "3d") {
   });
 }
 hintLine();
+// Tests: press the 2D button as Manoj would (the choice is remembered for the next visit).
+if (hash.get("debug") === "click2d") document.getElementById("dim-2d").click();
 </script>
 </body>
 </html>

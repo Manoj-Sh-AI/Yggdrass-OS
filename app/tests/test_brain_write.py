@@ -100,7 +100,7 @@ def make_brain(tmp_path):
     from yggdras.data.maps.build import run as write_maps
 
     write_maps(repo)
-    ignored = ("map.json", "*.html", "vis-network.min.js", "*.woff2")  # as the real brain
+    ignored = ("map.json", "*.html", "*.js", "*.woff2")  # as the real brain (viewer files)
     (repo / ".gitignore").write_text(
         "".join(f"library/00-manual/generated/{p}\n" for p in ignored), encoding="utf-8"
     )
