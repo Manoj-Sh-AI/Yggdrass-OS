@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lia change card</title>
+<style>
+  :root { --bg: #ffffff; --text: #1d1d1b; --muted: #6b6b66; --line: #e2e0da; --accent: #b8692e; --btn: #f3f1ec; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #202226; --text: #eceef1; --muted: #9aa0a8; --line: #34373d; --accent: #d9a35b; --btn: #2a2d33; }
+  }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.5 system-ui, sans-serif; }
+  .card { padding: 14px 16px; border: 1px solid var(--line); border-radius: 10px; }
+  .kind { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin-bottom: 6px; }
+  pre { white-space: pre-wrap; word-break: break-word; margin: 0; font: inherit; }
+  .row { display: flex; gap: 8px; margin-top: 12px; }
+  button { font: inherit; padding: 6px 14px; border-radius: 7px; border: 1px solid var(--line); background: var(--btn); color: var(--text); cursor: pointer; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 600; }
+  button:disabled { opacity: .5; cursor: default; }
+  .note { color: var(--muted); font-size: 12px; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="kind" id="kind">Lia</div>
+  <pre id="text">Waiting for Lia…</pre>
+  <div class="row" id="buttons"></div>
+  <div class="note" id="note"></div>
+</div>
+<script>
+// MCP Apps (SEP-1865): JSON-RPC over postMessage with the host. The card gets the tool result
+// (its _meta carries the token, which the chat model never sees) and calls the app-only tools.
+let nextId = 1;
+const waiting = new Map();
+function send(method, params) {
+  const id = nextId++;
+  window.parent.postMessage({ jsonrpc: "2.0", id, method, params }, "*");
+  return new Promise((ok, bad) => waiting.set(id, { ok, bad }));
+}
+function notify(method, params) { window.parent.postMessage({ jsonrpc: "2.0", method, params }, "*"); }
+function resize() { notify("ui/notifications/size-changed", { height: document.body.scrollHeight + 4 }); }
+
+const LABELS = { summary: "Written", preview: "Needs your OK", question: "Lia asks", refused: "Not written", message: "Lia" };
+let state = { kind: "", pending_id: "", sha: "", token: "" };
+
+function show(result) {
+  const s = (result && (result.structuredContent || result.structured_content)) || {};
+  const meta = (result && result._meta) || {};
+  state = { kind: s.kind || "", pending_id: s.pending_id || "", sha: s.sha || "", token: meta["yggdras/token"] || "" };
+  document.getElementById("kind").textContent = LABELS[state.kind] || "Lia";
+  document.getElementById("text").textContent = s.text || "";
+  const row = document.getElementById("buttons");
+  row.innerHTML = "";
+  document.getElementById("note").textContent = "";
+  if (state.kind === "preview" && state.token) {
+    row.append(button("Confirm", true, () => call("confirm_change", { pending_id: state.pending_id, token: state.token })));
+    row.append(button("Cancel", false, () => call("cancel_change", { pending_id: state.pending_id, token: state.token })));
+  } else if (state.kind === "summary" && state.token && state.sha) {
+    row.append(button("Undo", false, () => call("undo_change", { sha: state.sha, token: state.token })));
+  }
+  resize();
+}
+function button(label, primary, onClick) {
+  const b = document.createElement("button");
+  b.textContent = label;
+  if (primary) b.className = "primary";
+  b.addEventListener("click", () => { document.querySelectorAll("button").forEach((x) => { x.disabled = true; }); onClick(); });
+  return b;
+}
+async function call(name, args) {
+  document.getElementById("note").textContent = "Working…";
+  try {
+    show(await send("tools/call", { name, arguments: args }));
+  } catch (err) {
+    document.getElementById("note").textContent = "That didn't work: " + (err && err.message ? err.message : err);
+    document.querySelectorAll("button").forEach((x) => { x.disabled = false; });
+  }
+}
+window.addEventListener("message", (ev) => {
+  const m = ev.data;
+  if (!m || m.jsonrpc !== "2.0") return;
+  if (m.id && waiting.has(m.id)) {
+    const w = waiting.get(m.id); waiting.delete(m.id);
+    if (m.error) w.bad(new Error(m.error.message || "error")); else w.ok(m.result);
+    return;
+  }
+  if (m.method === "ui/notifications/tool-result") show(m.params);
+});
+send("ui/initialize", { protocolVersion: "2026-01-26", appInfo: { name: "yggdras-change-card", version: "1" }, appCapabilities: {} })
+  .then(() => notify("ui/notifications/initialized", {}))
+  .catch(() => {});
+resize();
+</script>
+</body>
+</html>

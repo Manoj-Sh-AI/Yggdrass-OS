@@ -1,12 +1,20 @@
-"""Lia as a read-only MCP server (stdio), for Claude Desktop and Claude Code.
+"""Lia as an MCP server (stdio), for Claude Desktop and Claude Code.
 
     yggdras mcp [--brain REPO] [--flat ROOT] [--model M] [--skills DIR]
 
-Two tools, ask_lia (Lia's reply, first person, footnoted) and open_note (one note, to check a
-citation), and one prompt, talk-to-lia (every message goes to Lia, shown verbatim). The
-server reads the brain's current files and rebuilds Lia's maps whenever a note changes. It
-never writes to the brain; every answer leaves a trace in local-data/traces/. Write tools and
-the Approve buttons (D33) come later.
+Model-visible tools: ask_lia (Lia's reply, first person, footnoted), open_note (one note, to
+check a citation) and tell_lia (Manoj's change request; Lia does all writing, D36). One
+prompt, talk-to-lia (every message goes to Lia, shown verbatim).
+
+Changes that alter or remove content wait as a preview for Manoj's confirm (D33 as amended):
+- Claude Code: a form inside tell_lia (elicitation), answered by Manoj, never by the model;
+- Claude Desktop: the card's buttons (MCP Apps), which call confirm_change, cancel_change
+  and undo_change. Those three are app-only, and each needs the card's token, which travels in
+  the result's _meta (never shown to the model);
+- anywhere: `yggdras confirm <id>` in a terminal.
+
+The server rebuilds Lia's maps whenever a note changes; every request leaves a trace in
+local-data/traces/.
 """
 
 from __future__ import annotations
@@ -17,6 +25,10 @@ import threading
 import time
 from collections.abc import Callable
 from pathlib import Path
+
+from mcp.server.mcpserver import Context
+from mcp_types import CallToolResult, TextContent
+from pydantic import BaseModel, Field
 
 from yggdras import config
 
@@ -33,8 +45,23 @@ INSTRUCTIONS = (
     'third person ("Her strongest story…"). Never add facts of your own, never fill a gap '
     "from general knowledge, and "
     "never present a guess as something the brain holds. Use open_note when the user wants to "
-    "check a citation. These tools only read the brain."
+    "check a citation. When the user asks to add, change, link or remove something in their "
+    "notes, pass their request to tell_lia in their own words; never edit notes yourself. You "
+    "can't confirm, cancel or undo changes: only the user can, with the card's buttons, a form "
+    "or the yggdras command."
 )
+TELL_DESCRIPTION = (
+    "Pass the user's request to change their second brain to Lia, in their own words: add a "
+    "fact, create a note, link or unlink notes, update or correct a fact, remove a fact, "
+    "archive a note. Optionally pass the last two turns of the chat as context. Lia plans and "
+    "checks the change. Adding is written at once (with Undo); changing or removing shows a "
+    "preview the user confirms themselves. The result holds Lia's card in a <lia_reply> "
+    "block: show it exactly as written. You can't confirm or undo anything."
+)
+UI_URI = "ui://yggdras/change-card.html"
+UI_MIME = "text/html;profile=mcp-app"
+APP_ONLY = {"ui": {"visibility": ["app"]}}
+TOKEN_KEY = "yggdras/token"
 ASK_DESCRIPTION = (
     "Ask Lia, the librarian of the user's second brain, a question about the user's own life, "
     "work, studies, plans, people, places or decisions. Pass the user's message as question; "
@@ -48,11 +75,12 @@ ASK_DESCRIPTION = (
 PROMPT_TEXT = (
     "For the rest of this conversation you are a window onto Lia, the librarian of my second "
     "brain. For every message I send, call ask_lia with my message as question and the last "
-    "two turns of our conversation as context. Reply with exactly the text inside the "
-    "<lia_reply> block, footnotes and closing line included: no preface, no summary, never "
-    "retelling her in the third person. Never "
+    "two turns of our conversation as context; when I ask to add, change, link or remove "
+    "something in my notes, call tell_lia with my request instead. Reply with exactly the text "
+    "inside the <lia_reply> block, footnotes and closing line included: no preface, no "
+    "summary, never retelling her in the third person. Never "
     "answer from your own knowledge, even when you could. If I ask to check a citation, call "
-    "open_note with its slug and show the note."
+    "open_note with its slug and show the note. Never edit my notes yourself."
 )
 OPEN_DESCRIPTION = (
     "Open one note of the user's second brain by its slug (the part inside [[...]] in Lia's "
@@ -78,6 +106,16 @@ def footer(result: dict) -> str:
         f"— Lia · ${result['cost_usd']:.4f} · {result['latency_ms'] / 1000:.1f} s · "
         f"✓ {good}/{checked}"
     )
+
+
+class Confirm(BaseModel):
+    """Claude Code's confirm form (elicitation): Manoj answers it, never the model."""
+
+    write: bool = Field(description="Write these changes to your notes?")
+
+
+def card_footer(card) -> str:
+    return f"— Lia · ${card.cost_usd:.4f}" if card.cost_usd else "— Lia"
 
 
 def fingerprint(root: Path, skills: Path) -> tuple:
@@ -106,6 +144,7 @@ class LiaService:
         self.traces = traces or config.local_data() / "traces"
         self._lock = threading.Lock()
         self._lia, self._print = None, None
+        self._write, self.note_url = None, None
 
     def lia(self):
         from yggdras.processing.lia.lia import default_lia
@@ -116,8 +155,33 @@ class LiaService:
             if self._lia is None or now != self._print:
                 library = Library(self.root, flat=self.flat)
                 self._lia = default_lia(library, self.skills, self.client_factory, self.config)
+                self._write = None  # rebuilt on the next request, on the new maps
                 self._print = now
             return self._lia
+
+    def writer(self):
+        """Lia's writing side on the current maps (None if the brain isn't a git repo)."""
+        from yggdras.interface import writing
+
+        lia = self.lia()
+        with self._lock:
+            if self._write is None:
+                self._write = writing.write_side(
+                    lia.library, self.root, self.flat, self.client_factory, self.note_url
+                )
+            return self._write
+
+    def tell(self, request: str, context: str = "", app: str = "chat"):
+        from yggdras.interface import writing
+        from yggdras.processing.lia.write import Card
+
+        side = self.writer()
+        if side is None:
+            return Card("refused", "Writing is off: this brain is not in a git repository.")
+        card = side.tell(request, context, app)
+        card.trace["source"] = "mcp"
+        writing.trace(card, self.traces)
+        return card
 
     def ask(self, question: str, context: str = "") -> str:
         from yggdras.processing.lia.lia import write_trace
@@ -158,6 +222,95 @@ def build_server(service: LiaService):
     def open_note(slug: str) -> str:
         return service.open_note(slug)
 
+    def result(card) -> CallToolResult:
+        text = f"{VERBATIM}\n<lia_reply>\n{card.text}\n\n{card_footer(card)}\n</lia_reply>"
+        return CallToolResult(
+            content=[TextContent(type="text", text=text)],
+            structured_content={
+                "kind": card.kind,
+                "text": card.text,
+                "pending_id": card.pending_id,
+                "sha": card.sha,
+            },
+            _meta={TOKEN_KEY: card.token} if card.token else None,
+        )
+
+    def app_name(ctx) -> str:
+        try:
+            return ctx.session.client_params.client_info.name or "chat"
+        except Exception:
+            return "chat"
+
+    write_hints = ToolAnnotations(
+        read_only_hint=False, destructive_hint=False, idempotent_hint=False, open_world_hint=False
+    )
+
+    @server.tool(
+        name="tell_lia",
+        description=TELL_DESCRIPTION,
+        annotations=write_hints,
+        meta={"ui": {"resourceUri": UI_URI}},
+    )
+    async def tell_lia(request: str, context: str = "", ctx: Context = None) -> CallToolResult:
+        import anyio
+
+        app = app_name(ctx)
+        card = await anyio.to_thread.run_sync(lambda: service.tell(request, context, app))
+        caps = ctx.client_capabilities if ctx is not None else None
+        if card.kind == "preview" and caps is not None and caps.elicitation is not None:
+            # Claude Code: Manoj answers a form; the model never sees a confirm tool.
+            answer = await ctx.elicit(f"{card.text}\n\nWrite these changes?", schema=Confirm)
+            side = service.writer()
+            if answer.action == "accept" and answer.data is not None and answer.data.write:
+                pid, token = card.pending_id, card.token
+                card = await anyio.to_thread.run_sync(
+                    lambda: side.confirm(pid, token, f"{app} (form)")
+                )
+            else:
+                card = side.cancel(card.pending_id, card.token)
+        return result(card)
+
+    def off():
+        from yggdras.processing.lia.write import Card
+
+        return result(Card("refused", "Writing is off: this brain is not in a git repository."))
+
+    @server.tool(
+        name="confirm_change", description="App only: the card's Confirm button.", meta=APP_ONLY
+    )
+    async def confirm_change(pending_id: str, token: str, ctx: Context = None) -> CallToolResult:
+        import anyio
+
+        side, app = service.writer(), f"{app_name(ctx)} (button)"
+        if side is None:
+            return off()
+        return result(await anyio.to_thread.run_sync(lambda: side.confirm(pending_id, token, app)))
+
+    @server.tool(
+        name="cancel_change", description="App only: the card's Cancel button.", meta=APP_ONLY
+    )
+    def cancel_change(pending_id: str, token: str) -> CallToolResult:
+        side = service.writer()
+        return off() if side is None else result(side.cancel(pending_id, token))
+
+    @server.tool(name="undo_change", description="App only: the card's Undo button.", meta=APP_ONLY)
+    async def undo_change(sha: str, token: str, ctx: Context = None) -> CallToolResult:
+        import anyio
+
+        side, app = service.writer(), f"{app_name(ctx)} (button)"
+        if side is None:
+            return off()
+        return result(await anyio.to_thread.run_sync(lambda: side.undo(sha, token, app)))
+
+    @server.resource(
+        UI_URI,
+        name="change-card",
+        mime_type=UI_MIME,
+        description="Lia's change card: Confirm, Cancel and Undo buttons.",
+    )
+    def change_card() -> str:
+        return Path(__file__).with_name("change_card.html").read_text(encoding="utf-8")
+
     @server.prompt(
         name="talk-to-lia",
         description="Talk to Lia for the whole conversation: every message goes to her, and "
@@ -170,9 +323,7 @@ def build_server(service: LiaService):
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(
-        prog="yggdras mcp", description="Lia as a read-only MCP server"
-    )
+    parser = argparse.ArgumentParser(prog="yggdras mcp", description="Lia as an MCP server")
     parser.add_argument("--brain", type=Path, help="brain repo (default: YGGDRAS_BRAIN)")
     parser.add_argument("--flat", type=Path, help="a flat demo brain root instead of a library")
     parser.add_argument("--model", help="Lia's model (default: YGGDRAS_LIA_MODEL)")
@@ -205,6 +356,7 @@ def main(argv: list[str] | None = None) -> int:
         service.config = default_config(
             service.model, f"http://{note_server.HOST}:{port}/note/{{slug}}#cite={{block}}"
         )
+        service.note_url = f"http://{note_server.HOST}:{port}/note/{{slug}}"
     build_server(service).run("stdio")
     return 0
 

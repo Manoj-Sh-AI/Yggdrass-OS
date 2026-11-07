@@ -37,3 +37,19 @@ Knowledge will reach the brain from several chat apps (Claude desktop and web, C
 - **Easier:** capturing facts from any app; rejecting noise; undoing a mistake.
 - **Harder:** link quality rests on Lia and the checker, so it must be measured before the write side is switched on (pass bars T5, T7, T11, T12), and Undo must stay safe when later commits touch the same notes (T4).
 - **Revisit:** if Undo is used often, approving the candidate alone is letting too many wrong links through.
+
+## Amendment 2026-11-07: direct requests
+
+Decided by Manoj on 2026-11-07, for the first write round (D36):
+
+- **Manoj's own words are the approval for adding.** When he asks in a chat to create a note, add a fact or add a link, Lia writes it at once and returns a summary card with Undo. No Approve card comes first.
+- **Changing or removing waits for a confirm.** Replacing or removing a fact, unlinking and archiving a note show a before → after preview, written only after he confirms it. The preview is held in local SQLite (D12) and expires after 24 hours.
+- **Confirm, cancel and Undo stay out of the model's reach:**
+  - in Claude Desktop, MCP Apps buttons on the card; the tools are app-only and need the card's token, which travels only in the result's `_meta`;
+  - in Claude Code, a form (elicitation) inside `tell_lia`;
+  - anywhere, `yggdras confirm`, `cancel` or `undo` in a terminal.
+- **Stop and ask still holds**, with a question card and nothing written: a checker failure after two tries, a likely duplicate, a conflicting fact, or unsure placement or sensitivity. Manoj answers in his next message.
+- **Later rounds:** cards for facts Lia spots in conversation (the button-first flow above), and uploads for ingest.
+
+**Why:** a fact Manoj states himself needs no second click, and adding is always one Undo away. Changing or removing loses the current line from Facts, so it waits for him. Even then nothing is deleted: the line goes to History.
+
