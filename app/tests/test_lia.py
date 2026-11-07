@@ -766,7 +766,7 @@ def test_a_note_already_open_is_never_sent_again(library, skills_dir):
     second = client.sent[2]["messages"][-1]["content"]
     sent = [b for b in second[0]["content"] if b["type"] == "search_result"]
     assert [b["source"] for b in sent] == ["german"]
-    assert "Already open above, not sent again: garden-plan" in second[-1]["text"]
+    assert "it is not sent again): garden-plan" in second[-1]["text"]
     assert result["reopens_skipped"] == 1
 
 
@@ -829,3 +829,12 @@ def test_the_note_page_highlights_the_cited_line_and_the_server_is_read_only(lib
         assert server.server_address[0] == "127.0.0.1"
     finally:
         server.shutdown()
+
+
+def test_asking_twice_for_nothing_new_ends_the_reading(library, skills_dir):
+    again = [open_("garden-plan", call_id=f"o{i}") for i in range(2, 4)]
+    client = FakeClient([[open_("garden-plan")], *[[a] for a in again], garden_reply(library)])
+    result = make(library, skills_dir, client).ask("What is the garden budget?")
+    assert result["idle_stop"] and len(client.sent) == 4  # open, two idle rounds, then answer
+    assert "You have every note this question needs" in str(client.sent[-1]["messages"][-1])
+    assert "three hundred" in result["answer"]
