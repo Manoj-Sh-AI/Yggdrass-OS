@@ -173,12 +173,15 @@ def test_flat_brain_renders(tmp_path):
     assert '"schema": "yggdras-map/3"' in html
 
 
-def _dom(html: Path, fragment: str = "", flags: tuple = (), as_is: bool = False) -> str:
+def _dom(
+    html: Path, fragment: str = "", flags: tuple = (), as_is: bool = False, profile=None
+) -> str:
     # 3D is the default map; tests of the 2D map ask for it, unless they name a map or want
     # the page exactly as it opens (as_is).
     if not as_is and "dim=" not in fragment:
         fragment = "dim=2d" + (f"&{fragment}" if fragment else "")
-    with tempfile.TemporaryDirectory() as profile:
+    with tempfile.TemporaryDirectory() as fresh:
+        profile = profile or fresh  # a kept profile carries the page's storage between loads
         out = subprocess.run(
             [
                 str(EDGE), "--headless=new", "--disable-gpu", "--virtual-time-budget=20000",
@@ -399,9 +402,15 @@ def test_switching_keeps_the_selected_note(library, tmp_path):
     html = viewer.render(
         structural.build_map(library, structural.mapped_shelves()), library, tmp_path
     )
-    dom = _dom(html, "select=garden&debug=switch", flags=CALM)
+    dom = _dom(html, "select=garden&debug=switch&filter=person&q=gar", flags=CALM)
     assert "data-error" not in _body(dom)
-    assert _body_json(dom, "switch") == {"in3d": "garden", "back2d": "garden"}
+    got = _body_json(dom, "switch")
+    assert (got["in3d"], got["back2d"]) == ("garden", "garden")
+    before, during, after = got["before"], got["during"], got["after"]
+    assert before["typeOff"] == ["person"] and before["search"] == "gar" and before["results"] > 0
+    for state in (during, after):  # filters and search survive the switch, both ways
+        assert {k: state[k] for k in before} == before
+    assert during["shown3d"] == before["visible"]  # 3D shows exactly what the filters leave
 
 
 @pytest.mark.skipif(not EDGE.exists(), reason="Microsoft Edge is not installed here")
@@ -496,3 +505,23 @@ def test_3d_turns_slowly_but_never_with_reduce_motion(library, tmp_path):
     assert 'data-spin="0"' in _body(_dom(html, "dim=3d", flags=CALM))
     # A selected note holds the map still.
     assert 'data-spin="0"' in _body(_dom(html, "dim=3d&select=garden", flags=WEBGL))
+
+
+@pytest.mark.skipif(not EDGE.exists(), reason="Microsoft Edge is not installed here")
+def test_the_turn_stops_on_interaction_and_stays_stopped(library, tmp_path):
+    html = viewer.render(
+        structural.build_map(library, structural.mapped_shelves()), library, tmp_path
+    )
+    got = _body_json(_dom(html, "dim=3d&debug=interact", flags=WEBGL), "interact")
+    assert got == {"before": "1", "during": "0", "after": "0"}  # resumes only after quiet
+
+
+@pytest.mark.skipif(not EDGE.exists(), reason="Microsoft Edge is not installed here")
+def test_the_last_view_is_remembered(library, tmp_path):
+    html = viewer.render(
+        structural.build_map(library, structural.mapped_shelves()), library, tmp_path / "out"
+    )
+    profile = tmp_path / "profile"
+    assert 'data-dim="3d"' in _body(_dom(html, "", flags=CALM, as_is=True, profile=profile))
+    _dom(html, "debug=click2d", flags=CALM, as_is=True, profile=profile)  # Manoj picks 2D
+    assert 'data-dim="2d"' in _body(_dom(html, "", flags=CALM, as_is=True, profile=profile))
