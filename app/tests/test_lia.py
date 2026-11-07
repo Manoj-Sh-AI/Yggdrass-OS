@@ -291,13 +291,10 @@ def test_render_puts_markers_after_cited_spans_and_footnotes_from_the_cited_bloc
         "You set it at three hundred euros. [1] The exam isn't booked yet. [2]"
     )
     assert "three hundred. [1]" in answer and "<done" not in answer
-    assert footnotes == [
-        {"n": 1, "line": "[[garden-plan]] «The garden plan has a budget of three hundred euros»"},
-        {
-            "n": 2,
-            "line": "[[german]] «The A2 exam is planned for January 2031; it is not booked yet»",
-        },
-    ]
+    assert [(f["n"], f["line"]) for f in footnotes] == [
+        (1, "[[garden-plan]] «The garden plan has a budget of three hundred euros»"),
+        (2, "[[german]] «The A2 exam is planned for January 2031; it is not booked yet»"),
+    ]  # the same line cited twice is one footnote
 
 
 def test_a_field_citation_renders_as_field_value(library):
@@ -374,9 +371,13 @@ def test_at_most_two_playbooks(skills_dir):
 def test_a_cited_answer_has_its_footnote_and_no_retry(library, skills_dir):
     client = FakeClient([[open_("garden-plan")], garden_reply(library)])
     result = make(library, skills_dir, client).ask("What is the garden budget?")
-    assert result["answer"] == (
+    assert result["answer_full"] == (
         "You set it at three hundred euros. [1]\n\n"
         "[1] [[garden-plan]] «The garden plan has a budget of three hundred euros»"
+    )
+    assert (
+        result["answer"]
+        == "You set it at three hundred euros. [1]\n\n[1] Garden Plan (garden-plan)"
     )
     assert result["citation_check"] == {"total": 1, "failed": 0, "retried": False}
     assert result["effort"] == "simple" and result["model"] == "claude-haiku-5-5"
@@ -388,7 +389,7 @@ def test_a_search_result_index_finds_its_note_across_tool_calls(library, skills_
         [[open_("garden-plan")], [tool_use("search_notes", {"query": "robotics"}, "s1")], reply]
     )
     result = make(library, skills_dir, client).ask("What is the garden budget?")
-    assert "[1] [[job-search]] «Robotics companies fit the thesis topic" in result["answer"]
+    assert "[1] [[job-search]] «Robotics companies fit the thesis topic" in result["answer_full"]
 
 
 def test_an_abstain_is_searched_by_code_first_and_sent_back_with_the_hits(library, skills_dir):
@@ -401,7 +402,7 @@ def test_an_abstain_is_searched_by_code_first_and_sent_back_with_the_hits(librar
     assert result["abstain_search"]["hits"][0][0] == "garden-plan"
     sent = client.sent[1]["messages"][-1]["content"]
     assert sent[0]["text"] == lia_mod.ABSTAIN_HITS and sent[1]["type"] == "search_result"
-    assert not result["abstain"] and "[[garden-plan]]" in result["answer"]
+    assert not result["abstain"] and "[[garden-plan]]" in result["answer_full"]
 
 
 def test_an_abstain_with_no_hits_stands(library, skills_dir):
@@ -573,7 +574,7 @@ def test_the_sibling_sweep_returns_new_facts_as_citable_results_from_medium_up(l
     client = FakeClient([[open_("thesis")], first, both])
     result = make(library, skills_dir, client).ask(medium_q)
     assert result["siblings"]["lines"] == [["german", GERMAN]]
-    assert "[[german]] «German made no progress in October 2030»" in result["answer"]
+    assert "[[german]] «German made no progress in October 2030»" in result["answer_full"]
 
 
 # ---------------------------------------------------------------- upcoming
@@ -710,9 +711,121 @@ def test_no_removed_code_paths_are_left():
     for name in ("CHECKLIST_TOOL", "checklist_reply", "CHECKLIST_NUDGE"):
         assert not hasattr(skills, name)
     fields = set(LiaConfig.__dataclass_fields__)
-    assert fields == {"model", "complex_model", "effort", "owner_names", "today", "horizon_days"}
+    assert fields == {
+        "model", "complex_model", "effort", "owner_names", "today", "horizon_days", "cite_url"
+    }  # fmt: skip
     assert [t["name"] for t in lia_mod.TOOLS] == ["open_notes", "search_notes", "load_skill"]
     import yggdras.processing.lia.library as lib_mod
 
     for name in ("l0_matches", "_neighbours", "links_line", "search_facts"):
         assert not hasattr(lib_mod.Library, name)
+
+
+# ---------------------------------------------------------------- footnote links, note server
+
+
+def test_footnotes_link_to_the_note_page_and_the_full_quote_stays_in_the_trace(library, skills_dir):
+    url = "http://127.0.0.1:8765/note/{slug}#cite={block}"
+    client = FakeClient([[open_("garden-plan")], garden_reply(library)])
+    result = make(library, skills_dir, client, cite_url=url).ask("What is the garden budget?")
+    block = at(library, "garden-plan", GARDEN_FACT)
+    assert result["answer"].endswith(
+        f"[1] [Garden Plan](http://127.0.0.1:8765/note/garden-plan#cite={block})"
+    )
+    assert "«" not in result["answer"]  # no quoted fact text in the chat reply
+    assert result["citations"][0]["block"] == block and "«" in result["citations"][0]["line"]
+
+
+def test_every_failed_support_check_is_marked_and_the_footer_agrees(library, skills_dir):
+    from yggdras.interface.mcp_server import footer
+
+    hours = at(library, "bank-role", HOURS)
+    bad = [
+        cite("It all falls in January 2031.", 0, hours),
+        cite("  And  it  is  all  in  March 2031.", 0, hours),  # odd spacing must still be marked
+        cite(" Work is 20 h a week.", 0, hours),
+        DONE_LINE,
+    ]
+    client = FakeClient([[open_("bank-role")], bad, bad])
+    result = make(library, skills_dir, client).ask("When is the exam?")
+    marks = result["answer"].count("[unsupported]")
+    assert marks == result["support"]["unsupported"] == 2
+    assert result["support"]["checked"] == 3
+    assert footer(result).endswith("✓ 1/3")
+
+
+def test_a_note_already_open_is_never_sent_again(library, skills_dir):
+    client = FakeClient(
+        [
+            [open_("garden-plan")],
+            [open_("garden-plan", "german", call_id="o2")],
+            garden_reply(library),
+        ]
+    )
+    result = make(library, skills_dir, client).ask("What is the garden budget?")
+    second = client.sent[2]["messages"][-1]["content"]
+    sent = [b for b in second[0]["content"] if b["type"] == "search_result"]
+    assert [b["source"] for b in sent] == ["german"]
+    assert "Already open above, not sent again: garden-plan" in second[-1]["text"]
+    assert result["reopens_skipped"] == 1
+
+
+def test_the_runaway_guard_stops_reading_past_a_dollar_and_says_so(library, skills_dir):
+    class Pricey(FakeClient):
+        def send(self, **kwargs):
+            reply = super().send(**kwargs)
+            reply.usage.cost_usd = 0.6
+            return reply
+
+    searches = [[tool_use("search_notes", {"query": f"q{i}"}, f"s{i}")] for i in range(2)]
+    client = Pricey([*searches, garden_reply(library)])
+    result = make(library, skills_dir, client).ask("What is the garden budget?")
+    assert result["runaway"] and len(client.sent) == 3  # two calls, then one answer, tools off
+    assert lia_mod.RUNAWAY_NOTE in str(client.sent[-1]["messages"][-1])
+
+
+def test_the_two_newest_user_messages_carry_cache_breakpoints():
+    messages = [
+        {"role": "user", "content": "Q"},
+        {"role": "assistant", "content": [{"type": "text", "text": "A"}]},
+        {"role": "user", "content": [{"type": "text", "text": "R1"}]},
+        {"role": "assistant", "content": [{"type": "text", "text": "B"}]},
+        {"role": "user", "content": [{"type": "text", "text": "R2"}]},
+    ]
+    sent = with_cache_tail(messages)
+    marked = [i for i, m in enumerate(sent) if isinstance(m["content"], list)
+              and m["content"][-1].get("cache_control")]  # fmt: skip
+    assert marked == [2, 4]
+    assert "cache_control" not in messages[4]["content"][-1]  # the history itself is untouched
+
+
+def test_five_minute_cache_writes_cost_less_than_one_hour_ones():
+    one_hour = cost_of("claude-sonnet-5-5", 0, 1_000_000, 0, 0)
+    five_min = cost_of("claude-sonnet-5-5", 0, 1_000_000, 0, 0, write_5m=1_000_000)
+    assert one_hour == pytest.approx(4.0) and five_min == pytest.approx(2.5)
+
+
+def test_the_note_page_highlights_the_cited_line_and_the_server_is_read_only(library):
+    import urllib.error
+    import urllib.request
+
+    from yggdras.interface import note_server
+
+    server = note_server.start(lambda: library, port=0)
+    port = server.server_address[1]
+    try:
+        page = urllib.request.urlopen(f"http://127.0.0.1:{port}/note/garden-plan").read().decode()
+        block = at(library, "garden-plan", GARDEN_FACT)
+        assert f'id="b{block}"' in page and "The garden plan has a budget" in page
+        assert "cite=" in page and "#select=garden-plan&amp;center=garden-plan" not in page
+        assert "/graph/graph.html#select=garden-plan&center=garden-plan" in page
+        with pytest.raises(urllib.error.HTTPError) as missing:
+            urllib.request.urlopen(f"http://127.0.0.1:{port}/note/nope")
+        assert missing.value.code == 404
+        post = urllib.request.Request(f"http://127.0.0.1:{port}/note/garden-plan", data=b"x")
+        with pytest.raises(urllib.error.HTTPError) as refused:
+            urllib.request.urlopen(post)
+        assert refused.value.code == 405
+        assert server.server_address[0] == "127.0.0.1"
+    finally:
+        server.shutdown()

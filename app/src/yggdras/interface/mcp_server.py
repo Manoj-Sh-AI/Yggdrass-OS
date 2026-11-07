@@ -60,11 +60,24 @@ OPEN_DESCRIPTION = (
 )
 
 
-def default_config(model: str):
-    """Lia's one config (D35): *model* for simple and medium questions, Sonnet for complex."""
+def default_config(model: str, cite_url: str | None = None):
+    """Lia's one config (D35): *model* for simple and medium questions, Sonnet for complex;
+    footnotes link to the note server when *cite_url* is set."""
     from yggdras.processing.lia.lia import LiaConfig
 
-    return LiaConfig(model=model, owner_names=config.owner_names())
+    return LiaConfig(model=model, owner_names=config.owner_names(), cite_url=cite_url)
+
+
+def footer(result: dict) -> str:
+    """The closing line: cost, time, and claims that passed the support check out of those
+    checked. Every failed one carries an inline [unsupported], so the two always agree."""
+    support = result.get("support") or {}
+    checked = support.get("checked", 0)
+    good = checked - support.get("unsupported", 0)
+    return (
+        f"— Lia · ${result['cost_usd']:.4f} · {result['latency_ms'] / 1000:.1f} s · "
+        f"✓ {good}/{checked}"
+    )
 
 
 def fingerprint(root: Path, skills: Path) -> tuple:
@@ -85,9 +98,10 @@ class LiaService:
         flat: bool = False,
         model: str = "claude-haiku-5-5",
         traces: Path | None = None,
+        cite_url: str | None = None,
     ):
         self.root, self.skills, self.flat, self.model = root, skills, flat, model
-        self.config = default_config(model)
+        self.config = default_config(model, cite_url)
         self.client_factory = client_factory
         self.traces = traces or config.local_data() / "traces"
         self._lock = threading.Lock()
@@ -117,12 +131,7 @@ class LiaService:
         result["source"] = "mcp"
         result["context"] = context
         write_trace(result, self.traces)
-        check = result["citation_check"]
-        footer = (
-            f"— Lia · ${result['cost_usd']:.4f} · {result['latency_ms'] / 1000:.1f} s · "
-            f"✓ {check['total'] - check['failed']}/{check['total']}"
-        )
-        return f"{VERBATIM}\n<lia_reply>\n{result['answer']}\n\n{footer}\n</lia_reply>"
+        return f"{VERBATIM}\n<lia_reply>\n{result['answer']}\n\n{footer(result)}\n</lia_reply>"
 
     def open_note(self, slug: str) -> str:
         library = self.lia().library
@@ -181,15 +190,21 @@ def main(argv: list[str] | None = None) -> int:
     if not skills:
         print("no skills folder: pass --skills", file=sys.stderr)
         return 2
+    from yggdras.interface import note_server
     from yggdras.processing.lia.models import AnthropicClient
 
-    service = LiaService(
-        args.flat or brain / "library",
-        skills,
-        AnthropicClient,
-        flat=bool(args.flat),
-        model=args.model or config.lia_model(),
+    root = args.flat or brain / "library"
+    port = config.notes_port()
+    viewer = None if args.flat else note_server.build_viewer(root, config.local_data() / "viewer")
+    service = LiaService(root, skills, AnthropicClient, flat=bool(args.flat),
+                         model=args.model or config.lia_model())  # fmt: skip
+    served = note_server.start(
+        lambda: service.lia().library, port, viewer.parent if viewer else None
     )
+    if served is not None:  # footnotes link to the note pages; if the port is taken, plain text
+        service.config = default_config(
+            service.model, f"http://{note_server.HOST}:{port}/note/{{slug}}#cite={{block}}"
+        )
     build_server(service).run("stdio")
     return 0
 

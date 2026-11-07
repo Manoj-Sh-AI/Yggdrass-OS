@@ -26,9 +26,9 @@ class Usage:
     cache_write: int = 0
     cache_read: int = 0
     output_tokens: int = 0
-    cache_write_5m: int = 0  # the part of cache_write written with the 5-minute TTL
     cost_usd: float = 0.0
     latency_ms: float = 0.0
+    cache_write_5m: int = 0  # the part of cache_write written with the 5-minute TTL (1.25x)
 
     def as_dict(self) -> dict:
         return asdict(self)
