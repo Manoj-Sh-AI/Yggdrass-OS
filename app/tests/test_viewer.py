@@ -544,7 +544,10 @@ def test_3d_is_the_2d_map_with_depth(tmp_path):
     out = tmp_path / "out"
     viewer.main([str(FIXTURE), "--flat", "--out-dir", str(out)])
     same = _body_json(_dom(out / "graph.html", "dim=3d&debug=same", flags=CALM), "same")
-    # Head-on, every note is where 2D puts it. Under headless virtual time vis may nudge a note
-    # by under a pixel after it reports the layout done, so allow less than a disc.
-    assert same["off"] < 2
-    assert same["depth"] > 1  # and the map has depth
+    # Real depth: side-on, the map is at least half as deep as it is wide (not a flat sheet).
+    assert same["depth"] >= 0.5
+    # Head-on it is still recognisably the 2D map: notes move on average under half the map's
+    # radius from their 2D place (0.15 on the real brain, 0.33 on this small fixture).
+    assert same["off"] < 0.5
+    # And no group is flung far out (unlinked groups stay near, as in 2D).
+    assert same["far"] < 3

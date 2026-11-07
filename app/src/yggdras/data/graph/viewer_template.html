@@ -1248,45 +1248,70 @@ function unitVector(rnd) {
   const z = 2 * rnd() - 1, a = 2 * Math.PI * rnd(), r = Math.sqrt(1 - z * z);
   return { x: r * Math.cos(a), y: z, z: r * Math.sin(a) };
 }
+// Tuned on the real brain: head-on stays close to 2D (mean shift 0.15 of the map radius)
+// while depth reaches about 0.85 of the map width.
+const ANCHOR3D = 0.3;
 function positions3d() {
   if (g3.pos) return g3.pos;
-  // The 3D map is the 2D map with depth: x and y are the 2D places as they are now (whatever
-  // layout, after any drags), so seen head-on it is the same picture. Depth comes from a short,
-  // deterministic relaxation in z alone: notes that sit close in 2D push apart in depth, links
-  // pull their two notes to a similar depth, and a weak pull keeps the map a slab, not a cloud.
+  // A real 3D web that starts from the 2D map: every note begins at its 2D place with a
+  // depth spread as wide as the map, then a deterministic 3D force layout runs (notes push
+  // apart in every direction, links pull their two notes together). A gentle pull towards each note's 2D place keeps the head-on view
+  // recognisably the 2D map, while turning it shows depth as deep as the map is wide.
   const flat = network.getPositions(), nodes = DATA.nodes, M = nodes.length, rnd = lcg(11);
   const ps = nodes.map((n) => ({ x: flat[n.id].x, y: -flat[n.id].y, z: 0 }));
   let cx = 0, cy = 0;
   for (const q of ps) { cx += q.x / M; cy += q.y / M; }
   for (const q of ps) { q.x -= cx; q.y -= cy; }
+  const home = ps.map((q) => ({ x: q.x, y: q.y }));
   const radii = ps.map((q) => Math.hypot(q.x, q.y)).sort((a, b) => a - b);
-  const R = Math.max(radii[Math.floor((M - 1) * 0.9)] || 1, 1), depth = R * 0.6;
-  for (const q of ps) q.z = (rnd() - 0.5) * depth;
+  const R = Math.max(radii[Math.floor((M - 1) * 0.9)] || 1, 1);
+  for (const q of ps) q.z = (rnd() * 2 - 1) * R * 0.9;
   const idx = new Map(nodes.map((n, i) => [n.id, i]));
-  const links = DATA.edges.map((e) => [idx.get(e.from), idx.get(e.to)]);
-  const K = R / 4, iters = Math.max(30, Math.min(200, Math.floor(3e7 / Math.max(M * M, 1))));
-  const fz = new Float64Array(M);
-  let temp = depth * 0.2;
+  const links = DATA.edges.map((e) => [idx.get(e.from), idx.get(e.to)]).filter(([a, b]) => a !== b);
+  // The natural spacing: the median 2D link length (the 2D layout already chose it).
+  const lens = links.map(([a, b]) => Math.hypot(ps[a].x - ps[b].x, ps[a].y - ps[b].y)).sort((a, b) => a - b);
+  const K = Math.max(lens[Math.floor(lens.length / 2)] || R / 4, 10);
+  const iters = Math.max(40, Math.min(300, Math.floor(4e7 / Math.max(M * M, 1))));
+  const CUT2 = (K * 4) ** 2;
+  const fx = new Float64Array(M), fy = new Float64Array(M), fz = new Float64Array(M);
+  let temp = K;
   for (let it = 0; it < iters; it++) {
-    fz.fill(0);
+    fx.fill(0); fy.fill(0); fz.fill(0);
     for (let i = 0; i < M; i++) {
       const a = ps[i];
       for (let j = i + 1; j < M; j++) {
-        const b = ps[j], x = a.x - b.x, y = a.y - b.y, z = a.z - b.z;
+        const b = ps[j];
+        let x = a.x - b.x, y = a.y - b.y, z = a.z - b.z;
         const d2 = Math.max(x * x + y * y + z * z, 1);
-        if (d2 > K * K * 36) continue;
-        const s = (K * K * z) / (d2 * Math.sqrt(d2));
-        fz[i] += s; fz[j] -= s;
+        if (d2 > CUT2) continue; // only near notes push: far groups are not shoved away
+        const s = (K * K) / d2;
+        x *= s; y *= s; z *= s;
+        fx[i] += x; fy[i] += y; fz[i] += z; fx[j] -= x; fy[j] -= y; fz[j] -= z;
       }
     }
-    for (const [a, b] of links) { const s = (ps[b].z - ps[a].z) * 0.08; fz[a] += s; fz[b] -= s; }
-    for (let i = 0; i < M; i++) {
-      const u = ps[i].z / depth;
-      fz[i] -= ps[i].z * 0.04 * u * u; // soft walls: the map stays a slab
-      ps[i].z += Math.max(-temp, Math.min(temp, fz[i]));
+    for (const [a, b] of links) {
+      const p = ps[a], q = ps[b];
+      const x = q.x - p.x, y = q.y - p.y, z = q.z - p.z, s = Math.hypot(x, y, z) / K;
+      fx[a] += x * s; fy[a] += y * s; fz[a] += z * s; fx[b] -= x * s; fy[b] -= y * s; fz[b] -= z * s;
     }
-    temp = Math.max(depth * 0.005, temp * 0.98);
+    for (let i = 0; i < M; i++) {
+      const q = ps[i], h = home[i];
+      // Towards the 2D place (x, y only), and softly back from beyond the map's width (z).
+      fx[i] += (h.x - q.x) * ANCHOR3D; fy[i] += (h.y - q.y) * ANCHOR3D;
+      fz[i] -= q.z * ANCHOR3D * 0.25; // a gentle pull to the middle: unlinked groups stay near
+      const len = Math.hypot(fx[i], fy[i], fz[i]);
+      if (len > 0) { const step = Math.min(len, temp) / len; q.x += fx[i] * step; q.y += fy[i] * step; q.z += fz[i] * step; }
+    }
+    temp = Math.max(K * 0.02, temp * 0.985);
   }
+  // Fit back to the 2D map's size and place (one scale for all three axes, so depth keeps
+  // its proportion): least squares between the head-on view and the 2D places.
+  let mx = 0, my = 0, mz = 0;
+  for (const q of ps) { mx += q.x / M; my += q.y / M; mz += q.z / M; }
+  let num = 0, den = 0;
+  ps.forEach((q, i) => { num += (q.x - mx) * home[i].x + (q.y - my) * home[i].y; den += (q.x - mx) ** 2 + (q.y - my) ** 2; });
+  const s = den > 0 ? num / den : 1;
+  for (const q of ps) { q.x = (q.x - mx) * s; q.y = (q.y - my) * s; q.z = (q.z - mz) * s; }
   const pos = {};
   nodes.forEach((n, i) => { pos[n.id] = ps[i]; });
   g3.pos = pos; g3.R = R;
@@ -1294,17 +1319,21 @@ function positions3d() {
 }
 // Head-on, at the distance that shows what the 2D view fits, so 3D opens on the same picture.
 function home3d(ms) {
+  // Fit the whole web from any side: centre on its middle and stand back far enough that a
+  // sphere around every note fits the narrower side of the view, whichever way it is turned.
   const pos = positions3d(), cam = g3.graph.camera(), list = [...visible].map((id) => pos[id]);
-  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
-  for (const q of list) { x0 = Math.min(x0, q.x); x1 = Math.max(x1, q.x); y0 = Math.min(y0, q.y); y1 = Math.max(y1, q.y); }
-  if (!list.length) { x0 = y0 = -1; x1 = y1 = 1; }
+  const mid = { x: 0, y: 0, z: 0 };
+  for (const q of list) { mid.x += q.x / list.length; mid.y += q.y / list.length; mid.z += q.z / list.length; }
+  const far = list.map((q) => Math.hypot(q.x - mid.x, q.y - mid.y, q.z - mid.z)).sort((a, b) => a - b);
+  const rb = Math.max(far[far.length - 1] || 1, 1); // every note in view, like the 2D fit
   const zoom = Number(hash.get("zoom")) > 0 && !g3.homed ? Number(hash.get("zoom")) : 1;
   const on = !g3.homed && DATA.nodes.find((m) => m.slug === hash.get("center"));
-  const at = on ? pos[on.id] : { x: (x0 + x1) / 2, y: (y0 + y1) / 2, z: 0 };
-  const t = Math.tan((cam.fov * Math.PI) / 360), aspect = box3.clientWidth / Math.max(box3.clientHeight, 1);
-  const need = Math.max((y1 - y0) / 2, (x1 - x0) / 2 / aspect) * 1.08 + 30;
+  const at = on ? pos[on.id] : mid;
+  const half = (cam.fov * Math.PI) / 360, aspect = box3.clientWidth / Math.max(box3.clientHeight, 1);
+  const fit = Math.min(Math.sin(half), Math.sin(Math.atan(Math.tan(half) * aspect)));
+  const D = (rb * 0.9) / fit / zoom;
   // #turn=<degrees> opens the map turned about its upright axis (head-on is 0).
-  const turn = (!g3.homed && Number(hash.get("turn"))) || 0, a = (turn * Math.PI) / 180, D = need / t / zoom;
+  const turn = (!g3.homed && Number(hash.get("turn"))) || 0, a = (turn * Math.PI) / 180;
   g3.homed = true;
   g3.graph.cameraPosition({ x: at.x + D * Math.sin(a), y: at.y, z: at.z + D * Math.cos(a) }, at, ms);
 }
@@ -1555,9 +1584,10 @@ async function setDim(d, remember) {
       // How far each 3D note sits from its 2D place (y flipped, both centred): should be 0.
       const flat = network.getPositions(), pos = positions3d(), ids = DATA.nodes.map((n) => n.id);
       const mx = ids.reduce((s, id) => s + flat[id].x, 0) / ids.length, my = ids.reduce((s, id) => s + flat[id].y, 0) / ids.length;
-      const off = Math.max(...ids.map((id) => Math.max(Math.abs(pos[id].x - (flat[id].x - mx)), Math.abs(pos[id].y + (flat[id].y - my)))));
-      const depth = Math.max(...ids.map((id) => Math.abs(pos[id].z)));
-      document.body.dataset.same = JSON.stringify({ off, depth });
+      const off = ids.reduce((s, id) => s + Math.hypot(pos[id].x - (flat[id].x - mx), pos[id].y + (flat[id].y - my)), 0) / ids.length;
+      const span = (k) => Math.max(...ids.map((id) => pos[id][k])) - Math.min(...ids.map((id) => pos[id][k]));
+      const far = Math.max(...ids.map((id) => Math.hypot(pos[id].x, pos[id].y, pos[id].z))) / g3.R;
+      document.body.dataset.same = JSON.stringify({ off: off / g3.R, depth: span("z") / Math.max(span("x"), span("y")), far });
     }
     document.body.dataset.ready3d = "1";
   } else {
