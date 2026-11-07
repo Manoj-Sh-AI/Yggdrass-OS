@@ -245,3 +245,54 @@ def test_a_fix_that_sends_one_field_keeps_the_rest_and_a_confirmed_upload_is_one
     assert commits(brain)[0] == "lia: ingest meeting.md"
     source = (brain / "library/13-sources/meeting.md").read_text(encoding="utf-8")
     assert 'name: "Thesis meeting notes"' in source
+
+
+def test_facts_about_things_without_a_note_stay_in_the_source_note(brain, tmp_path):
+    facts = [{"text": "Green tea tastes best at about 75 to 80 degrees"}]
+    replies = [[tool_use("describe_source", {**SOURCE, "facts": facts})], done()]
+    s, _ = side(brain, tmp_path, replies)
+    card = s.ingest("tea.md", b"# Tea\n\nGreen tea tastes best at 75 to 80 degrees.\n")
+    assert card.kind == "summary", card.text
+    source = (brain / "library/13-sources/tea.md").read_text(encoding="utf-8")
+    assert (
+        f"- Green tea tastes best at about 75 to 80 degrees. (src: upload tea.md, {TODAY})"
+        in source
+    )
+
+
+def test_without_a_name_from_lia_the_source_note_takes_the_files_title(brain, tmp_path):
+    replies = [[tool_use("describe_source", {**SOURCE, "name": ""})], done()]
+    s, _ = side(brain, tmp_path, replies)
+    assert s.ingest("meeting.md", SHORT).kind == "summary"
+    source = (brain / "library/13-sources/meeting.md").read_text(encoding="utf-8")
+    assert 'name: "Thesis meeting"' in source
+
+
+def test_lias_copy_of_a_chunk_link_is_dropped_and_a_slug_is_no_name(brain, tmp_path):
+    data = long_file()
+    chunks = chunk_mod.chunks(data.decode())
+    replies = [[tool_use("describe_source", {**SOURCE, "name": "apollo-notes"})], done()]
+    for _ in chunks:
+        twice = [
+            {"verb": "part_of", "to": "apollo-notes"},
+            {"verb": "about", "to": "ana"},
+            {"verb": "about", "to": "ana"},
+        ]
+        replies += [
+            [
+                tool_use(
+                    "describe_chunk",
+                    {"description": "Section on part notes", "summary": "A part.", "links": twice},
+                )
+            ],
+            done(),
+        ]
+    s, _ = side(brain, tmp_path, replies)
+    card = s.ingest("apollo-notes.md", data)
+    assert card.kind == "summary", card.text
+    first = (brain / "library/13-sources/apollo-notes/apollo-notes-ch-01.md").read_text(
+        encoding="utf-8"
+    )
+    assert first.count("- part_of [[apollo-notes]]") == 1 and first.count("[[ana]]") == 1
+    source = (brain / "library/13-sources/apollo-notes.md").read_text(encoding="utf-8")
+    assert 'name: "Apollo notes"' in source

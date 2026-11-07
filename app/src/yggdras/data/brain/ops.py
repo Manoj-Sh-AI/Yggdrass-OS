@@ -145,6 +145,7 @@ class Builder:
         for item in op.get("links") or []:
             verb, to = str(item.get("verb", "")).strip(), str(item.get("to", "")).strip()
             links.append((verb, self.slug_of(to) if to in self.notes or self._known(to) else to))
+        links = list(dict.fromkeys(links))  # the same link twice is written once
         src = str(op.get("src") or "manoj")
         facts = [
             fact_line(f["text"], self.today, f.get("valid", ""), src) for f in op.get("facts") or []
