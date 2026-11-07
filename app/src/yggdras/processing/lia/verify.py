@@ -33,7 +33,9 @@ LEAK = re.compile(
     r"(earlier draft|previous (?:answer|draft|version)|my (?:first|last) answer|"
     r"I(?:'ve| have)? (?:dropped|removed|corrected|fixed|rewritten|revised)|after re-?checking|"
     r"re-?checked|corrected citations?|answer again|revised answer|on second look|"
-    r"(?:the|a) (?:citation |support )?check (?:failed|flagged|found)|as (?:noted|flagged) above)",
+    r"(?:the|a) (?:citation |support )?check (?:failed|flagged|found)|as (?:noted|flagged) above|"
+    r"(?:lines?|facts?|notes?|results?) (?:I was|I've been|I have been) (?:given|handed|sent)|"
+    r"handed back to me)",
     re.IGNORECASE,
 )
 NEGATION = re.compile(r"\b(not|no|never|none|nothing|n't|without|yet to)\b|n't\b", re.IGNORECASE)
