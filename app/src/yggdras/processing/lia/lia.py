@@ -39,6 +39,7 @@ EMPTY_ERROR = "Lia couldn't put an answer together this time. Please ask again."
 MAX_TURNS = 10  # model calls per question, before the checks
 MAX_SEARCHES = 3  # "look wider with new words", at most three rounds
 CACHE = {"type": "ephemeral", "ttl": "1h"}
+IDLE_ROUNDS = 2  # rounds in a row that only repeat requests (re-opens, searches past the limit)
 RUNAWAY_USD = 1.0  # not a cap: past this, one question stops reading and answers with what it has
 DEFAULT_MODEL = "claude-haiku-5-5"
 COMPLEX_MODEL = "claude-sonnet-5-5"
@@ -252,8 +253,13 @@ class Lia:
             )
             if again:  # never re-open: the note is already in this conversation
                 state["reopens_skipped"] += len(again)
-                notices.append("Already open above, not sent again: " + ", ".join(again))
+                notices.append(
+                    "Already open earlier in this conversation (read it there; it is not sent "
+                    "again): " + ", ".join(again)
+                )
             self._register(state, results)
+            if asked and not results and len(again) == len(asked):
+                state["repeats"] += 1  # only notes she already has
             state["steps"].append({**step, "returned": [s for s, _ in results]})
             if state["effort"] == "complex" and not state["hints_given"]:
                 hint = self._hints(state)
@@ -265,6 +271,7 @@ class Lia:
             return content
         if name == "search_notes":
             if state["searches"] >= MAX_SEARCHES:
+                state["repeats"] += 1
                 state["steps"].append({**step, "returned": "limit"})
                 return (
                     f"Search limit reached ({MAX_SEARCHES} per question). "
@@ -307,6 +314,9 @@ class Lia:
             if sum(c["cost_usd"] for c in state["calls"]) >= RUNAWAY_USD:
                 state["runaway"] = True
                 break
+            if state["idle"] >= IDLE_ROUNDS:  # asking again for what she already has
+                state["idle_stop"] = True
+                break
             state["turn"] += 1
             reply = client.send(
                 system=self.system, tools=self.tools, messages=with_cache_tail(messages)
@@ -323,10 +333,15 @@ class Lia:
                 results.append({"type": "text", "text": "\n\n".join(state["notices"])})
                 state["notices"] = []
             messages.append({"role": "user", "content": results})
+            only_repeats = state["repeats"] == len(reply.tool_calls)
+            state["idle"] = state["idle"] + 1 if only_repeats else 0
+            state["repeats"] = 0
         # Out of turns (or past the runaway line) while still reading: one last call, tools off.
         note = (
             RUNAWAY_NOTE
             if state["runaway"]
+            else "You have every note this question needs: answer now from what you have."
+            if state["idle_stop"]
             else "Tool limit reached: answer now from what you have."
         )
         if isinstance(messages[-1]["content"], str):
@@ -435,6 +450,9 @@ class Lia:
             "notices": [],
             "reopens_skipped": 0,
             "runaway": False,
+            "repeats": 0,
+            "idle": 0,
+            "idle_stop": False,
             "skills_loaded": [],
             "done": None,
         }
@@ -530,6 +548,7 @@ class Lia:
             "support": {"checked": checked, "unsupported": len(unsupported)},
             "runaway": state["runaway"],
             "reopens_skipped": state["reopens_skipped"],
+            "idle_stop": state["idle_stop"],
             "abstain": is_abstain(answer),
             "third_person": checks.third_person(answer, self.config.owner_names),
             "citations": footnotes,
