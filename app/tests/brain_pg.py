@@ -107,7 +107,7 @@ def note(slug, name, type_, area, *, folder, extra="", aliases=(), facts=(), his
     ]
     head += [line for line in extra.splitlines() if line]
     body = [*head, "---", "", "## Summary", "", summary, "", "## Facts", ""]
-    body += [f"- {f} (src: self, 2030-01-05)" for f in facts]
+    body += [f"- {f}" if "(src:" in f else f"- {f} (src: self, 2030-01-05)" for f in facts]
     if history:
         body += ["", "## History", ""] + [f"- {h} (src: self, 2030-01-05; until: 2030-02-01)"
                                           for h in history]  # fmt: skip
@@ -116,31 +116,35 @@ def note(slug, name, type_, area, *, folder, extra="", aliases=(), facts=(), his
 
 
 def brain_files(*, messy: bool = False) -> dict[str, str]:
-    """An invented pottery-hobby brain: 11 notes, hubs, a chunked source, an inverse-verb
-    link, a mention. *messy* adds what the loader must refuse to place."""
+    """An invented pottery-hobby brain: 12 notes, hubs, a chunked source, an inverse-verb
+    link, mentions, a cross note, several secondary areas, aliases out of alphabetical order
+    and dates inside fact lines. *messy* adds what the loader must refuse to place."""
     notes = [
         note("hub-learning", "Learning hub", "hub", "04-learning", folder="04-learning",
              aliases=["learning hub"], facts=(),
              links=["lists [[pottery-course]]", "lists [[glaze-chemistry]]"]),
         note("pottery-course", "Pottery Course", "project", "04-learning", folder="04-learning",
-             extra="status: active\nreview: 2030-05-01", aliases=["clay class", "pottery"],
-             facts=["The course runs on Saturdays", "Taught by [[ada-lin]] at the studio"],
+             extra="status: active\nreview: 2030-05-01", aliases=["pottery", "clay class"],
+             facts=["The course runs on Saturdays", "Taught by [[ada-lin]] at the studio",
+                    "The exhibition is on 2030-07-15"],
              history=["The course ran on Fridays"],
              links=["related_to [[glaze-chemistry]]", "uses [[wheel-throwing]]",
                     "created_by [[ada-lin]]"]),
         note("glaze-chemistry", "Glaze Chemistry", "concept", "04-learning", folder="10-ideas",
-             extra="also: [08-rest-joy]", facts=["Glazes melt into glass"],
+             extra="also: [08-rest-joy, 01-health]", facts=["Glazes melt into glass"],
              links=["broader [[wheel-throwing]]", "has_part [[pottery-course]]"]),
         note("wheel-throwing", "Wheel Throwing", "framework", "08-rest-joy", folder="10-ideas",
              facts=["Centre the clay first"], links=["related_to [[ada-lin]]"]),
         note("ada-lin", "Ada Lin", "person", "08-rest-joy", folder="11-people",
-             extra="sensitivity: high", aliases=["Ada"], facts=["Ada teaches pottery"],
+             extra="sensitivity: high", aliases=["Ada"],
+             facts=["Ada teaches pottery",
+                    "Ada runs the studio (src: self, 2030-01-05; valid: 2030-02..)"],
              links=["knows [[pottery-course]]"]),
         note("hub-rest-joy", "Rest and joy hub", "hub", "08-rest-joy", folder="08-rest-joy",
              aliases=["fun hub"], links=["lists [[kiln-decision]]", "lists [[studio-open-day]]"]),
         note("kiln-decision", "Kiln Decision", "decision", "08-rest-joy", folder="08-rest-joy",
              extra="status: decided\ndecided: 2030-02-10\nreview: 2030-06-01",
-             facts=["Chose the shared kiln"],
+             facts=["Chose the shared kiln", "The kiln arrives in March 2030"],
              links=["uses [[wheel-throwing]]", "informed_by [[clay-handbook]]"]),
         note("studio-open-day", "Studio Open Day", "event", "08-rest-joy", folder="08-rest-joy",
              extra="date: 2030-04-12\nend: 2030-04-13", facts=["Open day at the studio"],
@@ -155,16 +159,21 @@ def brain_files(*, messy: bool = False) -> dict[str, str]:
              folder="13-sources/clay-handbook", extra='pages: "21 to 40"',
              facts=["Part two covers firing"], links=["part_of [[clay-handbook]]"]),
     ]  # fmt: skip
+    notes.append(
+        note("odd-idea", "Odd Idea", "concept", "cross", folder="10-ideas",
+             extra="also: [04-learning]", aliases=["odd one"],
+             summary="An idea that came from [[wheel-throwing]].",
+             facts=["An idea for no single area"], links=["related_to [[glaze-chemistry]]"])
+    )  # fmt: skip
     if messy:
         notes += [
-            note("odd-idea", "Odd Idea", "concept", "cross", folder="10-ideas",
-                 aliases=["pottery"], facts=["An idea for no single area"],
-                 links=["related_to [[glaze-chemistry]]"]),
             note("night-walks", "Night Walks", "topic", "01-health", folder="01-health",
-                 extra="also: [08-rest-joy, 02-relationships]\nreview: someday",
-                 aliases=["Ada"], facts=["Walks help sleep"],
+                 extra="review: someday", aliases=["Ada"], facts=["Walks help sleep"],
                  links=["related_to [[night-walks]]", "related_to [[missing-note]]",
-                        "related_to [[odd-idea]]", "frobs [[ada-lin]]"]),
+                        "frobs [[ada-lin]]"]),
+            note("lost-book-part-1", "Lost Book, part 1", "source", "04-learning",
+                 folder="13-sources/lost-book", extra='pages: "1 to 9"',
+                 facts=["A chunk whose source note is missing"], links=["about [[odd-idea]]"]),
         ]  # fmt: skip
     files = {f"library/{rel}": text for rel, text in notes}
     files["library/00-manual/taxonomy.md"] = TAXONOMY

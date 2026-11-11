@@ -1,8 +1,8 @@
 """The three maps, rendered from the brain's rows into brain.map_cache.
 
-Same pipe-row format as the markdown build (data/maps). Every query has a total ORDER BY, so
-the same rows always give byte-identical text: Lia's prompt cache depends on it. Lia reads
-the maps from map_cache, never from live queries.
+Same pipe-row format as the markdown build (data/maps), byte for byte. Every query has a
+total ORDER BY, so the same rows always give byte-identical text: Lia's prompt cache depends
+on it. Lia reads the maps from map_cache, never from live queries.
 
 map_version is a hash of the rendered text (rendered with its own version field blank, then
 written into the header), so it changes when, and only when, the text changes.
@@ -24,7 +24,9 @@ from yggdras.data.maps.relations import relationship_map
 from yggdras.data.maps.shelf import shelf_map
 
 MAPS = ("atlas", "shelf", "relationships")
-SOURCES_SHELF = 13
+# `area: cross` is a real area in the database, 09-cross. The maps show it as today: the
+# "## cross" section and the registries' cross-area count, never as an atlas row.
+CROSS_CODE, CROSS_NAME = "09", "cross"
 
 
 @dataclass
@@ -34,8 +36,13 @@ class RowNote(NoteMeta):
     parent_slug: str = ""
 
     @property
-    def parent(self) -> str:  # a chunk's source: its part_of target (see chunk_parents)
+    def parent(self) -> str:  # a chunk's source (notes.parent_slug)
         return self.parent_slug
+
+
+def area_value(code: str, name: str) -> str:
+    """The value a note's frontmatter holds for this area: `04-learning`, or `cross`."""
+    return st.CROSS if code == CROSS_CODE else f"{code}-{name}"
 
 
 def _iso(value) -> str:
@@ -79,11 +86,20 @@ def load_rows(conn) -> tuple[list[tuple], dict[str, RowNote], list[dict]]:
         "SELECT area_code, name, hub_slug, belongs_here, not_here FROM brain.areas "
         'ORDER BY sort_order, area_code COLLATE "C"',
     )
+    names = {code: name for code, name, *_ in areas}
     aliases: dict[str, list[str]] = {}
     for alias, slug in _query(
-        conn, 'SELECT alias, slug FROM brain.aliases ORDER BY slug COLLATE "C", alias COLLATE "C"'
+        conn,
+        'SELECT alias, slug FROM brain.aliases ORDER BY slug COLLATE "C", ord, alias COLLATE "C"',
     ):
         aliases.setdefault(slug, []).append(alias)
+    also: dict[str, list[str]] = {}
+    for slug, code in _query(
+        conn,
+        "SELECT slug, area_code FROM brain.note_areas WHERE NOT is_primary "
+        'ORDER BY slug COLLATE "C", ord, area_code COLLATE "C"',
+    ):
+        also.setdefault(slug, []).append(area_value(code, names[code]))
     # Bodies are read here, while building the cache, for the two flags only the text holds
     # (pages, superseded facts). A shelf read never touches them.
     bodies = dict(
@@ -99,15 +115,13 @@ def load_rows(conn) -> tuple[list[tuple], dict[str, RowNote], list[dict]]:
     ]
     notes: dict[str, RowNote] = {}
     for (
-        slug, title, type_, code, name, also_code, also_name, shelf_no, description, status,
-        sensitivity, review, updated,
+        slug, title, type_, code, parent, shelf_no, description, status, sensitivity, review,
+        updated,
     ) in _query(
         conn,
-        "SELECT n.slug, n.title, n.type, n.area_code, a.name, n.also_area, x.name, n.shelf_no, "
-        "n.description, n.status, n.sensitivity, n.review_date, n.updated_at "
-        "FROM brain.notes n JOIN brain.areas a ON a.area_code = n.area_code "
-        "LEFT JOIN brain.areas x ON x.area_code = n.also_area "
-        "WHERE n.archived_at IS NULL ORDER BY n.slug COLLATE \"C\"",
+        "SELECT slug, title, type, area_code, parent_slug, shelf_no, description, status, "
+        "sensitivity, review_date, updated_at FROM brain.notes "
+        'WHERE archived_at IS NULL ORDER BY slug COLLATE "C"',
     ):  # fmt: skip
         body = bodies.get(slug, "")
         notes[slug] = RowNote(
@@ -115,8 +129,8 @@ def load_rows(conn) -> tuple[list[tuple], dict[str, RowNote], list[dict]]:
             name=title,
             type=type_,
             path=f"{shelf_no:02d}" if shelf_no is not None else "",
-            area=f"{code}-{name}",
-            also=[f"{also_code}-{also_name}"] if also_code else [],
+            area=area_value(code, names[code]),
+            also=also.get(slug, []),
             description=description or "",
             aliases=aliases.get(slug, []),
             status=status or "",
@@ -125,40 +139,20 @@ def load_rows(conn) -> tuple[list[tuple], dict[str, RowNote], list[dict]]:
             pages=str(_frontmatter(body).get("pages") or ""),
             sensitive=(sensitivity or "").lower() == "high",
             has_history=_has_history(body),
+            parent_slug=parent or "",
         )
-    for chunk, parent in chunk_parents(notes, edges).items():
-        notes[chunk].parent_slug = parent
     return areas, notes, edges
 
 
-def chunk_parents(notes: dict[str, RowNote], edges: list[dict]) -> dict[str, str]:
-    """A chunk is a sources-shelf note with `pages` (the format allows pages on chunks only);
-    its parent is the one sources-shelf note it is `part_of`."""
-    out = {}
-    for slug, n in notes.items():
-        if not n.pages or n.path != f"{SOURCES_SHELF:02d}":
-            continue
-        targets = sorted(
-            e["to_slug"]
-            for e in edges
-            if e["from_slug"] == slug
-            and e["reason"] == "part_of"
-            and notes.get(e["to_slug"]) is not None
-            and notes[e["to_slug"]].path == f"{SOURCES_SHELF:02d}"
-        )
-        if len(targets) == 1:
-            out[slug] = targets[0]
-    return out
-
-
 def atlas(areas: list[tuple], notes: dict[str, RowNote], version: str) -> str:
+    life = [a for a in areas if a[0] != CROSS_CODE]
     rows = [
-        f"# atlas | areas {len(areas)} | notes {len(notes)} | map_version {version}",
+        f"# atlas | areas {len(life)} | notes {len(notes)} | map_version {version}",
         ATLAS_COLUMNS,
     ]
-    for code, name, hub_slug, holds, not_here in areas:
+    for code, name, hub_slug, holds, not_here in life:
         hub = notes.get(hub_slug) if hub_slug else None
-        count = sum(1 for n in notes.values() if n.area.partition("-")[0] == code)
+        count = sum(1 for n in notes.values() if n.area == area_value(code, name))
         rows.append(
             "|".join(
                 [
@@ -175,12 +169,11 @@ def atlas(areas: list[tuple], notes: dict[str, RowNote], version: str) -> str:
     shelves: dict[str, int] = {}
     for n in notes.values():
         shelves[n.path] = shelves.get(n.path, 0) + 1
-    # Notes of area `cross` are not in the database (areas holds 01–08 only): the count is
-    # kept so the line keeps its format.
+    cross = sum(1 for n in notes.values() if n.area == st.CROSS)
     parts = [
         f"{name} {shelf[:2]} ({shelves.get(shelf[:2], 0)})" for shelf, name in REGISTRIES.items()
     ]
-    rows.append("registries|" + " · ".join([*parts, "cross-area (0)"]))
+    rows.append("registries|" + " · ".join([*parts, f"cross-area ({cross})"]))
     return "\n".join(rows) + "\n"
 
 

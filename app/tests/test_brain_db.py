@@ -1,6 +1,6 @@
 """The brain in PostgreSQL: schema rules, the loader, and the maps rendered into map_cache.
 
-Runs on a throwaway local cluster (brain_pg.py) and a brain of invented notes.
+Runs on a throwaway local cluster (brain_pg.py) and brains of invented notes.
 """
 
 import datetime as dt
@@ -15,11 +15,10 @@ psycopg = pytest.importorskip("psycopg")
 from yggdras.data.brain_db import loader, migrate, render  # noqa: E402
 from yggdras.data.graph import structural as st  # noqa: E402
 from yggdras.data.maps.build import build_maps  # noqa: E402
-from yggdras.data.maps.notes import load_notes  # noqa: E402
-from yggdras.data.maps.relations import relationship_map  # noqa: E402
 
-TABLES = ("areas", "notes", "verbs", "relationships", "note_bodies", "aliases", "dated_items",
-          "changes", "map_cache")  # fmt: skip
+TABLES = ("areas", "notes", "note_areas", "verbs", "relationships", "note_bodies", "aliases",
+          "dated_items", "changes", "map_cache")  # fmt: skip
+MIGRATIONS = [1, 2]
 
 
 @pytest.fixture(scope="session")
@@ -37,7 +36,7 @@ def pg_url(tmp_path_factory):
 def conn(pg_url):
     c = psycopg.connect(pg_url)
     migrate.down(c, 0)
-    assert migrate.up(c) == [1]
+    assert migrate.up(c) == MIGRATIONS
     yield c
     c.rollback()
     c.close()
@@ -49,6 +48,12 @@ def brain(tmp_path, monkeypatch):
     return make_brain(tmp_path / "copy")
 
 
+@pytest.fixture
+def messy(tmp_path, monkeypatch):
+    monkeypatch.setenv("YGGDRAS_BRAIN", str(tmp_path / "the-real-one"))
+    return make_brain(tmp_path / "messy", messy=True)
+
+
 def run(c, sql, args=()):
     with c.cursor() as cur:
         cur.execute(sql, args)
@@ -57,20 +62,34 @@ def run(c, sql, args=()):
     return rows
 
 
-def rejected(c, sql, args=()):
+def rejected(c, *statements):
+    """The statements, in one transaction, are refused (at once or at commit)."""
     with pytest.raises(psycopg.errors.IntegrityError):
-        run(c, sql, args)
+        with c.transaction(), c.cursor() as cur:
+            for sql in statements:
+                cur.execute(sql)
     c.rollback()
 
 
+def add_note(c, slug, area, *also):
+    with c.transaction(), c.cursor() as cur:
+        cur.execute(
+            "INSERT INTO brain.notes (slug, title, type, area_code) VALUES (%s, %s, 't', %s)",
+            (slug, slug.upper(), area),
+        )
+        for i, code in enumerate([area, *also]):
+            cur.execute("INSERT INTO brain.note_areas VALUES (%s, %s, %s, %s)",
+                        (slug, code, i == 0, i))  # fmt: skip
+    c.commit()
+
+
 def seed(c):
-    """Two areas, two notes, one verb, the smallest legal brain."""
+    """Three areas, two notes, two verbs: the smallest legal brain."""
     run(c, "INSERT INTO brain.areas (area_code, name, sort_order) VALUES "
-           "('04', 'learning', 4), ('08', 'rest-joy', 8)")  # fmt: skip
+           "('04', 'learning', 4), ('08', 'rest-joy', 8), ('09', 'cross', 9)")  # fmt: skip
     run(c, "INSERT INTO brain.verbs VALUES ('uses', 'used_in', 'x'), ('knows', 'knows', 'y')")
-    for slug, area in (("a", "04"), ("b", "08")):
-        run(c, "INSERT INTO brain.notes (slug, title, type, area_code) VALUES (%s, %s, 't', %s)",
-            (slug, slug.upper(), area))  # fmt: skip
+    add_note(c, "a", "04", "09")
+    add_note(c, "b", "08")
 
 
 def dump(c) -> dict[str, list]:
@@ -81,33 +100,71 @@ def dump(c) -> dict[str, list]:
 
 
 def test_migrations_roll_forward_and_back(conn):
-    names = lambda: {r[0] for r in run(conn, "SELECT table_name FROM information_schema.tables "  # noqa: E731
-                                              "WHERE table_schema = 'brain'")}  # fmt: skip
+    def names():
+        rows = run(conn, "SELECT table_name FROM information_schema.tables "
+                         "WHERE table_schema = 'brain'")  # fmt: skip
+        return {r[0] for r in rows}
+
     assert names() == {*TABLES, "schema_migrations"}
     assert not run(conn, "SELECT 1 FROM information_schema.tables WHERE table_schema = 'public'")
-    assert migrate.down(conn) == [1] and migrate.current(conn) == 0
-    assert names() == {"schema_migrations"}
-    assert migrate.up(conn) == [1] and migrate.up(conn) == []
+    assert migrate.down(conn) == [2] and migrate.current(conn) == 1
+    assert "note_areas" not in names()
+    assert migrate.down(conn) == [1] and names() == {"schema_migrations"}
+    assert migrate.up(conn) == MIGRATIONS and migrate.up(conn) == []
+
+
+def test_migration_2_moves_also_area_into_note_areas_and_back(conn):
+    migrate.down(conn, 1)
+    run(conn, "INSERT INTO brain.areas (area_code, name, sort_order) VALUES "
+              "('04', 'learning', 4), ('08', 'rest-joy', 8)")  # fmt: skip
+    run(conn, "INSERT INTO brain.notes (slug, title, type, area_code, also_area) VALUES "
+              "('a', 'A', 't', '04', '08'), ('b', 'B', 't', '08', NULL)")  # fmt: skip
+    migrate.up(conn)
+    assert run(conn, "SELECT * FROM brain.note_areas ORDER BY slug, ord") == [
+        ("a", "04", True, 0), ("a", "08", False, 1), ("b", "08", True, 0)
+    ]  # fmt: skip
+    migrate.down(conn, 1)
+    assert run(conn, "SELECT slug, also_area FROM brain.notes ORDER BY slug") == [
+        ("a", "08"), ("b", None)
+    ]  # fmt: skip
 
 
 def test_bad_rows_are_rejected(conn):
     seed(conn)
-    rejected(conn, "INSERT INTO brain.notes (slug, title, type, area_code) "
-                   "VALUES ('c', 'C', 't', '99')")  # bad FK  # fmt: skip
-    rejected(conn, "INSERT INTO brain.notes (slug, title, type, area_code) "
-                   "VALUES ('a', 'A again', 't', '04')")  # duplicate slug  # fmt: skip
+    rejected(
+        conn, "INSERT INTO brain.notes (slug, title, type, area_code) VALUES ('c', 'C', 't', '99')"
+    )  # noqa: E501  bad FK
+    rejected(
+        conn, "INSERT INTO brain.notes (slug, title, type, area_code) VALUES ('a', 'A', 't', '04')"
+    )  # noqa: E501  duplicate slug
     run(conn, "INSERT INTO brain.relationships VALUES ('a', 'uses', 'b', 'link')")
     rejected(conn, "INSERT INTO brain.relationships VALUES ('a', 'uses', 'b', 'link')")  # dup
     rejected(conn, "INSERT INTO brain.relationships VALUES ('a', 'frobs', 'b', 'link')")  # verb
     rejected(conn, "INSERT INTO brain.relationships VALUES ('a', 'knows', 'a', 'link')")  # self
     rejected(conn, "INSERT INTO brain.relationships VALUES ('a', 'knows', 'zz', 'link')")  # FK
     rejected(conn, "INSERT INTO brain.areas (area_code, name, sort_order) VALUES ('4', 'x', 1)")
+    rejected(conn, "UPDATE brain.notes SET parent_slug = 'a' WHERE slug = 'a'")  # own parent
+    rejected(conn, "UPDATE brain.notes SET parent_slug = 'zz' WHERE slug = 'a'")  # no such note
+
+
+def test_every_note_has_exactly_one_primary_area(conn):
+    seed(conn)
+    note = "INSERT INTO brain.notes (slug, title, type, area_code) VALUES ('c', 'C', 't', '04')"
+    rejected(conn, note)  # no primary area
+    rejected(conn, note, "INSERT INTO brain.note_areas VALUES ('c', '04', true, 0)",
+             "INSERT INTO brain.note_areas VALUES ('c', '08', true, 1)")  # two  # fmt: skip
+    rejected(
+        conn, note, "INSERT INTO brain.note_areas VALUES ('c', '08', true, 0)"
+    )  # not area_code
+    rejected(conn, "DELETE FROM brain.note_areas WHERE slug = 'a' AND is_primary")
+    add_note(conn, "c", "04", "08", "09")  # any number of secondary areas
+    assert run(conn, "SELECT count(*) FROM brain.note_areas WHERE slug = 'c'") == [(3,)]
 
 
 def test_deleting_a_note_cascades_but_keeps_its_history(conn):
     seed(conn)
     run(conn, "INSERT INTO brain.note_bodies VALUES ('a', 'text')")
-    run(conn, "INSERT INTO brain.aliases VALUES ('alpha', 'a')")
+    run(conn, "INSERT INTO brain.aliases VALUES ('alpha', 'a', 0)")
     run(conn, "INSERT INTO brain.dated_items (slug, date, kind) VALUES ('a', '2030-01-01', "
               "'review')")  # fmt: skip
     run(conn, "INSERT INTO brain.relationships VALUES ('a', 'uses', 'b', 'link'), "
@@ -115,24 +172,24 @@ def test_deleting_a_note_cascades_but_keeps_its_history(conn):
     run(conn, "INSERT INTO brain.changes (slug, slug_text, kind, new_text, actor) "
               "VALUES ('a', 'a', 'add', 'a fact', 'test')")  # fmt: skip
     run(conn, "UPDATE brain.areas SET hub_slug = 'a' WHERE area_code = '04'")
+    run(conn, "UPDATE brain.notes SET parent_slug = 'a' WHERE slug = 'b'")
     run(conn, "DELETE FROM brain.notes WHERE slug = 'a'")
     for table in ("note_bodies", "aliases", "dated_items", "relationships"):
         assert run(conn, f"SELECT count(*) FROM brain.{table}") == [(0,)], table
+    assert run(conn, "SELECT slug FROM brain.note_areas") == [("b",)]
     assert run(conn, "SELECT slug, slug_text, new_text FROM brain.changes") == [
         (None, "a", "a fact")
     ]
     assert run(conn, "SELECT hub_slug FROM brain.areas WHERE area_code = '04'") == [(None,)]
+    assert run(conn, "SELECT parent_slug FROM brain.notes WHERE slug = 'b'") == [(None,)]
 
 
 def test_an_area_holding_notes_and_a_verb_in_use_cannot_be_deleted(conn):
     seed(conn)
     run(conn, "INSERT INTO brain.relationships VALUES ('a', 'uses', 'b', 'link')")
-    with pytest.raises(psycopg.errors.IntegrityError):
-        run(conn, "DELETE FROM brain.areas WHERE area_code = '04'")
-    conn.rollback()
-    with pytest.raises(psycopg.errors.IntegrityError):
-        run(conn, "DELETE FROM brain.verbs WHERE verb = 'uses'")
-    conn.rollback()
+    rejected(conn, "DELETE FROM brain.areas WHERE area_code = '04'")  # a primary area
+    rejected(conn, "DELETE FROM brain.areas WHERE area_code = '09'")  # a secondary one
+    rejected(conn, "DELETE FROM brain.verbs WHERE verb = 'uses'")
     run(conn, "DELETE FROM brain.verbs WHERE verb = 'knows'")  # unused: fine
 
 
@@ -146,8 +203,10 @@ def test_every_write_to_a_note_or_its_body_bumps_its_version(conn):
 
 # ---------------------------------------------------------------- loader
 
-CLEAN_COUNTS = {"notes": (11, 11), "facts": (10, 10), "links": (18, 18), "aliases": (5, 5),
-                "dated items": (5, 5), "areas": (8, 8), "verbs": (22, 22)}  # fmt: skip
+CLEAN_COUNTS = {
+    "notes": (12, 12), "facts": (14, 14), "links": (19, 19), "mentions": (2, 2),
+    "aliases": (6, 6), "dated items": (8, 8), "areas": (8, 9), "verbs": (22, 23),
+}  # fmt: skip
 
 
 def counts(report: str) -> dict[str, tuple[int, int]]:
@@ -162,13 +221,34 @@ def counts(report: str) -> dict[str, tuple[int, int]]:
 def test_the_count_report_is_correct_on_an_invented_brain(conn, brain):
     report = loader.load(conn, brain)
     assert counts(report) == CLEAN_COUNTS, report
-    assert "couldn't place (1):" in report  # the one [[mention]], not stored
-    assert "1 [[mentions]]" in report
+    assert "couldn't place (0):" in report, report
+    assert "today's upcoming code finds 5 (fact lines and reviews, all dates); 5 of them" in report
     assert "notes.status: " in report and "areas.node_range" in report  # left null, reported
-    assert "id: 11 note(s)" in report and "pages: 2 note(s)" in report  # kept in bodies only
+    assert "id: 12 note(s)" in report and "pages: 2 note(s)" in report  # kept in bodies only
+    assert "verb 'mentions' (inverse 'mentioned_in') added by the loader" in report
+    assert "area 09-cross added by the loader" in report
     assert (
         "written with an inverse verb, stored as pottery-course part_of glaze-chemistry" in report
     )
+
+
+def test_areas_aliases_and_chunk_parents_are_stored_as_written(conn, brain):
+    loader.load(conn, brain)
+    areas = run(conn, "SELECT slug, area_code, is_primary FROM brain.note_areas "
+                      "WHERE slug IN ('glaze-chemistry', 'odd-idea') "
+                      "ORDER BY slug, ord")  # fmt: skip
+    assert areas == [
+        ("glaze-chemistry", "04", True), ("glaze-chemistry", "08", False),
+        ("glaze-chemistry", "01", False), ("odd-idea", "09", True), ("odd-idea", "04", False),
+    ]  # fmt: skip
+    assert run(conn, "SELECT alias FROM brain.aliases WHERE slug = 'pottery-course' "
+                     "ORDER BY ord") == [("pottery",), ("clay class",)]  # fmt: skip
+    assert run(conn, "SELECT slug, parent_slug FROM brain.notes WHERE parent_slug IS NOT NULL "
+                     "ORDER BY slug") == [("clay-handbook-part-1", "clay-handbook"),
+                                          ("clay-handbook-part-2", "clay-handbook")]  # fmt: skip
+    assert run(conn, "SELECT from_slug, to_slug FROM brain.relationships WHERE kind = 'mention' "
+                     "ORDER BY 1") == [("odd-idea", "wheel-throwing"),
+                                       ("pottery-course", "ada-lin")]  # fmt: skip
 
 
 def test_the_circular_areas_and_notes_load_fills_every_hub(conn, brain):
@@ -194,27 +274,33 @@ def test_history_survives_a_reload(conn, brain):
     assert run(conn, "SELECT slug, slug_text FROM brain.changes") == [("ada-lin", "ada-lin")]
 
 
-def test_what_does_not_fit_is_listed_never_forced(conn, tmp_path, monkeypatch):
-    monkeypatch.setenv("YGGDRAS_BRAIN", str(tmp_path / "elsewhere"))
-    repo = make_brain(tmp_path / "messy", messy=True)
-    report = loader.load(conn, repo)
+def test_what_does_not_fit_is_listed_never_forced(conn, messy):
+    report = loader.load(conn, messy)
     got = counts(report)
-    assert got["notes"] == (13, 12) and got["links"] == (23, 18) and got["aliases"] == (7, 5)
-    assert got["dated items"] == (6, 5) and got["facts"] == (12, 11)
-    for expected in (
-        "odd-idea: area 'cross' (areas holds 01–08 only)",
-        "night-walks: also ['08-rest-joy', '02-relationships']",
+    assert got["notes"] == (14, 14) and got["links"] == (23, 20) and got["aliases"] == (7, 6)
+    assert got["dated items"] == (8, 8) and got["facts"] == (16, 16), report
+    expected = [
         "night-walks: review 'someday' is not a date; column left null, no dated item",
+        "lost-book-part-1: a chunk in folder 'lost-book', which is no note; parent_slug left null",
         "alias 'Ada' of night-walks: already an alias of ada-lin",
-        "related_to [[night-walks]]: a note linking to itself",
-        "related_to [[missing-note]]: no such note",
-        "related_to [[odd-idea]]: odd-idea is not in the database",
-        "frobs [[ada-lin]]: verb not in the verb list",
-    ):
-        assert expected in report, (expected, report)
-    assert run(
-        conn, "SELECT also_area, review_date FROM brain.notes WHERE slug = 'night-walks'"
-    ) == [("08", None)]
+        "link night-walks → related_to [[night-walks]]: a note linking to itself",
+        "link night-walks → frobs [[ada-lin]]: verb not in the verb list",
+        "link night-walks → related_to [[missing-note]]: no such note",
+    ]
+    for line in expected:
+        assert line in report, (line, report)
+    assert f"couldn't place ({len(expected)}):" in report, report
+
+
+def test_an_area_that_fits_no_area_stops_the_load(conn, brain):
+    loader.load(conn, brain)
+    before = dump(conn)
+    odd = brain / "library/10-ideas/odd-idea.md"
+    odd.write_text(odd.read_text(encoding="utf-8").replace("area: cross", "area: 11-people"),
+                   encoding="utf-8")  # fmt: skip
+    with pytest.raises(loader.Refused, match="odd-idea: area '11-people' fits no area"):
+        loader.load(conn, brain)
+    assert dump(conn) == before  # nothing written
 
 
 def test_the_real_brain_is_refused_without_real(tmp_path, monkeypatch):
@@ -239,11 +325,33 @@ def test_the_loader_never_prints_the_connection_string(tmp_path, monkeypatch, ca
     assert "hunter2" not in out.out + out.err and "someone" not in out.out + out.err
 
 
+def test_dated_items_come_from_frontmatter_and_fact_lines(conn, brain):
+    loader.load(conn, brain)
+    assert run(conn, "SELECT slug, date, kind, label FROM brain.dated_items ORDER BY id") == [
+        ("ada-lin", dt.date(2030, 2, 1), "start", "Ada Lin (start)"),
+        ("kiln-decision", dt.date(2030, 2, 10), "decided", "Kiln Decision (decided)"),
+        ("kiln-decision", dt.date(2030, 3, 1), "event", "Kiln Decision (event)"),
+        ("kiln-decision", dt.date(2030, 6, 1), "review", "Kiln Decision (review)"),
+        ("pottery-course", dt.date(2030, 5, 1), "review", "Pottery Course (review)"),
+        ("pottery-course", dt.date(2030, 7, 15), "event", "Pottery Course (event)"),
+        ("studio-open-day", dt.date(2030, 4, 12), "event", "Studio Open Day (event)"),
+        ("studio-open-day", dt.date(2030, 4, 13), "end", "Studio Open Day (end)"),
+    ]
+
+
 # ---------------------------------------------------------------- maps
 
 
 def strip_version(text: str) -> str:
     return re.sub(r"map_version \w*", "map_version V", text)
+
+
+def maps_from_rows_and_files(conn, repo):
+    loader.load(conn, repo)
+    files = build_maps(repo / st.LIBRARY)
+    rows = {name: text for name, (text, _) in render.render_maps(conn).items()}
+    pairs = {"atlas": "atlas.md", "shelf": "shelf-map.md", "relationships": "relationship-map.md"}
+    return {name: (strip_version(rows[name]), strip_version(files[f])) for name, f in pairs.items()}
 
 
 def test_rendering_twice_is_byte_identical(conn, brain):
@@ -271,29 +379,38 @@ def test_map_version_changes_when_and_only_when_the_text_does(conn, brain):
     assert render.version_of(text.replace(f"map_version {version}", "map_version ")) == version
 
 
-def test_the_maps_match_the_markdown_build(conn, brain):
-    """Same format as today's maps: the rows render what the files render, except the
-    [[mentions]], which are not stored (the markdown side is built without them here)."""
-    loader.load(conn, brain)
-    root = brain / st.LIBRARY
-    files = build_maps(root)
-    notes = load_notes(root, st.mapped_shelves())
-    graph = st.build_map(root, st.mapped_shelves())
-    files["relationship-map.md"] = relationship_map(graph, notes, "V", mentions=False)
+def test_the_maps_match_the_markdown_build_byte_for_byte(conn, brain):
+    """Cross notes, several areas, mentions, alias order and chunks included: the only
+    difference is map_version."""
+    for name, (rows, files) in maps_from_rows_and_files(conn, brain).items():
+        assert rows == files, name
     rows = {name: text for name, (text, _) in render.render_maps(conn).items()}
-    assert strip_version(rows["atlas"]) == strip_version(files["atlas.md"])
-    assert strip_version(rows["shelf"]) == strip_version(files["shelf-map.md"])
-    assert strip_version(rows["relationships"]) == strip_version(files["relationship-map.md"])
     assert "chain clay-handbook: -part-1 > -part-2" in rows["relationships"]
+    assert "mentions wheel-throwing" in rows["relationships"]
     assert "C:clay-handbook P:1 to 20" in rows["shelf"]
+    assert "A:08,01" in rows["shelf"] and "## cross" in rows["shelf"]
+    assert "cross-area (1)" in rows["atlas"]
 
 
-def test_dated_items_come_from_frontmatter_dates(conn, brain):
-    loader.load(conn, brain)
-    assert run(conn, "SELECT slug, date, kind, label FROM brain.dated_items ORDER BY id") == [
-        ("kiln-decision", dt.date(2030, 2, 10), "decided", "Kiln Decision (decided)"),
-        ("kiln-decision", dt.date(2030, 6, 1), "review", "Kiln Decision (review)"),
-        ("pottery-course", dt.date(2030, 5, 1), "review", "Pottery Course (review)"),
-        ("studio-open-day", dt.date(2030, 4, 12), "event", "Studio Open Day (event)"),
-        ("studio-open-day", dt.date(2030, 4, 13), "end", "Studio Open Day (end)"),
+def test_on_the_messy_brain_only_rows_the_loader_refused_differ(conn, messy):
+    """What the loader reported it couldn't place is all that differs: the duplicate alias,
+    the review that is no date, and the chunk whose parent is no note."""
+    diffs = {}
+    for name, (rows, files) in maps_from_rows_and_files(conn, messy).items():
+        a, b = rows.splitlines(), files.splitlines()
+        assert len(a) == len(b), name
+        diffs[name] = [(x, y) for x, y in zip(a, b, strict=True) if x != y]
+    assert diffs["atlas"] == [] and diffs["relationships"] == []
+    assert diffs["shelf"] == [  # rows | files, in map order (area 01 first)
+        (
+            "night-walks|topic|Night Walks|Night Walks in a few invented words||—|2030-03-02|",
+            "night-walks|topic|Night Walks|Night Walks in a few invented words|Ada|—|2030-03-02|"
+            "R:someday",
+        ),
+        (
+            "lost-book-part-1|source|Lost Book, part 1|Lost Book, part 1 in a few invented "
+            "words||—|2030-03-02|P:1 to 9",
+            "lost-book-part-1|source|Lost Book, part 1|Lost Book, part 1 in a few invented "
+            "words||—|2030-03-02|C:lost-book P:1 to 9",
+        ),
     ]
