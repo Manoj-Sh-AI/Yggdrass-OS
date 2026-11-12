@@ -30,7 +30,7 @@ from yggdras.data.graph import structural as st
 from yggdras.data.maps import checks
 from yggdras.data.maps.notes import load_notes
 
-ADDING = ("create_note", "add_fact", "link", "keep_raw")
+ADDING = ("create_note", "add_fact", "link", "keep_raw", "restore_note")
 CHANGING = ("replace_fact", "remove_fact", "unlink", "archive_note")
 MODES = ("until", "wrong")
 
@@ -68,6 +68,8 @@ class Change:
     notes: dict[str, str | None] = field(default_factory=dict)
     archive: dict[str, str] = field(default_factory=dict)
     raw: dict[str, bytes] = field(default_factory=dict)  # repo path → verbatim bytes (uploads)
+    restored: set[str] = field(default_factory=set)  # library paths brought back from the archive
+    drop: list[str] = field(default_factory=list)  # repo paths taken out (a restored archive copy)
     lines: list[str] = field(default_factory=list)
     slugs: list[str] = field(default_factory=list)  # notes created or changed, for the card
     log: list[str] = field(default_factory=list)  # one entry per operation, for log.md
@@ -273,6 +275,115 @@ class Builder:
         self.change.lines.append(f"kept the upload verbatim: {path}")
         self.change.log.append(f"keep upload {name}")
 
+    # ---------------------------------------------------------------- restore (D38)
+
+    @property
+    def repo(self) -> Path:
+        return self.root.resolve().parent
+
+    @property
+    def archive_root(self) -> Path:
+        """Where archived notes live: archive/<library folder>/<shelf>/<slug>.md."""
+        return self.repo / "archive" / self.root.resolve().name
+
+    def archived(self) -> list[dict]:
+        """Every archived note: slug, name, aliases, its library path and its archive file."""
+        import yaml
+
+        out = []
+        if not self.archive_root.is_dir():
+            return out
+        for p in sorted(self.archive_root.rglob("*.md")):
+            parts = st._split(p.read_text(encoding="utf-8"))
+            fm = (yaml.safe_load(parts[0]) or {}) if parts else {}
+            aliases = fm.get("aliases") or []
+            out.append({
+                "slug": str(fm.get("slug") or p.stem), "name": str(fm.get("name") or p.stem),
+                "aliases": [str(a) for a in (aliases if isinstance(aliases, list) else [aliases])],
+                "lib": p.relative_to(self.archive_root).as_posix(), "file": p,
+            })  # fmt: skip
+        return out
+
+    def find_archived(self, query: str) -> dict:
+        """The archived note *query* names (slug, name or alias), else the one whose name
+        shares most words with it. Several or none: an error that lists them."""
+        from yggdras.data.brain import detect
+
+        items, q = self.archived(), st.normalize(query)
+        exact = [
+            a
+            for a in items
+            if q in {st.normalize(x) for x in (a["slug"], a["name"], *a["aliases"])}
+        ]
+        if len(exact) == 1:
+            return exact[0]
+        near = exact or [
+            a for a in items
+            if detect.jaccard(detect.words(query), detect.words(f"{a['name']} {a['slug']}")) >= 0.5
+        ]  # fmt: skip
+        if len(near) == 1:
+            return near[0]
+        listing = ", ".join(f"{a['name']} ({a['slug']})" for a in (near or items)[:12])
+        if near:
+            raise OpError(f"several archived notes match '{query}': {listing}; which one?")
+        raise OpError(
+            f"no archived note matches '{query}'"
+            + (f"; archived notes: {listing}" if items else "; nothing is archived")
+        )
+
+    def restore_note(self, op: dict) -> None:
+        """Bring an archived note back to its shelf, and put back exactly what archiving took
+        from other notes: their link lines to it, their [[mentions]] of it, its hub listing.
+        Lines changed since the archive are left alone and reported."""
+        from yggdras.data.brain import repo as git_repo
+
+        a = self.find_archived(str(op.get("slug") or op.get("name") or ""))
+        lib, slug = a["lib"], a["slug"]
+        if slug in self.notes or (self.root / lib).exists():
+            raise OpError(f"'{slug}' is in the library already")
+        arch = a["file"].resolve().relative_to(self.repo).as_posix()
+        self.texts[lib] = None
+        self.put(lib, a["file"].read_text(encoding="utf-8"), touched=False)
+        self.change.restored.add(lib)
+        self.change.drop.append(arch)
+        self.change.slugs.append(slug)
+        self.change.lines.append(f"restored {a['name']} ({arch} → {lib})")
+        self.change.log.append(f"restore {slug}")
+        sha = git_repo.git(self.repo, "log", "-1", "--format=%H", "--diff-filter=A", "--", arch)
+        sha = sha.strip()
+        if not sha:
+            self.change.lines.append("no archive commit found: links in other notes not restored")
+            return
+        root_rel = self.root.resolve().relative_to(self.repo).as_posix()
+        by_path = {n.path: n for n in self.notes.values()}
+        for path in git_repo.changed_files(self.repo, sha):
+            if not path.startswith(root_rel + "/") or "/00-manual/" in path:
+                continue
+            other = path[len(root_rel) + 1 :]
+            if other == lib:
+                continue
+            note = by_path.get(other)
+            if note is None:
+                self.change.lines.append(f"{other}: no longer in the library, not restored")
+                continue
+            current = self.text(other)
+            if note.type == st.HUB:
+                if f"[[{slug}]]" in current:
+                    continue
+                self.put(other, nf.hub_listing(current, slug, add=True))
+                self.change.lines.append(f"{note.slug}: listed again")
+                continue
+            old = git_repo.git(self.repo, "show", f"{sha}^:{path}").replace("\r\n", "\n")
+            new = git_repo.git(self.repo, "show", f"{sha}:{path}").replace("\r\n", "\n")
+            text, back, skipped = nf.restore_lines(old, new, current, slug)
+            if back:
+                self.put(other, text)
+                self.change.lines.append(f"{note.slug}: {back} line(s) restored")
+            if skipped:
+                self.change.lines.append(
+                    f"{note.slug}: {skipped} line(s) changed since the archive, left as they are"
+                )
+
     def archive_note(self, op: dict) -> None:
         path = self.path_of(op["slug"])
         slug = Path(path).stem
@@ -299,11 +410,14 @@ class Builder:
         self.change.log.append(f"archive {slug}")
 
 
-def build_change(root: Path, flat: bool, ops: list[dict], today: str, title: str = "") -> Change:
-    """Apply *ops* in order to the current files (in memory) and return the change."""
+def build_change(
+    root: Path, flat: bool, ops: list[dict], today: str, title: str = "", builder=None
+) -> Change:
+    """Apply *ops* in order to the current files (in memory) and return the change.
+    *builder*: a Builder subclass (the row store's, which restores from rows, not git)."""
     if not ops:
         raise OpError("nothing to change")
-    b = Builder(root, flat, today)
+    b = (builder or Builder)(root, flat, today)
     for op in ops:
         kind = op.get("op")
         handler = getattr(b, kind, None) if kind in (*ADDING, *CHANGING) else None

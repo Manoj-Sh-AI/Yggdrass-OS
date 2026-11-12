@@ -20,6 +20,7 @@ local-data/traces/.
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 import threading
 import time
@@ -50,7 +51,7 @@ INSTRUCTIONS = (
     "file and ask to add it, give it to ingest_file (its path if it is on this computer, else "
     "its content); never edit notes yourself. You "
     "can't confirm, cancel or undo changes: only the user can, with the card's buttons, a form "
-    "or the yggdras command."
+    "or the yggdras command. To bring back an archived note, use restore_note."
 )
 TELL_DESCRIPTION = (
     "Pass the user's request to change their second brain to Lia, in their own words: add a "
@@ -59,6 +60,12 @@ TELL_DESCRIPTION = (
     "checks the change. Adding is written at once (with Undo); changing or removing shows a "
     "preview the user confirms themselves. The result holds Lia's card in a <lia_reply> "
     "block: show it exactly as written. You can't confirm or undo anything."
+)
+RESTORE_DESCRIPTION = (
+    'Bring back a note the user archived ("deleted") in their second brain, by its slug, name '
+    "or alias, when they ask to restore it. Free and exact: the note returns to its shelf, and "
+    "the links, mentions and hub listing archiving removed from other notes come back. Written "
+    "at once with Undo; the result holds Lia's card in a <lia_reply> block: show it exactly."
 )
 INGEST_DESCRIPTION = (
     "Give Lia a markdown file the user uploaded and asked to add to their second brain. In "
@@ -148,8 +155,10 @@ class LiaService:
         model: str = "claude-haiku-5-5",
         traces: Path | None = None,
         cite_url: str | None = None,
+        rows=None,
     ):
         self.root, self.skills, self.flat, self.model = root, skills, flat, model
+        self.rows = rows  # a RowStore: Lia reads and writes the database (D44)
         self.config = default_config(model, cite_url)
         self.client_factory = client_factory
         self.traces = traces or config.local_data() / "traces"
@@ -162,9 +171,17 @@ class LiaService:
         from yggdras.processing.lia.library import Library
 
         with self._lock:
-            now = fingerprint(self.root, self.skills)
+            if self.rows is not None:  # the rows' state, and the skill files
+                now = (self.rows.state(), fingerprint(self.skills, self.skills))
+            else:
+                now = fingerprint(self.root, self.skills)
             if self._lia is None or now != self._print:
-                library = Library(self.root, flat=self.flat)
+                if self.rows is not None:
+                    from yggdras.processing.lia.library import RowLibrary
+
+                    library = RowLibrary(self.rows.snapshot())
+                else:
+                    library = Library(self.root, flat=self.flat)
                 self._lia = default_lia(library, self.skills, self.client_factory, self.config)
                 self._write = self._ingest = None  # rebuilt on the next request, new maps
                 self._print = now
@@ -176,11 +193,23 @@ class LiaService:
 
         lia = self.lia()
         with self._lock:
+            if self._write is None and self.rows is not None:
+                self._write = writing.row_write_side(
+                    lia.library, self.rows, self.client_factory, self.note_url
+                )
             if self._write is None:
                 self._write = writing.write_side(
                     lia.library, self.root, self.flat, self.client_factory, self.note_url
                 )
             return self._write
+
+    def restore(self, note: str, app: str):
+        from yggdras.processing.lia.write import Card
+
+        side = self.writer()
+        if side is None:
+            return Card("refused", "Writing is off: this brain is not in a git repository.")
+        return side.restore(note, app)
 
     def ingester(self):
         """Lia's upload filing on the current maps (None if the brain isn't a git repo)."""
@@ -188,6 +217,10 @@ class LiaService:
 
         lia = self.lia()
         with self._lock:
+            if self._ingest is None and self.rows is not None:
+                self._ingest = writing.row_write_side(
+                    lia.library, self.rows, self.client_factory, self.note_url, kind="ingest"
+                )
             if self._ingest is None:
                 self._ingest = writing.write_side(
                     lia.library, self.root, self.flat, self.client_factory, self.note_url,
@@ -314,6 +347,18 @@ def build_server(service: LiaService):
         return side.cancel(card.pending_id, card.token)
 
     @server.tool(
+        name="restore_note",
+        description=RESTORE_DESCRIPTION,
+        annotations=write_hints,
+        meta={"ui": {"resourceUri": UI_URI}},
+    )
+    async def restore_note(note: str, ctx: Context = None) -> CallToolResult:
+        import anyio
+
+        app = app_name(ctx)
+        return result(await anyio.to_thread.run_sync(lambda: service.restore(note, app)))
+
+    @server.tool(
         name="ingest_file",
         description=INGEST_DESCRIPTION,
         annotations=write_hints,
@@ -386,6 +431,31 @@ def build_server(service: LiaService):
     return server
 
 
+def start_api():
+    """The brain API (brain_api.py), or None when its credentials are missing: the message
+    names the variables, never a value, and Lia and the note pages start anyway."""
+    import datetime as dt
+
+    from yggdras.data.brain_db import api as reads
+    from yggdras.data.brain_db import db
+    from yggdras.data.brain_db.writes import BrainWrites
+    from yggdras.interface import brain_api, writing
+
+    try:
+        user, password = brain_api.credentials()
+    except brain_api.ApiConfigError as exc:
+        print(exc, file=sys.stderr)
+        return None
+
+    def read(name, *args):
+        with db.connect() as conn:
+            return getattr(reads, name)(conn, *args)
+
+    writes = BrainWrites(writing.row_store(), lambda: config.brain_source() == "rows",
+                         lambda: dt.date.today().isoformat())  # fmt: skip
+    return brain_api.BrainApi(user, password, read, writes)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="yggdras mcp", description="Lia as an MCP server")
     parser.add_argument("--brain", type=Path, help="brain repo (default: YGGDRAS_BRAIN)")
@@ -410,12 +480,23 @@ def main(argv: list[str] | None = None) -> int:
 
     root = args.flat or brain / "library"
     port = config.notes_port()
-    viewer = None if args.flat else note_server.build_viewer(root, config.local_data() / "viewer")
+    rows = api = None
+    if not args.flat and os.environ.get("BRAIN_DATABASE_URL", "").strip():
+        api = start_api()  # the app's API; None (and a message) without its credentials
+    if not args.flat and config.brain_source() == "rows":  # D44: the database is the brain
+        from yggdras.interface import writing
+
+        rows = writing.row_store()
+        rows.render_viewers()
+        viewer_dir = config.brain_view()
+    else:
+        viewer = (
+            None if args.flat else note_server.build_viewer(root, config.local_data() / "viewer")
+        )
+        viewer_dir = viewer.parent if viewer else None
     service = LiaService(root, skills, AnthropicClient, flat=bool(args.flat),
-                         model=args.model or config.lia_model())  # fmt: skip
-    served = note_server.start(
-        lambda: service.lia().library, port, viewer.parent if viewer else None
-    )
+                         model=args.model or config.lia_model(), rows=rows)  # fmt: skip
+    served = note_server.start(lambda: service.lia().library, port, viewer_dir, api)
     if served is not None:  # footnotes link to the note pages; if the port is taken, plain text
         service.config = default_config(
             service.model, f"http://{note_server.HOST}:{port}/note/{{slug}}#cite={{block}}"
