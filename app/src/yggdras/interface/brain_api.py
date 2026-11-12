@@ -7,6 +7,7 @@ pages and the graph still do, so Lia's footnotes keep working). The password is 
     GET  /api/tree                          the note tree
     GET  /api/note/<slug>                   a note with its links, incoming links and mentions
     GET  /api/version/<slug>                its version token
+    GET  /api/search?q=                     notes matching q (full text); empty q: every note
     POST /api/note                          add a note            {text}
     POST /api/note/<slug>/add-fact          add a fact            {line, section?, after_line?}
     POST /api/note/<slug>/replace-fact      replace a fact        {old_line, new_line, preview}
@@ -58,7 +59,9 @@ class BrainApi:
             return False
         return hmac.compare_digest(header[len("Basic ") :].strip(), self._expected)
 
-    def get(self, route: str) -> tuple[int, object]:
+    def get(self, route: str, query: dict | None = None) -> tuple[int, object]:
+        if route == "search":
+            return 200, self.read("search", ((query or {}).get("q") or [""])[0])
         name, _, slug = route.partition("/")
         calls = {"tree": ("note_tree",), "note": ("note_with_relationships", slug),
                  "version": ("version", slug)}  # fmt: skip

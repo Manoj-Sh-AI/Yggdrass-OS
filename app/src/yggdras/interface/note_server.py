@@ -16,7 +16,7 @@ import threading
 from collections.abc import Callable
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import quote, unquote
+from urllib.parse import parse_qs, quote, unquote
 
 HOST = "127.0.0.1"
 DEFAULT_PORT = 8765
@@ -80,7 +80,8 @@ def make_handler(get_library: Callable, viewer_dir: Path | None, api: Callable |
             if path in ("/graph", "/graph/") and viewer_dir is not None:
                 path = "/graph/graph.html"
             if path.startswith("/api/") and api is not None:  # the app's API (D44 §6)
-                return self._api("GET", path[len("/api/") :].strip("/"))
+                query = parse_qs(self.path.split("#")[0].partition("?")[2])
+                return self._api("GET", path[len("/api/") :].strip("/"), query)
             if path.startswith("/graph/") and viewer_dir is not None:
                 name = path[len("/graph/") :]
                 target = (viewer_dir / name).resolve()
@@ -93,7 +94,7 @@ def make_handler(get_library: Callable, viewer_dir: Path | None, api: Callable |
                     return self._send(200, target.read_bytes(), kind)
             return self._send(404, b"Not found.", "text/plain; charset=utf-8")
 
-        def _api(self, method: str, route: str):
+        def _api(self, method: str, route: str, query: dict | None = None):
             import json
 
             if not api.authorized(self.headers.get("Authorization")):
@@ -103,7 +104,7 @@ def make_handler(get_library: Callable, viewer_dir: Path | None, api: Callable |
                 self.end_headers()
                 return None
             if method == "GET":
-                status, data = api.get(route)
+                status, data = api.get(route, query)
             else:
                 size = int(self.headers.get("Content-Length") or 0)
                 if size > MAX_BODY:

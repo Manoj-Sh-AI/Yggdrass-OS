@@ -88,3 +88,29 @@ def version(conn, slug: str) -> int | None:
     """The version token of one live note: given on read, required on write."""
     row = _rows(conn, f"SELECT n.version FROM brain.notes n WHERE n.slug = %s AND {LIVE}", (slug,))
     return row[0][0] if row else None
+
+
+def search(conn, q: str = "") -> list[dict]:
+    """Live notes for the app's search box. Empty *q*: every note, by slug. Otherwise
+    PostgreSQL full-text search over note_bodies (web-search syntax: words, "phrases", -not),
+    best match first. The 'simple' configuration: no stemming, as the notes mix languages."""
+    q = (q or "").strip()
+    cols = "n.slug, n.title, n.type, n.area_code, n.version"
+    if not q:
+        rows = _rows(
+            conn, f'SELECT {cols} FROM brain.notes n WHERE {LIVE} ORDER BY n.slug COLLATE "C"'
+        )
+        return [dict(slug=s, title=t, type=ty, area=a, version=v) for s, t, ty, a, v in rows]
+    rows = _rows(
+        conn,
+        f"SELECT {cols}, ts_rank(to_tsvector('simple', b.body), query) AS rank "
+        "FROM brain.notes n JOIN brain.note_bodies b ON b.slug = n.slug, "
+        "websearch_to_tsquery('simple', %s) AS query "
+        f"WHERE {LIVE} AND to_tsvector('simple', b.body) @@ query "
+        'ORDER BY rank DESC, n.slug COLLATE "C"',
+        (q,),
+    )
+    return [
+        dict(slug=s, title=t, type=ty, area=a, version=v, rank=round(r, 6))
+        for s, t, ty, a, v, r in rows
+    ]

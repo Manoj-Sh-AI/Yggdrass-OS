@@ -277,3 +277,29 @@ def test_unknown_routes_and_ids(env):
     assert post(api, "undo/not-a-uuid")[0] == 404
     assert post(api, "undo/00000000-0000-0000-0000-000000000000")[0] == 404
     assert post(api, "note/no-such-note/add-fact", {"line": "x"})[0] == 404
+
+
+def test_search_lists_every_note_or_full_text_matches_behind_auth(env):
+    api, store, _ = env
+    port = free_port()
+    server = note_server.start(lambda: RowLibrary(store.snapshot()), port, None, api)
+    me = f"{USER}:{PASSWORD}"
+    try:
+        assert call(port, "/api/search?q=kiln")[0] == 401  # same auth as every route
+        status, every = call(port, "/api/search", auth=me)
+        slugs = [n["slug"] for n in every]
+        assert status == 200 and slugs == sorted(slugs) and len(slugs) == 12
+        status, empty = call(port, "/api/search?q=", auth=me)
+        assert empty == every
+        status, hits = call(port, "/api/search?q=kiln", auth=me)
+        assert status == 200 and hits[0]["slug"] == "kiln-decision"  # best match first
+        assert all(h["rank"] > 0 for h in hits)
+        status, phrase = call(port, "/api/search?q=%22shared%20kiln%22", auth=me)
+        assert [h["slug"] for h in phrase] == ["kiln-decision"]
+        assert call(port, "/api/search?q=zzzunknownword", auth=me) == (200, [])
+    finally:
+        server.shutdown()
+    with store.connect() as conn:  # archived notes are never found
+        conn.execute("UPDATE brain.notes SET archived_at = now() WHERE slug = 'kiln-decision'")
+        assert "kiln-decision" not in {n["slug"] for n in reads.search(conn, "kiln")}
+        assert "kiln-decision" not in {n["slug"] for n in reads.search(conn, "")}
