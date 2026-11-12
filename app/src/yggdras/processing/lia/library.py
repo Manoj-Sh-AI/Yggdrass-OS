@@ -202,3 +202,42 @@ class Library:
     def fact_lines(self, slug: str) -> list[str]:
         text = self._text.get(slug)
         return checks.note_fact_lines(text) if text else []
+
+
+def cut_shelf_map(text: str, words: int = ABOUT_WORDS) -> str:
+    """The cached shelf map with each row's "about" cut to *words* words, as Lia's own shelf
+    map is built from files (lia-v1 E5). Plain text work on cached bytes: no query."""
+    out = []
+    for line in text.split("\n"):
+        cells = line.split("|")
+        if len(cells) == 8 and not line.startswith(("#", "slug|")):
+            cells[3] = _cut(cells[3], words)
+            line = "|".join(cells)
+        out.append(line)
+    return "\n".join(out)
+
+
+class RowLibrary(Library):
+    """Lia's library read from the database (D44): one snapshot of note_bodies and their
+    history from `changes`, the maps from map_cache, the manual from its table. Behaves as
+    the file Library does; archived notes are not in it."""
+
+    def __init__(self, snap):
+        self.root = Path("<brain database>")
+        self.flat = False
+        self.snap = snap
+        self.notes = dict(snap.notes)
+        self.version = snap.maps["shelf"][1]
+        self._text = dict(snap.texts)
+        self._fact_index = None
+
+    def manual(self) -> str:
+        return "\n\n".join(
+            self.snap.manual[f].replace("\r\n", "\n") for f in ("taxonomy.md", "node.md")
+        )
+
+    def maps(self) -> dict[str, str]:
+        return {
+            "atlas.md": self.snap.maps["atlas"][0],
+            "shelf-map.md": cut_shelf_map(self.snap.maps["shelf"][0]),
+        }

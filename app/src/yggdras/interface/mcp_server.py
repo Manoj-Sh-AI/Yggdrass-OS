@@ -154,8 +154,10 @@ class LiaService:
         model: str = "claude-haiku-5-5",
         traces: Path | None = None,
         cite_url: str | None = None,
+        rows=None,
     ):
         self.root, self.skills, self.flat, self.model = root, skills, flat, model
+        self.rows = rows  # a RowStore: Lia reads and writes the database (D44)
         self.config = default_config(model, cite_url)
         self.client_factory = client_factory
         self.traces = traces or config.local_data() / "traces"
@@ -168,9 +170,17 @@ class LiaService:
         from yggdras.processing.lia.library import Library
 
         with self._lock:
-            now = fingerprint(self.root, self.skills)
+            if self.rows is not None:  # the rows' state, and the skill files
+                now = (self.rows.state(), fingerprint(self.skills, self.skills))
+            else:
+                now = fingerprint(self.root, self.skills)
             if self._lia is None or now != self._print:
-                library = Library(self.root, flat=self.flat)
+                if self.rows is not None:
+                    from yggdras.processing.lia.library import RowLibrary
+
+                    library = RowLibrary(self.rows.snapshot())
+                else:
+                    library = Library(self.root, flat=self.flat)
                 self._lia = default_lia(library, self.skills, self.client_factory, self.config)
                 self._write = self._ingest = None  # rebuilt on the next request, new maps
                 self._print = now
@@ -182,6 +192,10 @@ class LiaService:
 
         lia = self.lia()
         with self._lock:
+            if self._write is None and self.rows is not None:
+                self._write = writing.row_write_side(
+                    lia.library, self.rows, self.client_factory, self.note_url
+                )
             if self._write is None:
                 self._write = writing.write_side(
                     lia.library, self.root, self.flat, self.client_factory, self.note_url
@@ -202,6 +216,10 @@ class LiaService:
 
         lia = self.lia()
         with self._lock:
+            if self._ingest is None and self.rows is not None:
+                self._ingest = writing.row_write_side(
+                    lia.library, self.rows, self.client_factory, self.note_url, kind="ingest"
+                )
             if self._ingest is None:
                 self._ingest = writing.write_side(
                     lia.library, self.root, self.flat, self.client_factory, self.note_url,
@@ -436,12 +454,27 @@ def main(argv: list[str] | None = None) -> int:
 
     root = args.flat or brain / "library"
     port = config.notes_port()
-    viewer = None if args.flat else note_server.build_viewer(root, config.local_data() / "viewer")
+    rows = api = None
+    if not args.flat and config.brain_source() == "rows":  # D44: the database is the brain
+        from yggdras.data.brain_db import api as brain_api
+        from yggdras.data.brain_db import db
+        from yggdras.interface import writing
+
+        rows = writing.row_store()
+        rows.render_viewers()
+        viewer_dir = config.brain_view()
+
+        def api(name, *args):
+            with db.connect() as conn:
+                return getattr(brain_api, name)(conn, *args)
+    else:
+        viewer = (
+            None if args.flat else note_server.build_viewer(root, config.local_data() / "viewer")
+        )
+        viewer_dir = viewer.parent if viewer else None
     service = LiaService(root, skills, AnthropicClient, flat=bool(args.flat),
-                         model=args.model or config.lia_model())  # fmt: skip
-    served = note_server.start(
-        lambda: service.lia().library, port, viewer.parent if viewer else None
-    )
+                         model=args.model or config.lia_model(), rows=rows)  # fmt: skip
+    served = note_server.start(lambda: service.lia().library, port, viewer_dir, api)
     if served is not None:  # footnotes link to the note pages; if the port is taken, plain text
         service.config = default_config(
             service.model, f"http://{note_server.HOST}:{port}/note/{{slug}}#cite={{block}}"

@@ -51,7 +51,7 @@ This idea has a lineage: literature-based discovery (Don Swanson's work in the 1
 
 These are non-negotiable. They are how the climb stays honest.
 
-1. **Markdown is the source of truth.** Graphs, indexes, embeddings — all derived, all droppable, all rebuildable from the files. Never let a derived store become the thing you can't lose.
+1. **The local database is the source of truth** (D44, from the switch; until then, markdown). Maps, graphs, indexes, embeddings — all derived from its rows, all droppable, all rebuildable. The database is now the thing you can't lose, so a full dump is kept outside this PC, and it never leaves this PC as a queryable store (D13).
 2. **Factual consistency comes first.** The answering rung must be as near never-wrong as we can measure — proven on a hard, held-out eval, not an easy one. Six-nines reliability is the aim; it must be earned with an eval big and mean enough to detect it, never merely claimed.
 3. **Obvious is free; significant is paid.** Never spend a model call on what deterministic code can do. The model only ever looks at the few things that matter.
 4. **Nothing enters the brain without approval.** New facts, new links, new frameworks — Manoj approves. The brain proposes; the human disposes.

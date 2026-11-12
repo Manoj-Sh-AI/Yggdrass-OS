@@ -18,7 +18,7 @@ from yggdras.data.maps.build import build_maps  # noqa: E402
 
 TABLES = ("areas", "notes", "note_areas", "verbs", "relationships", "note_bodies", "aliases",
           "dated_items", "changes", "map_cache")  # fmt: skip
-MIGRATIONS = [1, 2]
+MIGRATIONS = [1, 2, 3]
 
 
 @pytest.fixture(scope="session")
@@ -105,8 +105,10 @@ def test_migrations_roll_forward_and_back(conn):
                          "WHERE table_schema = 'brain'")  # fmt: skip
         return {r[0] for r in rows}
 
-    assert names() == {*TABLES, "schema_migrations"}
+    assert names() == {*TABLES, "manual", "schema_migrations"}
     assert not run(conn, "SELECT 1 FROM information_schema.tables WHERE table_schema = 'public'")
+    assert migrate.down(conn) == [3] and migrate.current(conn) == 2
+    assert "manual" not in names()
     assert migrate.down(conn) == [2] and migrate.current(conn) == 1
     assert "note_areas" not in names()
     assert migrate.down(conn) == [1] and names() == {"schema_migrations"}
@@ -204,8 +206,9 @@ def test_every_write_to_a_note_or_its_body_bumps_its_version(conn):
 # ---------------------------------------------------------------- loader
 
 CLEAN_COUNTS = {
-    "notes": (12, 12), "facts": (14, 14), "links": (19, 19), "mentions": (2, 2),
-    "aliases": (6, 6), "dated items": (8, 8), "areas": (8, 9), "verbs": (22, 23),
+    "notes": (12, 12), "facts": (14, 14), "history lines": (1, 1), "links": (19, 19),
+    "mentions": (2, 2), "aliases": (6, 6), "dated items": (8, 8), "areas": (9, 9),
+    "verbs": (23, 23),
 }  # fmt: skip
 
 
@@ -271,7 +274,10 @@ def test_history_survives_a_reload(conn, brain):
     run(conn, "INSERT INTO brain.changes (slug, slug_text, kind, new_text, actor) "
               "VALUES ('ada-lin', 'ada-lin', 'add', 'x', 'test')")  # fmt: skip
     loader.load(conn, brain)
-    assert run(conn, "SELECT slug, slug_text FROM brain.changes") == [("ada-lin", "ada-lin")]
+    mine = "SELECT slug, slug_text FROM brain.changes WHERE actor <> 'markdown-history'"
+    assert run(conn, mine) == [("ada-lin", "ada-lin")]
+    imported = "SELECT count(*) FROM brain.changes WHERE actor = 'markdown-history'"
+    assert run(conn, imported) == [(2,)]  # pottery-course: its History line + its section
 
 
 def test_what_does_not_fit_is_listed_never_forced(conn, messy):

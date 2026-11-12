@@ -55,43 +55,50 @@ def load_notes(root: Path, shelves: tuple[str, ...] | None) -> dict[str, NoteMet
     """
     notes: dict[str, NoteMeta] = {}
     for path in st.node_files(root, shelves):
-        parts = st._split(path.read_text(encoding="utf-8"))
-        if parts is None:
-            continue
-        try:
-            fm = yaml.safe_load(parts[0]) or {}
-        except yaml.YAMLError:
-            continue
-        slug = _text(fm.get("slug"))
-        if not slug or slug in notes:
-            continue
-        meta = NoteMeta(
-            slug=slug,
-            name=_text(fm.get("name")),
-            type=_text(fm.get("type")),
-            path=path.relative_to(root).as_posix(),
-            area=(_text(fm.get("area")) or st.CROSS)
-            if shelves is not None
-            else path.relative_to(root).parts[0],
-            also=st._as_list(fm.get("also")),
-            description=_text(fm.get("description")),
-            aliases=st._as_list(fm.get("aliases")),
-            status=_text(fm.get("status")),
-            updated=_text(fm.get("updated")),
-            review=_text(fm.get("review")),
-            pages=_text(fm.get("pages")),
-            sensitive=_text(fm.get("sensitivity")).lower() == "high",
-        )
-        summary = []
-        for heading, _, line in st.sections(parts[1], parts[2]):
-            if heading == SUMMARY_HEADING and line.strip():
-                summary.append(line.strip())
-            elif heading in (st.FACTS_HEADING, st.HISTORY_HEADING) and line.startswith("- "):
-                meta.facts.append(line[2:].strip())
-                meta.has_history |= heading == st.HISTORY_HEADING
-        meta.summary = " ".join(summary)
-        notes[slug] = meta
+        rel = path.relative_to(root).as_posix()
+        meta = meta_from_text(path.read_text(encoding="utf-8"), rel, library=shelves is not None)
+        if meta is not None and meta.slug not in notes:
+            notes[meta.slug] = meta
     return notes
+
+
+def meta_from_text(text: str, rel: str, library: bool = True) -> NoteMeta | None:
+    """One note's metadata from its text and its library path; None if it doesn't parse or
+    has no slug. (The row store builds Lia's notes with this, from note_bodies.)"""
+    parts = st._split(text)
+    if parts is None:
+        return None
+    try:
+        fm = yaml.safe_load(parts[0]) or {}
+    except yaml.YAMLError:
+        return None
+    slug = _text(fm.get("slug"))
+    if not slug:
+        return None
+    meta = NoteMeta(
+        slug=slug,
+        name=_text(fm.get("name")),
+        type=_text(fm.get("type")),
+        path=rel,
+        area=(_text(fm.get("area")) or st.CROSS) if library else rel.split("/")[0],
+        also=st._as_list(fm.get("also")),
+        description=_text(fm.get("description")),
+        aliases=st._as_list(fm.get("aliases")),
+        status=_text(fm.get("status")),
+        updated=_text(fm.get("updated")),
+        review=_text(fm.get("review")),
+        pages=_text(fm.get("pages")),
+        sensitive=_text(fm.get("sensitivity")).lower() == "high",
+    )
+    summary = []
+    for heading, _, line in st.sections(parts[1], parts[2]):
+        if heading == SUMMARY_HEADING and line.strip():
+            summary.append(line.strip())
+        elif heading in (st.FACTS_HEADING, st.HISTORY_HEADING) and line.startswith("- "):
+            meta.facts.append(line[2:].strip())
+            meta.has_history |= heading == st.HISTORY_HEADING
+    meta.summary = " ".join(summary)
+    return meta
 
 
 def map_version(root: Path, shelves: tuple[str, ...] | None) -> str:

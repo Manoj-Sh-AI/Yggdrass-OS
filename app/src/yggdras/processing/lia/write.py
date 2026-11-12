@@ -263,6 +263,9 @@ PLAN_TOOLS = (
 )
 
 
+EXPECT = "expect_versions"  # kept with a preview: the versions it was made from
+
+
 @dataclass
 class Card:
     """What Manoj sees. kind: summary (written), preview (needs confirm), question (Lia asks),
@@ -311,6 +314,22 @@ class WriteSide:
                 "cache_control": CACHE,
             },
         ]
+
+    @property
+    def saved_as(self) -> str:
+        return getattr(self.wp, "saved_as", "commit")
+
+    def plan(self, ops: list[dict], title: str = ""):
+        """The change *ops* make, planned on the write path's current notes."""
+        return build_change(
+            self.wp.root, self.wp.flat, ops, self.today, title=title,
+            builder=getattr(self.wp, "builder", None),
+        )  # fmt: skip
+
+    def undo_hint(self, outcome, change) -> str:
+        if any(line.endswith("(erased for good: this cannot be undone)") for line in change.lines):
+            return "This change erased a fact for good: it cannot be undone."
+        return f"Undo: the Undo button, or `yggdras undo {outcome.sha[:7]}`."
 
     # ---------------------------------------------------------------- reading
 
@@ -407,7 +426,7 @@ class WriteSide:
                 state["question"] = stop
                 return "Stopped: this needs Manoj's answer first. Reply with one short line."
             ops = self._context_ops(state) + state["ops"] + [op]
-            build_change(self.wp.root, self.wp.flat, ops, self.today)
+            self.plan(ops)
         except OpError as exc:
             return f"Not planned: {exc}. Fix it and call the tool again, or ask_manoj."
         except KeyError as exc:
@@ -517,14 +536,16 @@ class WriteSide:
             if not state["ops"]:
                 return Card("message", line or "I didn't find anything to change in that.")
             try:
-                change = build_change(self.wp.root, self.wp.flat, state["ops"], self.today)
+                change = self.plan(state["ops"])
             except OpError as exc:
                 return Card("refused", f"I couldn't plan that: {exc}")
             if needs_confirm(state["ops"]):
                 verdict = self.wp.check(change)
                 if verdict.ok:
                     preview = self.preview_text(change, request)
-                    item = self.store.add(request, app, state["ops"], preview)
+                    seen = getattr(self.wp, "versions_of", None)
+                    kept = [{"op": EXPECT, "versions": seen(change)}] if seen else []
+                    item = self.store.add(request, app, state["ops"] + kept, preview)
                     return Card(
                         "preview",
                         self.preview_card(item.id, preview),
@@ -575,11 +596,14 @@ class WriteSide:
         if item.state != "pending":
             return Card("refused", f"Preview {pid} is {item.state}; nothing was written.")
         try:
-            change = build_change(self.wp.root, self.wp.flat, item.ops, self.today)
+            ops = [op for op in item.ops if op.get("op") != EXPECT]
+            seen = next((op["versions"] for op in item.ops if op.get("op") == EXPECT), None)
+            change = self.plan(ops)
         except OpError as exc:
             self.store.resolve(pid, "failed", str(exc))
             return Card("refused", f"The notes changed since the preview: {exc}. Nothing written.")
-        outcome = self.wp.apply(change, app, item.request)
+        extra = {"expect": seen} if seen is not None else {}
+        outcome = self.wp.apply(change, app, item.request, **extra)
         if outcome.status != "written":
             self.store.resolve(pid, "failed", outcome.message)
             if outcome.status == "blocked":
@@ -593,9 +617,7 @@ class WriteSide:
         """Bring an archived note back by its slug, name or alias: free code, no model call,
         written at once with a summary and Undo (D38)."""
         try:
-            change = build_change(
-                self.wp.root, self.wp.flat, [{"op": "restore_note", "slug": note}], self.today
-            )
+            change = self.plan([{"op": "restore_note", "slug": note}])
         except OpError as exc:
             return Card("refused", f"Nothing was restored: {exc}.")
         outcome = self.wp.apply(change, app, f"restore {note}")
@@ -625,7 +647,7 @@ class WriteSide:
             return Card(
                 "summary",
                 f"Undone. Your notes are back as they were before {sha[:7]} "
-                f"(commit {outcome.sha[:7]}).",
+                f"({self.saved_as} {outcome.sha[:7]}).",
                 sha=outcome.sha,
             )
         return Card("refused", self.blocked_text(outcome))
@@ -669,9 +691,9 @@ class WriteSide:
             else ""
         )
         text = (
-            f"Written to your brain (commit {outcome.sha[:7]}):\n{lines}\n"
+            f"Written to your brain ({self.saved_as} {outcome.sha[:7]}):\n{lines}\n"
             f"Notes: {self._links(change.slugs)}{warn}\n"
-            f"Undo: the Undo button, or `yggdras undo {outcome.sha[:7]}`."
+            f"{self.undo_hint(outcome, change)}"
         )
         return Card("summary", text, token=token, sha=outcome.sha, slugs=change.slugs)
 

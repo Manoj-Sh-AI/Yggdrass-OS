@@ -36,6 +36,7 @@ from yggdras.data.maps.notes import SOURCE_SHELVES, TAXONOMY, load_notes
 from yggdras.data.maps.relations import MENTIONED_IN
 
 NODE_RULES = Path("00-manual") / "node.md"
+MANUAL_FILES = ("taxonomy.md", "node.md")  # what Lia reads as her manual (Library.manual)
 VERB_ROW = re.compile(r"^\|\s*\d+\s*\|\s*`([a-z_]+)`\s*\|\s*`([a-z_]+)`[^|]*\|(.*)\|\s*$")
 # [[mentions]] are stored with a verb the code defines (the maps print them as such).
 MENTION_VERB = (st.MENTION, MENTIONED_IN, "a [[link]] written outside ## Links (code)")
@@ -62,7 +63,14 @@ NOTE_INSERT = (
     "status, sensitivity, review_date, decided_date, updated_at, archived_at, version) "
     "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NULL, 1)"
 )
-ROWS = ("notes", "facts", "links", "mentions", "aliases", "dated items", "areas", "verbs")
+ROWS = (
+    "notes", "facts", "history lines", "links", "mentions", "aliases", "dated items", "areas",
+    "verbs",
+)  # fmt: skip
+# Rows of `changes` the loader makes from ## History lines (D44/D31 amendment): re-made on
+# every load, never touching the changes Lia writes.
+HISTORY_ACTOR = "markdown-history"
+UNTIL = re.compile(r"until:\s*(\d{4}-\d{2}-\d{2})")
 
 
 class Refused(RuntimeError):
@@ -88,6 +96,9 @@ class Note:
     aliases: list[str]
     dated: list[tuple[dt.date, str, str]]  # (date, kind, label)
     parent_slug: str | None = None
+    history: list[tuple[str, str, dt.datetime]] = field(default_factory=list)  # kind, old, when
+    # the ## History section exactly as written, and where it sat (None: it ended the note)
+    history_block: tuple[str, int | None] | None = None
 
 
 @dataclass
@@ -106,6 +117,7 @@ class Brain:
     body_only: dict[str, int] = field(default_factory=dict)  # frontmatter key -> notes
     notes_info: list[str] = field(default_factory=list)
     upcoming: set[tuple[str, dt.date, str]] = field(default_factory=set)  # what upcoming finds
+    manual: dict[str, str] = field(default_factory=dict)  # 00-manual file name -> text
 
     def count(self, name: str, n: int = 1) -> None:
         self.markdown[name] = self.markdown.get(name, 0) + n
@@ -145,6 +157,12 @@ def _date(value) -> dt.date | None:
         return None
 
 
+def _month(value) -> dt.date | None:
+    """A YYYY-MM month as its first day, as the upcoming view reads months."""
+    m = re.fullmatch(r"(\d{4})-(0[1-9]|1[0-2])", str(value).strip())
+    return dt.date(int(m.group(1)), int(m.group(2)), 1) if m else None
+
+
 def _text(value) -> str | None:
     if value is None:
         return None
@@ -177,21 +195,22 @@ def read_verbs(root: Path, out: Brain) -> None:
         if m:
             meaning = " ".join(m.group(3).split()) or None
             out.verbs.append((m.group(1), m.group(2), meaning))
-    out.markdown["verbs"] = len(out.verbs)
+    out.markdown["verbs"] = len(out.verbs) + (st.MENTION not in {v for v, _, _ in out.verbs})
     missing = sorted(set(st.VERBS) - {v for v, _, _ in out.verbs})
     if missing:
         out.notes_info.append(f"verbs the code knows but node.md does not list: {missing}")
     if st.MENTION not in {v for v, _, _ in out.verbs}:
         out.verbs.append(MENTION_VERB)
         out.notes_info.append(
-            f"verb '{st.MENTION}' (inverse '{MENTIONED_IN}') added by the loader for [[mentions]]"
+            f"verb '{st.MENTION}' (inverse '{MENTIONED_IN}') added by the loader for [[mentions]]; "
+            "counted on both sides"
         )
 
 
 def read_areas(root: Path, out: Brain) -> None:
     taxonomy = root / TAXONOMY
     scopes = area_scopes(taxonomy.read_text(encoding="utf-8")) if taxonomy.is_file() else {}
-    out.markdown["areas"] = sum(1 for a in st.AREAS if a in scopes)
+    out.markdown["areas"] = sum(1 for a in st.AREAS if a in scopes) + 1  # + cross
     for area in st.AREAS:
         code, _, name = area.partition("-")
         holds, not_here = scopes.get(area, (None, None))
@@ -203,7 +222,7 @@ def read_areas(root: Path, out: Brain) -> None:
     out.left_null["areas.node_range"] = [a[0] for a in out.areas]
     out.notes_info.append(
         f"area {render.CROSS_CODE}-{render.CROSS_NAME} added by the loader for `area: cross` "
-        "(taxonomy.md lists 01–08)"
+        "(taxonomy.md lists 01–08); counted on both sides"
     )
 
 
@@ -239,7 +258,9 @@ def dated_items(slug: str, title: str, type_: str, fm: dict, body: str, out: Bra
             m = upcoming.ISO.search(str(value))
             day = upcoming._date(m.group(1), m.group(2), m.group(3))[0] if m else None
         else:
-            day = _date(value)
+            day = _date(value) or _month(value)
+            if day is not None and _date(value) is None:
+                out.notes_info.append(f"{slug}: {key} '{value}' is a month; stored as {day}")
         if day is None:
             if key not in OPTIONAL_COLUMNS:  # review/decided are reported with the column
                 out.unplaced.append(f"{slug}: {key} '{value}' is not a date; not loaded")
@@ -258,7 +279,8 @@ def read_notes(root: Path, out: Brain) -> None:
     bad: list[str] = []
     for path in st.node_files(root, st.mapped_shelves()):
         rel = path.relative_to(root).as_posix()
-        body = path.read_bytes().decode("utf-8")
+        original = path.read_bytes().decode("utf-8")
+        body, history_lines, stray, history_at, history_block = split_history_at(original)
         parts = st._split(body)
         if parts is None:
             out.unplaced.append(f"{rel}: no frontmatter")
@@ -270,6 +292,9 @@ def read_notes(root: Path, out: Brain) -> None:
             continue
         out.count("notes")
         out.count("facts", fact_lines(body))
+        out.count("history lines", len(history_lines))
+        for line in stray:
+            out.unplaced.append(f"{rel}: a line in ## History that is no '- ' line: {line!r}")
         out.count("aliases", len(st._as_list(fm.get("aliases"))))
         slug = _text(fm.get("slug"))
         if not slug:
@@ -325,6 +350,8 @@ def read_notes(root: Path, out: Brain) -> None:
                 body=body,
                 aliases=st._as_list(fm.get("aliases")),
                 dated=dated_items(slug, title, type_, fm, body, out),
+                history=history_rows(slug, history_lines, updated, out),
+                history_block=(history_block, history_at) if history_block else None,
             )
         )
     if bad:
@@ -334,6 +361,54 @@ def read_notes(root: Path, out: Brain) -> None:
         )
     out.notes.sort(key=lambda n: n.slug)
     out.markdown["dated items"] = sum(len(n.dated) for n in out.notes)
+
+
+def split_history(body: str) -> tuple[str, list[str], list[str]]:
+    """The note without its ## History section, the section's "- " lines (without "- "),
+    and any other non-blank line that sat in it (reported: it has no place in `changes`)."""
+    kept, items, stray, _, _ = split_history_at(body)
+    return kept, items, stray
+
+
+def split_history_at(body: str) -> tuple[str, list[str], list[str], int | None, str | None]:
+    """As split_history, plus where the section sat (the line index of the heading that
+    followed it, or None when it ended the note) and the section exactly as written. The
+    kept text is every other line, untouched, so text + section = the file, byte for byte."""
+    lines = body.split("\n")
+    start = next((i for i, ln in enumerate(lines) if ln.rstrip("\r").strip() == st.HISTORY_HEADING),
+                 None)  # fmt: skip
+    if start is None:
+        return body, [], [], None, None
+    end = next((j for j in range(start + 1, len(lines)) if lines[j].startswith("## ")), len(lines))
+    section = [ln.rstrip("\r") for ln in lines[start + 1 : end]]
+    items = [ln[2:].strip() for ln in section if ln.startswith("- ")]
+    stray = [ln for ln in section if ln.strip() and not ln.startswith("- ")]
+    before, after = lines[:start], lines[end:]
+    block = "\n".join(lines[start:end])
+    if not after:  # the section ended the note
+        return "\n".join(before), items, stray, None, block
+    return "\n".join(before + after), items, stray, start, block
+
+
+def history_rows(slug: str, lines: list[str], updated, out: Brain) -> list:
+    """`changes` rows for a note's History lines: `until:` → replace, `wrong:` → remove, dated
+    by the until: date, else by the note's `updated` date (reported)."""
+    rows = []
+    for line in lines:
+        kind = "replace" if "until:" in line else "remove" if "wrong:" in line else None
+        if kind is None:
+            out.unplaced.append(f"{slug}: History line with neither until: nor wrong: {line!r}")
+            continue
+        m = UNTIL.search(line)
+        day = _date(m.group(1)) if m else None
+        if day is None:
+            day = updated
+            out.notes_info.append(f"{slug}: a History line with no until: date, dated {day}")
+        if day is None:
+            out.unplaced.append(f"{slug}: History line with no date at all: {line!r}")
+            continue
+        rows.append((kind, line, dt.datetime.combine(day, dt.time(), dt.UTC)))
+    return rows
 
 
 def read_parents(out: Brain) -> None:
@@ -390,9 +465,13 @@ def read_links(root: Path, out: Brain) -> None:
     verbs = {v for v, _, _ in out.verbs}
     inverse_of = {inv: v for v, inv, _ in out.verbs if inv not in verbs}
     rows: dict[tuple[str, str, str], str] = {}
+    mentioned: set[tuple[str, str]] = set()  # distinct (note, target): one row each (ruling)
     for e in graph["edges"]:
         a, b, kind, verb = e["from_slug"], e["to_slug"], e["kind"], e["reason"]
-        out.count("mentions" if kind == "mention" else "links")
+        if kind == "mention":
+            mentioned.add((a, b))
+        else:
+            out.count("links")
         where = f"{a} → {verb} [[{e['written_as']}]]"
         if kind != "mention" and verb not in verbs and verb in inverse_of:
             a, b, verb = b, a, inverse_of[verb]
@@ -412,11 +491,15 @@ def read_links(root: Path, out: Brain) -> None:
         else:
             rows[(a, verb, b)] = kind
     for d in graph["dangling"]:
-        out.count("mentions" if d["kind"] == "mention" else "links")
+        if d["kind"] == "mention":
+            mentioned.add((d["from_slug"], "?" + d["written_as"]))
+        else:
+            out.count("links")
         out.unplaced.append(
             f"{d['kind']} {d['from_slug']} → {d['reason']} [[{d['written_as']}]]: no such note"
         )
     out.links = sorted((a, v, b, k) for (a, v, b), k in rows.items())
+    out.markdown["mentions"] = len(mentioned)
     for problem in graph["errors"]:
         if "ambiguous" in problem["problem"]:
             out.unplaced.append(f"{problem['path']}: {problem['problem']}")
@@ -441,6 +524,12 @@ def read_brain(repo: Path) -> Brain:
         raise Refused(f"no {st.LIBRARY}/ folder in {repo}")
     out = Brain()
     read_verbs(root, out)
+    for name in MANUAL_FILES:
+        path = root / "00-manual" / name
+        if path.is_file():
+            out.manual[name] = path.read_bytes().decode("utf-8")
+        else:
+            out.unplaced.append(f"00-manual/{name}: not found; Lia's manual is incomplete")
     read_areas(root, out)
     read_notes(root, out)
     read_parents(out)
@@ -449,12 +538,18 @@ def read_brain(repo: Path) -> Brain:
     read_links(root, out)
     read_upcoming(root, out)
     archived = repo / "archive"
+    library_archive = archived / st.LIBRARY
+    if library_archive.is_dir():
+        for path in sorted(library_archive.rglob("*.md")):
+            out.unplaced.append(
+                f"{path.relative_to(repo).as_posix()}: an archived library note; archived "
+                "files are not loaded (archive in rows after the switch)"
+            )
     if archived.is_dir():
-        count = sum(1 for _ in archived.rglob("*.md"))
-        if count:
+        for folder in sorted(p for p in archived.iterdir() if p.is_dir() and p != library_archive):
+            count = sum(1 for _ in folder.rglob("*.md"))
             out.notes_info.append(
-                f"{count} archived note file(s) under archive/ not loaded "
-                "(their archive date lives in git, not in the markdown)"
+                f"archive/{folder.name}/: {count} file(s), not part of this library; not loaded"
             )
     return out
 
@@ -472,6 +567,7 @@ WIPE = (
     "DELETE FROM brain.notes",  # brain.changes keeps its rows: slug becomes null
     "DELETE FROM brain.areas",
     "DELETE FROM brain.verbs",
+    "DELETE FROM brain.manual",
     "ALTER TABLE brain.dated_items ALTER COLUMN id RESTART WITH 1",
 )
 
@@ -518,11 +614,46 @@ def write(conn, brain: Brain) -> None:
             "VALUES (%s, %s, %s, %s)",
             brain.links,
         )
+        cur.executemany(
+            "INSERT INTO brain.manual (name, text) VALUES (%s, %s)", sorted(brain.manual.items())
+        )
         # Pass 2: each area's hub.
         cur.executemany(
             "UPDATE brain.areas SET hub_slug = %s WHERE area_code = %s",
             [(slug, code) for code, slug in sorted(brain.hubs.items())],
         )
+        # History lines from the markdown: kept as they are when unchanged (same ids), so two
+        # loads give identical tables; gone ones are dropped, new ones added.
+        # One row per History line (what it used to say; the H flag), and one row holding the
+        # section exactly as written and where it sat, so Lia reads the note byte for byte.
+        wanted = []
+        for n in brain.notes:
+            when = (
+                dt.datetime.combine(n.updated_at.date(), dt.time(), dt.UTC)
+                if n.updated_at
+                else (n.history[0][2] if n.history else None)
+            )
+            wanted += [(n.slug, kind, old, w, "## Facts", None) for kind, old, w in n.history]
+            if n.history_block and when is not None:
+                block, at = n.history_block
+                wanted.append((n.slug, "replace", block, when, st.HISTORY_HEADING, at))
+        cur.execute(
+            "SELECT id, slug_text, kind, old_text, created_at, section, pos FROM brain.changes "
+            "WHERE actor = %s",
+            (HISTORY_ACTOR,),
+        )
+        have = {tuple(r[1:]): r[0] for r in cur.fetchall()}
+        keep = set(wanted)
+        cur.executemany(
+            "DELETE FROM brain.changes WHERE id = %s",
+            [(i,) for key, i in sorted(have.items(), key=lambda kv: kv[1]) if key not in keep],
+        )
+        cur.executemany(
+            "INSERT INTO brain.changes (slug, slug_text, kind, old_text, new_text, actor, "
+            "created_at, section, pos) VALUES (%s, %s, %s, %s, NULL, %s, %s, %s, %s)",
+            [(s, s, k, o, HISTORY_ACTOR, w, sec, p) for s, k, o, w, sec, p in wanted
+             if (s, k, o, w, sec, p) not in have],
+        )  # fmt: skip
         # History survives a reload: re-attach it to the notes it names.
         cur.execute(
             "UPDATE brain.changes c SET slug = c.slug_text FROM brain.notes n "
@@ -548,6 +679,10 @@ def database_counts(conn) -> dict[str, int]:
     return {
         "notes": one("SELECT count(*) FROM brain.notes"),
         "facts": sum(fact_lines(body) for (body,) in bodies),
+        "history lines": one(
+            f"SELECT count(*) FROM brain.changes WHERE actor = '{HISTORY_ACTOR}' "
+            "AND section = '## Facts'"
+        ),
         "links": one("SELECT count(*) FROM brain.relationships WHERE kind <> 'mention'"),
         "mentions": one("SELECT count(*) FROM brain.relationships WHERE kind = 'mention'"),
         "aliases": one("SELECT count(*) FROM brain.aliases"),
