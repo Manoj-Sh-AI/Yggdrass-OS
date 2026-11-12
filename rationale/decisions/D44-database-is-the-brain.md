@@ -59,3 +59,18 @@ Choices made while building, open to Manoj's review:
   - losing the database means losing the brain, hence the off-PC dump;
   - the markdown fallback goes stale at the first write;
   - removal is final.
+
+## Amendment 2026-11-12: the app's write API (Manoj)
+
+- **Routes:** the brain API (`interface/brain_api.py`) serves `/api/` on the note server at 127.0.0.1. Every route, read or write, needs HTTP Basic Auth (`BRAIN_API_USER`, `BRAIN_API_PASSWORD`). Without both, the API does not start; Lia and the note pages start anyway.
+- **Writes:**
+  - add note, add fact and link are written at once, with an `undo_id`;
+  - replace previews, then writes, with an `undo_id`;
+  - remove fact and unlink preview, then erase for good.
+  - Undo records live in a new table, `brain.undo` (migration 0004). An Undo can be used once: 409 when reused, 404 when unknown, 400 for remove and unlink, which are permanent.
+- **Unlink is permanent everywhere**, for Lia too: no copy is kept, and there is no Undo. This replaces the earlier choice that kept unlinked lines.
+- **D31 stands:** a link is one row, one direction. The link preview shows how the reverse reads (its inverse verb) but never writes it, and `back_link` is ignored.
+- **Text is the truth:**
+  - a link is a line in its note, and link detection is the loader's regex derivation, never a model;
+  - a replace that drops a `[[link]]` lists it in the preview, and the row goes with the line on Confirm.
+- **Before the switch:** API writes return 409 until `YGGDRAS_BRAIN_SOURCE=rows`. The markdown is still the truth, and a reload would erase them.

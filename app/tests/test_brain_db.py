@@ -18,7 +18,7 @@ from yggdras.data.maps.build import build_maps  # noqa: E402
 
 TABLES = ("areas", "notes", "note_areas", "verbs", "relationships", "note_bodies", "aliases",
           "dated_items", "changes", "map_cache")  # fmt: skip
-MIGRATIONS = [1, 2, 3]
+MIGRATIONS = [1, 2, 3, 4]
 
 
 @pytest.fixture(scope="session")
@@ -105,7 +105,8 @@ def test_migrations_roll_forward_and_back(conn):
                          "WHERE table_schema = 'brain'")  # fmt: skip
         return {r[0] for r in rows}
 
-    assert names() == {*TABLES, "manual", "schema_migrations"}
+    assert names() == {*TABLES, "manual", "undo", "schema_migrations"}
+    assert migrate.down(conn) == [4] and "undo" not in names()
     assert not run(conn, "SELECT 1 FROM information_schema.tables WHERE table_schema = 'public'")
     assert migrate.down(conn) == [3] and migrate.current(conn) == 2
     assert "manual" not in names()

@@ -248,7 +248,10 @@ def line_rows(old: str | None, new: str, moved: list[str], hint: str | None) -> 
             elif not o:
                 kind = "add"
             elif not n and section == st.LINKS_HEADING and st.LINK_LINE.match(o[0]):
-                kind = "unlink"
+                # unlinked: removed for good, no copy kept (Manoj, 2026-11-12)
+                rows.append(dict(kind="unlink", section=section, old=None, new=None, pos=j,
+                                 tag=None))  # fmt: skip
+                continue
             else:
                 kind = "replace"
             rows.append(
@@ -603,6 +606,11 @@ class RowStore:
                 return Outcome(
                     "blocked",
                     "that change removed a fact, which erases it for good: it can't be undone",
+                )
+            if any(r["kind"] == "unlink" for r in rows):
+                return Outcome(
+                    "blocked",
+                    "that change removed a link, which is permanent: it can't be undone",
                 )
             slugs = sorted({r["slug"] for r in rows})
             later = _rows(

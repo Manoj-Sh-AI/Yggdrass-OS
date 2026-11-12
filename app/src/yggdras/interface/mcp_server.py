@@ -20,6 +20,7 @@ local-data/traces/.
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 import threading
 import time
@@ -430,6 +431,31 @@ def build_server(service: LiaService):
     return server
 
 
+def start_api():
+    """The brain API (brain_api.py), or None when its credentials are missing: the message
+    names the variables, never a value, and Lia and the note pages start anyway."""
+    import datetime as dt
+
+    from yggdras.data.brain_db import api as reads
+    from yggdras.data.brain_db import db
+    from yggdras.data.brain_db.writes import BrainWrites
+    from yggdras.interface import brain_api, writing
+
+    try:
+        user, password = brain_api.credentials()
+    except brain_api.ApiConfigError as exc:
+        print(exc, file=sys.stderr)
+        return None
+
+    def read(name, *args):
+        with db.connect() as conn:
+            return getattr(reads, name)(conn, *args)
+
+    writes = BrainWrites(writing.row_store(), lambda: config.brain_source() == "rows",
+                         lambda: dt.date.today().isoformat())  # fmt: skip
+    return brain_api.BrainApi(user, password, read, writes)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="yggdras mcp", description="Lia as an MCP server")
     parser.add_argument("--brain", type=Path, help="brain repo (default: YGGDRAS_BRAIN)")
@@ -455,18 +481,14 @@ def main(argv: list[str] | None = None) -> int:
     root = args.flat or brain / "library"
     port = config.notes_port()
     rows = api = None
+    if not args.flat and os.environ.get("BRAIN_DATABASE_URL", "").strip():
+        api = start_api()  # the app's API; None (and a message) without its credentials
     if not args.flat and config.brain_source() == "rows":  # D44: the database is the brain
-        from yggdras.data.brain_db import api as brain_api
-        from yggdras.data.brain_db import db
         from yggdras.interface import writing
 
         rows = writing.row_store()
         rows.render_viewers()
         viewer_dir = config.brain_view()
-
-        def api(name, *args):
-            with db.connect() as conn:
-                return getattr(brain_api, name)(conn, *args)
     else:
         viewer = (
             None if args.flat else note_server.build_viewer(root, config.local_data() / "viewer")

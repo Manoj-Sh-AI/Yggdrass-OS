@@ -1,11 +1,12 @@
 # ruff: noqa: E501  (the inline HTML and CSS template)
-"""A tiny read-only web server for Lia's footnote links (127.0.0.1 only, GET only).
+"""A tiny web server for Lia's footnote links and the app's brain API (127.0.0.1 only).
 
     /note/<slug>#cite=<block>   the note, line by line, the cited line highlighted and scrolled to
     /graph/graph.html#select=…  the brain viewer, built once at start into local-data/
+    /api/...                    the brain API (brain_api.py): Basic Auth on every route
 
-Started by `yggdras mcp` on a stable port (YGGDRAS_NOTES_PORT). It never writes to the brain:
-there are no write routes, and anything but GET is refused.
+Started by `yggdras mcp` on a stable port (YGGDRAS_NOTES_PORT). The note pages and the graph
+are read-only; only the authenticated /api/ routes write, and only to the rows (D44).
 """
 
 from __future__ import annotations
@@ -54,6 +55,9 @@ def note_page(slug: str, title: str, blocks: list) -> str:
     )
 
 
+MAX_BODY = 1_000_000  # bytes in one API request
+
+
 def make_handler(get_library: Callable, viewer_dir: Path | None, api: Callable | None = None):
     class Handler(BaseHTTPRequestHandler):
         def _send(self, status: int, body: bytes, kind: str = "text/html; charset=utf-8"):
@@ -75,8 +79,8 @@ def make_handler(get_library: Callable, viewer_dir: Path | None, api: Callable |
                 return self._send(200, page.encode("utf-8"))
             if path in ("/graph", "/graph/") and viewer_dir is not None:
                 path = "/graph/graph.html"
-            if path.startswith("/api/") and api is not None:  # the app's reads (D44 §6)
-                return self._api(path[len("/api/") :].strip("/"))
+            if path.startswith("/api/") and api is not None:  # the app's API (D44 §6)
+                return self._api("GET", path[len("/api/") :].strip("/"))
             if path.startswith("/graph/") and viewer_dir is not None:
                 name = path[len("/graph/") :]
                 target = (viewer_dir / name).resolve()
@@ -89,24 +93,42 @@ def make_handler(get_library: Callable, viewer_dir: Path | None, api: Callable |
                     return self._send(200, target.read_bytes(), kind)
             return self._send(404, b"Not found.", "text/plain; charset=utf-8")
 
-        def _api(self, route: str):
+        def _api(self, method: str, route: str):
             import json
 
-            name, _, slug = route.partition("/")
-            calls = {"tree": ("note_tree",), "note": ("note_with_relationships", slug),
-                     "version": ("version", slug)}  # fmt: skip
-            if name not in calls or (name != "tree" and not slug):
-                return self._send(404, b"Not found.", "text/plain; charset=utf-8")
-            data = api(*calls[name])
-            if data is None:
-                return self._send(404, b"No such note.", "text/plain; charset=utf-8")
-            body = json.dumps(data, ensure_ascii=False, default=str).encode("utf-8")
-            return self._send(200, body, "application/json; charset=utf-8")
+            if not api.authorized(self.headers.get("Authorization")):
+                self.send_response(401)
+                self.send_header("WWW-Authenticate", 'Basic realm="yggdras brain"')
+                self.send_header("Content-Length", "0")
+                self.end_headers()
+                return None
+            if method == "GET":
+                status, data = api.get(route)
+            else:
+                size = int(self.headers.get("Content-Length") or 0)
+                if size > MAX_BODY:
+                    return self._send(413, b"Too large.", "text/plain; charset=utf-8")
+                try:
+                    body = json.loads(self.rfile.read(size) or b"{}")
+                except ValueError:
+                    body = None
+                if not isinstance(body, dict):
+                    return self._send(400, b'{"error": "the body must be a JSON object"}',
+                                      "application/json; charset=utf-8")  # fmt: skip
+                status, data = api.post(route, body)
+            out = json.dumps(data, ensure_ascii=False, default=str).encode("utf-8")
+            return self._send(status, out, "application/json; charset=utf-8")
+
+        def do_POST(self):  # noqa: N802
+            path = unquote(self.path.split("#")[0].split("?")[0])
+            if path.startswith("/api/") and api is not None:
+                return self._api("POST", path[len("/api/") :].strip("/"))
+            return self._refuse()
 
         def _refuse(self):
             self._send(405, b"Read-only.", "text/plain; charset=utf-8")
 
-        do_POST = do_PUT = do_DELETE = do_PATCH = _refuse  # noqa: N815
+        do_PUT = do_DELETE = do_PATCH = _refuse  # noqa: N815
 
         def log_message(self, *args):  # stdout and stderr belong to MCP; stay quiet
             pass

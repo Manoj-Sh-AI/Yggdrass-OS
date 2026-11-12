@@ -153,22 +153,21 @@ def test_remove_erases_for_good_and_cannot_be_undone(loaded):
     assert undo.status == "blocked" and "can't be undone" in undo.message
 
 
-def test_unlink_deletes_the_row_and_undo_puts_it_back_exactly(loaded):
+def test_unlink_deletes_the_row_for_good(loaded):
+    """Unlink is permanent (Manoj, 2026-11-12): no copy kept, no Undo."""
     store, _ = loaded
     link = ("pottery-course", "uses", "wheel-throwing")
     has = lambda: q(store, "SELECT count(*) FROM brain.relationships WHERE from_slug = %s "  # noqa: E731
                            "AND verb = %s AND to_slug = %s", link)[0][0]  # fmt: skip
-    original = body(store, "pottery-course")
     assert has() == 1
     out, _ = write(store, [{"op": "unlink", "from": link[0], "verb": link[1], "to": link[2]}])
     assert out.status == "written", out.message
     assert has() == 0
-    assert q(store, "SELECT kind FROM brain.changes WHERE request_id = %s AND section = "
-                    "'## Links'", (out.sha,)) == [("unlink",)]  # fmt: skip
+    assert q(store, "SELECT kind, old_text FROM brain.changes WHERE request_id = %s AND section "
+                    "= '## Links'", (out.sha,)) == [("unlink", None)]  # fmt: skip
     undone = store.undo(out.sha, "test")
-    assert undone.status == "written", undone.message
-    assert has() == 1 and body(store, "pottery-course") == original
-    assert store.undo(out.sha, "test").status == "blocked"  # once only
+    assert undone.status == "blocked" and "permanent" in undone.message
+    assert has() == 0
 
 
 def test_undo_of_a_new_note_takes_it_out_but_keeps_its_history(loaded):
@@ -291,16 +290,25 @@ def test_the_note_server_serves_notes_graph_and_api_from_rows(loaded):
         with store.connect() as conn:
             return getattr(api, name)(conn, *args)
 
+    import base64
+
+    from yggdras.data.brain_db.writes import BrainWrites
+    from yggdras.interface.brain_api import BrainApi
+
+    brain = BrainApi("tester", "not-a-real-secret", call,
+                     BrainWrites(store, lambda: True, lambda: TODAY))  # fmt: skip
+    auth = {"Authorization": "Basic " + base64.b64encode(b"tester:not-a-real-secret").decode()}
+    get = lambda url: urllib.request.urlopen(urllib.request.Request(url, headers=auth))  # noqa: E731
     port = __import__("brain_pg").free_port()
-    server = note_server.start(lambda: library, port, store.viewer_dirs[0], call)
+    server = note_server.start(lambda: library, port, store.viewer_dirs[0], brain)
     try:
         base = f"http://127.0.0.1:{port}"
         page = urllib.request.urlopen(f"{base}/note/pottery-course").read().decode()
         assert "The course runs on Saturdays" in page
         assert urllib.request.urlopen(f"{base}/graph").status == 200
-        tree = json.loads(urllib.request.urlopen(f"{base}/api/tree").read())
+        tree = json.loads(get(f"{base}/api/tree").read())
         assert tree[3]["code"] == "04"
-        note = json.loads(urllib.request.urlopen(f"{base}/api/note/ada-lin").read())
+        note = json.loads(get(f"{base}/api/note/ada-lin").read())
         assert note["slug"] == "ada-lin" and isinstance(note["version"], int)
     finally:
         server.shutdown()
