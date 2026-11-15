@@ -1,0 +1,49 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "key": {
+      "format": "uuid",
+      "title": "Key",
+      "type": "string"
+    },
+    "id": {
+      "format": "uuid",
+      "title": "Id",
+      "type": "string"
+    },
+    "version": {
+      "minimum": 1,
+      "title": "Version",
+      "type": "integer"
+    },
+    "decision": {
+      "enum": [
+        "accept",
+        "dismiss"
+      ],
+      "title": "Decision",
+      "type": "string"
+    },
+    "target_version": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Target Version"
+    }
+  },
+  "required": [
+    "key",
+    "id",
+    "version",
+    "decision"
+  ],
+  "title": "ResolveReview",
+  "type": "object"
+}

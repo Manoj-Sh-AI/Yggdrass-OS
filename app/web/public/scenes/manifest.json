@@ -1,0 +1,559 @@
+{
+  "version": 1,
+  "generated": true,
+  "viewpoint": "Fixed alpine lake master, generated with imagegen; reference-edited seasonal/time/weather variants.",
+  "scenes": [
+    {
+      "key": "autumn-sunrise-clear",
+      "season": "autumn",
+      "phase": "sunrise",
+      "weather": "clear",
+      "variants": [
+        {
+          "width": 480,
+          "src": "/scenes/autumn-sunrise-clear-480.webp",
+          "bytes": 23674
+        },
+        {
+          "width": 960,
+          "src": "/scenes/autumn-sunrise-clear-960.webp",
+          "bytes": 84584
+        },
+        {
+          "width": 1920,
+          "src": "/scenes/autumn-sunrise-clear-1920.webp",
+          "bytes": 285388
+        }
+      ]
+    },
+    {
+      "key": "spring-sunrise-clear",
+      "season": "spring",
+      "phase": "sunrise",
+      "weather": "clear",
+      "variants": [
+        {
+          "width": 480,
+          "src": "/scenes/spring-sunrise-clear-480.webp",
+          "bytes": 26332
+        },
+        {
+          "width": 960,
+          "src": "/scenes/spring-sunrise-clear-960.webp",
+          "bytes": 94734
+        },
+        {
+          "width": 1920,
+          "src": "/scenes/spring-sunrise-clear-1920.webp",
+          "bytes": 302106
+        }
+      ]
+    },
+    {
+      "key": "spring-sunrise-rainy",
+      "season": "spring",
+      "phase": "sunrise",
+      "weather": "rainy",
+      "variants": [
+        {
+          "width": 480,
+          "src": "/scenes/spring-sunrise-rainy-480.webp",
+          "bytes": 23568
+        },
+        {
+          "width": 960,
+          "src": "/scenes/spring-sunrise-rainy-960.webp",
+          "bytes": 87570
+        },
+        {
+          "width": 1920,
+          "src": "/scenes/spring-sunrise-rainy-1920.webp",
+          "bytes": 286088
+        }
+      ]
+    },
+    {
+      "key": "spring-afternoon-rainy",
+      "season": "spring",
+      "phase": "afternoon",
+      "weather": "rainy",
+      "variants": [
+        {
+          "width": 480,
+          "src": "/scenes/spring-afternoon-rainy-480.webp",
+          "bytes": 25778
+        },
+        {
+          "width": 960,
+          "src": "/scenes/spring-afternoon-rainy-960.webp",
+          "bytes": 96090
+        },
+        {
+          "width": 1920,
+          "src": "/scenes/spring-afternoon-rainy-1920.webp",
+          "bytes": 306740
+        }
+      ]
+    },
+    {
+      "key": "spring-night-clear",
+      "season": "spring",
+      "phase": "night",
+      "weather": "clear",
+      "variants": [
+        {
+          "width": 480,
+          "src": "/scenes/spring-night-clear-480.webp",
+          "bytes": 23624
+        },
+        {
+          "width": 960,
+          "src": "/scenes/spring-night-clear-960.webp",
+          "bytes": 87426
+        },
+        {
+          "width": 1920,
+          "src": "/scenes/spring-night-clear-1920.webp",
+          "bytes": 295044
+        }
+      ]
+    },
+    {
+      "key": "spring-afternoon-clear",
+      "season": "spring",
+      "phase": "afternoon",
+      "weather": "clear",
+      "variants": [
+        {
+          "width": 480,
+          "src": "/scenes/spring-afternoon-clear-480.webp",
+          "bytes": 32466
+        },
+        {
+          "width": 960,
+          "src": "/scenes/spring-afternoon-clear-960.webp",
+          "bytes": 123068
+        },
+        {
+          "width": 1920,
+          "src": "/scenes/spring-afternoon-clear-1920.webp",
+          "bytes": 436168
+        }
+      ]
+    },
+    {
+      "key": "spring-night-rainy",
+      "season": "spring",
+      "phase": "night",
+      "weather": "rainy",
+      "variants": [
+        {
+          "width": 480,
+          "src": "/scenes/spring-night-rainy-480.webp",
+          "bytes": 19466
+        },
+        {
+          "width": 960,
+          "src": "/scenes/spring-night-rainy-960.webp",
+          "bytes": 76324
+        },
+        {
+          "width": 1920,
+          "src": "/scenes/spring-night-rainy-1920.webp",
+          "bytes": 253184
+        }
+      ]
+    },
+    {
+      "key": "summer-sunrise-rainy",
+      "season": "summer",
+      "phase": "sunrise",
+      "weather": "rainy",
+      "variants": [
+        {
+          "width": 480,
+          "src": "/scenes/summer-sunrise-rainy-480.webp",
+          "bytes": 21846
+        },
+        {
+          "width": 960,
+          "src": "/scenes/summer-sunrise-rainy-960.webp",
+          "bytes": 82026
+        },
+        {
+          "width": 1920,
+          "src": "/scenes/summer-sunrise-rainy-1920.webp",
+          "bytes": 273706
+        }
+      ]
+    },
+    {
+      "key": "summer-afternoon-clear",
+      "season": "summer",
+      "phase": "afternoon",
+      "weather": "clear",
+      "variants": [
+        {
+          "width": 480,
+          "src": "/scenes/summer-afternoon-clear-480.webp",
+          "bytes": 30070
+        },
+        {
+          "width": 960,
+          "src": "/scenes/summer-afternoon-clear-960.webp",
+          "bytes": 112076
+        },
+        {
+          "width": 1920,
+          "src": "/scenes/summer-afternoon-clear-1920.webp",
+          "bytes": 381470
+        }
+      ]
+    },
+    {
+      "key": "summer-sunrise-clear",
+      "season": "summer",
+      "phase": "sunrise",
+      "weather": "clear",
+      "variants": [
+        {
+          "width": 480,
+          "src": "/scenes/summer-sunrise-clear-480.webp",
+          "bytes": 28218
+        },
+        {
+          "width": 960,
+          "src": "/scenes/summer-sunrise-clear-960.webp",
+          "bytes": 102540
+        },
+        {
+          "width": 1920,
+          "src": "/scenes/summer-sunrise-clear-1920.webp",
+          "bytes": 326680
+        }
+      ]
+    },
+    {
+      "key": "summer-afternoon-rainy",
+      "season": "summer",
+      "phase": "afternoon",
+      "weather": "rainy",
+      "variants": [
+        {
+          "width": 480,
+          "src": "/scenes/summer-afternoon-rainy-480.webp",
+          "bytes": 25846
+        },
+        {
+          "width": 960,
+          "src": "/scenes/summer-afternoon-rainy-960.webp",
+          "bytes": 98734
+        },
+        {
+          "width": 1920,
+          "src": "/scenes/summer-afternoon-rainy-1920.webp",
+          "bytes": 322172
+        }
+      ]
+    },
+    {
+      "key": "summer-night-clear",
+      "season": "summer",
+      "phase": "night",
+      "weather": "clear",
+      "variants": [
+        {
+          "width": 480,
+          "src": "/scenes/summer-night-clear-480.webp",
+          "bytes": 18520
+        },
+        {
+          "width": 960,
+          "src": "/scenes/summer-night-clear-960.webp",
+          "bytes": 70752
+        },
+        {
+          "width": 1920,
+          "src": "/scenes/summer-night-clear-1920.webp",
+          "bytes": 235382
+        }
+      ]
+    },
+    {
+      "key": "summer-night-rainy",
+      "season": "summer",
+      "phase": "night",
+      "weather": "rainy",
+      "variants": [
+        {
+          "width": 480,
+          "src": "/scenes/summer-night-rainy-480.webp",
+          "bytes": 15174
+        },
+        {
+          "width": 960,
+          "src": "/scenes/summer-night-rainy-960.webp",
+          "bytes": 61094
+        },
+        {
+          "width": 1920,
+          "src": "/scenes/summer-night-rainy-1920.webp",
+          "bytes": 215412
+        }
+      ]
+    },
+    {
+      "key": "autumn-afternoon-rainy",
+      "season": "autumn",
+      "phase": "afternoon",
+      "weather": "rainy",
+      "variants": [
+        {
+          "width": 480,
+          "src": "/scenes/autumn-afternoon-rainy-480.webp",
+          "bytes": 29682
+        },
+        {
+          "width": 960,
+          "src": "/scenes/autumn-afternoon-rainy-960.webp",
+          "bytes": 112222
+        },
+        {
+          "width": 1920,
+          "src": "/scenes/autumn-afternoon-rainy-1920.webp",
+          "bytes": 374280
+        }
+      ]
+    },
+    {
+      "key": "autumn-sunrise-rainy",
+      "season": "autumn",
+      "phase": "sunrise",
+      "weather": "rainy",
+      "variants": [
+        {
+          "width": 480,
+          "src": "/scenes/autumn-sunrise-rainy-480.webp",
+          "bytes": 25706
+        },
+        {
+          "width": 960,
+          "src": "/scenes/autumn-sunrise-rainy-960.webp",
+          "bytes": 97446
+        },
+        {
+          "width": 1920,
+          "src": "/scenes/autumn-sunrise-rainy-1920.webp",
+          "bytes": 329242
+        }
+      ]
+    },
+    {
+      "key": "autumn-afternoon-clear",
+      "season": "autumn",
+      "phase": "afternoon",
+      "weather": "clear",
+      "variants": [
+        {
+          "width": 480,
+          "src": "/scenes/autumn-afternoon-clear-480.webp",
+          "bytes": 36828
+        },
+        {
+          "width": 960,
+          "src": "/scenes/autumn-afternoon-clear-960.webp",
+          "bytes": 133004
+        },
+        {
+          "width": 1920,
+          "src": "/scenes/autumn-afternoon-clear-1920.webp",
+          "bytes": 440720
+        }
+      ]
+    },
+    {
+      "key": "autumn-night-clear",
+      "season": "autumn",
+      "phase": "night",
+      "weather": "clear",
+      "variants": [
+        {
+          "width": 480,
+          "src": "/scenes/autumn-night-clear-480.webp",
+          "bytes": 25484
+        },
+        {
+          "width": 960,
+          "src": "/scenes/autumn-night-clear-960.webp",
+          "bytes": 93880
+        },
+        {
+          "width": 1920,
+          "src": "/scenes/autumn-night-clear-1920.webp",
+          "bytes": 310810
+        }
+      ]
+    },
+    {
+      "key": "autumn-night-rainy",
+      "season": "autumn",
+      "phase": "night",
+      "weather": "rainy",
+      "variants": [
+        {
+          "width": 480,
+          "src": "/scenes/autumn-night-rainy-480.webp",
+          "bytes": 23198
+        },
+        {
+          "width": 960,
+          "src": "/scenes/autumn-night-rainy-960.webp",
+          "bytes": 88414
+        },
+        {
+          "width": 1920,
+          "src": "/scenes/autumn-night-rainy-1920.webp",
+          "bytes": 301662
+        }
+      ]
+    },
+    {
+      "key": "winter-sunrise-rainy",
+      "season": "winter",
+      "phase": "sunrise",
+      "weather": "rainy",
+      "variants": [
+        {
+          "width": 480,
+          "src": "/scenes/winter-sunrise-rainy-480.webp",
+          "bytes": 26550
+        },
+        {
+          "width": 960,
+          "src": "/scenes/winter-sunrise-rainy-960.webp",
+          "bytes": 103546
+        },
+        {
+          "width": 1920,
+          "src": "/scenes/winter-sunrise-rainy-1920.webp",
+          "bytes": 338504
+        }
+      ]
+    },
+    {
+      "key": "winter-afternoon-clear",
+      "season": "winter",
+      "phase": "afternoon",
+      "weather": "clear",
+      "variants": [
+        {
+          "width": 480,
+          "src": "/scenes/winter-afternoon-clear-480.webp",
+          "bytes": 33866
+        },
+        {
+          "width": 960,
+          "src": "/scenes/winter-afternoon-clear-960.webp",
+          "bytes": 123352
+        },
+        {
+          "width": 1920,
+          "src": "/scenes/winter-afternoon-clear-1920.webp",
+          "bytes": 404850
+        }
+      ]
+    },
+    {
+      "key": "winter-sunrise-clear",
+      "season": "winter",
+      "phase": "sunrise",
+      "weather": "clear",
+      "variants": [
+        {
+          "width": 480,
+          "src": "/scenes/winter-sunrise-clear-480.webp",
+          "bytes": 28366
+        },
+        {
+          "width": 960,
+          "src": "/scenes/winter-sunrise-clear-960.webp",
+          "bytes": 104826
+        },
+        {
+          "width": 1920,
+          "src": "/scenes/winter-sunrise-clear-1920.webp",
+          "bytes": 340476
+        }
+      ]
+    },
+    {
+      "key": "winter-afternoon-rainy",
+      "season": "winter",
+      "phase": "afternoon",
+      "weather": "rainy",
+      "variants": [
+        {
+          "width": 480,
+          "src": "/scenes/winter-afternoon-rainy-480.webp",
+          "bytes": 28736
+        },
+        {
+          "width": 960,
+          "src": "/scenes/winter-afternoon-rainy-960.webp",
+          "bytes": 105882
+        },
+        {
+          "width": 1920,
+          "src": "/scenes/winter-afternoon-rainy-1920.webp",
+          "bytes": 351442
+        }
+      ]
+    },
+    {
+      "key": "winter-night-clear",
+      "season": "winter",
+      "phase": "night",
+      "weather": "clear",
+      "variants": [
+        {
+          "width": 480,
+          "src": "/scenes/winter-night-clear-480.webp",
+          "bytes": 24708
+        },
+        {
+          "width": 960,
+          "src": "/scenes/winter-night-clear-960.webp",
+          "bytes": 92884
+        },
+        {
+          "width": 1920,
+          "src": "/scenes/winter-night-clear-1920.webp",
+          "bytes": 304106
+        }
+      ]
+    },
+    {
+      "key": "winter-night-rainy",
+      "season": "winter",
+      "phase": "night",
+      "weather": "rainy",
+      "variants": [
+        {
+          "width": 480,
+          "src": "/scenes/winter-night-rainy-480.webp",
+          "bytes": 23926
+        },
+        {
+          "width": 960,
+          "src": "/scenes/winter-night-rainy-960.webp",
+          "bytes": 90564
+        },
+        {
+          "width": 1920,
+          "src": "/scenes/winter-night-rainy-1920.webp",
+          "bytes": 298194
+        }
+      ]
+    }
+  ]
+}

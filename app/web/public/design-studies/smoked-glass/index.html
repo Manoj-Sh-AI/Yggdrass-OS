@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Yggdras · Smoked glass study</title><link rel="stylesheet" href="study.css"></head>
+<body>
+<svg class="symbols" aria-hidden="true"><defs>
+<symbol id="tree" viewBox="0 0 24 24"><path d="M12 21V4m0 8L5 7m7 9 7-5M12 8l5-4M7 21h10"/></symbol>
+<symbol id="search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></symbol>
+<symbol id="today" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M8 3v4m8-4v4M4 10h16m-11 5 2 2 4-4"/></symbol>
+<symbol id="calendar" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M8 3v4m8-4v4M4 10h16m4 4h2m4 0h2m-8 3h2"/></symbol>
+<symbol id="task" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="m8 12 3 3 5-6"/></symbol>
+<symbol id="note" viewBox="0 0 24 24"><path d="M13 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10Z"/><path d="M13 3v7h7M8 14h8m-8 3h5"/></symbol>
+<symbol id="graph" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.5"/><circle cx="5" cy="18" r="2.5"/><circle cx="19" cy="18" r="2.5"/><path d="m11 7-5 9m7-9 5 9M8 18h8"/></symbol>
+<symbol id="settings" viewBox="0 0 24 24"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2.5"/><circle cx="15" cy="17" r="2.5"/></symbol>
+<symbol id="arrow" viewBox="0 0 24 24"><path d="M5 12h14m-5-5 5 5-5 5"/></symbol>
+<symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></symbol>
+<symbol id="spark" viewBox="0 0 24 24"><path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5Z"/></symbol>
+<symbol id="book" viewBox="0 0 24 24"><path d="M12 6c-2-2-5-2-9-1v15c4-1 7-1 9 1 2-2 5-2 9-1V5c-4-1-7-1-9 1Zm0 0v15"/></symbol>
+<symbol id="work" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="3"/><path d="M8 7V4h8v3M3 12c6 3 12 3 18 0m-9 0v4"/></symbol>
+<symbol id="leaf" viewBox="0 0 24 24"><path d="M20 3C6 2 2 10 6 16s14 3 14-13ZM6 20l9-11"/></symbol>
+<symbol id="menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+</defs></svg>
+<div class="landscape" aria-hidden="true"></div><div class="atmosphere" aria-hidden="true"></div>
+<main class="window">
+ <div class="window-chrome"><span class="traffic" aria-hidden="true"><i></i><i></i><i></i></span><span>yggdras / your personal space</span><span class="study-label">MATERIAL STUDY 01</span></div>
+ <div class="shell">
+  <aside class="sidebar" aria-label="Workspace navigation">
+   <div class="brand"><span class="brand-icon"><svg><use href="#tree"/></svg></span><span>Yggdras<span class="brand-caption">A LITTLE MORE CLARITY</span></span></div>
+   <nav aria-label="Main navigation">
+    <button class="nav-item active" aria-current="page"><svg><use href="#today"/></svg>Today<span class="nav-dot"></span></button>
+    <button class="nav-item" data-preview="Calendar"><svg><use href="#calendar"/></svg>Calendar</button>
+    <button class="nav-item" data-preview="Tasks"><svg><use href="#task"/></svg>Tasks</button>
+    <button class="nav-item" data-preview="Notes"><svg><use href="#note"/></svg>Notes<span class="count">24</span></button>
+    <button class="nav-item" data-preview="Graph"><svg><use href="#graph"/></svg>Graph</button>
+   </nav>
+   <div class="rail-heading">YOUR AREAS<button aria-label="Add area" data-preview="Life areas">+</button></div>
+   <div class="area-nav"><button data-preview="Work"><i class="area-dot work"></i>Work</button><button data-preview="Learning"><i class="area-dot learning"></i>Learning</button><button data-preview="Health"><i class="area-dot health"></i>Health</button><button data-preview="Personal"><i class="area-dot personal"></i>Personal</button></div>
+   <div class="sidebar-bottom"><button class="nav-item" id="contrast" aria-pressed="false"><svg><use href="#settings"/></svg>Reduce transparency</button><div class="profile"><span class="avatar">A</span><span>Alex<small>Make space for yourself.</small></span><span class="ellipsis">···</span></div></div>
+  </aside>
+  <section class="workspace">
+   <header class="topbar"><div class="breadcrumb"><svg><use href="#today"/></svg><span>Your space</span><span class="slash">/</span><strong>Today</strong></div><label class="search"><svg><use href="#search"/></svg><input id="search-field" aria-label="Search this design study" placeholder="Find a thought, or ask Lia…"><kbd>⌘ K</kbd></label><div class="weather"><svg><use href="#sun"/></svg><span>12°<small>A little sunshine</small></span></div></header>
+   <div class="workspace-scroll">
+    <div class="welcome"><div><p class="eyebrow">FRIDAY, NOVEMBER 13</p><h1>Good morning,<span> Alex.</span></h1><p class="welcome-line">One thing at a time. A little space to think.</p></div><div class="scene-control" role="group" aria-label="Preview scenery"><button aria-pressed="true" data-scene="dawn">Dawn</button><button aria-pressed="false" data-scene="night">Night</button></div></div>
+    <div class="content-grid">
+     <section class="main-column" aria-labelledby="agenda-title"><div class="section-title"><h2 id="agenda-title">Your day<span>3 intentions</span></h2><button class="quiet-button" data-preview="Daily planning">Day view <span>⌄</span></button></div>
+      <div class="agenda">
+       <button class="agenda-row" data-preview="Focus session"><time>09:00<span>10:30</span></time><span class="event-rule work"></span><span class="event-main"><strong>Space for focused work</strong><small>Work · A clear desk, one meaningful thing</small></span><span class="duration">90 min</span><svg><use href="#arrow"/></svg></button>
+       <div class="now"><span>NOW</span><i></i><span class="now-line"></span><span class="now-label">A moment to reset</span></div>
+       <button class="agenda-row" data-preview="Reading"><time>11:30<span>12:00</span></time><span class="event-rule learning"></span><span class="event-main"><strong>A little reading</strong><small>Learning · Capture one idea worth keeping</small></span><span class="duration">30 min</span><svg><use href="#arrow"/></svg></button>
+       <button class="agenda-row" data-preview="A walk outside"><time>15:00<span>15:30</span></time><span class="event-rule health"></span><span class="event-main"><strong>Take the long way outside</strong><small>Health · A walk without a destination</small></span><span class="duration">30 min</span><svg><use href="#arrow"/></svg></button>
+      </div>
+      <div class="lower-grid"><section class="routine"><div class="mini-heading"><svg><use href="#book"/></svg><span>A SMALL DAILY RITUAL</span></div><h3>Read a chapter.<br>Keep a new perspective.</h3><p>25 minutes · Learning</p><div class="routine-bottom"><span id="routine-status">A little progress adds up.</span><button class="outline-button" id="routine-start">Begin <svg><use href="#arrow"/></svg></button></div><div class="routine-progress" aria-label="Demo routine progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></div></section><section class="recent"><div class="mini-heading"><span>THOUGHTS TO RETURN TO</span></div><button data-preview="A slower kind of productivity"><svg><use href="#note"/></svg><span>A slower kind of productivity<small>Updated yesterday</small></span><span>↗</span></button><button data-preview="Things I want to learn"><svg><use href="#note"/></svg><span>Things I want to learn<small>Learning · 3 connections</small></span><span>↗</span></button></section></div>
+      <button class="capture" id="capture-open"><span class="capture-icon"><svg><use href="#plus"/></svg></span><span>A thought worth keeping?<small>Let it land here.</small></span><span class="capture-shortcut">QUICK CAPTURE <kbd>⌘ N</kbd></span></button>
+     </section>
+     <aside class="insight-rail" aria-label="Focus and insights"><section class="focus"><div class="section-title"><h2>A gentle focus</h2><span class="focus-count">1 / 3</span></div><p class="section-description">A few things. Enough for today.</p><label><input type="checkbox" checked><span>Make room for deep work</span></label><label><input type="checkbox"><span>Read something that stays with you</span></label><label><input type="checkbox"><span>Get outside, even for a little while</span></label></section><section class="lia"><div class="mini-heading"><svg><use href="#spark"/></svg><span>A LITTLE PERSPECTIVE</span></div><h3>Your ideas are<br>finding each other.</h3><p>Two thoughts from this week share a connection you might want to explore.</p><button class="text-button" data-preview="Lia connections">Follow the thread <svg><use href="#arrow"/></svg></button></section><section class="weekly"><div class="section-title"><h2>Growing, quietly</h2><span>This week</span></div><div class="weekly-goal"><div><span><i class="area-dot learning"></i>Learning</span><span>3 of 5 days</span></div><div class="track"><i style="width:60%"></i></div></div><div class="weekly-goal"><div><span><i class="area-dot health"></i>Time outside</span><span>4 of 5 days</span></div><div class="track"><i style="width:80%"></i></div></div></section><p class="rail-note"><svg><use href="#leaf"/></svg>Room to grow.<br>Permission to go slowly.</p></aside>
+    </div>
+    <footer><span><i></i>Synthetic design study · no Brain connection</span><span>A little clarity, every day.</span></footer>
+   </div>
+  </section>
+ </div>
+</main>
+<dialog id="capture-dialog"><form id="capture-form"><div class="dialog-heading"><span>QUICK CAPTURE</span><button type="button" class="close" aria-label="Close capture">×</button></div><h2>Let a thought land.</h2><label>What’s on your mind?<input id="capture-title" required maxlength="160" autocomplete="off" placeholder="A thought, a task, a little possibility…"></label><p>This example stays in this design study. It does not write to your Brain.</p><button class="outline-button" type="submit">Keep this thought <svg><use href="#arrow"/></svg></button></form></dialog>
+<dialog id="detail-dialog"><div class="dialog-heading"><span>DESIGN PREVIEW</span><button class="close" aria-label="Close preview">×</button></div><h2 id="detail-title"></h2><p>This is a focused material and layout study. The real app’s data and workflows have not been changed.</p><button class="outline-button close">Back to Today</button></dialog>
+<div id="status" role="status" aria-live="polite"></div><script src="study.js"></script>
+</body></html>

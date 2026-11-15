@@ -1,0 +1,360 @@
+.brain-graph-page {
+  min-width: 0;
+  padding-top: 8px;
+}
+.brain-graph-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: center;
+  margin: 8px 0 24px;
+}
+.brain-graph-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #a8bedc;
+  margin-bottom: 11px;
+}
+.brain-graph-eyebrow > span {
+  height: 5px;
+  width: 5px;
+  border-radius: 50%;
+  background: #88b6ff;
+  box-shadow: 0 0 10px #88b6ff77;
+}
+.brain-graph-heading h1 {
+  font-size: 30px;
+  letter-spacing: -1.1px;
+  line-height: 1.25;
+  font-weight: 500;
+}
+.brain-graph-heading h1 > span {
+  color: #88b6ff;
+}
+.brain-graph-heading p {
+  font-size: 12px;
+  color: #b1bfd3;
+  margin-top: 8px;
+}
+.brain-graph-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.brain-graph-actions .button {
+  font-size: 11px;
+  gap: 7px;
+  padding: 10px 13px;
+}
+.brain-graph-actions button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.brain-graph-meta {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 13px 18px;
+  border: 1px solid var(--border);
+  border-bottom: 0;
+  border-radius: 16px 16px 0 0;
+  background: #14233aca;
+  font-size: 10px;
+  color: #acbdd7;
+}
+.brain-graph-meta > span:first-child {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #d5e3f9;
+}
+.brain-graph-readonly {
+  margin-left: auto;
+  border: 1px solid #96b7e82a;
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.brain-graph-stage {
+  position: relative;
+  height: clamp(550px, calc(100dvh - 285px), 1000px);
+  min-width: 0;
+  background: #0b1728;
+  border: 1px solid var(--border);
+  border-radius: 0 0 16px 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px #030a1633;
+}
+.brain-graph-stage iframe {
+  display: block;
+  border: 0;
+  width: 100%;
+  height: 100%;
+}
+.brain-graph-loading,
+.brain-graph-unavailable {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 25px;
+  text-align: center;
+  background: #0b1728;
+  color: #c8d9f2;
+}
+.brain-graph-loading p,
+.brain-graph-unavailable p {
+  font-size: 12px;
+  color: #99afcf;
+  max-width: 330px;
+}
+.brain-graph-loading-mark {
+  display: grid;
+  place-items: center;
+  height: 65px;
+  width: 65px;
+  border-radius: 20px;
+  background: #263f633d;
+  border: 1px solid #a0c0f025;
+  color: #91b9f7;
+  margin-bottom: 8px;
+}
+.brain-graph-loading strong {
+  font-size: 14px;
+  font-weight: 500;
+}
+.brain-graph-unavailable h2 {
+  font-size: 18px;
+  font-weight: 500;
+}
+.brain-graph-unavailable > svg {
+  color: #789bcf;
+  margin-bottom: 10px;
+}
+.brain-graph-unavailable .button {
+  margin-top: 10px;
+}
+.brain-graph-error {
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+  font-size: 12px;
+}
+.brain-graph-error > span {
+  flex: 1;
+}
+.brain-graph-error .button {
+  font-size: 10px;
+}
+.brain-graph-hint {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 9px;
+  color: #9eafc7;
+  padding: 13px 3px;
+}
+.brain-graph-hint > span:first-child {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+@media (max-width: 760px) {
+  .brain-graph-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .brain-graph-heading h1 {
+    font-size: 26px;
+  }
+  .brain-graph-meta {
+    gap: 12px;
+    padding: 12px;
+    font-size: 9px;
+  }
+  .brain-graph-stage {
+    height: 850px;
+  }
+  .brain-graph-readonly {
+    font-size: 7px;
+  }
+  .brain-graph-hint {
+    line-height: 1.6;
+  }
+}
+.workflow-review-item {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+.workflow-review-item h3 {
+  margin: 0 0 6px;
+}
+.workflow-review-item p {
+  line-height: 1.6;
+}
+.workflow-review-item blockquote {
+  margin: 12px 0;
+  padding-left: 12px;
+  border-left: 2px solid var(--border);
+  color: var(--muted);
+}
+.workflow-review-item dl {
+  font-size: 12px;
+}
+.workflow-review-item dt {
+  text-transform: capitalize;
+  color: var(--muted);
+}
+.workflow-review-item dd {
+  margin: 3px 0 12px;
+  overflow-wrap: anywhere;
+}
+.background-activity {
+  padding: 10px 0;
+  margin-bottom: 12px;
+}
+.background-activity summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 12px;
+}
+.work-graph {
+  width: 100%;
+  min-width: 0;
+}
+.work-graph-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 14px 0;
+}
+.work-graph-tools label {
+  display: grid;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--muted);
+  min-width: 0;
+  flex: 1;
+}
+.work-graph-tools input,
+.work-graph-tools select {
+  width: 100%;
+  min-width: 0;
+}
+.work-graph-tools .work-graph-completed {
+  display: flex;
+  align-items: center;
+  flex: none;
+}
+.work-graph-completed input {
+  width: auto;
+}
+.work-graph-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  color: var(--muted);
+}
+.work-graph-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 12px;
+}
+.work-graph-canvas {
+  width: 100%;
+  min-height: 330px;
+  max-height: 65dvh;
+  touch-action: none;
+}
+.work-graph-canvas line {
+  stroke: rgba(177, 208, 194, 0.3);
+  stroke-width: 1;
+}
+.work-graph-node {
+  cursor: pointer;
+  outline: none;
+}
+.work-graph-node circle {
+  fill: #294d40;
+  stroke: #b7d2bb;
+  stroke-width: 1.5;
+}
+.work-graph-node.task circle {
+  fill: #3b475b;
+  stroke: #b6c4e3;
+}
+.work-graph-node.event circle,
+.work-graph-node.date_item circle {
+  fill: #554c37;
+  stroke: #d6c89f;
+}
+.work-graph-node text {
+  fill: var(--text);
+  font-size: 10px;
+  paint-order: stroke;
+  stroke: #192725;
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+.work-graph-node:focus circle,
+.work-graph-node.selected circle {
+  stroke: #f0f4e7;
+  stroke-width: 4;
+}
+.work-graph-detail {
+  padding: 18px 10px;
+  align-self: center;
+  overflow-wrap: anywhere;
+}
+.work-graph-detail h2 {
+  font-size: 18px;
+}
+.work-graph-detail .button,
+.work-graph-detail .text-link {
+  display: block;
+  margin: 12px 0;
+}
+.work-graph-list {
+  font-size: 12px;
+}
+.work-graph-list summary {
+  cursor: pointer;
+}
+.work-graph-list li {
+  padding: 5px 0;
+}
+@media (max-width: 700px) {
+  .work-graph-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .work-graph-detail {
+    padding: 0 8px 12px;
+  }
+  .work-graph-tools label {
+    flex-basis: 40%;
+  }
+  .work-graph-canvas {
+    min-height: 270px;
+  }
+  .work-graph-tools .work-graph-completed {
+    flex-basis: 100%;
+  }
+}
+.workflow-review-trigger {
+  max-width: 130px;
+  white-space: normal;
+  font-size: 11px;
+  line-height: 1.25;
+}
