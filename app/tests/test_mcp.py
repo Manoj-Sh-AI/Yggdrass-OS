@@ -50,7 +50,7 @@ def service_with(brain, replies, tmp_path):
     return LiaService(root, skills, lambda model: client, traces=tmp_path / "traces"), client
 
 
-MODEL_TOOLS = {"ask_lia", "open_note", "tell_lia", "ingest_file"}
+MODEL_TOOLS = {"ask_lia", "open_note", "tell_lia", "ingest_file", "restore_note"}
 APP_TOOLS = {"confirm_change", "cancel_change", "undo_change"}
 
 

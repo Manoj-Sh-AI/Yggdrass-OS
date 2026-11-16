@@ -4,6 +4,7 @@
     yggdras tell "<change request>" [--brain REPO] [--flat ROOT]
     yggdras ingest <file.md> [--instruction "<what to do>"] [--brain REPO] [--flat ROOT]
     yggdras confirm <preview id> | cancel <preview id> | undo <commit> | pending
+    yggdras restore <archived note: slug or name>
     yggdras mcp [--brain REPO] [--flat ROOT] [--model M] [--skills DIR]
 
 ask prints Lia's answer, its citations, the cost and the latency. tell passes a change
@@ -75,6 +76,9 @@ def main(argv: list[str] | None = None) -> int:
         p = sub.add_parser(name, help=what)
         p.add_argument("id")
         _brain_args(p)
+    restore = sub.add_parser("restore", help="bring back an archived note (slug or name)")
+    restore.add_argument("note")
+    _brain_args(restore)
     undo = sub.add_parser("undo", help="undo one of Lia's changes")
     undo.add_argument("sha")
     _brain_args(undo)
@@ -92,7 +96,7 @@ def main(argv: list[str] | None = None) -> int:
         return _pending()
     if args.command == "ingest":
         return _ingest(args)
-    if args.command in ("tell", "confirm", "cancel", "undo"):
+    if args.command in ("tell", "confirm", "cancel", "undo", "restore"):
         side = _writer(args)
         if side is None:
             return 2
@@ -106,6 +110,8 @@ def main(argv: list[str] | None = None) -> int:
             return _print_card(side.confirm(args.id, None, "cli"))
         if args.command == "cancel":
             return _print_card(side.cancel(args.id, None))
+        if args.command == "restore":
+            return _print_card(side.restore(args.note, "cli"))
         return _print_card(side.undo(args.sha, None, "cli"))
     return _ask(args)
 

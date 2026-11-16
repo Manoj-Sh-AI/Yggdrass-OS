@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#222b2c"><meta name="description" content="An isolated, synthetic Today workspace exploring nature and smoked glass.">
+  <title>Yggdress · Open-air Today study</title><link rel="stylesheet" href="study.css">
+</head>
+<body>
+<a class="skip" href="#today">Skip to Today</a>
+<svg class="symbols" aria-hidden="true"><defs>
+  <symbol id="tree" viewBox="0 0 24 24"><path d="M12 21V3m0 9L5 7m7 10 7-5M12 8l5-4M7 21h10"/></symbol>
+  <symbol id="search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></symbol>
+  <symbol id="today-icon" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M8 3v4m8-4v4M4 10h16m-11 5 2 2 4-4"/></symbol>
+  <symbol id="calendar" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M8 3v4m8-4v4M4 10h16m4 4h2m4 0h2m-8 3h2"/></symbol>
+  <symbol id="task" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="m8 12 3 3 5-6"/></symbol>
+  <symbol id="note" viewBox="0 0 24 24"><path d="M13 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10Z"/><path d="M13 3v7h7M8 14h8m-8 3h5"/></symbol>
+  <symbol id="graph" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.5"/><circle cx="5" cy="18" r="2.5"/><circle cx="19" cy="18" r="2.5"/><path d="m11 7-5 9m7-9 5 9M8 18h8"/></symbol>
+  <symbol id="settings" viewBox="0 0 24 24"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2.5"/><circle cx="15" cy="17" r="2.5"/></symbol>
+  <symbol id="arrow" viewBox="0 0 24 24"><path d="M5 12h14m-5-5 5 5-5 5"/></symbol>
+  <symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></symbol>
+  <symbol id="spark" viewBox="0 0 24 24"><path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5Z"/></symbol>
+  <symbol id="book" viewBox="0 0 24 24"><path d="M12 6c-2-2-5-2-9-1v15c4-1 7-1 9 1 2-2 5-2 9-1V5c-4-1-7-1-9 1Zm0 0v15"/></symbol>
+  <symbol id="leaf" viewBox="0 0 24 24"><path d="M20 3C6 2 2 10 6 16s14 3 14-13ZM6 20l9-11"/></symbol>
+  <symbol id="close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+  <symbol id="mountain" viewBox="0 0 24 24"><path d="m2 20 7-13 4 7 3-10 6 16ZM7 11l2 2 2-2m3-1 2 2 2-2"/></symbol>
+</defs></svg>
+<div class="scenery" aria-hidden="true"><img id="scene-front" alt="" src="../../scenes/summer-afternoon-clear-1920.webp" srcset="../../scenes/summer-afternoon-clear-960.webp 960w, ../../scenes/summer-afternoon-clear-1920.webp 1920w" sizes="100vw"><img id="scene-back" alt=""></div>
+<div class="shade" aria-hidden="true"></div>
+<div class="app">
+  <aside class="sidebar glass" aria-label="Workspace navigation">
+    <a class="brand" href="./" aria-label="Yggdress Today"><span class="brand-mark"><svg><use href="#tree"/></svg></span><span>Yggdress<small>YOUR PERSONAL OS</small></span></a>
+    <nav aria-label="Main navigation">
+      <a class="nav-item selected" href="#today" aria-current="page"><svg><use href="#today-icon"/></svg><span>Today</span><i></i></a>
+      <button class="nav-item" data-detail="Calendar"><svg><use href="#calendar"/></svg><span>Calendar</span></button>
+      <button class="nav-item" data-detail="Tasks"><svg><use href="#task"/></svg><span>Tasks</span><small>3</small></button>
+      <button class="nav-item" id="notes-all"><svg><use href="#note"/></svg><span>Notes</span><small id="note-count">3</small></button>
+      <button class="nav-item" data-detail="Graph"><svg><use href="#graph"/></svg><span>Graph</span></button>
+    </nav>
+    <div class="areas"><p class="overline">LIFE AREAS</p><button data-detail="Work"><i class="dot work"></i>Work<span>08</span></button><button data-detail="Learning"><i class="dot learning"></i>Learning<span>12</span></button><button data-detail="Health"><i class="dot health"></i>Health<span>06</span></button><button data-detail="Personal"><i class="dot personal"></i>Personal<span>09</span></button></div>
+    <div class="sidebar-bottom"><button class="nav-item" id="appearance-open"><svg><use href="#settings"/></svg><span>Appearance</span></button><a class="compare" href="../smoked-glass/">Compare study 01 <span>↗</span></a><div class="profile"><span class="avatar">A</span><span>Alex<small>Demo workspace</small></span><span class="profile-dot"></span></div></div>
+  </aside>
+  <main id="today" tabindex="-1">
+    <header class="topbar"><div class="breadcrumb">Your space <span>/</span><strong>Today</strong></div><button class="search glass" id="search-open"><svg><use href="#search"/></svg><span>Search your thoughts</span><kbd>Ctrl K</kbd></button><button class="icon-button glass mobile-appearance" id="appearance-mobile" aria-label="Appearance"><svg><use href="#settings"/></svg></button><button class="icon-button glass" id="capture-top" aria-label="Capture a thought"><svg><use href="#plus"/></svg></button></header>
+    <section class="welcome" aria-labelledby="greeting">
+      <div class="welcome-copy"><p class="overline">FRIDAY, 13 NOVEMBER <span class="date-line"></span> YOUR DAY, AT YOUR PACE</p><h1 id="greeting">A little space<br>for <em>what matters.</em></h1><p class="welcome-caption">Good afternoon, Alex. You have room to make today your own.</p></div>
+      <div class="scene-context"><span class="scene-weather"><svg><use href="#sun"/></svg><span id="weather-label">18° · Clear skies</span></span><span class="scene-place">An alpine afternoon</span><span class="scene-preview">Illustrative scenery & weather</span><button class="moment-button" id="moment-open"><svg><use href="#mountain"/></svg>Take a moment <svg><use href="#arrow"/></svg></button></div>
+    </section>
+    <section class="desk glass" aria-label="Today workspace">
+      <div class="desk-heading"><div><span class="day-dot"></span><h2>Today</h2><span class="muted desk-subtitle">A few things to move forward.</span></div><button class="text-button" data-detail="Daily planning">View your week <svg><use href="#arrow"/></svg></button></div>
+      <div class="desk-grid">
+        <section class="agenda section" aria-labelledby="agenda-heading"><div class="section-heading"><h3 id="agenda-heading">Your agenda</h3><span class="muted">3 plans</span></div>
+          <button class="agenda-row" data-detail="Design the reading corner"><time>09:00<span>10:30</span></time><span class="event-line work"></span><span class="event-copy"><strong>Design the reading corner</strong><small><i class="dot work"></i>Work <span>·</span> 90 min</small></span><svg><use href="#arrow"/></svg></button>
+          <div class="now"><span>NOW</span><i></i><span class="now-rule"></span><span>A little breathing room</span></div>
+          <button class="agenda-row" data-detail="German practice"><time>16:00<span>16:45</span></time><span class="event-line learning"></span><span class="event-copy"><strong>A little German practice</strong><small><i class="dot learning"></i>Learning <span>·</span> 45 min</small></span><svg><use href="#arrow"/></svg></button>
+          <button class="agenda-row" data-detail="Evening walk"><time>18:00<span>18:30</span></time><span class="event-line health"></span><span class="event-copy"><strong>Take the long way home</strong><small><i class="dot health"></i>Health <span>·</span> 30 min</small></span><svg><use href="#arrow"/></svg></button>
+        </section>
+        <section class="routine section" aria-labelledby="routine-heading"><div class="section-heading"><h3 id="routine-heading">Daily ritual</h3><svg><use href="#book"/></svg></div><p class="routine-label"><i class="dot learning"></i>LEARNING</p><h4>Read a chapter.<br>Keep a new perspective.</h4><p class="routine-meta">16:45–17:15 <span>·</span> 25 minutes</p><div class="routine-footer"><span id="routine-status">Ready when you are.</span><button class="pill" id="routine-start">Start ritual <svg><use href="#arrow"/></svg></button></div><div class="progress" role="progressbar" aria-label="Demo routine progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></div><div class="routine-actions" hidden><button id="routine-progress" class="text-button">Mark progress</button><button id="routine-complete" class="text-button">Complete ritual <svg><use href="#task"/></svg></button></div></section>
+        <section class="focus section" aria-labelledby="focus-heading"><div class="section-heading"><h3 id="focus-heading">Focus for today</h3><span id="focus-count" class="muted">1 / 3</span></div><p class="muted section-intro">Enough to feel a little further along.</p><label><input type="checkbox" data-task="desk" checked><span>Make room for focused work</span></label><label><input type="checkbox" data-task="chapter"><span>Read something worth keeping</span></label><label><input type="checkbox" data-task="outside"><span>Get outside before sunset</span></label><p class="focus-note"><svg><use href="#leaf"/></svg>Leave some room unplanned.</p></section>
+        
+        
+        
+      </div>
+      <details class="wider-picture"><summary><span>Notes &amp; the wider picture</span><span>Recent thoughts, goals &amp; activity<svg><use href="#plus"/></svg></span></summary><div class="supporting-grid"><section class="recent section" aria-labelledby="notes-heading"><div class="section-heading"><h3 id="notes-heading">Recent notes</h3><button class="text-button" id="notes-view">All notes <svg><use href="#arrow"/></svg></button></div><div id="recent-notes"></div></section><section class="goals section" aria-labelledby="goals-heading"><div class="section-heading"><h3 id="goals-heading">Goal progress</h3><span class="muted">This week</span></div><div class="goal"><div><span><i class="dot learning"></i>German · A2</span><span>3 of 5 sessions</span></div><div class="goal-track"><i style="--amount:60%;--goal-color:var(--learning)"></i></div></div><div class="goal"><div><span><i class="dot health"></i>Time outside</span><span>4 of 5 days</span></div><div class="goal-track"><i style="--amount:80%;--goal-color:var(--health)"></i></div></div><p class="goal-note">Small steps still count.</p></section><section class="activity section" aria-labelledby="activity-heading"><div class="section-heading"><h3 id="activity-heading">Recent activity</h3><span class="muted">Recent</span></div><div id="activity-list"></div></section></div></details>
+      <div class="desk-bottom"><button class="capture" id="capture-open"><span class="capture-plus"><svg><use href="#plus"/></svg></span><span>A thought worth keeping?<small>A note, a task, the start of something.</small></span><kbd>Ctrl N</kbd></button><button class="lia" id="lia-open"><svg><use href="#spark"/></svg><span>Two ideas, a new connection.<small>Explore a demo Lia insight</small></span><svg><use href="#arrow"/></svg></button></div>
+    </section>
+    <footer><span><i></i>OPEN-AIR STUDY 02 <span class="footer-divider">/</span> Synthetic data · no Brain connection</span><button id="scene-open"><svg><use href="#sun"/></svg><span id="scene-name">Afternoon</span><span>⌄</span></button></footer>
+  </main>
+</div>
+<dialog id="capture-dialog" aria-labelledby="capture-heading"><form id="capture-form"><div class="dialog-top"><span class="overline">A LITTLE SPACE FOR A THOUGHT</span><button type="button" class="icon-button close" aria-label="Close capture"><svg><use href="#close"/></svg></button></div><h2 id="capture-heading">Let it land here.</h2><label>Title<input id="capture-title" maxlength="160" required autocomplete="off" placeholder="What would you like to keep?"></label><label>Details<textarea id="capture-body" rows="4" maxlength="5000" placeholder="A little context, if you like…"></textarea></label><label>Life area<select id="capture-area"><option>Personal</option><option>Learning</option><option>Work</option><option>Health</option></select></label><p class="form-error" id="capture-error" role="alert"></p><p class="dialog-helper">Saved only in this browser’s design study. Your real notes stay untouched.</p><button type="submit" class="primary">Keep this thought <svg><use href="#arrow"/></svg></button></form></dialog>
+<dialog id="search-dialog" aria-labelledby="search-heading"><div class="dialog-top"><h2 id="search-heading">Find a thought</h2><button class="icon-button close" aria-label="Close search"><svg><use href="#close"/></svg></button></div><label class="sr-only" for="search-field">Search study notes</label><input id="search-field" placeholder="Search titles, thoughts, or areas…" autocomplete="off"><p class="dialog-helper">Searches this synthetic study only.</p><div id="search-results" aria-live="polite"></div></dialog>
+<dialog id="note-dialog" aria-labelledby="note-title"><div class="dialog-top"><span id="note-area" class="overline"></span><button class="icon-button close" aria-label="Close note"><svg><use href="#close"/></svg></button></div><h2 id="note-title"></h2><p id="note-body" class="note-body"></p><div id="note-links"></div><p class="dialog-helper">Synthetic note preview · no Brain connection</p></dialog>
+<dialog id="detail-dialog" aria-labelledby="detail-title"><div class="dialog-top"><span class="overline">DESIGN STUDY</span><button class="icon-button close" aria-label="Close detail"><svg><use href="#close"/></svg></button></div><h2 id="detail-title"></h2><p id="detail-body" class="note-body"></p><button class="pill close">Return to Today <svg><use href="#arrow"/></svg></button></dialog>
+<dialog id="appearance-dialog" aria-labelledby="appearance-heading"><div class="dialog-top"><h2 id="appearance-heading">Make room your way</h2><button class="icon-button close" aria-label="Close appearance"><svg><use href="#close"/></svg></button></div><fieldset><legend>Scenery preview</legend><div class="scene-options"><button data-scene="morning" aria-pressed="false">Morning</button><button data-scene="afternoon" aria-pressed="true">Afternoon</button><button data-scene="night" aria-pressed="false">Night</button></div></fieldset><label class="preference"><span>Reduce transparency<small>A solid reading surface with the landscape outside it.</small></span><input type="checkbox" id="reduce-transparency"></label><label class="preference"><span>Quiet motion<small>Skip entrances and scenery crossfades.</small></span><input type="checkbox" id="reduce-motion"></label><p id="appearance-error" class="form-error" role="alert"></p><p class="dialog-helper">Manual preview controls. The main app’s automatic weather and scenery are unchanged.</p></dialog>
+<dialog id="moment-dialog" aria-labelledby="moment-heading"><div class="moment-copy"><p class="overline">A LITTLE ROOM TO JUST BE</p><h2 id="moment-heading">Nothing to do<br>for a moment.</h2><p>Your day will be here when you’re ready.</p><button class="pill close">Return to Today <svg><use href="#arrow"/></svg></button></div></dialog>
+<div id="status" role="status" aria-live="polite"></div>
+<script src="study.js"></script>
+</body></html>

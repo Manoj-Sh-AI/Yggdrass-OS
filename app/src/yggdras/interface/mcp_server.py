@@ -50,7 +50,7 @@ INSTRUCTIONS = (
     "file and ask to add it, give it to ingest_file (its path if it is on this computer, else "
     "its content); never edit notes yourself. You "
     "can't confirm, cancel or undo changes: only the user can, with the card's buttons, a form "
-    "or the yggdras command."
+    "or the yggdras command. To bring back an archived note, use restore_note."
 )
 TELL_DESCRIPTION = (
     "Pass the user's request to change their second brain to Lia, in their own words: add a "
@@ -59,6 +59,12 @@ TELL_DESCRIPTION = (
     "checks the change. Adding is written at once (with Undo); changing or removing shows a "
     "preview the user confirms themselves. The result holds Lia's card in a <lia_reply> "
     "block: show it exactly as written. You can't confirm or undo anything."
+)
+RESTORE_DESCRIPTION = (
+    'Bring back a note the user archived ("deleted") in their second brain, by its slug, name '
+    "or alias, when they ask to restore it. Free and exact: the note returns to its shelf, and "
+    "the links, mentions and hub listing archiving removed from other notes come back. Written "
+    "at once with Undo; the result holds Lia's card in a <lia_reply> block: show it exactly."
 )
 INGEST_DESCRIPTION = (
     "Give Lia a markdown file the user uploaded and asked to add to their second brain. In "
@@ -181,6 +187,14 @@ class LiaService:
                     lia.library, self.root, self.flat, self.client_factory, self.note_url
                 )
             return self._write
+
+    def restore(self, note: str, app: str):
+        from yggdras.processing.lia.write import Card
+
+        side = self.writer()
+        if side is None:
+            return Card("refused", "Writing is off: this brain is not in a git repository.")
+        return side.restore(note, app)
 
     def ingester(self):
         """Lia's upload filing on the current maps (None if the brain isn't a git repo)."""
@@ -312,6 +326,18 @@ def build_server(service: LiaService):
             pid, token = card.pending_id, card.token
             return await anyio.to_thread.run_sync(lambda: side.confirm(pid, token, f"{app} (form)"))
         return side.cancel(card.pending_id, card.token)
+
+    @server.tool(
+        name="restore_note",
+        description=RESTORE_DESCRIPTION,
+        annotations=write_hints,
+        meta={"ui": {"resourceUri": UI_URI}},
+    )
+    async def restore_note(note: str, ctx: Context = None) -> CallToolResult:
+        import anyio
+
+        app = app_name(ctx)
+        return result(await anyio.to_thread.run_sync(lambda: service.restore(note, app)))
 
     @server.tool(
         name="ingest_file",

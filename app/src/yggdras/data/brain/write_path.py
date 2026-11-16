@@ -83,7 +83,9 @@ class WritePath:
     # ---------------------------------------------------------------- check and apply
 
     def check(self, change: Change):
-        return self.checker.check({**change.notes, **{p: None for p in change.archive}})
+        return self.checker.check(
+            {**change.notes, **{p: None for p in change.archive}}, restored=change.restored
+        )
 
     def apply(self, change: Change, approved_by: str, request: str = "") -> Outcome:
         verdict = self.check(change)
@@ -148,6 +150,13 @@ class WritePath:
                 keep(target)
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(data)
+                touched.append(repo_rel)
+            for repo_rel in change.drop:  # an archive copy that was restored
+                if not repo_rel.startswith("archive/") or ".." in repo_rel:
+                    raise ValueError(f"only archive copies are taken out, not {repo_rel}")
+                target = self.repo / repo_rel
+                keep(target)
+                target.unlink(missing_ok=True)
                 touched.append(repo_rel)
             for lib_rel, text in change.archive.items():
                 target = self.repo / self.archive_path(lib_rel)

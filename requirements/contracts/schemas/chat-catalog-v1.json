@@ -1,0 +1,94 @@
+{
+  "$defs": {
+    "AgentChoice": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-zA-Z0-9_.:-]{1,100}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "enabled": {
+          "default": false,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "models": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "title": "Models",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "AgentChoice",
+      "type": "object"
+    },
+    "Choice": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-zA-Z0-9_.:-]{1,100}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "enabled": {
+          "default": false,
+          "title": "Enabled",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "Choice",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "agents": {
+      "items": {
+        "$ref": "#/$defs/AgentChoice"
+      },
+      "maxItems": 50,
+      "minItems": 1,
+      "title": "Agents",
+      "type": "array"
+    },
+    "models": {
+      "items": {
+        "$ref": "#/$defs/Choice"
+      },
+      "maxItems": 100,
+      "minItems": 1,
+      "title": "Models",
+      "type": "array"
+    }
+  },
+  "required": [
+    "agents",
+    "models"
+  ],
+  "title": "Catalog",
+  "type": "object"
+}

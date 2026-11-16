@@ -1,0 +1,245 @@
+:root,
+:root[data-theme="dark"] {
+  --bg: #0b1728;
+  --panel: #111e32;
+  --text: #e7edf8;
+  --text-2: #9aacc7;
+  --line: #a8c4f021;
+  --accent: #8ebcff;
+  --chip: #1c2c44;
+  --tip: #17263d;
+  color-scheme: dark;
+}
+body {
+  background: var(--bg);
+  font-size: 12px;
+}
+#side {
+  width: 320px;
+  padding: 22px;
+  background: linear-gradient(145deg, #17263ae8, #0e1b2df5);
+}
+#graph,
+#graph3d,
+#labels3d {
+  right: 320px;
+}
+#side > .row:first-child {
+  margin-bottom: 15px;
+}
+#side h1 {
+  font-size: 13px;
+  letter-spacing: 0.01em;
+}
+#side h2 {
+  font-size: 21px;
+  letter-spacing: -0.5px;
+  line-height: 1.25;
+  margin-bottom: 10px;
+}
+#side h3 {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  margin-top: 22px;
+  color: #9eb2d2;
+}
+#search {
+  border-radius: 10px;
+  padding: 11px 12px;
+  margin: 0 0 8px;
+  background: #07132366;
+}
+button,
+select {
+  min-height: 32px;
+  border-radius: 8px;
+  background: #182a43;
+}
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+summary:focus-visible,
+.jump:focus-visible,
+#results li:focus-visible {
+  outline: 2px solid #8ebcff;
+  outline-offset: 3px;
+}
+input[type="checkbox"] {
+  accent-color: #80aef5;
+}
+.seg {
+  border-radius: 8px;
+}
+.seg button[aria-pressed="true"] {
+  background: #365c91;
+  color: #edf4ff;
+}
+#info {
+  padding-top: 22px;
+  margin-top: 20px;
+  line-height: 1.65;
+}
+#info .empty {
+  display: block;
+  padding: 12px 0;
+  color: #aebdd2;
+  font-style: normal;
+}
+#info ul {
+  padding-left: 17px;
+}
+#info li {
+  padding: 3px 0;
+}
+#info a {
+  display: inline-block;
+  margin-top: 6px;
+  color: #a8caff;
+}
+.chip {
+  font-size: 10px;
+  padding: 4px 9px;
+  margin-bottom: 5px;
+}
+.jump {
+  padding: 7px 9px;
+  margin: 3px 0;
+  border: 1px solid var(--line);
+}
+#tip {
+  border-radius: 12px;
+  padding: 12px 15px;
+  line-height: 1.6;
+}
+#loading {
+  font-size: 11px;
+  left: 20px;
+  bottom: 20px;
+}
+@media (max-width: 800px) {
+  #graph,
+  #graph3d,
+  #labels3d {
+    inset: 0 0 49% 0;
+  }
+  #side {
+    top: 51%;
+    bottom: 0;
+    height: auto;
+    width: 100%;
+    padding: 20px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Shared open-air material; original graph data and geometry are unchanged. */
+:root,
+:root[data-theme="dark"] {
+  --bg: #242b2d;
+  --panel: #303638;
+  --text: #f6f5ed;
+  --text-2: #cbd2cc;
+  --line: #e6eee23d;
+  --accent: #dce2cf;
+  --chip: #39423f;
+  --tip: #303a39;
+}
+#side {
+  background:
+    linear-gradient(145deg, #ffffff09, transparent 60%), rgba(38, 44, 45, 0.96);
+  box-shadow: inset 1px 0 0 #e6eee216;
+  overflow-wrap: anywhere;
+}
+#search {
+  background: #303b3b;
+  border-color: #8c9990;
+  color: #f6f5ed;
+}
+#search::placeholder {
+  color: #cbd2cc;
+  opacity: 1;
+}
+button,
+select {
+  background: #303b3b;
+  border-color: #8c9990;
+  color: #f6f5ed;
+  border-radius: 10px;
+}
+.seg button[aria-pressed="true"] {
+  background: #dce2cf;
+  color: #29342c;
+}
+#side h3,
+#info .empty,
+.muted,
+#loading,
+#stats {
+  color: #cbd2cc;
+}
+#info a {
+  color: #e0e6d5;
+}
+.jump {
+  border-radius: 10px;
+  border-color: #8c9990;
+}
+.jump:hover {
+  background: #ffffff0d;
+}
+input[type="checkbox"] {
+  accent-color: #dce2cf;
+}
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+summary:focus-visible,
+.jump:focus-visible,
+#results li:focus-visible {
+  outline-color: #ece7d1;
+}
+:root[data-transparency="reduced"] #side {
+  background: #293334;
+}
+@media (prefers-reduced-transparency: reduce) {
+  #side {
+    background: #293334;
+  }
+}
+@media (forced-colors: active) {
+  :root {
+    --bg: Canvas;
+    --panel: Canvas;
+    --text: CanvasText;
+    --text-2: CanvasText;
+    --line: ButtonText;
+    --accent: LinkText;
+    --chip: ButtonFace;
+  }
+  #side {
+    background: Canvas;
+    color: CanvasText;
+    box-shadow: none;
+  }
+  button,
+  select,
+  #search,
+  .seg button[aria-pressed="true"] {
+    background: ButtonFace;
+    color: ButtonText;
+    border-color: ButtonText;
+  }
+  #side h3,
+  #info .empty,
+  .muted,
+  #loading,
+  #stats {
+    color: CanvasText;
+  }
+}

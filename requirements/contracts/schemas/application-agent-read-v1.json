@@ -1,0 +1,46 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "default": "",
+      "maxLength": 200,
+      "title": "Query",
+      "type": "string"
+    },
+    "start": {
+      "anyOf": [
+        {
+          "format": "date",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Start"
+    },
+    "end": {
+      "anyOf": [
+        {
+          "format": "date",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "End"
+    },
+    "limit": {
+      "default": 20,
+      "maximum": 40,
+      "minimum": 1,
+      "title": "Limit",
+      "type": "integer"
+    }
+  },
+  "title": "ReadQuery",
+  "type": "object"
+}

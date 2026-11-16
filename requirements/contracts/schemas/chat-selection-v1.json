@@ -1,0 +1,23 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "agent_id": {
+      "maxLength": 100,
+      "minLength": 1,
+      "title": "Agent Id",
+      "type": "string"
+    },
+    "model_id": {
+      "maxLength": 100,
+      "minLength": 1,
+      "title": "Model Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "agent_id",
+    "model_id"
+  ],
+  "title": "Selection",
+  "type": "object"
+}

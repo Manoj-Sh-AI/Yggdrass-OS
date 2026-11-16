@@ -1,0 +1,156 @@
+{
+  "$defs": {
+    "DateContext": {
+      "additionalProperties": false,
+      "properties": {
+        "meaning": {
+          "enum": [
+            "deadline",
+            "appointment",
+            "availability",
+            "review",
+            "preference",
+            "recurrence",
+            "historical",
+            "cancellation",
+            "uncertain"
+          ],
+          "title": "Meaning",
+          "type": "string"
+        },
+        "precision": {
+          "enum": [
+            "date",
+            "datetime",
+            "interval",
+            "month",
+            "year",
+            "relative",
+            "unspecified"
+          ],
+          "title": "Precision",
+          "type": "string"
+        },
+        "value": {
+          "additionalProperties": true,
+          "title": "Value",
+          "type": "object"
+        },
+        "anchor": {
+          "default": "",
+          "maxLength": 1000,
+          "title": "Anchor",
+          "type": "string"
+        },
+        "original_phrase": {
+          "default": "",
+          "maxLength": 2000,
+          "title": "Original Phrase",
+          "type": "string"
+        },
+        "uncertainty": {
+          "default": "",
+          "maxLength": 2000,
+          "title": "Uncertainty",
+          "type": "string"
+        }
+      },
+      "required": [
+        "meaning",
+        "precision"
+      ],
+      "title": "DateContext",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "format": "uuid",
+      "title": "Id",
+      "type": "string"
+    },
+    "producer": {
+      "maxLength": 100,
+      "minLength": 1,
+      "title": "Producer",
+      "type": "string"
+    },
+    "namespace": {
+      "maxLength": 100,
+      "minLength": 1,
+      "title": "Namespace",
+      "type": "string"
+    },
+    "external_identity": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "External Identity",
+      "type": "string"
+    },
+    "sequence": {
+      "minimum": 0,
+      "title": "Sequence",
+      "type": "integer"
+    },
+    "previous_revision": {
+      "anyOf": [
+        {
+          "maxLength": 200,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Previous Revision"
+    },
+    "revision": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Revision",
+      "type": "string"
+    },
+    "slug": {
+      "pattern": "^[a-zA-Z0-9_-]{1,200}$",
+      "title": "Slug",
+      "type": "string"
+    },
+    "lifecycle": {
+      "default": "active",
+      "enum": [
+        "active",
+        "archived",
+        "missing"
+      ],
+      "title": "Lifecycle",
+      "type": "string"
+    },
+    "context": {
+      "default": "",
+      "maxLength": 4000,
+      "title": "Context",
+      "type": "string"
+    },
+    "dates": {
+      "items": {
+        "$ref": "#/$defs/DateContext"
+      },
+      "maxItems": 100,
+      "title": "Dates",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "producer",
+    "namespace",
+    "external_identity",
+    "sequence",
+    "revision",
+    "slug"
+  ],
+  "title": "NoteHandoff",
+  "type": "object"
+}
