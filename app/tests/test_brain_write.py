@@ -394,7 +394,8 @@ def test_a_new_note_is_in_the_viewers_data_after_the_write_and_gone_after_undo(b
     ]
     out = w.apply(build_change(w.root, False, ops, TODAY), "test")
     assert out.status == "written" and out.viewer_error == ""
-    pages = [served / "graph.html", brain / "library/00-manual/generated/graph.html"]
+    pages = [served / "graph.html"]  # the one viewer folder; the brain repo gets no copy
+    assert not (brain / "library/00-manual/generated/graph.html").exists()
     for page in pages:
         assert '"slug": "india-trip"' in page.read_text(encoding="utf-8"), page
     assert git(brain, "status", "--porcelain") == ""  # the brain's page is git-ignored
@@ -410,7 +411,9 @@ def test_a_viewer_failure_never_undoes_the_write(brain, tmp_path, monkeypatch):
         raise OSError("disk full")
 
     monkeypatch.setattr(viewer, "render", broken)
-    out = apply(brain, tmp_path, [{"op": "add_fact", "slug": "ana", "text": "Ana likes tea"}])
+    w = wp(brain, tmp_path, viewer_dirs=(tmp_path / "brain-view",))
+    ops = [{"op": "add_fact", "slug": "ana", "text": "Ana likes tea"}]
+    out = w.apply(build_change(w.root, False, ops, TODAY), "test")
     assert out.status == "written" and "disk full" in out.viewer_error
     assert "Ana likes tea" in (brain / "library/11-people/ana.md").read_text(encoding="utf-8")
 

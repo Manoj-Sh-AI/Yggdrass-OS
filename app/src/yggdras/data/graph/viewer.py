@@ -207,7 +207,12 @@ def main(argv: list[str] | None = None) -> int:
         print(f"not a folder: {root}", file=sys.stderr)
         return 2
     shelves = None if args.flat else structural.mapped_shelves()
-    out_dir = args.out_dir or structural.generated_dir(args.brain)
+    if args.out_dir:
+        out_dir = args.out_dir
+    else:  # the one viewer folder (local-data/brain-view), never the brain repo
+        from yggdras import config
+
+        out_dir = config.brain_view()
     try:
         html = render(structural.build_map(root, shelves), root, out_dir)
     except ViewerError as exc:

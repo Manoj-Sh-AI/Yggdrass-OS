@@ -24,7 +24,7 @@ import base64
 from yggdras.data.brain import chunk as chunk_mod
 from yggdras.data.brain import detect
 from yggdras.data.brain import notefile as nf
-from yggdras.data.brain.ops import OpError, build_change, needs_confirm
+from yggdras.data.brain.ops import OpError, needs_confirm
 from yggdras.data.graph import structural as st
 from yggdras.processing.lia.write import _STR, TOOLS, Card, WriteSide
 
@@ -325,8 +325,7 @@ class IngestSide(WriteSide):
         ops = self._base_ops(state) + state["ops"]
         request = f"upload {filename}: {instruction or 'add it'}"
         try:
-            change = build_change(self.wp.root, self.wp.flat, ops, self.today,
-                                  title=f"ingest {filename}")  # fmt: skip
+            change = self.plan(ops, title=f"ingest {filename}")
         except OpError as exc:
             return Card("refused", f"I couldn't file {filename}: {exc}")
         verdict = self.wp.check(change)

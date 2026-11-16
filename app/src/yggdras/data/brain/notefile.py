@@ -7,6 +7,7 @@ an edit is allowed: the checker does that.
 
 from __future__ import annotations
 
+import difflib
 import re
 
 from yggdras.data.graph import structural as st
@@ -325,3 +326,37 @@ def hub_listing(text: str, slug: str, add: bool) -> str:
         text, _ = remove_link(text, "lists", slug)
     count = sum(1 for verb, _ in link_lines(text) if verb == "lists")
     return re.sub(r"Notes so far: \d+\.", f"Notes so far: {count}.", text)
+
+
+def restore_lines(old: str, new: str, current: str, slug: str) -> tuple[str, int, int]:
+    """Put back, in *current*, the lines that mention [[slug]] and that one change took from
+    *old* to *new* (an archive: link lines removed, mentions turned into plain text). A line is
+    restored only where the note still holds the archived version of it; a line changed since
+    is left alone and counted as skipped. Returns (text, restored, skipped)."""
+    o, n, cur = old.split("\n"), new.split("\n"), current.split("\n")
+    restored = skipped = 0
+    links_back: list[str] = []
+    mark = f"[[{slug}"
+    for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(a=o, b=n, autojunk=False).get_opcodes():
+        if tag == "equal":
+            continue
+        olds, news = o[i1:i2], n[j1:j2]
+        if tag == "replace" and len(olds) == len(news):
+            pairs = list(zip(olds, news, strict=True))
+        else:  # lines removed (link lines), or an uneven replace: restore the removed ones
+            pairs = [(line, None) for line in olds]
+        for was, now in pairs:
+            if mark not in was or was == now or was in cur:
+                continue
+            if now is not None and cur.count(now) == 1:  # a mention turned into plain text
+                cur[cur.index(now)] = was
+                restored += 1
+            elif now is None and st.LINK_LINE.match(was):  # a link line taken out
+                links_back.append(was)
+            else:
+                skipped += 1
+    for line in links_back:
+        span = _ensure_section(cur, st.LINKS_HEADING, (st.HISTORY_HEADING,))
+        _insert_item(cur, span, line)
+        restored += 1
+    return _join(cur), restored, skipped

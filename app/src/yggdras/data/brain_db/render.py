@@ -27,6 +27,13 @@ MAPS = ("atlas", "shelf", "relationships")
 # `area: cross` is a real area in the database, 09-cross. The maps show it as today: the
 # "## cross" section and the registries' cross-area count, never as an atlas row.
 CROSS_CODE, CROSS_NAME = "09", "cross"
+# A history row that still stands: not itself an Undo, and its request not undone.
+UNDO_ACTOR = "undo of "
+LIVE_HISTORY = (
+    "left(c.actor, 8) <> 'undo of ' AND (c.request_id IS NULL OR c.request_id NOT IN ("
+    "SELECT split_part(substr(u.actor, 9), ' ', 1) FROM brain.changes u "
+    "WHERE left(u.actor, 8) = 'undo of '))"
+)
 
 
 @dataclass
@@ -102,6 +109,17 @@ def load_rows(conn) -> tuple[list[tuple], dict[str, RowNote], list[dict]]:
         also.setdefault(slug, []).append(area_value(code, names[code]))
     # Bodies are read here, while building the cache, for the two flags only the text holds
     # (pages, superseded facts). A shelf read never touches them.
+    # H: a note with superseded facts, i.e. replace/remove rows in its history (D44).
+    with_history = {
+        s
+        for (s,) in _query(
+            conn,
+            "SELECT DISTINCT slug FROM brain.changes c WHERE slug IS NOT NULL "
+            "AND kind IN ('replace', 'remove') AND section = '## Facts' AND "
+            + LIVE_HISTORY
+            + " ORDER BY 1",
+        )
+    }
     bodies = dict(
         _query(conn, 'SELECT slug, body FROM brain.note_bodies ORDER BY slug COLLATE "C"')
     )
@@ -138,7 +156,7 @@ def load_rows(conn) -> tuple[list[tuple], dict[str, RowNote], list[dict]]:
             review=_iso(review),
             pages=str(_frontmatter(body).get("pages") or ""),
             sensitive=(sensitivity or "").lower() == "high",
-            has_history=_has_history(body),
+            has_history=slug in with_history,
             parent_slug=parent or "",
         )
     return areas, notes, edges
@@ -200,7 +218,7 @@ def render_maps(conn) -> dict[str, tuple[str, str]]:
     return out
 
 
-def build_cache(conn, now: dt.datetime | None = None) -> dict[str, str]:
+def build_cache(conn, now: dt.datetime | None = None, commit: bool = True) -> dict[str, str]:
     """Render the maps into brain.map_cache. A map whose text is unchanged keeps its row as it
     was (built_at included). Returns each map's version."""
     now = now or dt.datetime.now(dt.UTC)
@@ -215,5 +233,6 @@ def build_cache(conn, now: dt.datetime | None = None) -> dict[str, str]:
                 "WHERE brain.map_cache.map_version <> EXCLUDED.map_version",
                 (name, text, version, now),
             )
-    conn.commit()
+    if commit:  # inside a write's transaction, the write commits
+        conn.commit()
     return {name: version for name, (_, version) in maps.items()}

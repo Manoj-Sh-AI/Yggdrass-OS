@@ -158,9 +158,11 @@ def test_tampered_vis_network_is_refused(tmp_path, monkeypatch):
         viewer.vis_network_bytes()
 
 
-def test_main_writes_into_the_library_generated_folder(library):
+def test_main_writes_into_the_one_viewer_folder_not_the_brain(library, tmp_path, monkeypatch):
+    monkeypatch.setenv("YGGDRAS_LOCAL_DATA", str(tmp_path / "local"))
     assert viewer.main([str(library.parent)]) == 0
-    assert (library / "00-manual/generated/graph.html").exists()
+    assert (tmp_path / "local" / "brain-view" / "graph.html").exists()
+    assert not (library / "00-manual/generated/graph.html").exists()
 
 
 def test_main_flat_needs_out_dir():

@@ -57,9 +57,9 @@ class WritePath:
         viewer_dirs: tuple[Path, ...] = (),
     ):
         self.repo, self.root, self.flat = repo.resolve(), root.resolve(), flat
-        # Where the graph viewer's page lives: the library's own generated/ folder, plus any
-        # copy a note server serves (local-data/viewer).
-        self.viewer_dirs = tuple(viewer_dirs) + (() if flat else (st.generated_dir(self.repo),))
+        # The graph viewer lives in one folder (local-data/brain-view), passed in by the caller;
+        # the brain repo gets no copy of its own, so no stale page can survive a write.
+        self.viewer_dirs = tuple(viewer_dirs)
         self.lock_dir = lock_dir
         self.today = today or dt.date.today().isoformat()
         self.root_rel = self.root.relative_to(self.repo).as_posix()
@@ -83,7 +83,9 @@ class WritePath:
     # ---------------------------------------------------------------- check and apply
 
     def check(self, change: Change):
-        return self.checker.check({**change.notes, **{p: None for p in change.archive}})
+        return self.checker.check(
+            {**change.notes, **{p: None for p in change.archive}}, restored=change.restored
+        )
 
     def apply(self, change: Change, approved_by: str, request: str = "") -> Outcome:
         verdict = self.check(change)
@@ -148,6 +150,13 @@ class WritePath:
                 keep(target)
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(data)
+                touched.append(repo_rel)
+            for repo_rel in change.drop:  # an archive copy that was restored
+                if not repo_rel.startswith("archive/") or ".." in repo_rel:
+                    raise ValueError(f"only archive copies are taken out, not {repo_rel}")
+                target = self.repo / repo_rel
+                keep(target)
+                target.unlink(missing_ok=True)
                 touched.append(repo_rel)
             for lib_rel, text in change.archive.items():
                 target = self.repo / self.archive_path(lib_rel)
