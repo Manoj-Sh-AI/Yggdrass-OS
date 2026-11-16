@@ -490,9 +490,7 @@ def main(argv: list[str] | None = None) -> int:
         rows.render_viewers()
         viewer_dir = config.brain_view()
     else:
-        viewer = (
-            None if args.flat else note_server.build_viewer(root, config.local_data() / "viewer")
-        )
+        viewer = None if args.flat else note_server.build_viewer(root, config.brain_view())
         viewer_dir = viewer.parent if viewer else None
     service = LiaService(root, skills, AnthropicClient, flat=bool(args.flat),
                          model=args.model or config.lia_model(), rows=rows)  # fmt: skip

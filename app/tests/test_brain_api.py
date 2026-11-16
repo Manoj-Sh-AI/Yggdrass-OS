@@ -303,3 +303,18 @@ def test_search_lists_every_note_or_full_text_matches_behind_auth(env):
         conn.execute("UPDATE brain.notes SET archived_at = now() WHERE slug = 'kiln-decision'")
         assert "kiln-decision" not in {n["slug"] for n in reads.search(conn, "kiln")}
         assert "kiln-decision" not in {n["slug"] for n in reads.search(conn, "")}
+
+
+def test_an_api_write_regenerates_the_one_viewer_page(env, tmp_path):
+    api, store, _ = env
+    store.viewer_dirs = (tmp_path / "brain-view",)
+    facts, links = ["Slip casting uses moulds"], ["related_to [[wheel-throwing]]"]
+    _, text = note("slip-casting", "Slip Casting", "concept", "04-learning",
+                   folder="10-ideas", facts=facts, links=links)  # fmt: skip
+    status, out = post(api, "note", {"text": text})
+    assert status == 200, out
+    page = (tmp_path / "brain-view" / "graph.html").read_text(encoding="utf-8")
+    assert '"slug": "slip-casting"' in page  # the API path, not only Lia's, rebuilds it
+    assert post(api, f"undo/{out['undo_id']}")[0] == 200
+    page = (tmp_path / "brain-view" / "graph.html").read_text(encoding="utf-8")
+    assert '"slug": "slip-casting"' not in page
