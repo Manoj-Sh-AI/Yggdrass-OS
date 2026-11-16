@@ -158,6 +158,8 @@ namespace YggdrasDesktop {
                     view.CoreWebView2.FrameNavigationStarting += (sender, args) => { if (!Local(args.Uri) && args.Uri != "about:blank") args.Cancel = true; };
                     view.CoreWebView2.NewWindowRequested += (sender, args) => { args.Handled = true; External(args.Uri); };
                     view.CoreWebView2.PermissionRequested += (sender, args) => {
+                        // Calls with Yggdras need the microphone: granted to the app's own origin only.
+                        if (args.PermissionKind == CoreWebView2PermissionKind.Microphone && Local(args.Uri)) { args.State = CoreWebView2PermissionState.Allow; return; }
                         if (args.PermissionKind != CoreWebView2PermissionKind.Geolocation) args.State = CoreWebView2PermissionState.Deny;
                     };
                     view.CoreWebView2.ProcessFailed += (sender, args) => {
