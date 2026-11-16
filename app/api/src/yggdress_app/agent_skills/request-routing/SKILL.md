@@ -1,6 +1,7 @@
 ---
 name: request-routing
 description: Coordinate the fewest useful steps across Lia, Tasks and Calendar.
+domains: []
 ---
 
 Answer directly when no personal knowledge or application action is needed.

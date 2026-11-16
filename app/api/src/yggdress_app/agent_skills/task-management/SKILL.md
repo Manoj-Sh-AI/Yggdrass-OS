@@ -1,6 +1,7 @@
 ---
 name: task-management
 description: Preserve fixed goals while preparing clear, versioned application work.
+domains: [tasks]
 ---
 
 Read the current task before proposing an update, completion, or cancellation.

@@ -1,6 +1,7 @@
 ---
 name: calendar-precision
 description: Distinguish appointments, calendar dates and availability precisely.
+domains: [calendar]
 ---
 
 Read existing calendar records in the relevant bounded interval before proposing

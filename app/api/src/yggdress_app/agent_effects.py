@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 
-from . import agent_skills
+from . import agent_skills, skill_registry
 from .agent_tools import Proposal
 
 
@@ -26,7 +26,11 @@ def drive(steps, model, tools, lia=None, record=None):
         try:
             if effect.kind == "model":
                 selected = model.for_agent(effect.agent) if hasattr(model, "for_agent") else model
-                value = selected.complete(**effect.data)
+                data = dict(effect.data)
+                chosen = data.pop("model", None)  # a per-step model (orchestration planner)
+                if chosen and hasattr(selected, "with_model"):
+                    selected = selected.with_model(chosen)
+                value = selected.complete(**data)
                 if record:
                     record(effect.agent, effect.turn, value)
             elif effect.kind == "read":
@@ -34,7 +38,12 @@ def drive(steps, model, tools, lia=None, record=None):
             elif effect.kind == "inspect":
                 value = tools.inspect(Proposal.model_validate(effect.data))
             elif effect.kind == "skill":
-                value = agent_skills.load(effect.agent, effect.data)
+                if effect.data.get("registry"):  # Yggdras's skill library (skill_registry.py)
+                    value = skill_registry.registry().load(effect.data["name"])
+                else:
+                    value = agent_skills.load(effect.agent, effect.data)
+            elif effect.kind == "tool":  # a gated tool (tool_gate.py), checked again by the host
+                value = tools.call(effect.agent, effect.data)
             elif effect.kind == "lia":
                 value = lia.ask(**effect.data)
             else:
