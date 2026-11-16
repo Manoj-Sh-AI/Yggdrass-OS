@@ -11,6 +11,7 @@ import { PlanningTaskSheet, TaskForm } from "./planning-ui";
 import { Icon, Modal, rememberFocus } from "./ui";
 import { WorkspaceSearch } from "./workspace-search";
 import { WorkflowReview } from "./workflow-review";
+import { IncomingCall } from "./incoming-call";
 
 type CaptureEvent = CustomEvent<{ kind: CaptureKind; title?: string }>;
 // Older entry points route to the connected editor rather than a mock adapter.
@@ -38,6 +39,7 @@ function Sidebar({ close }: { close: () => void }) {
           ["/notes", "Notes", "NotebookPen"],
           ["/graph", "Graph", "Network"],
           ["/chat", "Chat", "MessageCircle"],
+          ["/feedback", "Yggdras log", "Activity"],
         ].map(([href, label, icon]) => (
           <Link
             key={href}
@@ -172,6 +174,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               {state.preferences.name.slice(0, 1)}
             </button>
             <WorkflowReview />
+            <IncomingCall />
           </div>
         </header>
         <main id="main" tabIndex={-1}>

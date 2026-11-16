@@ -16,6 +16,11 @@ async function proxy(
     /^application\/(workflow\/(capabilities|reviews(\/resolve)?)|agents\/(status|reviews(\/resolve)?|executions(\/[a-fA-F0-9-]{36}(\/cancel)?)?)|background(\/cancel)?|work-graph(\/roots)?)$/;
   const calendarContext =
     /^application\/connections\/calendar-context\/(date_item|availability)\/[a-fA-F0-9-]{36}$/;
+  // Yggdras: requests, approval cards, Undo, feedback, events, devices, connectors and calls.
+  const yggdras =
+    /^(yggdras\/(requests|cards(\/[a-f0-9]{12}\/(approve|reject))?|undo|runs|events|devices|connectors(\/[a-z0-9-]{1,40})?|notifications\/[a-zA-Z0-9-]{1,100}\/reply)|calls(\/(ring|schedule)|\/[a-fA-F0-9-]{36}\/(answer|decline|end))?)$/;
+  // Server-sent event streams pass through unbuffered (a reply as it is written; rings).
+  const streaming = path === "yggdras/requests" || path === "yggdras/events";
   if (
     !allowed.test(path) &&
     !connections.test(path) &&
@@ -23,6 +28,7 @@ async function proxy(
     !temporal.test(path) &&
     !receivingUi.test(path) &&
     !calendarContext.test(path) &&
+    !yggdras.test(path) &&
     path !== "graph/status"
   )
     return NextResponse.json(
@@ -82,13 +88,15 @@ async function proxy(
         body,
         cache: "no-store",
         redirect: "error",
-        signal: AbortSignal.timeout(
-          path.startsWith("notes/")
-            ? 60000
-            : path === "application/agents/reviews/resolve"
-              ? 30000
-              : 12000,
-        ),
+        signal: streaming
+          ? request.signal // open for as long as the page listens
+          : AbortSignal.timeout(
+              path.startsWith("notes/") || path.startsWith("yggdras/cards/")
+                ? 60000
+                : path === "application/agents/reviews/resolve"
+                  ? 30000
+                  : 12000,
+            ),
         headers: {
           "Content-Type": upload
             ? "application/octet-stream"
@@ -110,6 +118,10 @@ async function proxy(
     });
     for (const cookie of upstream.headers.getSetCookie())
       headers.append("Set-Cookie", cookie);
+    if (streaming && upstream.ok && upstream.body) {
+      headers.set("Content-Type", "text/event-stream");
+      return new Response(upstream.body, { status: upstream.status, headers });
+    }
     if (download && upstream.ok) {
       headers.set(
         "Content-Disposition",

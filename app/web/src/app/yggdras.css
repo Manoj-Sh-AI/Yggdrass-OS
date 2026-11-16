@@ -1,0 +1,75 @@
+/* Yggdras: approval cards (impossible to miss), the streaming panel, the ring screen. */
+.ygg-panel { display: grid; gap: 14px; margin: 0 auto 24px; max-width: 920px; width: 100%; }
+.ygg-queue { display: grid; gap: 12px; }
+.ygg-queue-title { font-size: 1rem; font-weight: 700; color: #b45309; margin: 0; }
+.ygg-card {
+  background: var(--panel, #fff); border: 2px solid #f59e0b; border-radius: 14px;
+  padding: 16px 18px; box-shadow: 0 6px 22px rgb(0 0 0 / 0.12); display: grid; gap: 10px;
+}
+.ygg-card[data-offer] { border-color: #10b981; }
+.ygg-card h3 { margin: 4px 0 0; font-size: 1.05rem; }
+.ygg-card-badge {
+  font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+  color: #92400e; background: #fef3c7; border-radius: 999px; padding: 2px 10px;
+}
+.ygg-card[data-offer] .ygg-card-badge { color: #065f46; background: #d1fae5; }
+.ygg-card-reasons { margin: 4px 0 0; font-size: 0.85rem; opacity: 0.8; }
+.ygg-diff { border-radius: 10px; padding: 8px 12px; white-space: pre-wrap; }
+.ygg-diff span { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; opacity: 0.7; }
+.ygg-diff p { margin: 2px 0 0; }
+.ygg-old { background: #fee2e2; text-decoration: line-through; text-decoration-color: #b91c1c; }
+.ygg-new { background: #dcfce7; }
+.ygg-links { margin: 0; font-size: 0.85rem; }
+.ygg-warning {
+  margin: 0; font-weight: 700; color: #991b1b; background: #fee2e2; border-left: 4px solid #dc2626;
+  padding: 6px 10px; border-radius: 6px;
+}
+.ygg-actions { display: flex; gap: 10px; }
+.ygg-approve, .ygg-reject, .ygg-answer, .ygg-decline {
+  font-size: 1rem; font-weight: 700; border: 0; border-radius: 10px; padding: 12px 22px;
+  cursor: pointer; min-width: 120px;
+}
+.ygg-approve, .ygg-answer { background: #15803d; color: #fff; }
+.ygg-reject, .ygg-decline { background: #e5e7eb; color: #111827; }
+.ygg-decline { background: #dc2626; color: #fff; }
+.ygg-approve:disabled, .ygg-reject:disabled { opacity: 0.5; cursor: wait; }
+.ygg-approve:focus-visible, .ygg-reject:focus-visible, .ygg-answer:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+.ygg-correction { display: grid; gap: 4px; font-size: 0.85rem; }
+.ygg-correction textarea { min-height: 60px; border-radius: 8px; padding: 6px; }
+.ygg-after { display: flex; gap: 10px; align-items: center; font-size: 0.9rem; }
+.ygg-error { color: #991b1b; font-weight: 600; }
+.ygg-turns { display: grid; gap: 8px; }
+.ygg-turn { margin: 0; padding: 10px 14px; border-radius: 12px; white-space: pre-wrap; }
+.ygg-user { background: var(--line, #e5e7eb); justify-self: end; max-width: 80%; }
+.ygg-assistant { background: var(--panel, #fff); max-width: 90%; }
+.ygg-composer { display: flex; gap: 8px; align-items: flex-end; }
+.ygg-composer textarea { flex: 1; min-height: 52px; border-radius: 12px; padding: 10px; resize: vertical; }
+
+/* The ring: full window, every open tab and the desktop window. */
+.ygg-ring {
+  position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center;
+  background: rgb(15 23 42 / 0.72); animation: ygg-pulse 1.6s ease-in-out infinite;
+}
+.ygg-ring-card { background: #0f172a; color: #fff; border-radius: 22px; padding: 32px 40px; text-align: center; display: grid; gap: 10px; min-width: 280px; }
+.ygg-ring-who { font-size: 1.6rem; font-weight: 800; margin: 0; }
+.ygg-ring-why { margin: 0 0 12px; opacity: 0.85; }
+.ygg-ring-actions { display: flex; gap: 14px; justify-content: center; }
+@keyframes ygg-pulse { 50% { background: rgb(15 23 42 / 0.82); } }
+@media (prefers-reduced-motion: reduce) { .ygg-ring { animation: none; } }
+.ygg-in-call {
+  position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 900;
+  background: #0f172a; color: #fff; padding: 10px 16px; border-radius: 999px; display: flex;
+  gap: 12px; align-items: center;
+}
+.ygg-in-call .ygg-decline { padding: 6px 14px; min-width: 0; }
+.ygg-call-button { border: 0; border-radius: 999px; padding: 6px 12px; font-weight: 600; cursor: pointer; background: #15803d; color: #fff; }
+.ygg-call-error { position: fixed; bottom: 70px; right: 16px; z-index: 900; background: #fee2e2; padding: 8px 12px; border-radius: 8px; }
+
+.ygg-feedback table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.ygg-feedback th, .ygg-feedback td { text-align: left; vertical-align: top; padding: 6px 8px; border-bottom: 1px solid var(--line, #e5e7eb); }
+.ygg-feedback .ygg-failed { background: #fef2f2; }
+@media (max-width: 640px) {
+  .ygg-actions { flex-direction: column; }
+  .ygg-approve, .ygg-reject { width: 100%; }
+  .ygg-feedback table { display: block; overflow-x: auto; }
+}

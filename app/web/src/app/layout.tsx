@@ -12,6 +12,7 @@ import "./signal-workspace.css";
 import "./calendar-workspace.css";
 import "./linked-work.css";
 import "./chat.css";
+import "./yggdras.css";
 export const metadata: Metadata = {
   title: {
     default: "Yggdras · A little clarity, every day",
