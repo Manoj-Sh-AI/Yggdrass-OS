@@ -12,7 +12,7 @@ from yggdress_app import voice
 from yggdress_app.agent_tools import ApplicationTools
 from yggdress_app.application import create_app
 from yggdress_app.database import Database
-from yggdress_app.yggdras_api import Yggdrass, due_rings
+from yggdress_app.orchestrator_api import Yggdrass, due_rings
 
 FACT = {"facts": [{"fact": "Ada's pottery studio moved to Hafenstrasse.", "about": "pottery"}]}
 

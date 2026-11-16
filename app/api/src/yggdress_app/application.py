@@ -203,15 +203,15 @@ def create_app(
 
         from .agent_models import NoModel, RoutedClaude
         from .agent_tools import ApplicationTools
-        from .yggdras_api import Yggdrass
+        from .orchestrator_api import Yggdrass
 
         key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
         yggdras = Yggdrass(database, notes, RoutedClaude(key) if key else NoModel(),
                            ApplicationTools(database))  # fmt: skip
     api.state.yggdras = yggdras
-    from .yggdras_api import yggdras_routers
+    from . import orchestrator_api
 
-    for router in yggdras_routers(yggdras, session):
+    for router in orchestrator_api.yggdras_routers(yggdras, session):
         api.include_router(router)
 
     @api.get("/health")
