@@ -39,8 +39,16 @@ class SubResult:
     tools: list[str] = field(default_factory=list)
 
 
-def run(spec: SubAgentSpec, belt: Toolbelt, *, budget=None, cancelled=lambda: False):
-    """Generator: drive it with agent_effects.drive or the Temporal workflow."""
+def plain_act(tool, values):
+    """Run a tool as an effect (the orchestrator passes its checker-guarded act instead)."""
+    return (
+        yield Effect("tool", HELPER, {"name": tool.name, "input": values, "domain": tool.domain})
+    )
+
+
+def run(spec: SubAgentSpec, belt: Toolbelt, *, budget=None, cancelled=lambda: False, act=None):
+    """Generator: drive it with agent_effects.drive or the Temporal workflow. *act* runs a
+    tool call (default: as an effect); the orchestrator passes its checker in front of it."""
     for name in spec.skills:
         loaded = yield Effect("skill", HELPER, {"name": name, "registry": True})
         belt.open(loaded)
@@ -87,9 +95,7 @@ def run(spec: SubAgentSpec, belt: Toolbelt, *, budget=None, cancelled=lambda: Fa
                     output = {"loaded": loaded["name"], "unlocks": loaded["unlocks"]}
                 else:
                     tool = belt.require(name)  # the gate: locked tools never reach an effect
-                    output = yield Effect("tool", HELPER, {
-                        "name": tool.name, "input": values, "domain": tool.domain,
-                        "unlocked": sorted(belt.unlocked)})  # fmt: skip
+                    output = yield from (act or plain_act)(tool, values)
                     result.tools.append(tool.name)
                     if isinstance(output, dict) and output.get("proposal"):
                         result.proposals.append(output["proposal"])

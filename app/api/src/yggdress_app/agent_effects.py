@@ -39,13 +39,16 @@ def drive(steps, model, tools, lia=None, record=None):
                 value = tools.inspect(Proposal.model_validate(effect.data))
             elif effect.kind == "skill":
                 if effect.data.get("registry"):  # Yggdras's skill library (skill_registry.py)
-                    value = skill_registry.registry().load(effect.data["name"])
+                    host_load = getattr(tools, "load", None)  # a host that tracks the unlocks
+                    value = (host_load or skill_registry.registry().load)(effect.data["name"])
                 else:
                     value = agent_skills.load(effect.agent, effect.data)
             elif effect.kind == "tool":  # a gated tool (tool_gate.py), checked again by the host
                 value = tools.call(effect.agent, effect.data)
             elif effect.kind == "lia":
                 value = lia.ask(**effect.data)
+            elif effect.kind in ("propose", "recall", "record"):  # orchestration.py stages
+                value = getattr(tools, effect.kind)(effect.agent, effect.data)
             else:
                 raise ValueError("Unknown agent operation.")
         except Exception as caught:  # noqa: BLE001 -- throw into the shared generator unchanged

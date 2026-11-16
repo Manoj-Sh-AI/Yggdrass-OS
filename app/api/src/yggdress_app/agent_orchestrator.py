@@ -32,6 +32,22 @@ class Yggdras:
             record,
         )
 
+    def handle(self, request, *, skills, belt_for, checker, budget=None):
+        """The orchestrator (orchestration.py): intake has made *request* a Request; this
+        routes, plans, dispatches, checks and records it. Same role, same model access."""
+        from .orchestration import pipeline
+
+        return (
+            yield from pipeline(
+                request,
+                skills=skills,
+                belt_for=belt_for,
+                checker=checker,
+                specialists=lambda domain: Specialist(domain, self.model, self.tools),
+                budget=budget,
+            )
+        )
+
     def steps(self, request, *, budget=None, cancelled=lambda: False):
         budget = budget or Budget()
         proposals, cache = [], {}
