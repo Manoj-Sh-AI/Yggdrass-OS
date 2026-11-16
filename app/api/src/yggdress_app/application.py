@@ -92,6 +92,7 @@ def create_app(
     agents_enabled=False,
     agents_ready=None,
     agent_issue="",
+    yggdras=None,
 ):
     settings = settings or Settings.environment()
     settings.validate()
@@ -197,6 +198,21 @@ def create_app(
     for router in chat_routers(database, session, receiver_tokens, chat_catalog):
         api.include_router(router)
     api.include_router(graph_router(graph or existing_graph(notes), session))
+    if yggdras is None:  # Yggdras's orchestrator, chat cards, notifications and calls
+        import os
+
+        from .agent_models import NoModel, RoutedClaude
+        from .agent_tools import ApplicationTools
+        from .yggdras_api import Yggdrass
+
+        key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+        yggdras = Yggdrass(database, notes, RoutedClaude(key) if key else NoModel(),
+                           ApplicationTools(database))  # fmt: skip
+    api.state.yggdras = yggdras
+    from .yggdras_api import yggdras_routers
+
+    for router in yggdras_routers(yggdras, session):
+        api.include_router(router)
 
     @api.get("/health")
     def health():

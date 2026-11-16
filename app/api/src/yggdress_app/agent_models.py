@@ -74,3 +74,36 @@ class Claude:
             raise AgentError(
                 "The model returned an unreadable response. No changes were applied."
             ) from None
+
+
+class RoutedClaude:
+    """Claude with a model per step (orchestration: router, planner, helpers each choose)."""
+
+    ALLOWED = ("claude-haiku-5-5", "claude-sonnet-5-5")
+
+    def __init__(self, key, default="claude-sonnet-5-5", *, opener=None):
+        self._key, self.default, self.opener = key, default, opener
+
+    def for_agent(self, agent):
+        return self
+
+    def with_model(self, model):
+        if model not in self.ALLOWED:
+            raise AgentError("The plan chose a model that is not allowed.")
+        return Claude(self._key, model, opener=self.opener)
+
+    def complete(self, system, messages, tools):
+        return Claude(self._key, self.default, opener=self.opener).complete(system, messages, tools)
+
+
+class NoModel:
+    """Until ANTHROPIC_API_KEY is configured: every model step fails plainly, nothing is spent."""
+
+    def for_agent(self, agent):
+        return self
+
+    def with_model(self, model):
+        return self
+
+    def complete(self, system, messages, tools):
+        raise AgentError("Yggdras's model is not configured (ANTHROPIC_API_KEY).")

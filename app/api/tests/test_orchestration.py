@@ -48,7 +48,10 @@ class Bound:
 
     def complete(self, system, messages, tools):
         self.root.seen.append((self.agent, self.model, sorted(t["name"] for t in tools)))
-        return self.root.scripts[self.agent].pop(0)
+        script = self.root.scripts.get(self.agent)
+        if not script and self.agent == "notice":  # nothing worth filing, unless scripted
+            return say("none")
+        return script.pop(0)
 
 
 class Lia:
@@ -94,7 +97,8 @@ def test_a_quick_answer_returns_directly_on_the_cheap_model():
                                   "yggdras": [say("Berlin is in UTC+1 in winter.")]})  # fmt: skip
     out = go("What timezone is Berlin in?")
     assert out.route == "quick" and out.answer.startswith("Berlin")
-    assert [s[:2] for s in model.seen] == [("router", ROUTER_MODEL), ("yggdras", ROUTER_MODEL)]
+    assert [s[:2] for s in model.seen] == [
+        ("router", ROUTER_MODEL), ("yggdras", ROUTER_MODEL), ("notice", ROUTER_MODEL)]  # fmt: skip
     assert model.seen[1][2] == []  # no tools for a quick answer
     assert host.runs[0]["route"] == "quick" and not lia.asked
 
@@ -174,6 +178,7 @@ def test_a_multi_step_job_is_planned_per_step_and_dispatched_and_recorded():
         "router",
         "planner",
         "yggdras",
+        "notice",
     }
     assert all(u["cost"] >= 0 for u in run["usage"])
 
@@ -194,3 +199,18 @@ def test_router_cost_per_call():
 
 def test_effects_have_the_kinds_the_temporal_activity_serves():
     assert Effect("record", "yggdras", {}).kind == "record"
+
+
+def test_yggdras_offers_a_fact_worth_filing_without_writing_it():
+    handlers = {"search_brain": lambda v: {"hits": ["techciti-internship"]}}
+    facts = {"facts": [{"fact": "Manoj's internship mentor is Priya.", "about": "internship"}]}
+    go, _model, host, _ = setup({
+        "router": [use("route", {"kind": "quick"})],
+        "yggdras": [say("Nice, a good mentor helps.")],
+        "notice": [use("offer_facts", facts)]}, handlers)  # fmt: skip
+    out = go("My internship mentor is Priya, by the way.")
+    assert host.ran == ["search_brain"]  # the brain was only searched
+    assert [c["tool"] for c in out.cards] == ["offer_brain_fact"]
+    assert out.cards[0]["input"] == {"slug": "techciti-internship",
+                                     "fact": "Manoj's internship mentor is Priya."}  # fmt: skip
+    assert out.cards[0]["offer"] is True and out.cards[0]["reasons"] == []

@@ -330,13 +330,66 @@ def pipeline(request: Request, *, skills, belt_for, checker: Checker, specialist
         _usage(out, "yggdras", yggdras_model, reply)
         out.answer = _text(reply)
 
-    if out.cards and "card" not in out.answer.lower():
-        out.answer += f"\n\n{len(out.cards)} action(s) wait for your approval."
+    if request.source in ("chat", "voice", "mobile"):
+        yield from notice(request, out)
+    waiting = [c for c in out.cards if not c.get("offer")]
+    offers = len(out.cards) - len(waiting)
+    if waiting and "card" not in out.answer.lower():
+        out.answer += f"\n\n{len(waiting)} action(s) wait for your approval."
+    if offers:
+        out.answer += f"\n\nI noticed {offers} fact(s) worth filing in your brain; approve the card to keep it."
     yield Effect("record", "yggdras", {
         "request": request.model_dump(mode="json"), "route": out.route, "plan": out.plan,
         "steps": out.steps, "usage": out.usage, "cards": len(out.cards),
         "checker_stopped": bool(out.cards)})  # fmt: skip
     return out
+
+
+NOTICE_TOOL = {
+    "name": "offer_facts",
+    "description": "Durable facts about Manoj worth filing in his brain (may be empty).",
+    "input_schema": {
+        "type": "object",
+        "properties": {"facts": {"type": "array", "maxItems": 3, "items": {
+            "type": "object", "required": ["fact", "about"], "additionalProperties": False,
+            "properties": {"fact": {"type": "string", "maxLength": 300},
+                           "about": {"type": "string", "maxLength": 100}}}}},
+        "required": ["facts"],
+        "additionalProperties": False,
+    },
+}  # fmt: skip
+NOTICE_SYSTEM = (
+    "Read Manoj's message. List only durable facts about his life that will still matter in a "
+    "month (a new job detail, a person's role, a decision and its reason, a date). Not moods, "
+    "small talk, plans for today, questions or anything he did not state himself. Each fact "
+    "is one self-contained sentence naming its subject; `about` is a few words to search his "
+    "notes with. Usually the list is empty. Call offer_facts once."
+)
+
+
+def notice(request: Request, out: Outcome):
+    """Facts worth filing, offered as cards (file-to-brain): never written without approval."""
+    reply = yield Effect("model", "notice", {
+        "system": NOTICE_SYSTEM, "messages": [{"role": "user", "content": request.text}],
+        "tools": [NOTICE_TOOL], "model": ROUTER_MODEL})  # fmt: skip
+    _usage(out, "notice", ROUTER_MODEL, reply)
+    facts = []
+    for block in reply.content:
+        if block.get("type") == "tool_use" and block.get("name") == "offer_facts":
+            facts = (block.get("input") or {}).get("facts") or []
+    if not facts:
+        return
+    yield Effect("skill", "notice", {"name": "file-to-brain", "registry": True})
+    for item in facts[:3]:
+        found = yield Effect("tool", "notice", {"name": "search_brain",
+                                                "input": {"query": item["about"]}})  # fmt: skip
+        hits = (found or {}).get("hits") or []
+        if not hits:
+            continue
+        card = yield Effect("propose", "notice", {
+            "tool": "offer_brain_fact", "input": {"slug": hits[0], "fact": item["fact"]},
+            "reasons": [], "offer": True})  # fmt: skip
+        out.cards.append(card)
 
 
 def _text(reply) -> str:
