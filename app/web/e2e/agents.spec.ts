@@ -65,6 +65,21 @@ test("Yggdras delegates, Chat preserves its destination, and owner approves the 
   expect(
     status.runs.some((run: { state: string }) => run.state === "completed"),
   ).toBe(true);
+  if (process.env.YGGDRESS_TEMPORAL_AGENTS === "1") {
+    expect(status.execution.provider).toBe("temporal");
+    expect(status.execution.ready).toBe(true);
+    const executions = await (
+      await page.request.get("/api/backend/application/agents/executions")
+    ).json();
+    const trace = await (
+      await page.request.get(
+        `/api/backend/application/agents/executions/${executions.executions[0].id}`,
+      )
+    ).json();
+    expect(trace.steps.length).toBeGreaterThan(2);
+    expect(trace.timings.pickup_ms).toBeGreaterThanOrEqual(0);
+    expect(trace.steps.every((step: object) => !("result" in step))).toBe(true);
+  }
 });
 
 test("a saved-only message does not run, and private agent interfaces stay inaccessible", async ({

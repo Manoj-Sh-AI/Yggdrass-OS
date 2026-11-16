@@ -53,7 +53,9 @@
     ".next-agents-final/types/**/*.ts",
     ".next-agents-final/dev/types/**/*.ts",
     ".next-agents-ready/types/**/*.ts",
-    ".next-agents-ready/dev/types/**/*.ts"
+    ".next-agents-ready/dev/types/**/*.ts",
+    ".next-temporal-ready/types/**/*.ts",
+    ".next-temporal-ready/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

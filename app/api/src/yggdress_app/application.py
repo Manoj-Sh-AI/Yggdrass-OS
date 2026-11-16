@@ -103,6 +103,7 @@ def create_app(
     api.state.notes_proxy = notes
     store = AgentStore(database)
     api.state.agent_store = store
+    api.state.agent_runtime = None
     fingerprint = token_hash(settings.password_hash)
 
     @api.middleware("http")
@@ -116,6 +117,8 @@ def create_app(
         if not length.isdigit() or int(length) > limit:
             return JSONResponse({"detail": "Request too large."}, status_code=413)
         response = await call_next(request)
+        if request.method not in ("GET", "HEAD", "OPTIONS") and api.state.agent_runtime:
+            api.state.agent_runtime.notify()
         response.headers["Cache-Control"] = "no-store"
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["Referrer-Policy"] = "same-origin"
@@ -174,7 +177,11 @@ def create_app(
     api.include_router(notes_router(notes, session, observer=store if agents_enabled else None))
     api.include_router(
         agent_router(
-            store, session, agents_enabled if agents_ready is None else agents_ready, agent_issue
+            store,
+            session,
+            agents_enabled if agents_ready is None else agents_ready,
+            agent_issue,
+            runtime=lambda: api.state.agent_runtime,
         )
     )
     api.include_router(connections_router(database, notes, session))

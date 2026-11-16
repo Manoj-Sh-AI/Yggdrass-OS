@@ -1,4 +1,6 @@
-# D43 — Notes-only authenticated Brain HTTP adapter
+# D45 — Notes-only authenticated Brain HTTP adapter
+
+(Renumbered from D43 on 2026-11-16: D43 and D44 are the brain's PostgreSQL records on PRs #43/#44.)
 
 Approved scope: Manoj's Notes API plumbing request, 2026-11-12. Brain ownership and Markdown source stay unchanged.
 

@@ -20,3 +20,8 @@ database execution records, catalog metadata or model context.
 No general multi-agent framework is required for these four roles. The existing
 Python, Pydantic and PostgreSQL interfaces are sufficient; revisit this choice if
 the working system demonstrates a concrete missing capability.
+
+2026-11-15 amendment: the owner approved Temporal as the execution backend for
+durable agent steps, approvals and visibility. See
+[Temporal execution decision](temporal-agent-execution.md). Existing role logic,
+tool permissions and checked application writes are reused.

@@ -34,7 +34,7 @@ Backend: `app/api/src/yggdress_app/notes_proxy.py`, `application.py`, `.env.exam
 
 Frontend: `src/lib/notes-api.ts`, `src/components/notes-brain-provider.tsx`, the existing `brain-explorer.tsx` and `note-editor.tsx`, Notes route wrapper, backend proxy allowlist/timeout, structured API errors, isolated draft namespace, and retryable Markdown save state. `shell.tsx` changes only Notes-specific source labels; other pages keep their prior behavior. Tests: `tests/notes-api.test.ts`, `e2e/notes.spec.ts`, and existing Phase 1 fixture assumptions adapted for Notes' new port.
 
-Requirements/planning/rationale: `requirements/spec-notes-brain-api.md`, `planning/notes-brain-api.md`, `rationale/decisions/D43-notes-http-proxy.md`.
+Requirements/planning/rationale: `requirements/spec-notes-brain-api.md`, `planning/notes-brain-api.md`, `rationale/decisions/D45-notes-http-proxy.md`.
 
 ## Verification
 

@@ -150,6 +150,8 @@ def client_environment(url=None):
 
 
 def fingerprints(conn):
+    # Timestamp JSON must compare independently of each server/session timezone.
+    conn.execute("SET TIME ZONE 'UTC'")
     tables, sequences, objects = {}, {}, []
     names = conn.execute(
         "SELECT n.nspname,c.relname,c.relkind FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace "

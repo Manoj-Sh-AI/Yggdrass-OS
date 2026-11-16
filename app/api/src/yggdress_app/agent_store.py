@@ -117,7 +117,7 @@ class AgentStore:
             db.execute("SELECT pg_advisory_xact_lock(%s)", (CHAT_LOCK,))
             # A lost worker may already have paid for a request. Never replay it silently.
             expired = db.execute(
-                "UPDATE app.agent_runs SET state='failed',error='Execution was interrupted. Resend explicitly to try again.',finished_at=now() WHERE state='running' AND lease_until<now() RETURNING id,chat_request_id,note_event_id"
+                "UPDATE app.agent_runs a SET state='failed',error='Execution was interrupted. Resend explicitly to try again.',finished_at=now() WHERE state='running' AND lease_until<now() AND NOT EXISTS(SELECT 1 FROM app.agent_executions e WHERE e.run_id=a.id) RETURNING id,chat_request_id,note_event_id"
             ).fetchall()
             for row in expired:
                 db.execute(
@@ -135,7 +135,7 @@ class AgentStore:
                         (row["chat_request_id"],),
                     )
             chosen = db.execute(
-                "SELECT * FROM app.agent_runs WHERE state='queued' AND (%s::text IS NULL OR (%s='chat' AND chat_request_id IS NOT NULL) OR (%s='background' AND chat_request_id IS NULL)) ORDER BY (chat_request_id IS NOT NULL) DESC,created_at,id LIMIT 1 FOR UPDATE SKIP LOCKED",
+                "SELECT * FROM app.agent_runs a WHERE state='queued' AND NOT EXISTS(SELECT 1 FROM app.agent_executions e WHERE e.run_id=a.id) AND (%s::text IS NULL OR (%s='chat' AND chat_request_id IS NOT NULL) OR (%s='background' AND chat_request_id IS NULL)) ORDER BY (chat_request_id IS NOT NULL) DESC,created_at,id LIMIT 1 FOR UPDATE SKIP LOCKED",
                 (lane, lane, lane),
             ).fetchone()
             if not chosen:
@@ -149,7 +149,7 @@ class AgentStore:
     def current(self, run):
         with self.database.connect() as db:
             found = db.execute(
-                "SELECT 1 FROM app.agent_runs WHERE id=%s AND state='running' AND lease=%s AND lease_until>now()",
+                "SELECT 1 FROM app.agent_runs a WHERE id=%s AND state='running' AND lease=%s AND (lease_until>now() OR EXISTS(SELECT 1 FROM app.agent_executions e WHERE e.run_id=a.id))",
                 (run["id"], run["lease"]),
             ).fetchone()
             if not found:
@@ -245,6 +245,14 @@ class AgentStore:
             db.execute("SELECT pg_advisory_xact_lock(%s)", (CHAT_LOCK,))
             # Match planning lock order before locking approval/target rows.
             db.execute("SELECT pg_advisory_xact_lock(%s)", (LOCK,))
+            prior = db.execute(
+                "SELECT decision_fingerprint,result FROM app.agent_proposals WHERE decision_key=%s LIMIT 1",
+                (command.key,),
+            ).fetchone()
+            if prior:
+                if prior["decision_fingerprint"] != fingerprint:
+                    raise HTTPException(409, "This retry key belongs to another decision.")
+                return jsonable_encoder(prior["result"])
             row = db.execute(
                 "SELECT p.*,r.chat_request_id FROM app.agent_proposals p JOIN app.agent_runs r ON r.id=p.run_id WHERE p.id=%s FOR UPDATE OF p",
                 (command.id,),
@@ -257,6 +265,13 @@ class AgentStore:
                 return row["result"]
             if row["state"] != "pending" or row["version"] != command.version:
                 raise HTTPException(409, "This proposal changed. Refresh before deciding.")
+            if db.execute(
+                "SELECT 1 FROM app.agent_executions WHERE run_id=%s AND cancellation_requested",
+                (row["run_id"],),
+            ).fetchone():
+                raise HTTPException(
+                    409, "This execution was cancelled. The proposal cannot be applied."
+                )
             result = {"state": "dismissed"}
             if command.decision == "accept":
                 if row["chat_request_id"]:

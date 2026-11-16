@@ -33,6 +33,7 @@ def grant_runtime(db, role):
         "SELECT,INSERT,UPDATE ON app.note_handoffs",
         "UPDATE(external_id) ON app.note_refs",
         "SELECT,INSERT,UPDATE ON app.agent_runs,app.agent_steps,app.agent_proposals,app.agent_note_events,app.agent_write_intents",
+        "SELECT,INSERT,UPDATE ON app.agent_executions,app.agent_effects",
         "USAGE,SELECT ON ALL SEQUENCES IN SCHEMA app",
     ]
     for grant in grants:

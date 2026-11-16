@@ -8,6 +8,7 @@ from fastapi import HTTPException
 from pydantic import Field, ValidationError
 
 from . import agent_skills
+from .agent_effects import Effect, drive
 from .agent_models import AgentError
 from .agent_tools import Proposal, ReadQuery, allowed
 from .planning_models import Model
@@ -23,13 +24,10 @@ class Budget:
     token_limit: int = 30000
     tokens: int = 0
     deadline: float = field(default_factory=lambda: time.monotonic() + 180)
+    clock: object = field(default=time.monotonic, repr=False)
 
     def spend(self):
-        if (
-            self.remaining <= 0
-            or self.tokens >= self.token_limit
-            or time.monotonic() >= self.deadline
-        ):
+        if self.remaining <= 0 or self.tokens >= self.token_limit or self.clock() >= self.deadline:
             raise AgentError(
                 "This request reached its execution limit. Completed steps remain recorded."
             )
@@ -59,6 +57,14 @@ class Specialist:
         self.helper = helper
 
     def run(self, request, *, budget=None, record=None, cancelled=lambda: False):
+        return drive(
+            self.steps(request, budget=budget, cancelled=cancelled),
+            self.model,
+            self.tools,
+            record=record,
+        )
+
+    def steps(self, request, *, budget=None, cancelled=lambda: False):
         budget = budget or Budget()
         proposals = []
         helpers = {}
@@ -99,10 +105,10 @@ class Specialist:
             if cancelled():
                 raise AgentError("This request was cancelled.")
             budget.spend()
-            reply = self.model.complete(system, messages, tools)
+            reply = yield Effect(
+                "model", self.domain, {"system": system, "messages": messages, "tools": tools}, turn
+            )
             budget.usage(reply)
-            if record:
-                record(self.domain, turn, reply)
             messages.append({"role": "assistant", "content": reply.content})
             calls = [block for block in reply.content if block.get("type") == "tool_use"]
             if not calls:
@@ -120,9 +126,9 @@ class Specialist:
                     raise AgentError("This request was cancelled.")
                 try:
                     if call["name"] == "load_skill":
-                        result = agent_skills.load(self.domain, call["input"])
+                        result = yield Effect("skill", self.domain, call["input"])
                     elif call["name"] == "read_current":
-                        result = self.tools.read(self.domain, call["input"])
+                        result = yield Effect("read", self.domain, call["input"])
                     elif call["name"] == "propose_change":
                         if self.helper:
                             raise ValueError(
@@ -131,7 +137,7 @@ class Specialist:
                         if len(proposals) >= 8:
                             raise ValueError("Propose at most eight changes in one request.")
                         proposal = allowed(self.domain, Proposal.model_validate(call["input"]))
-                        self.tools.inspect(proposal)
+                        yield Effect("inspect", self.domain, proposal.model_dump(mode="json"))
                         proposals.append(proposal)
                         result = {"state": "proposed_only", "review_required": True}
                     elif call["name"] == "consult_helper" and not self.helper:
@@ -140,9 +146,9 @@ class Specialist:
                             if len(helpers) >= 2:
                                 raise ValueError("The helper question limit was reached.")
                             other = "calendar" if self.domain == "tasks" else "tasks"
-                            answer = Specialist(other, self.model, self.tools, helper=True).run(
-                                question, budget=budget, record=record, cancelled=cancelled
-                            )
+                            answer = yield from Specialist(
+                                other, self.model, self.tools, helper=True
+                            ).steps(question, budget=budget, cancelled=cancelled)
                             helpers[question] = {
                                 "answer": answer.answer,
                                 "read_only": True,

@@ -13,7 +13,7 @@ async function proxy(
     /^chat\/(capabilities|commands|conversations(\/[a-fA-F0-9-]{36}(\/export)?)?|attachments(\/[a-fA-F0-9-]{36})?)$/;
   const temporal = /^application\/time\/commands$/;
   const receivingUi =
-    /^application\/(workflow\/(capabilities|reviews(\/resolve)?)|agents\/(status|reviews(\/resolve)?)|background(\/cancel)?|work-graph(\/roots)?)$/;
+    /^application\/(workflow\/(capabilities|reviews(\/resolve)?)|agents\/(status|reviews(\/resolve)?|executions(\/[a-fA-F0-9-]{36}(\/cancel)?)?)|background(\/cancel)?|work-graph(\/roots)?)$/;
   const calendarContext =
     /^application\/connections\/calendar-context\/(date_item|availability)\/[a-fA-F0-9-]{36}$/;
   if (
@@ -82,7 +82,13 @@ async function proxy(
         body,
         cache: "no-store",
         redirect: "error",
-        signal: AbortSignal.timeout(path.startsWith("notes/") ? 60000 : 12000),
+        signal: AbortSignal.timeout(
+          path.startsWith("notes/")
+            ? 60000
+            : path === "application/agents/reviews/resolve"
+              ? 30000
+              : 12000,
+        ),
         headers: {
           "Content-Type": upload
             ? "application/octet-stream"

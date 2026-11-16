@@ -13,10 +13,11 @@ import psycopg
 from psycopg import sql
 from psycopg.conninfo import conninfo_to_dict
 
-from .backup import client_environment, database_backup, fresh_cluster, tool
+from .backup import client_environment, database_backup, fingerprints, fresh_cluster, tool
 from .database import Database
 from .local_runtime import atomic_json, default_home, ensure, pg_start, status
 from .runtime_grants import grant_runtime
+from .shared_database import LAYOUT, brain_snapshot, migration_connection
 
 
 def columns(db):
@@ -75,23 +76,35 @@ def upgrade(home, build):
         if actual != (home / "postgres").resolve():
             raise RuntimeError("The upgrade target is not the owned application cluster.")
         namespaces = {row[0] for row in guard.execute("SELECT nspname FROM pg_namespace")}
-        if "brain" in namespaces or "app" not in namespaces:
-            raise RuntimeError("Only an application database may be upgraded.")
+        shared = config.get("storage_layout") == LAYOUT
+        if "app" not in namespaces or ("brain" in namespaces and not shared):
+            raise RuntimeError("A shared database requires an explicit verified storage layout.")
+        migration_url = migration_connection(config)
+        if shared:
+            with psycopg.connect(migration_url) as migrator:
+                if migrator.execute(
+                    "SELECT has_schema_privilege('brain','USAGE') OR "
+                    "has_schema_privilege('brain','CREATE')"
+                ).fetchone()[0]:
+                    raise RuntimeError("Application migrations must not have Brain access.")
         guard.execute("SET lock_timeout='5s'")
         guard.execute("SET idle_in_transaction_session_timeout='300s'")
         tables = [
-            row[0]
+            (row[0], row[1])
             for row in guard.execute(
-                "SELECT tablename FROM pg_tables WHERE schemaname='app' ORDER BY tablename"
+                "SELECT schemaname,tablename FROM pg_tables WHERE schemaname='app' "
+                "OR (%s AND schemaname='brain') ORDER BY schemaname,tablename",
+                (shared,),
             )
         ]
         guard.execute(
             sql.SQL("LOCK TABLE {} IN SHARE MODE").format(
-                sql.SQL(",").join(sql.Identifier("app", name) for name in tables)
+                sql.SQL(",").join(sql.Identifier(namespace, name) for namespace, name in tables)
             )
         )
         spec = columns(guard)
         before = projection(guard, spec)
+        brain_before = brain_snapshot(fingerprints(guard)) if shared else None
         dump = (
             home
             / "backups"
@@ -125,7 +138,12 @@ def upgrade(home, build):
                         raise RuntimeError(
                             "Staged migration changed an existing application value."
                         )
-                    if db.execute("SELECT to_regnamespace('brain')").fetchone()[0] is not None:
+                    if shared and brain_snapshot(fingerprints(db)) != brain_before:
+                        raise RuntimeError("Staged application migration changed Brain records.")
+                    if (
+                        not shared
+                        and db.execute("SELECT to_regnamespace('brain')").fetchone()[0] is not None
+                    ):
                         raise RuntimeError("Unexpected Brain schema in the app upgrade.")
         atomic_json(
             home / "backups/connected-upgrade-verification.json",
@@ -156,10 +174,12 @@ def upgrade(home, build):
         if (home / "postgres/postmaster.pid").exists():
             raise RuntimeError("The owned application database did not stop cleanly.")
         pg_start(home, config)
-        Database(config["admin_url"]).migrate()
+        Database(migration_url).migrate()
         with psycopg.connect(config["admin_url"]) as db:
             if projection(db, spec) != before:
                 raise RuntimeError("Existing application values changed during the upgrade.")
+            if shared and brain_snapshot(fingerprints(db)) != brain_before:
+                raise RuntimeError("Application upgrade changed Brain records.")
             grant_runtime(db, conninfo_to_dict(config["database_url"])["user"])
             versions = [
                 row[0]

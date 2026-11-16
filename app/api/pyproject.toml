@@ -2,7 +2,7 @@
 name = "yggdress-application"
 version = "0.1.0"
 requires-python = ">=3.12"
-dependencies = ["fastapi>=0.115,<1", "uvicorn>=0.34,<1", "psycopg[binary]>=3.2,<4"]
+dependencies = ["fastapi>=0.115,<1", "uvicorn>=0.34,<1", "psycopg[binary]>=3.2,<4", "temporalio>=1.36,<2"]
 
 [build-system]
 requires = ["hatchling"]

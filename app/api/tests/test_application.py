@@ -345,6 +345,8 @@ def test_migrations_are_application_only_and_runtime_cannot_create_tables(postgr
             "agent_proposals",
             "agent_note_events",
             "agent_write_intents",
+            "agent_executions",
+            "agent_effects",
         }
     with (
         pytest.raises(psycopg.errors.InsufficientPrivilege),

@@ -352,7 +352,18 @@ def serve(home):
             if agent_config
             else None
         )
+        if worker and config.get("agents", {}).get("execution_backend") == "temporal":
+            from .temporal_agent_service import TemporalAgentService
+
+            temporal_config = config["agents"].get("temporal", {})
+            worker = TemporalAgentService(
+                worker,
+                namespace="default",
+                local={**temporal_config, "database": str(home / "temporal/history.sqlite")},
+            )
+            application.state.agent_runtime = worker
         api = uvicorn.Server(
+            # Temporal changes execution plumbing; the HTTP service stays the same.
             uvicorn.Config(
                 application,
                 host="127.0.0.1",

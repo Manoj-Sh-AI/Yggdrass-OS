@@ -77,8 +77,8 @@ class AgentWorker:
         with self.store.database.connect() as db:
             return bool(
                 db.execute(
-                    "SELECT 1 FROM app.background_runs WHERE provider='yggdras-local' AND external_run_id=%s AND cancellation_requested_at IS NOT NULL",
-                    (str(run["id"]),),
+                    "SELECT 1 FROM app.background_runs WHERE provider='yggdras-local' AND external_run_id=%s AND cancellation_requested_at IS NOT NULL UNION ALL SELECT 1 FROM app.agent_executions WHERE run_id=%s AND cancellation_requested",
+                    (str(run["id"]), run["id"]),
                 ).fetchone()
             )
 
@@ -96,11 +96,12 @@ class AgentWorker:
             },
         )
 
-    def deliver(self):
+    def deliver(self, identifier=None):
         """Retry only delivery of saved output; never repeat a paid model call."""
         with self.store.database.connect() as db:
             rows = db.execute(
-                "SELECT a.* FROM app.agent_runs a JOIN app.chat_requests r ON r.id=a.chat_request_id WHERE a.state IN ('completed','failed','cancelled') AND r.state IN ('queued','streaming') ORDER BY a.created_at LIMIT 10"
+                "SELECT a.* FROM app.agent_runs a JOIN app.chat_requests r ON r.id=a.chat_request_id WHERE a.state IN ('completed','failed','cancelled') AND r.state IN ('queued','streaming') AND (%s::uuid IS NULL OR a.id=%s) ORDER BY a.created_at LIMIT 10",
+                (identifier, identifier),
             ).fetchall()
         for run in rows:
             answer = (run["result"] or {}).get("answer", "")
@@ -186,7 +187,7 @@ class AgentWorker:
             pass
         return True
 
-    def chat(self, run, model, budget, cancelled):
+    def chat_input(self, run):
         context = self.receivers.call("chat", "chat/requests/" + str(run["chat_request_id"]))
         current = next(
             (
@@ -250,6 +251,16 @@ class AgentWorker:
                 "timezone": "Do not infer; ask or read the selected record.",
             }
         )
+        return {
+            "request": request,
+            "files": files,
+            "content": current["content"],
+            "history": history,
+        }
+
+    def chat(self, run, model, budget, cancelled):
+        prepared = self.chat_input(run)
+        request, files, history = prepared["request"], prepared["files"], prepared["history"]
         # Tools consume isolated textual requests; image blocks are supported for
         # direct provider calls through an adapter which retains the user content.
         if files:
@@ -261,7 +272,7 @@ class AgentWorker:
                 )
             return AgentResult(
                 self.lia.ask(
-                    current["content"],
+                    prepared["content"],
                     context="This application chat channel is read-only. Direct note changes to Notes; do not imply a write occurred. Recent conversation data:\n"
                     + json.dumps(history[-6:], ensure_ascii=False),
                     model=run["model_id"],

@@ -5,6 +5,7 @@ import json
 from pydantic import Field
 
 from . import agent_skills
+from .agent_effects import Effect, drive
 from .agent_models import AgentError
 from .agent_specialists import AgentResult, Budget, Specialist
 from .planning_models import Model
@@ -23,6 +24,15 @@ class Yggdras:
         )
 
     def run(self, request, *, budget=None, record=None, cancelled=lambda: False):
+        return drive(
+            self.steps(request, budget=budget, cancelled=cancelled),
+            self.model,
+            self.tools,
+            self.lia,
+            record,
+        )
+
+    def steps(self, request, *, budget=None, cancelled=lambda: False):
         budget = budget or Budget()
         proposals, cache = [], {}
         messages = [{"role": "user", "content": request}]
@@ -60,10 +70,10 @@ class Yggdras:
             if cancelled():
                 raise AgentError("This request was cancelled.")
             budget.spend()
-            reply = self.model.complete(system, messages, tools)
+            reply = yield Effect(
+                "model", "yggdras", {"system": system, "messages": messages, "tools": tools}, turn
+            )
             budget.usage(reply)
-            if record:
-                record("yggdras", turn, reply)
             messages.append({"role": "assistant", "content": reply.content})
             calls = [block for block in reply.content if block.get("type") == "tool_use"]
             if not calls:
@@ -83,7 +93,7 @@ class Yggdras:
                     raise AgentError("This request was cancelled.")
                 name = call.get("name")
                 if name == "load_skill":
-                    result = agent_skills.load("yggdras", call["input"])
+                    result = yield Effect("skill", "yggdras", call["input"])
                     results.append(
                         {
                             "type": "tool_result",
@@ -103,10 +113,11 @@ class Yggdras:
                         )
                     if name == "ask_lia":
                         budget.spend()
-                        cache[key] = {"answer": self.lia.ask(body.request), "read_only": True}
+                        answer = yield Effect("lia", "lia", {"question": body.request})
+                        cache[key] = {"answer": answer, "read_only": True}
                     else:
-                        result = Specialist(name, self.model, self.tools).run(
-                            body.request, budget=budget, record=record, cancelled=cancelled
+                        result = yield from Specialist(name, self.model, self.tools).steps(
+                            body.request, budget=budget, cancelled=cancelled
                         )
                         if len(proposals) + len(result.proposals) > 8:
                             raise AgentError("Too many proposed changes in one request.")

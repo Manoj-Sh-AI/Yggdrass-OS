@@ -37,7 +37,7 @@ The Brain-to-reference line is a logical API association, not a PostgreSQL forei
 | Calendar | Shared task blocks and deadlines plus fixed events; timezone/DST validation | Source-note provenance and date-meaning review/promotion |
 | Graph | Existing live Brain viewer | A separately labelled operational overlay for tasks/events/goals and their current states |
 
-Evidence: app/api/migrations/001_application.sql and 002_planning.sql, planning.py, Notes HTTP proxy, and read-only inspection of the sibling Brain migrations/API. Historical Markdown-authoritative D43 is superseded by the rows-as-Brain amendment and the owner's subsequent direction; it is not authority to reintroduce files.
+Evidence: app/api/migrations/001_application.sql and 002_planning.sql, planning.py, Notes HTTP proxy, and read-only inspection of the sibling Brain migrations/API. Historical Markdown-authoritative D45 (the Notes HTTP adapter, formerly numbered D43) is superseded by the rows-as-Brain amendment and the owner's subsequent direction; it is not authority to reintroduce files.
 
 Brain already has `dated_items` kinds event/review/start/end/decided. This is useful existing information but cannot be treated as a list of actionable deadlines. Do not copy or replace that extractor. Lia/Claude owns the semantic interpretation interface.
 

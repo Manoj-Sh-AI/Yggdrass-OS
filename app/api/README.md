@@ -134,3 +134,8 @@ Background runs have a separate queued/running/terminal lifecycle and wall elaps
 Trusted data-only **preview** restores now use administrator-only `pg_restore --disable-triggers` inside the existing single restore transaction. This preserves archived journal rows without creating duplicate history while reloading records. Do not grant trigger-disabling or schema ownership to runtime. A full restore into a new database remains the preferred production recovery path.
 
 Verification: 95 backend tests passed, 2 environment-dependent cases skipped; Ruff checks passed. Coverage includes local FKs, retry/concurrency, stale versions, completion/context retention, journal rollback/permissions, separate background elapsed time, and restoring connections/history without re-emitting journal events. Synthetic fixtures and disposable PostgreSQL only; no live Brain writes.
+## Temporal execution
+
+The owner-approved Temporal execution adapter preserves the existing API and
+agent roles. Setup, endpoint mapping, private local persistence and recovery
+behavior are documented in [temporal-execution.md](temporal-execution.md).

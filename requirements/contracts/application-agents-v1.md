@@ -1,5 +1,12 @@
 # Application agents v1
 
+Execution backend amendment: the owner approved Temporal integration on
+2026-11-15. See [Temporal execution v1](temporal-agent-execution-v1.md) for durable
+step execution, message passing, public traces and recovery. Agent permissions,
+application write rules and Brain boundaries below remain in force. The legacy
+claim/lease adapter remains available for synchronous tests; live Temporal runs
+are excluded from its claims and lease-expiration handling.
+
 Approved scope: Claude first, server-side credentials; independently tested
 specialists followed by Yggdras coordination. No paid development verification.
 

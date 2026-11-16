@@ -1,5 +1,10 @@
 # Local agent layer — delivery and verification
 
+This records the original agent-layer release. The subsequent owner-authorized
+Temporal execution integration is tracked in
+[Temporal execution](temporal-agent-execution.md); it preserves these agent and
+Brain boundaries.
+
 2026-11-15. Active local frontend: **`.next-agents-ready`**. Application schema:
 **001–009**. Web and the existing Windows host share the same backend and records.
 No deployment, new installer, mobile app or memory-engine rewrite was performed.

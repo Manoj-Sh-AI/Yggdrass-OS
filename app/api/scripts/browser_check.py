@@ -1,11 +1,13 @@
 """Run the authenticated production frontend against disposable PostgreSQL."""
 
+import hashlib
 import json
 import os
 import secrets
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 from threading import Thread
@@ -31,7 +33,10 @@ def main():
     runtime.mkdir(exist_ok=True)
     credentials = runtime / "browser-session.json"
     node = shutil.which("node")
-    with isolated_database() as database:
+    with (
+        isolated_database() as database,
+        tempfile.TemporaryDirectory(prefix="yggdras-browser-execution-") as temporary,
+    ):
         password = secrets.token_urlsafe(32)
         api_port = free_port()
         origin = "http://127.0.0.1:3100"
@@ -92,6 +97,7 @@ def main():
             notes=NotesProxy(SyntheticBrain()),
             receiver_tokens=receiver_tokens,
             chat_catalog=catalog,
+            agents_enabled=synthetic_agents,
         )
         if synthetic_agents:
             from synthetic_agents import SyntheticLia, SyntheticModel
@@ -107,6 +113,21 @@ def main():
                 lambda _model: SyntheticModel(),
                 "synthetic-model",
             )
+            if os.environ.get("YGGDRESS_TEMPORAL_AGENTS") == "1":
+                from yggdress_app.temporal_agent_service import TemporalAgentService
+
+                binary = (
+                    runtime / "temporal-tools" / ("temporal.exe" if os.name == "nt" else "temporal")
+                )
+                agent_worker = TemporalAgentService(
+                    agent_worker,
+                    local={
+                        "binary": str(binary),
+                        "sha256": hashlib.sha256(binary.read_bytes()).hexdigest(),
+                        "database": str(Path(temporary) / "history.sqlite"),
+                    },
+                )
+                application.state.agent_runtime = agent_worker
         server = uvicorn.Server(
             uvicorn.Config(
                 application,
@@ -162,6 +183,16 @@ def main():
                         raise RuntimeError("Test services did not become ready.")
                     if agent_worker:
                         agent_worker.start()
+                        if (
+                            os.environ.get("YGGDRESS_TEMPORAL_AGENTS") == "1"
+                            and not agent_worker.available
+                        ):
+                            raise RuntimeError(
+                                "Synthetic execution startup failed: "
+                                + agent_worker.failure_stage
+                                + "/"
+                                + agent_worker.failure_type
+                            )
                     result = subprocess.run(
                         [
                             node,

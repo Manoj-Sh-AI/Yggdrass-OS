@@ -4,6 +4,7 @@ import json
 
 from pydantic import Field
 
+from .agent_effects import Effect, drive
 from .agent_models import AgentError
 from .planning_models import Model, TaskInput, TimeInput
 from .temporal import DateItemInput
@@ -15,6 +16,10 @@ class SourceResult(Model):
 
 
 def interpret(domain, model, handoff, cursor, source_body, budget):
+    return drive(interpret_steps(domain, handoff, cursor, source_body, budget), model, None)
+
+
+def interpret_steps(domain, handoff, cursor, source_body, budget):
     schema = SourceResult.model_json_schema()
     system = (
         f"You are the {domain} application specialist receiving date/context from Lia. "
@@ -39,23 +44,27 @@ def interpret(domain, model, handoff, cursor, source_body, budget):
         )
     )
     budget.spend()
-    reply = model.complete(
-        system,
-        [
-            {
-                "role": "user",
-                "content": json.dumps(
-                    {"handoff": handoff, "cursor": cursor, "source_body": source_body}
-                ),
-            }
-        ],
-        [
-            {
-                "name": "return_interpretations",
-                "description": "Return validated proposed application interpretations; this tool itself does not apply them.",
-                "input_schema": schema,
-            }
-        ],
+    reply = yield Effect(
+        "model",
+        domain,
+        {
+            "system": system,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": json.dumps(
+                        {"handoff": handoff, "cursor": cursor, "source_body": source_body}
+                    ),
+                }
+            ],
+            "tools": [
+                {
+                    "name": "return_interpretations",
+                    "description": "Return validated proposed application interpretations; this tool itself does not apply them.",
+                    "input_schema": schema,
+                }
+            ],
+        },
     )
     budget.usage(reply)
     calls = [item for item in reply.content if item.get("type") == "tool_use"]
