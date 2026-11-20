@@ -15,7 +15,7 @@ from psycopg.conninfo import conninfo_to_dict
 
 from .backup import client_environment, database_backup, fingerprints, fresh_cluster, tool
 from .database import Database
-from .local_runtime import atomic_json, default_home, ensure, pg_start, status
+from .local_runtime import SCHEMAS, atomic_json, default_home, ensure, pg_start, remote, status
 from .runtime_grants import grant_runtime
 from .shared_database import LAYOUT, brain_snapshot, migration_connection
 
@@ -71,10 +71,13 @@ def upgrade(home, build):
     if marker.exists():
         raise RuntimeError("A local upgrade is already marked in progress.")
     stopped = False
+    hosted = remote(config)
+    scope = SCHEMAS if hosted else None  # a hosted database also holds the host's schemas
     try:
-        actual = Path(guard.execute("SHOW data_directory").fetchone()[0]).resolve()
-        if actual != (home / "postgres").resolve():
-            raise RuntimeError("The upgrade target is not the owned application cluster.")
+        if not hosted:
+            actual = Path(guard.execute("SHOW data_directory").fetchone()[0]).resolve()
+            if actual != (home / "postgres").resolve():
+                raise RuntimeError("The upgrade target is not the owned application cluster.")
         namespaces = {row[0] for row in guard.execute("SELECT nspname FROM pg_namespace")}
         shared = config.get("storage_layout") == LAYOUT
         if "app" not in namespaces or ("brain" in namespaces and not shared):
@@ -104,7 +107,7 @@ def upgrade(home, build):
         )
         spec = columns(guard)
         before = projection(guard, spec)
-        brain_before = brain_snapshot(fingerprints(guard)) if shared else None
+        brain_before = brain_snapshot(fingerprints(guard, scope)) if shared else None
         dump = (
             home
             / "backups"
@@ -115,7 +118,7 @@ def upgrade(home, build):
             work = Path(temporary)
             verify = work / "verify"
             verify.mkdir()
-            report = database_backup(config["admin_url"], dump, binary, verify)
+            report = database_backup(config["admin_url"], dump, binary, verify, schemas=scope)
             staged = work / "staged"
             staged.mkdir()
             with fresh_cluster(binary, staged) as destination:
@@ -138,7 +141,7 @@ def upgrade(home, build):
                         raise RuntimeError(
                             "Staged migration changed an existing application value."
                         )
-                    if shared and brain_snapshot(fingerprints(db)) != brain_before:
+                    if shared and brain_snapshot(fingerprints(db, scope)) != brain_before:
                         raise RuntimeError("Staged application migration changed Brain records.")
                     if (
                         not shared
@@ -167,18 +170,21 @@ def upgrade(home, build):
             pass
         stopped = True
         guard.close()
-        for _ in range(240):
-            if not (home / "postgres/postmaster.pid").exists():
-                break
-            time.sleep(0.25)
-        if (home / "postgres/postmaster.pid").exists():
-            raise RuntimeError("The owned application database did not stop cleanly.")
-        pg_start(home, config)
+        if not hosted:  # a hosted database keeps running; only the owned cluster restarts
+            for _ in range(240):
+                if not (home / "postgres/postmaster.pid").exists():
+                    break
+                time.sleep(0.25)
+            if (home / "postgres/postmaster.pid").exists():
+                raise RuntimeError("The owned application database did not stop cleanly.")
+            pg_start(home, config)
+        else:
+            time.sleep(5)  # let the stopped services' connections close
         Database(migration_url).migrate()
         with psycopg.connect(config["admin_url"]) as db:
             if projection(db, spec) != before:
                 raise RuntimeError("Existing application values changed during the upgrade.")
-            if shared and brain_snapshot(fingerprints(db)) != brain_before:
+            if shared and brain_snapshot(fingerprints(db, scope)) != brain_before:
                 raise RuntimeError("Application upgrade changed Brain records.")
             grant_runtime(db, conninfo_to_dict(config["database_url"])["user"])
             versions = [

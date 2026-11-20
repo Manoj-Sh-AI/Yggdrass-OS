@@ -76,14 +76,30 @@ def graph_router(graph, session):
     authenticated = Depends(session)
 
     @router.get("/status")
-    def status(_=authenticated):
+    def status(auth=authenticated):
+        from .mobile_policy import mobile_graph, mobile_restricted
+
+        if mobile_restricted(auth):
+            text = mobile_graph(graph.asset("graph.html")).decode()
+            marker = re.search(r"const\s+DATA\s*=\s*", text)
+            data, _ = json.JSONDecoder().raw_decode(text[marker.end() :])
+            return {
+                "nodes": len(data["nodes"]),
+                "links": len(data["edges"]),
+                "source": "brain-viewer",
+            }
         return graph.status()
 
     @router.get("/assets/{name}")
-    def asset(name: str, _=authenticated):
+    def asset(name: str, auth=authenticated):
         if name not in ASSETS:
             raise NotesError(404, "Unknown graph asset.", "graph_asset")
-        return Response(graph.asset(name), media_type=ASSETS[name])
+        from .mobile_policy import mobile_graph, mobile_restricted
+
+        blob = graph.asset(name)
+        if name == "graph.html" and mobile_restricted(auth):
+            blob = mobile_graph(blob)
+        return Response(blob, media_type=ASSETS[name])
 
     return router
 

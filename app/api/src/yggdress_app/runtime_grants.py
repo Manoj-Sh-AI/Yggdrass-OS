@@ -12,6 +12,7 @@ def grant_runtime(db, role):
     db.execute(sql.SQL("GRANT USAGE ON SCHEMA app TO {}").format(sql.Identifier(role)))
     grants = [
         "SELECT,INSERT,DELETE ON app.sessions",
+        "UPDATE(expires_at) ON app.sessions",
         "SELECT,UPDATE ON app.login_guard",
         "SELECT,INSERT ON app.routines,app.routine_progress,app.tasks",
         "UPDATE(status,progress,started_at,completed_at,updated_at) ON app.routines",
@@ -36,6 +37,9 @@ def grant_runtime(db, role):
         "SELECT,INSERT,UPDATE ON app.agent_executions,app.agent_effects",
         "SELECT,INSERT ON app.yggdras_runs,app.yggdras_feedback,app.notifications",
         "SELECT,INSERT,UPDATE ON app.devices,app.calls,app.call_schedules",
+        "SELECT,INSERT,UPDATE ON app.call_preferences,app.call_events,app.call_delivery,app.voice_worker_lease,app.call_commands,app.call_reviews",
+        "SELECT,INSERT,UPDATE,DELETE ON app.call_briefs",
+        "SELECT,INSERT ON app.item_outcomes",
         "USAGE,SELECT ON ALL SEQUENCES IN SCHEMA app",
     ]
     for grant in grants:

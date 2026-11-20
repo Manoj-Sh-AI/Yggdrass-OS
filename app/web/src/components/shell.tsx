@@ -39,6 +39,8 @@ function Sidebar({ close }: { close: () => void }) {
           ["/notes", "Notes", "NotebookPen"],
           ["/graph", "Graph", "Network"],
           ["/chat", "Chat", "MessageCircle"],
+          ["/connectors", "Connectors", "Plug"],
+          ["/skills", "Skills", "BookOpen"],
           ["/feedback", "Yggdras log", "Activity"],
         ].map(([href, label, icon]) => (
           <Link

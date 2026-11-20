@@ -1,0 +1,51 @@
+/* Connector and skill catalogs: open-air glass cards in a responsive grid. */
+.catalog-page { max-width: 1040px; margin: 0 auto 60px; }
+.catalog-page .page-intro p { max-width: 62ch; margin: 6px 0 0; line-height: 1.55; }
+.catalog-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+.catalog-grid > li { display: flex; }
+.catalog-card { flex: 1; display: flex; flex-direction: column; gap: 14px; padding: 20px 22px; border-radius: 18px; margin: 0; }
+.catalog-card-button { width: 100%; text-align: left; color: var(--text); border: 1px solid var(--glass-border); cursor: pointer; transition-property: background-color, border-color; transition-duration: 160ms; }
+.catalog-card-button:hover { border-color: #dde5d98c; background-color: rgba(44, 50, 51, 0.9); }
+.catalog-card-head { display: flex; align-items: center; gap: 12px; }
+.catalog-icon { display: grid; place-items: center; width: 36px; height: 36px; flex-shrink: 0; border-radius: 11px; border: 1px solid #eef2e526; background: #ffffff08; color: var(--accent); }
+.catalog-card-title { flex: 1; min-width: 0; }
+.catalog-card-title h2 { margin: 0; font-size: 16px; font-weight: 400; letter-spacing: -0.2px; overflow-wrap: anywhere; }
+.catalog-card-title small { color: var(--muted); font-size: 12px; }
+.catalog-arrow { color: var(--muted); }
+.catalog-description { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
+.catalog-facts { margin: 0; display: grid; gap: 10px; }
+.catalog-facts > div { display: grid; grid-template-columns: 92px 1fr; gap: 10px; align-items: baseline; }
+.catalog-facts dt { color: var(--muted); font-size: 12px; }
+.catalog-facts dd { margin: 0; font-size: 13px; }
+.catalog-page .tag, .catalog-skill-detail .tag { color: #e2e7dd; border-color: #e6eee230; background: #ffffff0a; font-size: 11px; }
+.catalog-linked { gap: 4px; align-items: center; }
+.catalog-refused { margin: 0; color: #ffb4ae; font-size: 12px; }
+.catalog-problem { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px 18px; margin-bottom: 14px; color: #ffcfc9; }
+.catalog-skill-detail h3 { font-size: 13px; font-weight: 500; color: var(--muted); margin: 18px 0 8px; }
+.catalog-instructions { margin: 0; max-height: 60vh; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font-family: var(--font-sans); font-size: 13px; line-height: 1.65; padding: 14px 16px; border-radius: 12px; border: 1px solid #e6eee21c; background: #ffffff05; }
+@media (max-width: 760px) {
+  .catalog-grid { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .catalog-card { padding: 18px; border-radius: 16px; }
+  .catalog-facts > div { grid-template-columns: 80px 1fr; }
+}
+/* The connector directory: search, groups, status and actions. */
+.catalog-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin: 0 0 18px; flex-wrap: wrap; }
+.catalog-search { display: flex; align-items: center; gap: 9px; flex: 1 1 260px; max-width: 420px; padding: 0 13px; height: 42px; border-radius: 12px; border: 1px solid #eef2e538; background: #252f30ab; color: var(--muted); }
+.catalog-search input { flex: 1; min-width: 0; border: 0; background: none !important; padding: 0; height: 100%; }
+.catalog-group { margin-bottom: 26px; }
+.catalog-group-title { font-size: 13px; font-weight: 500; color: var(--muted); letter-spacing: 0.3px; margin: 0 4px 10px; text-shadow: 0 1px 9px #14292c; }
+.catalog-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; }
+.catalog-actions .button { min-height: 38px; padding: 8px 15px; font-size: 13px; }
+.catalog-note { margin: 0; font-size: 12px; color: var(--muted); line-height: 1.55; }
+.catalog-setup { font-size: 12px; color: var(--muted); line-height: 1.6; padding: 12px 14px; border-radius: 12px; border: 1px solid #e6eee21c; background: #ffffff05; }
+.catalog-setup p { margin: 0 0 6px; }
+.catalog-setup p:last-child { margin: 0; }
+.catalog-setup code { display: inline-block; margin: 2px 4px 2px 0; padding: 1px 6px; border-radius: 5px; background: #ffffff0d; color: var(--text); font-size: 11px; overflow-wrap: anywhere; }
+.catalog-status-connected { border-color: #dce2cf5c; }
+.catalog-status-unavailable { opacity: 0.72; }
+.catalog-waiting { margin: 0 0 16px; padding: 11px 15px; border-radius: 12px; border: 1px solid #dce2cf40; background: rgba(32, 34, 35, 0.84); font-size: 13px; }
+@media (max-width: 760px) { .catalog-search { max-width: none; } }
+/* App logos: a light tile so dark marks (GitHub, Notion) stay visible on the glass. */
+.catalog-logo { display: grid; place-items: center; width: 38px; height: 38px; flex-shrink: 0; border-radius: 11px; background: #f6f5ed; box-shadow: inset 0 0 0 1px #00000014; }
+.catalog-logo-letter { color: #fff; font-weight: 700; font-size: 17px; box-shadow: none; }
+@media (forced-colors: active) { .catalog-logo { background: Canvas; } }

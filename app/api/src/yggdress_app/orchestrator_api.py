@@ -20,9 +20,10 @@ import time
 import uuid
 from collections import OrderedDict
 from datetime import UTC, datetime, timedelta
+from html import escape
 
-from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import StreamingResponse
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi.responses import HTMLResponse, StreamingResponse
 from psycopg.types.json import Jsonb
 from pydantic import BaseModel, Field
 
@@ -198,9 +199,14 @@ class Yggdrass:
         self.hub, self.cards = Hub(), Cards()
         self.pusher = pusher or voice.SimulatedPusher()
         self.sensitive, self.skills, self.registry = sensitive, registry(), default_registry()
+        from . import connector_mcp
+        from .connector_auth import Auth, Vault
+        from .connector_directory import APPS
         from .connectors import Catalog, default_path, mcp_lister
 
-        self.catalog = Catalog(default_path(), self.registry, mcp_lister)
+        self.catalog = Catalog(default_path(), self.registry, mcp_lister, apps=APPS,
+                               auth=Auth(Vault()), mcp_list=connector_mcp.list_tools,
+                               mcp_call=connector_mcp.call_tool)  # fmt: skip
         self.connector_issue = ""
         try:
             self.catalog.refresh()  # enabled connectors' tools, under their skill domains
@@ -213,7 +219,8 @@ class Yggdrass:
         started = time.monotonic()
         run_id = uuid.uuid4()
         request = intake(source, payload)
-        host = Host(self.skills, self.registry, handlers={"search_brain": self.search_brain},
+        handlers = {**self.catalog.handlers(), "search_brain": self.search_brain}
+        host = Host(self.skills, self.registry, handlers=handlers,
                     on_card=lambda card: self._card(session, card, emit),
                     lessons=self.lessons)  # fmt: skip
         ygg = Yggdras(self.model, host, _Lia(self.notes))
@@ -290,6 +297,17 @@ class Yggdrass:
             with self.database.connect() as db:
                 result = self.app_tools.execute(proposal, uuid.uuid4(), db)
             return {"done": True, "undo": False, "result": result}
+        if self.catalog.owns(tool):  # a connected app's write, approved by Manoj just now
+            from .connector_auth import AuthError
+            from .connector_mcp import MCPError
+
+            try:
+                out = self.catalog.call(tool, v)
+            except (AuthError, MCPError) as exc:
+                raise HTTPException(502, str(exc)) from None
+            if out["error"]:
+                raise HTTPException(502, out["text"][:500] or "The app refused the change.")
+            return {"done": True, "undo": False, "result": out["text"][:2000]}
         if tool == "send_email":
             raise HTTPException(409, "No email connector is switched on, so nothing was sent.")
         raise HTTPException(409, "This action is not connected yet; nothing changed.")
@@ -360,6 +378,22 @@ class _Lia:
         )
 
 
+CALLBACK = "/api/backend/connectors/callback"  # the web proxy forwards it to /v1/connectors
+
+
+def _page(title: str, text: str, status: int = 200) -> HTMLResponse:
+    """A plain page for the browser tab that finished a sign-in. Never shows a token."""
+    return HTMLResponse(
+        "<!doctype html><meta charset='utf-8'><meta name='viewport' content='width=device-"
+        "width'><title>Yggdras</title><body style='font-family:system-ui;background:#232b2d;"
+        "color:#f6f5ed;display:grid;place-items:center;min-height:90vh;margin:0'><main "
+        "style='max-width:440px;padding:28px;border:1px solid #eef2e538;border-radius:20px;"
+        f"background:#202223'><h1 style='font-weight:400'>{escape(title)}</h1><p style="
+        f"'color:#cbd2cc;line-height:1.6'>{escape(text)}</p></main>",
+        status_code=status,
+    )
+
+
 def sse(event: dict) -> bytes:
     return f"data: {json.dumps(event, ensure_ascii=False, default=str)}\n\n".encode()
 
@@ -367,6 +401,7 @@ def sse(event: dict) -> bytes:
 def yggdras_routers(state: Yggdrass, session) -> list[APIRouter]:
     r = APIRouter(prefix="/v1/yggdras")
     calls = APIRouter(prefix="/v1/calls")
+    callback = APIRouter(prefix="/v1/connectors")
     authenticated = Depends(session)
 
     def key(request: Request) -> str:
@@ -490,6 +525,23 @@ def yggdras_routers(state: Yggdrass, session) -> list[APIRouter]:
     def connectors(_=authenticated):
         return state.catalog.view()
 
+    @r.get("/skills")
+    def skills(_=authenticated):
+        """The skill catalog: frontmatter only, the same cards Yggdras sees before loading."""
+        return [{"name": c.name, "description": c.description, "domains": list(c.domains)}
+                for _n, c in sorted(state.skills.cards.items())]  # fmt: skip
+
+    @r.get("/skills/{name}")
+    def skill(name: str, _=authenticated):
+        """One skill with its instructions. Read-only: skills change through pull requests."""
+        card = state.skills.cards.get(name)
+        if card is None:
+            raise HTTPException(404, f"No skill named {name!r}.")
+        # Read the file directly so a person browsing does not count as a task loading it.
+        text = card.path.read_text(encoding="utf-8").split("---", 2)[2].strip()
+        return {"name": card.name, "description": card.description,
+                "domains": list(card.domains), "instructions": text}  # fmt: skip
+
     @r.post("/connectors/{name}")
     def switch(name: str, body: Switch, _=authenticated):
         from .connectors import ConnectorError
@@ -498,6 +550,50 @@ def yggdras_routers(state: Yggdrass, session) -> list[APIRouter]:
             return state.catalog.switch(name, body.enabled)
         except ConnectorError as exc:
             raise HTTPException(409, str(exc)) from None
+
+    @r.post("/connectors/{name}/connect")
+    def connect(name: str, request: Request, _=authenticated):
+        """The address to open for signing in to one app. The laptop only (mobile gate)."""
+        from .connector_auth import AuthError
+        from .connectors import ConnectorError
+
+        origin = request.headers.get("origin", "").rstrip("/")
+        if not origin.startswith(("http://127.0.0.1", "http://localhost", "https://")):
+            raise HTTPException(400, "Open Connectors from the Yggdras app to connect.")
+        try:
+            url = state.catalog.connect_url(name, f"{origin}{CALLBACK}")
+        except (AuthError, ConnectorError) as exc:
+            raise HTTPException(409, str(exc)) from None
+        return {"authorize_url": url}
+
+    @r.post("/connectors/{name}/disconnect")
+    def disconnect(name: str, _=authenticated):
+        from .connectors import ConnectorError
+
+        try:
+            return state.catalog.disconnect(name)
+        except ConnectorError as exc:
+            raise HTTPException(409, str(exc)) from None
+
+    @callback.get("/callback", response_class=HTMLResponse)
+    def returned(state_: str = Query("", alias="state"), code: str = "", error: str = ""):
+        """Where the app sends Manoj back after sign-in. No session cookie reaches here (it
+        often opens in the system browser), so the one-time `state` is the proof."""
+        from .connector_auth import AuthError
+        from .connector_mcp import MCPError
+
+        if error or not code:
+            return _page("Not connected", "The sign-in was cancelled or refused. Nothing "
+                         "was saved. Return to Yggdras and try again.", 400)  # fmt: skip
+        try:
+            view = state.catalog.connected(state_, code)
+        except AuthError as exc:
+            return _page("Not connected", str(exc), 400)
+        except MCPError as exc:
+            return _page("Signed in, but", f"{exc} Try switching the app on again later.", 502)
+        return _page(f"{view['title']} is connected",
+                     f"Yggdras can now use {view['tool_count']} of its tools. Anything that "
+                     "changes data still waits for your approval. You can close this tab.")  # fmt: skip
 
     @calls.post("")
     def call_yggdras(_=authenticated):
@@ -560,7 +656,9 @@ def yggdras_routers(state: Yggdrass, session) -> list[APIRouter]:
                               "ended_at FROM app.calls ORDER BY created_at DESC LIMIT 50").fetchall()  # fmt: skip
         return [dict(row) for row in rows]
 
-    return [r, calls]
+    # The durable, device-bound call service owns /calls. Keep these legacy
+    # handlers unreachable so no client can bypass its lifecycle protections.
+    return [r, callback]
 
 
 def due_rings(state: Yggdrass) -> int:

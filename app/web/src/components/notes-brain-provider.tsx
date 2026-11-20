@@ -3,12 +3,14 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
   type ReactNode,
 } from "react";
 import { ApiError } from "@/lib/api";
+import { reconcileNoteCatalogue } from "@/lib/notes-catalogue";
 import { draftRepository } from "@/lib/development-drafts";
 import type { BrainNote } from "@/lib/brain-adapter";
 import {
@@ -76,6 +78,7 @@ export function NotesBrainProvider({
     reject: (e: unknown) => void;
   } | null>(null);
   const searchSequence = useRef(0);
+  const latestQuery = useRef("");
   const initialNote = useRef(initialNoteId);
   const selectionSequence = useRef(0);
   const selected = useRef(noteId);
@@ -106,6 +109,7 @@ export function NotesBrainProvider({
   }, []);
   const searchBrain = useCallback(
     async (q: string) => {
+      latestQuery.current = q;
       const seq = ++searchSequence.current;
       let initialLoaded = false;
       try {
@@ -148,17 +152,9 @@ export function NotesBrainProvider({
           }
         }
         setSearchResultIds(q ? result.notes.map((n) => n.id) : null);
-        setNotes((old) => [
-          ...result.notes.map(
-            (n) => old.find((v) => v.id === n.id && v.fetchToken) || n,
-          ),
-          ...old.filter(
-            (n) =>
-              (n.newNote && !result.notes.some((r) => r.id === n.id)) ||
-              (n.id === selected.current &&
-                !result.notes.some((r) => r.id === n.id)),
-          ),
-        ]);
+        setNotes((old) =>
+          reconcileNoteCatalogue(old, result.notes, q, selected.current),
+        );
         setCanUndo(result.canUndo);
         setAvailable(true);
         setError("");
@@ -173,6 +169,18 @@ export function NotesBrainProvider({
     },
     [report, accept],
   );
+  useEffect(() => {
+    const refresh = () => {
+      if (document.visibilityState === "visible")
+        void searchBrain(latestQuery.current);
+    };
+    window.addEventListener("yggdras:foreground", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      window.removeEventListener("yggdras:foreground", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, [searchBrain]);
   const reloadNote = useCallback(
     async (id: string) => {
       try {

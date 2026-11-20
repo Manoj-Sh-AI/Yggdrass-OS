@@ -118,7 +118,7 @@ class ExecutionStore:
     def state(self, identifier, state):
         with self.database.connect() as db:
             db.execute(
-                "UPDATE app.agent_executions SET state=%s,version=version+1,updated_at=now() WHERE run_id=%s AND state<>%s",
+                "UPDATE app.agent_executions SET state=%s,version=version+1,updated_at=now() WHERE run_id=%s AND state<>%s AND state NOT IN ('failed','cancelled','completed')",
                 (state, identifier, state),
             )
 

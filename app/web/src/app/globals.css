@@ -4253,3 +4253,5 @@ kbd {
     gap: 12px;
   }
 }
+/* Native phone tabs provide their own navigation around the shared web editors. */
+.native-workspace { min-height: 100dvh; padding: 16px; background: #0c1716; color: #f0f7f2; }

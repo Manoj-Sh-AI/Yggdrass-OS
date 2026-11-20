@@ -4,16 +4,23 @@ import hashlib
 import json
 import secrets
 import shutil
+import sys
+from dataclasses import replace
 from pathlib import Path
+from types import SimpleNamespace
 
 import psycopg
 import pytest
+from fastapi.testclient import TestClient
+from postgres_fixture import isolated_database
 from psycopg import sql
 from psycopg.conninfo import conninfo_to_dict, make_conninfo
 
 from yggdress_app import local_consolidation
+from yggdress_app.application import create_app
 from yggdress_app.backup import fingerprints
 from yggdress_app.database import Database
+from yggdress_app.notes_proxy import NotesError
 from yggdress_app.shared_database import (
     LAYOUT,
     ConsolidationError,
@@ -21,15 +28,32 @@ from yggdress_app.shared_database import (
     brain_snapshot,
     migration_connection,
     prepare,
+    text_settings,
     verify_boundaries,
 )
+
+
+@pytest.fixture(scope="module")
+def postgres():
+    # Other modules intentionally create extra backup schemas in their shared
+    # fixture. A consolidation source must be an isolated app-only database.
+    with isolated_database() as value:
+        yield value
 
 
 @pytest.fixture
 def brain_source(postgres):
     name = "yggdress_test_brain_" + secrets.token_hex(5)
     with psycopg.connect(postgres["admin"], autocommit=True) as admin:
-        admin.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(name)))
+        if sys.platform == "win32":
+            admin.execute(
+                sql.SQL(
+                    "CREATE DATABASE {} TEMPLATE template0 ENCODING 'UTF8' "
+                    "LC_COLLATE 'English_India.1252' LC_CTYPE 'English_India.1252'"
+                ).format(sql.Identifier(name))
+            )
+        else:
+            admin.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(name)))
     url = make_conninfo(postgres["admin"], dbname=name)
     with psycopg.connect(url) as db:
         db.execute("CREATE SCHEMA brain")
@@ -64,6 +88,7 @@ def test_copy_preserves_data_definitions_roles_and_future_migration_boundaries(
         app_before = fingerprints(db)
     with psycopg.connect(brain_source) as db:
         brain_before = fingerprints(db)
+        brain_text = text_settings(db)
     copied = None
     home = tmp_path / "runtime"
     archive = home / "backups" / "copy"
@@ -96,6 +121,8 @@ def test_copy_preserves_data_definitions_roles_and_future_migration_boundaries(
         )
         with psycopg.connect(copied["admin_url"]) as db:
             assert brain_snapshot(fingerprints(db)) == brain_snapshot(brain_before)
+            assert text_settings(db) == brain_text
+            assert _source_guard(db, "brain", shared=True) == brain_before
         with psycopg.connect(postgres["admin"]) as db:
             assert fingerprints(db) == app_before
         with psycopg.connect(brain_source) as db:
@@ -133,6 +160,50 @@ def test_copy_preserves_data_definitions_roles_and_future_migration_boundaries(
         assert (home / "runtime.json").read_bytes() == config_raw
         assert brain_env.read_bytes() == brain_raw
         assert json.loads((home / "consolidation.json").read_text())["state"] == "rolled_back"
+        # A healthy website with an unreadable Brain is also a failed cutover.
+        (home / "consolidation.json").write_text(
+            json.dumps({"archive": str(archive), "state": "prepared"})
+        )
+        (home / "maintenance.json").write_text("{}")
+        monkeypatch.setattr(local_consolidation, "ensure", lambda _: {"ready": True})
+
+        def unavailable(*_):
+            raise NotesError(503, "Synthetic unavailable Brain")
+
+        monkeypatch.setattr(
+            local_consolidation, "brain_http", lambda _: SimpleNamespace(call=unavailable)
+        )
+        monkeypatch.setattr(local_consolidation.time, "sleep", lambda _: None)
+        with pytest.raises(ConsolidationError, match="Brain API did not become readable"):
+            local_consolidation.activate_local(home)
+        assert (home / "runtime.json").read_bytes() == config_raw
+        assert brain_env.read_bytes() == brain_raw
+        # Exercise application writes under the Brain's locale in the combined
+        # database, then reload through a fresh service instance.
+        _, _, password, settings = setup
+        settings = replace(settings, database_url=copied["database_url"])
+        client = TestClient(create_app(settings), base_url=settings.origin)
+        login = client.post(
+            "/v1/auth/login",
+            json={"password": password},
+            headers={"Origin": settings.origin, "X-Yggdress-Login": "1"},
+        )
+        assert login.status_code == 200
+        client.headers.update({"Origin": settings.origin, "X-Yggdress-CSRF": login.json()["csrf"]})
+        response = client.post(
+            "/v1/application/tasks",
+            json={"title": "Übung – synthetic task", "area": "work", "date": "2030-03-01"},
+        )
+        assert response.status_code == 201, response.text
+        task = response.json()["task"]
+        assert task["title"] == "\u00dcbung \u2013 synthetic task"
+        assert (
+            client.patch("/v1/application/tasks/" + task["id"], json={"done": True}).status_code
+            == 200
+        )
+        reloaded = TestClient(create_app(settings), base_url=settings.origin)
+        reloaded.cookies.update(client.cookies)
+        assert reloaded.get("/v1/application/tasks").json()["tasks"][0]["done"]
         with psycopg.connect(copied["database_url"]) as db:
             assert db.execute("SELECT count(*) FROM app.chat_conversations").fetchone()[0] >= 0
             with pytest.raises(psycopg.errors.InsufficientPrivilege):

@@ -25,7 +25,13 @@ class Database:
         )
         with self.connect() as db:
             db.execute("SELECT pg_advisory_xact_lock(719218401)")
-            db.execute("CREATE SCHEMA IF NOT EXISTS app")
+            # Even IF NOT EXISTS requires database-wide CREATE. A shared-database
+            # migrator owns the existing app schema without that broader grant.
+            if (
+                db.execute("SELECT to_regnamespace('app') AS namespace").fetchone()["namespace"]
+                is None
+            ):
+                db.execute("CREATE SCHEMA app")
             db.execute(
                 "CREATE TABLE IF NOT EXISTS app.schema_migrations (version text PRIMARY KEY, checksum text NOT NULL, applied_at timestamptz NOT NULL DEFAULT now())"
             )

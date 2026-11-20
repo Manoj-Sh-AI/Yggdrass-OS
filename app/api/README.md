@@ -1,6 +1,9 @@
 # Yggdress application service
 
-Separate FastAPI/psycopg backend for one owner. It never imports Lia or directly reads Markdown files or the Brain database. Only application-owned SQL is implemented. The Notes-only HTTP proxy below connects to the published Brain API; other pages retain their synthetic/unavailable Brain port.
+FastAPI/psycopg backend for one owner. Application SQL owns only the `app` schema;
+the Notes HTTP proxy connects to the existing Brain API. A verified shared local
+database may contain both `app` and `brain`, with separate roles and schema ownership.
+The application runtime and migrator cannot read or modify Brain tables.
 
 The approved local runtime now also runs the [application agent layer](../../planning/agent-layer-verification.md).
 Its Task/Calendar tools use this application's database; a separate process calls
@@ -12,7 +15,12 @@ Private provider credentials stay server-side. No paid inference is used by test
 
 ## Private local setup
 
-Install Python 3.12+, uv and PostgreSQL. From this directory run `uv sync --locked`. PostgreSQL should use a **separate application database**, with distinct migration and runtime login roles. Do not point either connection at the Brain database or use a superuser as the runtime role.
+Install Python 3.12+, uv and PostgreSQL. From this directory run `uv sync --locked`.
+Initial provisioning uses an application-only database with distinct migration and
+runtime roles. Existing local databases can be consolidated explicitly using
+[the shared-database procedure](../../planning/shared-postgresql.md). Do not merely
+point an existing runtime at Brain using its owner credentials. Never use a
+superuser as a service runtime role.
 
 Create the database/roles through your local PostgreSQL administration tooling. Choose credentials privately, using the tool's password prompt; never put them in a committed script or terminal command. The migration role owns the application database/schema; the runtime role is NOSUPERUSER, NOCREATEDB, NOCREATEROLE, NOINHERIT, owns no objects and has no Brain grants. Revoke PUBLIC database CONNECT and public-schema CREATE, then grant database CONNECT to those two roles.
 

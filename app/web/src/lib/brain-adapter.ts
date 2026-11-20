@@ -6,6 +6,7 @@ import {
   type NoteDocument,
 } from "./note-document";
 export type BrainNote = Note & {
+  sensitive?: boolean;
   version: string;
   shelfId: string;
   backlinks: string[];

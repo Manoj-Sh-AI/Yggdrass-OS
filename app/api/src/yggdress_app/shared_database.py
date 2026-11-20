@@ -16,7 +16,6 @@ from psycopg import sql
 from psycopg.conninfo import conninfo_to_dict, make_conninfo
 
 from .backup import BackupError, client_environment, database_backup, fingerprints, tool
-from .runtime_grants import grant_runtime
 
 LAYOUT = "shared-schemas-v1"
 
@@ -45,7 +44,7 @@ def schema_digest(url, namespace, binary_dir):
     return hashlib.sha256(normalized.encode()).hexdigest()
 
 
-def _source_guard(connection, namespace):
+def _source_guard(connection, namespace, shared=False):
     """Lock existing tables, reject unsupported contents and ambiguous ownership."""
     connection.execute("SET lock_timeout='5s'")
     namespaces = {
@@ -55,7 +54,7 @@ def _source_guard(connection, namespace):
             "AND nspname<>'information_schema'"
         )
     }
-    if namespaces != {namespace, "public"}:
+    if namespaces != ({"app", "brain", "public"} if shared else {namespace, "public"}):
         raise ConsolidationError(
             "Source schemas do not match the selected database responsibility."
         )
@@ -85,7 +84,26 @@ def _source_guard(connection, namespace):
     )
     # A source must not change shape while it is exported. An unknown external
     # writer/migrator is a reason to stop, not something to terminate silently.
-    return fingerprints(connection)
+    return namespace_snapshot(fingerprints(connection), namespace)
+
+
+def namespace_snapshot(snapshot, namespace):
+    return {
+        "tables": {k: v for k, v in snapshot["tables"].items() if k.startswith(namespace + ".")},
+        "sequences": {
+            k: v for k, v in snapshot["sequences"].items() if k.startswith(namespace + ".")
+        },
+        "large_objects": snapshot["large_objects"],
+    }
+
+
+def text_settings(connection):
+    row = connection.execute(
+        "SELECT pg_encoding_to_char(encoding),datlocprovider,datcollate,datctype,"
+        "current_setting('default_text_search_config') "
+        "FROM pg_database WHERE datname=current_database()"
+    ).fetchone()
+    return dict(zip(("encoding", "provider", "collate", "ctype", "text_search"), row, strict=True))
 
 
 def _combined_snapshot(application, brain):
@@ -107,7 +125,9 @@ def verify_boundaries(admin_url, application_url, migration_url, brain_url):
     for value in (application_url, migration_url, brain_url):
         connection = conninfo_to_dict(value)
         if any(destination.get(k) != connection.get(k) for k in ("host", "port", "dbname")):
-            raise ConsolidationError("Service connections must use the same database server and name.")
+            raise ConsolidationError(
+                "Service connections must use the same database server and name."
+            )
     roles = {
         "application": conninfo_to_dict(application_url)["user"],
         "migration": conninfo_to_dict(migration_url)["user"],
@@ -166,7 +186,71 @@ def verify_boundaries(admin_url, application_url, migration_url, brain_url):
     return True
 
 
-def prepare(application_admin, application_runtime, brain_source, binary_dir, archive, name):
+def copy_runtime_grants(source, target, role):
+    """Preserve installed ACLs, independent of uninstalled checkout migrations."""
+    objects = source.execute(
+        "SELECT c.relkind,c.relname,a.privilege_type,a.is_grantable "
+        "FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace "
+        "CROSS JOIN LATERAL aclexplode(c.relacl) a "
+        "WHERE n.nspname='app' AND c.relkind IN ('r','p','v','m','S') "
+        "AND a.grantee=(SELECT oid FROM pg_roles WHERE rolname=%s)",
+        (role,),
+    ).fetchall()
+    allowed = {
+        "SELECT",
+        "INSERT",
+        "UPDATE",
+        "DELETE",
+        "TRUNCATE",
+        "REFERENCES",
+        "TRIGGER",
+        "USAGE",
+        "MAINTAIN",
+    }
+    for kind, name, privilege, grantable in objects:
+        if grantable or privilege not in allowed:
+            raise ConsolidationError("Unexpected runtime privileges require review.")
+        target.execute(
+            sql.SQL("GRANT {} ON {} {} TO {}").format(
+                sql.SQL(privilege),
+                sql.SQL("SEQUENCE" if kind == "S" else "TABLE"),
+                sql.Identifier("app", name),
+                sql.Identifier(role),
+            )
+        )
+    columns = source.execute(
+        "SELECT c.relname,t.attname,a.privilege_type,a.is_grantable "
+        "FROM pg_attribute t JOIN pg_class c ON c.oid=t.attrelid "
+        "JOIN pg_namespace n ON n.oid=c.relnamespace "
+        "CROSS JOIN LATERAL aclexplode(t.attacl) a WHERE n.nspname='app' "
+        "AND t.attnum>0 AND NOT t.attisdropped "
+        "AND a.grantee=(SELECT oid FROM pg_roles WHERE rolname=%s)",
+        (role,),
+    ).fetchall()
+    for table, column, privilege, grantable in columns:
+        if grantable or privilege not in allowed:
+            raise ConsolidationError("Unexpected column privileges require review.")
+        target.execute(
+            sql.SQL("GRANT {} ({}) ON TABLE {} TO {}").format(
+                sql.SQL(privilege),
+                sql.Identifier(column),
+                sql.Identifier("app", table),
+                sql.Identifier(role),
+            )
+        )
+    target.execute(sql.SQL("GRANT USAGE ON SCHEMA app TO {}").format(sql.Identifier(role)))
+
+
+def prepare(
+    application_admin,
+    application_runtime,
+    brain_source,
+    binary_dir,
+    archive,
+    name,
+    shared_source=False,
+    destination_text_settings=None,
+):
     """Create a verified combined copy. Does not activate services or delete databases.
 
     Caller must stop application workers and external Brain writers first. Table
@@ -185,8 +269,16 @@ def prepare(application_admin, application_runtime, brain_source, binary_dir, ar
     with ExitStack() as stack:
         app = stack.enter_context(psycopg.connect(application_admin, connect_timeout=10))
         brain = stack.enter_context(psycopg.connect(brain_source, connect_timeout=10))
-        app_before = _source_guard(app, "app")
-        brain_before = _source_guard(brain, "brain")
+        app_before = _source_guard(app, "app", shared_source)
+        brain_before = _source_guard(brain, "brain", shared_source)
+        app_text, brain_text = text_settings(app), text_settings(brain)
+        desired_text = destination_text_settings or brain_text
+        if desired_text["provider"] != "c" or app_text["encoding"] != desired_text["encoding"]:
+            raise ConsolidationError(
+                "Database locale/encoding requires a supported libc migration."
+            )
+        if app_text["text_search"] != desired_text["text_search"]:
+            raise ConsolidationError("Text-search defaults differ and require an explicit design.")
         if app.execute(
             "SELECT EXISTS(SELECT 1 FROM app.agent_runs WHERE state='running') "
             "OR EXISTS(SELECT 1 FROM app.chat_requests WHERE state IN ('queued','streaming'))"
@@ -205,8 +297,8 @@ def prepare(application_admin, application_runtime, brain_source, binary_dir, ar
                 source, archive / (label + ".dump"), Path(binary_dir), workspace
             )
         if (
-            reports["application"]["snapshot"] != app_before
-            or reports["brain"]["snapshot"] != brain_before
+            namespace_snapshot(reports["application"]["snapshot"], "app") != app_before
+            or namespace_snapshot(reports["brain"]["snapshot"], "brain") != brain_before
         ):
             raise ConsolidationError("A source changed while preparing its backup.")
         suffix = secrets.token_hex(5)
@@ -228,11 +320,28 @@ def prepare(application_admin, application_runtime, brain_source, binary_dir, ar
                     ).format(sql.Identifier(role), sql.Literal(passwords[namespace]))
                 )
             admin.execute(
-                sql.SQL("CREATE DATABASE {} TEMPLATE template0").format(sql.Identifier(name))
+                sql.SQL(
+                    "CREATE DATABASE {} TEMPLATE template0 LOCALE_PROVIDER libc "
+                    "ENCODING {} LC_COLLATE {} LC_CTYPE {}"
+                ).format(
+                    sql.Identifier(name),
+                    sql.Literal(desired_text["encoding"]),
+                    sql.Literal(desired_text["collate"]),
+                    sql.Literal(desired_text["ctype"]),
+                )
+            )
+            admin.execute(
+                sql.SQL("ALTER DATABASE {} SET default_text_search_config TO {}").format(
+                    sql.Identifier(name), sql.Literal(desired_text["text_search"])
+                )
             )
         runtime = make_conninfo(application_runtime, dbname=name)
         runtime_role = conninfo_to_dict(runtime)["user"]
         with psycopg.connect(target_admin) as admin:
+            if text_settings(admin) != desired_text:
+                raise ConsolidationError(
+                    "Destination text settings differ from the Brain baseline."
+                )
             admin.execute(
                 sql.SQL("REVOKE ALL ON DATABASE {} FROM PUBLIC").format(sql.Identifier(name))
             )
@@ -316,7 +425,7 @@ def prepare(application_admin, application_runtime, brain_source, binary_dir, ar
                             "REVOKE ALL ON " + kind + " FROM PUBLIC"
                         ).format(sql.Identifier(role), identifier)
                     )
-            grant_runtime(admin, runtime_role)
+            copy_runtime_grants(app, admin, runtime_role)
             admin.execute(
                 sql.SQL("GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA app TO {}").format(
                     sql.Identifier(runtime_role)
@@ -338,7 +447,10 @@ def prepare(application_admin, application_runtime, brain_source, binary_dir, ar
         )
         if reports["combined"]["snapshot"] != expected:
             raise BackupError("Combined backup did not preserve the source snapshots.")
-        if fingerprints(app) != app_before or fingerprints(brain) != brain_before:
+        if (
+            namespace_snapshot(fingerprints(app), "app") != app_before
+            or namespace_snapshot(fingerprints(brain), "brain") != brain_before
+        ):
             raise ConsolidationError("Source records changed during consolidation.")
         return {
             "storage_layout": LAYOUT,
@@ -353,6 +465,8 @@ def prepare(application_admin, application_runtime, brain_source, binary_dir, ar
                 "source_records_preserved": True,
                 "role_boundaries_verified": True,
                 "schema_hashes": {"app": app_schema, "brain": brain_schema},
+                "text_settings": desired_text,
+                "original_application_text_settings": app_text,
                 "snapshot": expected,
                 "archive": str(archive),
                 "activated": False,

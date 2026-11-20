@@ -29,6 +29,9 @@ class Proposal(Model):
         "availability.create",
         "availability.update",
         "availability.remove",
+        "block.create",
+        "block.update",
+        "block.remove",
     ]
     id: UUID | None = None
     version: int | None = Field(default=None, ge=1, strict=True)
@@ -53,7 +56,7 @@ class Proposal(Model):
             kind = self.operation.partition(".")[0]
             if (
                 create
-                and (kind in ("event", "availability") or self.data.get("deadline_at"))
+                and (kind in ("event", "availability", "block") or self.data.get("deadline_at"))
                 and not self.data.get("timezone")
             ):
                 raise ValueError("An exact time requires an explicit named timezone.")
@@ -61,7 +64,19 @@ class Proposal(Model):
                 TaskInput if kind == "task" else DateItemInput if kind == "date_item" else TimeInput
             )
             body = schema.model_validate(self.data)
-            if isinstance(body, TimeInput) and (
+            if kind == "block":
+                # A task's time block: the task it belongs to, an exact interval, no title.
+                if (
+                    (create and not body.task_id)
+                    or (not create and body.task_id)
+                    or (body.end is None and body.duration_minutes is None)
+                    or body.start.tzinfo is None
+                    or (body.end is not None and body.end.tzinfo is None)
+                ):
+                    raise ValueError(
+                        "A task block needs its task and an exact offset-aware interval."
+                    )
+            elif isinstance(body, TimeInput) and (
                 not body.title
                 or body.task_id
                 or (body.end is None and body.duration_minutes is None)
@@ -77,6 +92,13 @@ class ReadQuery(Model):
     start: date | None = None
     end: date | None = None
     limit: int = Field(default=20, ge=1, le=40, strict=True)
+    free_minutes: int | None = Field(
+        default=None,
+        ge=5,
+        le=600,
+        description="Calendar only: also return free slots of at least this many minutes "
+        "between start and end (computed from events, task blocks and routines; 08:00-22:00).",
+    )
 
     @model_validator(mode="after")
     def interval(self):
@@ -92,6 +114,7 @@ TABLES = {
     "event": "calendar_events",
     "date_item": "calendar_date_items",
     "availability": "availability_windows",
+    "block": "execution_blocks",
 }
 
 
@@ -102,10 +125,13 @@ class ApplicationTools:
     def read(self, agent, values):
         body = ReadQuery.model_validate(values)
         result = {}
-        kinds = ["task"] if agent == "tasks" else ["event", "date_item", "availability"]
+        kinds = ["task"] if agent == "tasks" else ["event", "date_item", "availability", "block"]
         with self.database.connect() as db:
             db.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
             for kind in kinds:
+                if kind == "block":
+                    result["block"] = self.blocks(db, body)
+                    continue
                 table = TABLES[kind]
                 temporal = {
                     "task": "COALESCE(due_date,(deadline_at AT TIME ZONE timezone)::date)",
@@ -152,7 +178,35 @@ class ApplicationTools:
                     "items": jsonable_encoder(rows[: body.limit]),
                     "truncated": len(rows) > body.limit,
                 }
+        if agent != "tasks" and body.free_minutes and body.start:
+            from .free_slots import free_slots
+
+            with self.database.connect() as db:
+                result["free_slots"] = free_slots(
+                    db, body.start, (body.end - body.start).days + 1, body.free_minutes
+                )
         return result
+
+    def blocks(self, db, body):
+        """Task time blocks (when a task is scheduled), so they can be moved like events."""
+        rows = db.execute(
+            "SELECT b.id,b.version,b.task_id,t.title,t.priority,b.starts_at,b.ends_at,b.timezone,"
+            "b.cancelled FROM app.execution_blocks b JOIN app.tasks t ON t.id=b.task_id "
+            "WHERE NOT b.cancelled AND NOT t.done AND (%s='' OR t.title ILIKE %s ESCAPE '\\') "
+            "AND (%s::date IS NULL OR (b.starts_at<((%s::date+1)::timestamp AT TIME ZONE b.timezone) "
+            "AND b.ends_at>(%s::date::timestamp AT TIME ZONE b.timezone))) ORDER BY b.starts_at LIMIT %s",
+            (
+                body.query,
+                "%"
+                + body.query.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+                + "%",
+                body.start,
+                body.end,
+                body.start,
+                body.limit + 1,
+            ),
+        ).fetchall()
+        return {"items": jsonable_encoder(rows[: body.limit]), "truncated": len(rows) > body.limit}
 
     def inspect(self, proposal, db=None):
         """Read current values; approvals never authorize an unknown target version."""
@@ -204,6 +258,12 @@ class ApplicationTools:
             ]
         elif kind == "date_item":
             baseline = {key: current[key] for key in DateItemInput.model_fields if key in current}
+        elif kind == "block":
+            baseline = {
+                "start": current["starts_at"],
+                "end": current["ends_at"],
+                "timezone": current["timezone"],
+            }
         else:
             baseline = {
                 "title": current["title"],

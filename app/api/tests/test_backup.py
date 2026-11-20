@@ -159,3 +159,26 @@ def test_tool_error_does_not_expose_stderr_or_credentials(monkeypatch):
     with pytest.raises(BackupError) as error:
         tool(Path("pg_dump"), ["--format=custom"])
     assert "sensitive" not in str(error.value)
+
+
+def test_initdb_error_excerpt_shows_only_error_lines_with_private_paths_hidden(monkeypatch):
+    private = r"C:\Users\someone\work\restore-cluster"
+
+    class Result:
+        returncode = 1
+        stdout = b"The files belonging to this database system will be owned by user someone."
+        stderr = (
+            b"running bootstrap script ... chatter\n"
+            b'initdb: error: could not create directory "C:/Users/someone/work/restore-cluster"'
+            b": Permission denied\n"
+            b"initdb: hint: check the folder\n"
+        )
+
+    monkeypatch.setattr("subprocess.run", lambda *_args, **_kwargs: Result())
+    with pytest.raises(BackupError) as error:
+        tool(Path("initdb"), ["-D", private], explain={private: "<restore-cluster>"})
+    message = str(error.value)
+    assert "exit code 1" in message
+    assert 'could not create directory "<restore-cluster>": Permission denied' in message
+    assert "initdb: hint: check the folder" in message
+    assert "someone" not in message and "chatter" not in message

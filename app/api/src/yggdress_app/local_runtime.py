@@ -89,6 +89,77 @@ def pg_binary(config, name):
     return Path(config["postgres_bin"]) / (name + (".exe" if os.name == "nt" else ""))
 
 
+SCHEMAS = ["app", "brain"]  # the app's own schemas on a hosted database
+NIGHTLY_KEEP = 14  # days of nightly backups kept on the laptop
+NIGHTLY_HOUR = 3  # local hour after which the nightly backup runs
+
+
+def remote(config) -> bool:
+    """The database is hosted (Supabase) instead of the laptop's own PostgreSQL."""
+    return config.get("database_host") == "remote"
+
+
+def db_start(home, config):
+    """Start the owned local cluster, or for a hosted database only verify it answers and
+    holds the app's schemas (it is never started, stopped or adopted from here)."""
+    if not remote(config):
+        pg_start(home, config)
+        return
+    with psycopg.connect(config["admin_url"], connect_timeout=15) as db:
+        found = {
+            r[0]
+            for r in db.execute(
+                "SELECT nspname FROM pg_namespace WHERE nspname = ANY(%s)", (SCHEMAS,)
+            )
+        }
+    if found != set(SCHEMAS):
+        raise RuntimeError("The hosted database does not hold the application schemas.")
+
+
+def nightly_backup(home, config, now=None):
+    """One verified backup per night, kept NIGHTLY_KEEP days (Supabase Free has no
+    downloadable backups). Returns the new file, or None when today's exists."""
+    import tempfile
+    from datetime import datetime, timedelta
+
+    from .backup import database_backup
+
+    now = now or datetime.now()
+    folder = home / "backups"
+    folder.mkdir(exist_ok=True)
+    target = folder / f"nightly-{now:%Y%m%d}.dump"
+    if now.hour < NIGHTLY_HOUR or target.exists():
+        return None
+    with tempfile.TemporaryDirectory(prefix="yggdress-nightly-") as work:
+        partial = folder / (target.name + ".incomplete")
+        partial.unlink(missing_ok=True)
+        report = database_backup(
+            config["admin_url"],
+            partial,
+            Path(config["postgres_bin"]),
+            Path(work),
+            schemas=SCHEMAS if remote(config) else None,
+        )
+        partial.rename(target)
+    atomic_json(folder / "nightly-latest.json", {"file": target.name, **report})
+    oldest = (now - timedelta(days=NIGHTLY_KEEP)).strftime("%Y%m%d")
+    for old in folder.glob("nightly-*.dump"):
+        if old.stem.removeprefix("nightly-") < oldest:
+            old.unlink()
+    return target
+
+
+def backup_quietly(home, config):
+    """The nightly backup never stops the app; a failure is logged by its type only (its
+    message could hold a connection string)."""
+    try:
+        made = nightly_backup(home, config)
+        if made:
+            print(f"Nightly backup verified: {made.name}", flush=True)
+    except Exception as exc:  # noqa: BLE001
+        print(f"Nightly backup failed: {type(exc).__name__}", flush=True)
+
+
 def pg_start(home, config):
     data = home / "postgres"
     if not data.is_dir() or data.is_symlink() or data.is_junction():
@@ -307,10 +378,40 @@ def start_brain_if_needed(config, home):
         )
 
 
+def stop_tree(process):
+    """Stop a child and everything it started. On Windows a .venv python.exe is a launcher
+    that starts the real interpreter as its own child, so terminate() alone left it running."""
+    if process is None or process.poll() is not None:
+        return
+    try:
+        if os.name == "nt":
+            subprocess.run(
+                ["taskkill", "/T", "/F", "/PID", str(process.pid)],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                timeout=30,
+                check=False,
+                creationflags=subprocess.CREATE_NO_WINDOW,
+            )
+        else:
+            process.terminate()
+        process.wait(timeout=15)
+    except Exception:  # noqa: BLE001 -- the remaining shutdown steps must still run
+        with contextlib.suppress(Exception):
+            process.kill()
+
+
+def quietly(step, *args):
+    try:
+        step(*args)
+    except Exception:  # noqa: BLE001, S110 -- one failed shutdown step never skips the rest
+        pass
+
+
 def serve(home):
     config = json.loads((home / "runtime.json").read_text(encoding="utf-8"))
     with manager_lock(home):
-        pg_start(home, config)
+        db_start(home, config)
         # Fail before starting children if another application occupies our origin.
         frontend_port = urlsplit(config["origin"]).port
         if urlsplit(config["origin"]).hostname != "127.0.0.1" or not frontend_port:
@@ -328,8 +429,16 @@ def serve(home):
             for scope in ("chat", "note_signals", "workflow_dispatch", "workflow", "background"):
                 receiver_tokens.setdefault(scope, secrets.token_urlsafe(40))
         settings = Settings(
-            config["database_url"], config["password_hash"], config["origin"], True, "unavailable"
+            config["database_url"],
+            config["password_hash"],
+            config["origin"],
+            True,
+            "unavailable",
+            mobile_sensitive_access=config.get("mobile_sensitive_access") is True,
         )
+        from .voice_runtime import load_voice_environment
+
+        load_voice_environment(config["brain_env"])
         application = create_app(
             settings,
             notes=NotesProxy(brain_http(config["brain_env"])),
@@ -339,6 +448,16 @@ def serve(home):
             agents_ready=bool(agent_config),
             agent_issue=agent_issue,
         )
+        if agent_config:
+            from .call_briefs import BriefPreparer
+
+            # Voice reminders: Lia is asked in the background 10 minutes before each item.
+            application.state.calls.briefs = BriefPreparer(
+                Database(config["database_url"]),
+                agent_config["lia"],
+                agent_config["model_factory"],
+                notes=application.state.notes_proxy,
+            )
         worker = (
             AgentWorker(
                 application.state.agent_store,
@@ -360,6 +479,7 @@ def serve(home):
                 worker,
                 namespace="default",
                 local={**temporal_config, "database": str(home / "temporal/history.sqlite")},
+                calls=application.state.calls,
             )
             application.state.agent_runtime = worker
         api = uvicorn.Server(
@@ -380,6 +500,23 @@ def serve(home):
             "YGGDRESS_BUILD_DIR": config["build_dir"],
         }
         frontend = None
+        voice_process = None
+        if application.state.calls.mode == "live":
+            from .voice import LIVEKIT_VARS, missing
+
+            if not missing(LIVEKIT_VARS):
+                with (home / "voice-worker.log").open("a", encoding="utf-8") as voice_log:
+                    voice_process = subprocess.Popen(
+                        [sys.executable, "-m", "yggdress_app.voice_worker", "--home", str(home)],
+                        env={
+                            **clean_environment(),
+                            "PYTHONPATH": str(Path(__file__).resolve().parents[1]),
+                        },
+                        stdin=subprocess.DEVNULL,
+                        stdout=voice_log,
+                        stderr=voice_log,
+                        creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
+                    )
         state = {
             "pid": os.getpid(),
             "control_port": control_port,
@@ -463,28 +600,33 @@ def serve(home):
                     time.sleep(0.25)
                 else:
                     raise RuntimeError("Application startup timed out.")
+                backups, checked = None, 0.0
                 while not stopping and frontend.poll() is None and api_thread.is_alive():
+                    if time.monotonic() - checked > 600 and not (backups and backups.is_alive()):
+                        checked = time.monotonic()
+                        backups = Thread(target=backup_quietly, args=(home, config), daemon=True)
+                        backups.start()
                     time.sleep(0.5)
         finally:
+            # Every step runs even if an earlier one fails: a half-stopped app left the brain
+            # service, voice worker and web server running and blocked the next start.
+            stop_tree(voice_process)
             if worker:
-                worker.stop()
+                quietly(worker.stop)
             state["ready"] = False
-            atomic_json(home / "service.json", state)
-            if frontend and frontend.poll() is None:
-                frontend.terminate()
-                frontend.wait(timeout=15)
+            quietly(atomic_json, home / "service.json", state)
+            stop_tree(frontend)
             api.should_exit = True
             api_thread.join(timeout=15)
-            control.shutdown()
-            if brain_process and brain_process.poll() is None:
-                brain_process.terminate()
-                brain_process.wait(timeout=15)
-            # PostgreSQL is durable and owned here. A fast stop flushes WAL safely.
-            tool(
-                pg_binary(config, "pg_ctl"),
-                ["-D", home / "postgres", "-m", "fast", "-w", "stop"],
-                capture=False,
-            )
+            quietly(control.shutdown)
+            stop_tree(brain_process)
+            if not remote(config):
+                # PostgreSQL is durable and owned here. A fast stop flushes WAL safely.
+                tool(
+                    pg_binary(config, "pg_ctl"),
+                    ["-D", home / "postgres", "-m", "fast", "-w", "stop"],
+                    capture=False,
+                )
 
 
 def status(home):

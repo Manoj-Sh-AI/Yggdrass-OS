@@ -3,6 +3,8 @@ notifications and calls. Scripted model, fake brain API (invented notes), real t
 
 import json
 from datetime import UTC, datetime, timedelta
+from urllib.parse import parse_qs, urlsplit
+from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
@@ -12,7 +14,7 @@ from yggdress_app import voice
 from yggdress_app.agent_tools import ApplicationTools
 from yggdress_app.application import create_app
 from yggdress_app.database import Database
-from yggdress_app.orchestrator_api import Yggdrass, due_rings
+from yggdress_app.orchestrator_api import Yggdrass
 
 FACT = {"facts": [{"fact": "Ada's pottery studio moved to Hafenstrasse.", "about": "pottery"}]}
 
@@ -181,43 +183,51 @@ def test_notifications_focus_rule_and_a_reply_reenters_at_intake(env):
 
 
 def test_a_call_rings_every_window_and_the_first_answer_takes_it(env):
-    client, state, *_ = env
-    _, window_a = state.hub.subscribe()
-    _, window_b = state.hub.subscribe()
-    call = client.post("/v1/calls/ring", json={"reason": "German starts in 10 minutes"}).json()
+    client, *_ = env
+    service = client.app.state.calls
+    service.mode = "simulated"
+    command = lambda device: {"key": str(uuid4()), "device": device}
+    call = client.post("/v1/calls/simulation", json=command("fixture")).json()
+    window_a = client.get("/v1/calls").json()
+    window_b = client.get("/v1/calls").json()
     assert (
-        window_a.get_nowait()["state"] == "ringing" and window_b.get_nowait()["state"] == "ringing"
+        window_a["events"][-1]["state"] == "ringing"
+        and window_b["events"][-1]["state"] == "ringing"
     )
-    first = client.post(f"/v1/calls/{call['id']}/answer", json={"device": "web-tab-1"})
-    second = client.post(f"/v1/calls/{call['id']}/answer", json={"device": "pixel"})
-    assert first.status_code == 200 and first.json()["simulated"] is True  # no LiveKit keys: free
+    first = client.post(f"/v1/calls/{call['id']}/answer", json=command("web-tab-1"))
+    second = client.post(f"/v1/calls/{call['id']}/answer", json=command("phone"))
+    assert first.status_code == 200 and first.json()["simulated"]
     assert second.status_code == 409
-    stop = [
-        e for e in (window_a.get_nowait(), window_a.get_nowait()) if e.get("state") == "answered"
-    ]
-    assert stop and stop[0]["answered_by"] == "web-tab-1"  # the others stop ringing
-    assert client.post(
-        f"/v1/calls/{call['id']}/end", json={"summary": "Agreed: German now."}
-    ).json()["ended"]
-    assert client.get("/v1/calls").json()[0]["summary"] == "Agreed: German now."
+    for cursor in [window_a["cursor"], window_b["cursor"]]:
+        observed = client.get(f"/v1/calls?after={cursor}").json()
+        assert observed["events"][-1]["state"] == "answered"
+        assert observed["calls"][0]["answered_by"] == "web-tab-1"
+    assert client.post(f"/v1/calls/{call['id']}/end", json=command("web-tab-1")).json()["ended"]
+    assert client.get("/v1/calls").json()["calls"][0]["state"] == "ended"
 
 
 def test_call_me_later_and_give_me_five_minutes_ring_when_due(env):
-    client, state, _, _, _, database = env
-    later = client.post("/v1/calls/schedule", json={"minutes": 5, "reason": "Snoozed check-in"})
+    client, *_ = env
+    service = client.app.state.calls
+    service.mode = "simulated"
+    clock = [datetime(2030, 4, 10, 10, tzinfo=UTC)]
+    service.now = lambda: clock[0]
+    later = client.post("/v1/calls/schedule", json={"key": str(uuid4()), "minutes": 5})
     assert later.json()["kind"] == "snooze"
-    at = (datetime.now(UTC) + timedelta(hours=2)).isoformat()
     assert (
-        client.post("/v1/calls/schedule", json={"at": at, "reason": "6pm"}).json()["kind"]
+        client.post(
+            "/v1/calls/schedule",
+            json={"key": str(uuid4()), "at": (clock[0] + timedelta(hours=2)).isoformat()},
+        ).json()["kind"]
         == "one_off"
     )
     assert client.post("/v1/calls/schedule", json={}).status_code == 422
-    assert due_rings(state) == 0  # nothing due yet
-    with database.connect() as db:
-        db.execute("UPDATE app.call_schedules SET due_at = now() - interval '1 minute' "
-                   "WHERE kind='snooze'")  # fmt: skip
-    assert due_rings(state) == 1 and due_rings(state) == 0  # rings once
-    assert client.get("/v1/calls").json()[0]["reason"] == "Snoozed check-in"
+    service.tick()
+    assert client.get("/v1/calls").json()["calls"] == []
+    clock[0] += timedelta(minutes=5)
+    service.tick()
+    service.tick()
+    assert len(client.get("/v1/calls").json()["calls"]) == 1
 
 
 def test_livekit_tokens_are_signed_locally_and_never_need_a_client_secret(monkeypatch):
@@ -227,10 +237,92 @@ def test_livekit_tokens_are_signed_locally_and_never_need_a_client_secret(monkey
 
     decoded = json.loads(base64.urlsafe_b64decode(claims + "=="))
     assert decoded["video"] == {"room": "room-1", "roomJoin": True, "canPublish": True,
-                                "canSubscribe": True} and decoded["exp"] == 1600  # fmt: skip
+                                "canSubscribe": True, "canPublishData":False,"canPublishSources":["microphone"]} and decoded["exp"] == 1600  # fmt: skip
     for name in voice.LIVEKIT_VARS:
         monkeypatch.delenv(name, raising=False)
     assert voice.join("manoj", "r").simulated is True
     assert voice.missing(voice.LIVEKIT_VARS) == list(voice.LIVEKIT_VARS)
     with pytest.raises(voice.PushNotConfigured):
         voice.IosVoipPusher().send({"id": "x", "platform": "ios"}, {})
+
+
+def test_the_skill_catalog_lists_cards_and_reads_one_without_counting_a_load(env):
+    client, state, *_ = env
+    before = state.skills.loads.get("send-email", 0)
+    listed = client.get("/v1/yggdras/skills").json()
+    names = [s["name"] for s in listed]
+    assert names == sorted(state.skills.cards) and "send-email" in names
+    email = next(s for s in listed if s["name"] == "send-email")
+    assert email["domains"] == ["email"] and email["description"]
+    one = client.get("/v1/yggdras/skills/send-email").json()
+    assert one["instructions"] and not one["instructions"].startswith("---")
+    assert state.skills.loads.get("send-email", 0) == before
+    assert client.get("/v1/yggdras/skills/no-such-skill").status_code == 404
+
+
+def test_the_catalogs_need_a_session(env):
+    client, *_ = env
+    anonymous = TestClient(client.app, base_url=str(client.base_url))
+    for path in ("/v1/yggdras/skills", "/v1/yggdras/skills/send-email", "/v1/yggdras/connectors"):
+        assert anonymous.get(path).status_code == 401
+
+
+def test_the_connector_directory_connects_an_app_and_the_return_page_holds_no_token(env):
+    import httpx
+    from test_connector_directory import NOTES, TOOLS, FakeOAuth
+
+    from yggdress_app.connector_auth import Auth, Vault
+
+    client, state, *_ = env
+    listed = {c["name"]: c for c in client.get("/v1/yggdras/connectors").json()}
+    assert len(listed) >= 21 and listed["gmail"]["status"] == "needs_setup"
+    assert listed["notion"]["status"] == "available"
+    assert listed["microsoft-365"]["status"] == "unavailable"
+    oauth = FakeOAuth()
+    cat = state.catalog
+    cat.apps, cat.mcp_list = (NOTES,), (lambda url, token: TOOLS)
+    cat.auth = Auth(Vault(cat.auth.vault.folder), http=httpx.Client(
+        transport=httpx.MockTransport(oauth)), environ={})  # fmt: skip
+    started = client.post("/v1/yggdras/connectors/notes-app/connect").json()
+    query = parse_qs(urlsplit(started["authorize_url"]).query)
+    assert query["redirect_uri"] == [f"{client.headers['Origin']}/api/backend/connectors/callback"]
+    page = client.get("/v1/connectors/callback",
+                      params={"state": query["state"][0], "code": "invented-code"})  # fmt: skip
+    assert page.status_code == 200 and "Notes App is connected" in page.text
+    assert "invented-access" not in page.text
+    view = client.get("/v1/yggdras/connectors").json()[0]
+    assert view["status"] == "connected" and view["tool_count"] == 2
+    again = client.get("/v1/connectors/callback",
+                       params={"state": query["state"][0], "code": "invented-code"})  # fmt: skip
+    assert again.status_code == 400 and "already used" in again.text
+    gone = client.post("/v1/yggdras/connectors/notes-app/disconnect").json()
+    assert gone["status"] == "available"
+    assert client.post("/v1/yggdras/connectors/microsoft-365/connect").status_code == 409
+
+
+def test_a_connected_apps_result_answers_the_task_and_is_never_stored(env):
+    from test_connector_directory import NOTES, TOOLS
+
+    client, state, model, _, _, database = env
+    cat = state.catalog
+    cat.apps = (NOTES,)
+    cat.auth.vault.update(NOTES.id, tokens={"access": "invented", "refresh": "", "expires":
+                                            9999999999}, enabled=True, tools=TOOLS)  # fmt: skip
+    cat.mcp_call = lambda url, token, name, args: {"error": False, "truncated": False,
+                                                   "text": "INVENTED-PAGE-CONTENT"}  # fmt: skip
+    cat.refresh()
+    script(model, router=[use("route", {"kind": "single"})],
+           yggdras=[use("load_skill", {"name": "triage-inbox"}, "u1"),
+                    use("notes-app__search", {"q": "pottery"}, "u2"),
+                    say("Found it.")],
+           notice=[use("offer_facts", {"facts": []})])  # fmt: skip
+    with client.stream("POST", "/v1/yggdras/requests", json={"text": "Find pottery."}) as r:
+        got = events(r)
+    assert "Found it." in "".join(e.get("delta", "") for e in got)
+    with database.connect() as db:
+        rows = [json.dumps(dict(r), default=str) for r in
+                db.execute("SELECT * FROM app.yggdras_runs").fetchall()]  # fmt: skip
+        rows += [json.dumps(dict(r), default=str) for r in
+                 db.execute("SELECT * FROM app.yggdras_feedback").fetchall()]  # fmt: skip
+    assert rows and not any("INVENTED-PAGE-CONTENT" in row for row in rows)
+    assert any("notes-app__search" in row for row in rows)  # the tool name is logged, not data

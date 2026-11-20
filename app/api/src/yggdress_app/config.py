@@ -10,6 +10,7 @@ class Settings:
     origin: str
     local_http: bool = False
     brain_mode: str = "mock"
+    mobile_sensitive_access: bool = False
 
     @classmethod
     def environment(cls):
@@ -19,6 +20,7 @@ class Settings:
             os.environ.get("YGGDRESS_ORIGIN", ""),
             os.environ.get("YGGDRESS_LOCAL_HTTP") == "1",
             os.environ.get("YGGDRESS_BRAIN_MODE", "mock"),
+            os.environ.get("YGGDRESS_MOBILE_SENSITIVE_ACCESS") == "1",
         )
         settings.validate()
         return settings
@@ -47,5 +49,7 @@ class Settings:
             self.local_http and origin.hostname in ("127.0.0.1", "localhost", "::1")
         ):
             raise ValueError("HTTP sessions are permitted only for loopback development.")
+        if type(self.mobile_sensitive_access) is not bool:
+            raise ValueError("Mobile sensitive access requires an explicit owner setting.")
         if self.brain_mode not in ("mock", "unavailable"):
             raise ValueError("Real Brain integration is blocked pending Claude's contract.")

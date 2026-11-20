@@ -160,8 +160,11 @@ namespace YggdrasDesktop {
                     view.CoreWebView2.PermissionRequested += (sender, args) => {
                         // Calls with Yggdras need the microphone: granted to the app's own origin only.
                         if (args.PermissionKind == CoreWebView2PermissionKind.Microphone && Local(args.Uri)) { args.State = CoreWebView2PermissionState.Allow; return; }
-                        if (args.PermissionKind != CoreWebView2PermissionKind.Geolocation) args.State = CoreWebView2PermissionState.Deny;
+                        // Never save a refusal: a saved Deny stops this handler from being asked again.
+                        if (args.PermissionKind != CoreWebView2PermissionKind.Geolocation) { args.SavesInProfile = false; args.State = CoreWebView2PermissionState.Deny; }
                     };
+                    // An older build saved a microphone Deny in this profile; replace it for our own origin.
+                    view.CoreWebView2.Profile.SetPermissionStateAsync(CoreWebView2PermissionKind.Microphone, origin.GetLeftPart(UriPartial.Authority), CoreWebView2PermissionState.Allow);
                     view.CoreWebView2.ProcessFailed += (sender, args) => {
                         ShowFailure("The display stopped. Reopen your workspace; saved data is preserved.");
                         if (args.ProcessFailedKind == CoreWebView2ProcessFailedKind.BrowserProcessExited) {

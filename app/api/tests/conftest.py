@@ -10,6 +10,13 @@ from yggdress_app.database import Database
 from yggdress_app.security import password_hash
 
 
+@pytest.fixture(autouse=True)
+def private_connector_vault(tmp_path, monkeypatch):
+    """Tests never read or write the real connector vault or connector file on this laptop."""
+    monkeypatch.setenv("YGGDRESS_CONNECTOR_STORE", str(tmp_path / "connector-vault"))
+    monkeypatch.setenv("YGGDRESS_CONNECTORS_FILE", str(tmp_path / "connectors.json"))
+
+
 @pytest.fixture(scope="session")
 def postgres():
     with isolated_database() as database:

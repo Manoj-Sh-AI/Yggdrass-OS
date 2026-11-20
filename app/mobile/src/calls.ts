@@ -1,65 +1,112 @@
-/** Ringing the phone. One interface, one implementation per platform.
- *
- * Android: the app API sends a high-priority FCM data message (FIREBASE_* keys on the server);
- * the app shows a full-screen call notification on a dedicated channel, Answer/Decline. That
- * needs a development build (not Expo Go) and google-services.json from Firebase.
- *
- * iPhone: deferred (Manoj, 2026-11-16). PushKit + CallKit go behind the same interface later.
- */
+/** Push contains a call UUID, state and expiry; never private note content. */
 import * as Notifications from "expo-notifications";
-import { Platform } from "react-native";
-import { api } from "./api";
-
-export interface Ringer {
-  /** Ask for permissions, register this phone with the app API for pushes. */
-  register(): Promise<void>;
-  /** Show the incoming-call screen for a ring from the app API. */
-  ring(call: { id: string; reason: string }): Promise<void>;
-  stop(callId: string): Promise<void>;
-}
-
-const CHANNEL = "yggdras-calls";
-
-class AndroidRinger implements Ringer {
-  async register() {
-    await Notifications.setNotificationChannelAsync(CHANNEL, {
-      name: "Calls from Yggdras",
-      importance: Notifications.AndroidImportance.MAX,
-      vibrationPattern: [0, 600, 400, 600],
-      lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
-      bypassDnd: false,
+import * as SecureStore from "expo-secure-store";
+import Constants from "expo-constants";
+import { NativeModules, Platform } from "react-native";
+import { api, request } from "./api";
+let registration = Promise.resolve();
+async function rememberToken(value: string, explicit = false) {
+  const operation = registration
+    .catch(() => {})
+    .then(async () => {
+      if (!explicit && await SecureStore.getItemAsync("yggdras.push.enabled") !== "true") return;
+      const previous = await SecureStore.getItemAsync("yggdras.push.device");
+      const next = (await api.registerDevice(value)) as { id: string };
+      await SecureStore.setItemAsync("yggdras.push.device", next.id);
+      if (previous && previous !== next.id)
+        await request(`calls/devices/${previous}`, { method: "DELETE" });
     });
-    const { granted } = await Notifications.requestPermissionsAsync();
-    if (!granted) throw new Error("Notifications are off, so Yggdras can't ring this phone.");
-    const token = await Notifications.getDevicePushTokenAsync(); // the FCM token
-    await api.registerDevice(String(token.data));
-  }
-
-  async ring(call: { id: string; reason: string }) {
-    await Notifications.scheduleNotificationAsync({
-      identifier: `call-${call.id}`,
-      content: {
-        title: "Yggdras is calling",
-        body: call.reason,
-        data: { callId: call.id },
-        categoryIdentifier: "call",
-        sticky: true,
+  registration = operation;
+  return operation;
+}
+export const ringer = {
+  async register() {
+    if (Platform.OS !== "android")
+      throw new Error("iPhone calling is deferred.");
+    if (!Constants.expoConfig?.extra?.firebaseConfigured)
+      throw new Error("Firebase is not configured in this Android build yet.");
+    // The native side owns the call channel (custom chime, Do Not Disturb respected).
+    NativeModules.YggdrasCalls?.ensureCallChannel();
+    if (!(await Notifications.requestPermissionsAsync()).granted)
+      throw new Error(
+        "Notifications are off. Enable them in Android settings when you want incoming calls.",
+      );
+    await Notifications.setNotificationCategoryAsync("yggdras-call", [
+      {
+        identifier: "answer",
+        buttonTitle: "Answer",
+        options: { opensAppToForeground: true },
       },
-      trigger: { channelId: CHANNEL, seconds: 1 },
-    });
-  }
-
+      {
+        identifier: "decline",
+        buttonTitle: "Decline",
+        options: { opensAppToForeground: true },
+      },
+    ]);
+    const token = await Notifications.getDevicePushTokenAsync();
+    await rememberToken(String(token.data), true);
+    await SecureStore.setItemAsync("yggdras.push.enabled", "true");
+  },
+  async disable() {
+    await SecureStore.deleteItemAsync("yggdras.push.enabled");
+    await registration.catch(() => {});
+    const id = await SecureStore.getItemAsync("yggdras.push.device");
+    if (id) await request(`calls/devices/${id}`, { method: "DELETE" });
+    await SecureStore.deleteItemAsync("yggdras.push.enabled");
+    await SecureStore.deleteItemAsync("yggdras.push.device");
+  },
   async stop(callId: string) {
+    NativeModules.YggdrasCalls?.cancelCallNotification(callId);
     await Notifications.dismissNotificationAsync(`call-${callId}`);
-  }
-}
-
-class IosRinger implements Ringer {
-  async register() {
-    throw new Error("iPhone calls are not built yet (PushKit/CallKit, deferred).");
-  }
-  async ring() {}
-  async stop() {}
-}
-
-export const ringer: Ringer = Platform.OS === "ios" ? new IosRinger() : new AndroidRinger();
+  },
+  listen(update: (url?: string) => void) {
+    const token = Notifications.addPushTokenListener((value) => {
+      void SecureStore.getItemAsync("yggdras.push.enabled")
+        .then((enabled) => {
+          if (enabled === "true") return rememberToken(String(value.data));
+        })
+        .catch(() => {});
+    });
+    const received = Notifications.addNotificationReceivedListener(() =>
+      update(),
+    );
+    const response = Notifications.addNotificationResponseReceivedListener(
+      (value) => {
+        const id = value.notification.request.content.data?.callId;
+        const action = value.actionIdentifier;
+        if (
+          typeof id === "string" &&
+          /^[a-f0-9-]{36}$/i.test(id) &&
+          ["answer", "decline"].includes(action)
+        )
+          update(`yggdras://calls/${id}?action=${action}`);
+      },
+    );
+    if (Platform.OS === "android") NativeModules.YggdrasCalls?.ensureCallChannel();
+    void ringer.reconcile().catch(() => {});
+    return () => {
+      token.remove();
+      received.remove();
+      response.remove();
+    };
+  },
+  async reconcile() {
+    if (await SecureStore.getItemAsync("yggdras.push.enabled") === "true" && (await Notifications.getPermissionsAsync()).granted && Constants.expoConfig?.extra?.firebaseConfigured) {
+      const value=await Notifications.getDevicePushTokenAsync();await rememberToken(String(value.data));
+    }
+  },
+  /** Ring with the Yggdras chime while the app is open (skipped if a push is already ringing). */
+  ringInApp(callId: string, expiresAt: string) {
+    const at = Date.parse(expiresAt);
+    if (Platform.OS === "android" && Number.isFinite(at))
+      NativeModules.YggdrasCalls?.ringInApp(callId, at);
+  },
+  /** Show the app over the lock screen only while an answered call is open. */
+  overLockScreen(value: boolean) {
+    if (Platform.OS === "android")
+      NativeModules.YggdrasCalls?.showOverLockScreen(value);
+  },
+  fullScreenSettings() {
+    NativeModules.YggdrasCalls?.openFullScreenSettings();
+  },
+};

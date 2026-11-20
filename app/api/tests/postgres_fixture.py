@@ -103,6 +103,7 @@ def isolated_database():
                 )
                 for grants in (
                     "GRANT SELECT,INSERT,DELETE ON app.sessions TO {}",
+                    "GRANT UPDATE(expires_at) ON app.sessions TO {}",
                     "GRANT SELECT,UPDATE ON app.login_guard TO {}",
                     "GRANT SELECT,INSERT ON app.routines,app.routine_progress,app.tasks TO {}",
                     "GRANT UPDATE(status,progress,started_at,completed_at,updated_at) ON app.routines TO {}",
@@ -127,6 +128,9 @@ def isolated_database():
                     "GRANT SELECT,INSERT,UPDATE ON app.agent_executions,app.agent_effects TO {}",
                     "GRANT SELECT,INSERT ON app.yggdras_runs,app.yggdras_feedback,app.notifications TO {}",
                     "GRANT SELECT,INSERT,UPDATE ON app.devices,app.calls,app.call_schedules TO {}",
+                    "GRANT SELECT,INSERT,UPDATE ON app.call_preferences,app.call_events,app.call_delivery,app.voice_worker_lease,app.call_commands,app.call_reviews TO {}",
+                    "GRANT SELECT,INSERT,UPDATE,DELETE ON app.call_briefs TO {}",
+                    "GRANT SELECT,INSERT ON app.item_outcomes TO {}",
                 ):
                     connection.execute(sql.SQL(grants).format(sql.Identifier(role)))
                 connection.execute(

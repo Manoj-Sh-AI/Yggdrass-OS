@@ -1,72 +1,289 @@
-/** The app API, as the phone uses it. The phone never holds a database, brain or LiveKit
- * secret: it signs in like the web app and receives short-lived room access per call. */
+/** Only application session credentials live on the phone. Never Brain/provider keys. */
 import * as SecureStore from "expo-secure-store";
+import { randomUUID } from "expo-crypto";
+import type {
+  Session,
+  Snapshot,
+  Conversation,
+  History,
+  Catalog,
+  Attachment,
+} from "./types";
 
-export type Card = {
-  id: string;
-  title: string;
-  offer: boolean;
-  old_text: string | null;
-  new_text: string | null;
-  links_added: string[];
-  links_removed: string[];
-  warning: string;
-};
+const SESSION_KEY = "yggdras.mobile.session.v1";
+let current: Session | null = null;
+const pending = new Map<string, string>();
+const expiredListeners = new Set<() => void>();
+const sessionListeners = new Set<() => void>();
+export function onSessionChanged(listener: () => void) {
+  sessionListeners.add(listener);
+  return () => {
+    sessionListeners.delete(listener);
+  };
+}
 
-let base = "";
-let csrf = "";
-
+export function onSessionExpired(listener: () => void) {
+  expiredListeners.add(listener);
+  return () => {
+    expiredListeners.delete(listener);
+  };
+}
+export function sessionExpired() {
+  for (const listener of expiredListeners) listener();
+}
+export class MobileError extends Error {
+  constructor(
+    public status: number,
+    message: string,
+  ) {
+    super(message);
+  }
+}
+export function validOrigin(value: string) {
+  const url = new URL(value.trim());
+  if (
+    url.username ||
+    url.password ||
+    url.search ||
+    url.hash ||
+    url.pathname !== "/"
+  )
+    throw new Error(
+      "Enter just the application address, without a path or credentials.",
+    );
+  if (
+    url.protocol !== "https:" &&
+    !(
+      url.protocol === "http:" &&
+      ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname)
+    )
+  )
+    throw new Error(
+      "Use HTTPS. Local USB testing can use http://127.0.0.1 with port forwarding.",
+    );
+  return url.origin;
+}
+export function session() {
+  return current;
+}
+export async function restore() {
+  current = null;
+  const saved = await SecureStore.getItemAsync(SESSION_KEY);
+  if (!saved) return null;
+  try {
+    const value = JSON.parse(saved) as Session;
+    validOrigin(value.origin);
+    if (
+      !/^[A-Za-z0-9_-]{40,100}$/.test(value.token) ||
+      !Number.isFinite(Date.parse(value.expires_at)) ||
+      Date.parse(value.expires_at) <= Date.now()
+    )
+      throw new Error();
+    current = value;
+    await request("auth/session");
+    return current;
+  } catch (failure) {
+    if (
+      (failure instanceof MobileError && failure.status === 401) ||
+      !current
+    ) {
+      current = null;
+      await SecureStore.deleteItemAsync(SESSION_KEY);
+    } else throw failure;
+    return null;
+  }
+}
 export async function signIn(origin: string, password: string) {
-  base = origin.replace(/\/$/, "");
-  const response = await fetch(`${base}/api/backend/auth/login`, {
+  const base = validOrigin(origin);
+  const response = await fetch(`${base}/api/backend/mobile/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Origin: base },
     body: JSON.stringify({ password }),
   });
-  if (!response.ok) throw new Error("Sign-in failed.");
-  csrf = (await response.json()).csrf;
-  await SecureStore.setItemAsync("yggdras.origin", base);
+  const data = await decode(response);
+  const value = {
+    origin: base,
+    token: data.token as string,
+    expires_at: data.expires_at as string,
+  };
+  await SecureStore.setItemAsync(SESSION_KEY, JSON.stringify(value));
+  current = value;
+  for (const listener of sessionListeners) listener();
+  return value;
 }
-
-async function call<T>(path: string, body?: unknown): Promise<T> {
-  const response = await fetch(`${base}/api/backend/${path}`, {
-    method: body === undefined ? "GET" : "POST",
-    headers: { "Content-Type": "application/json", Origin: base, "X-Yggdress-CSRF": csrf },
-    body: body === undefined ? undefined : JSON.stringify(body),
+async function decode(response: Response) {
+  const data = await response.json().catch(() => ({
+    detail: "The application returned an unreadable response.",
+  }));
+  if (!response.ok)
+    throw new MobileError(
+      response.status,
+      typeof data.detail === "string"
+        ? data.detail
+        : "The request failed. Your draft is still here.",
+    );
+  return data;
+}
+export async function request<T = unknown>(
+  path: string,
+  init: RequestInit = {},
+): Promise<T> {
+  if (!current) throw new MobileError(401, "Sign in to continue.");
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000);
+  try {
+    return (await decode(
+      await fetch(`${current.origin}/api/backend/${path}`, {
+        ...init,
+        signal: init.signal || controller.signal,
+        headers: {
+          "Content-Type": "application/json",
+          Origin: current.origin,
+          Authorization: `Bearer ${current.token}`,
+          ...init.headers,
+        },
+      }),
+    )) as T;
+  } catch (failure) {
+    if (failure instanceof MobileError) {
+      if (failure.status === 401) sessionExpired();
+      throw failure;
+    }
+    throw new MobileError(
+      0,
+      "Cannot reach your application. Check the connection and retry; your draft is still here.",
+    );
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+/** Reuse a receipt after an interrupted response so a retry cannot duplicate a write. */
+export async function command<T = unknown>(
+  path: string,
+  operation: string,
+  data: object = {},
+  id?: string,
+  version?: number,
+) {
+  const values = {
+    [path === "application/planning/commands" ? "op" : "operation"]: operation,
+    data,
+    id,
+    version,
+  };
+  const fingerprint = JSON.stringify([path, values]);
+  let key = pending.get(fingerprint);
+  if (!key) {
+    key = randomUUID();
+    pending.set(fingerprint, key);
+  }
+  const result = await request<T>(path, {
+    method: "POST",
+    body: JSON.stringify({ key, ...values }),
   });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(typeof data.detail === "string" ? data.detail : "Failed.");
-  return data as T;
+  pending.delete(fingerprint);
+  return result;
 }
-
 export const api = {
-  origin: () => base,
-  /** Asks Yggdras (source: mobile). The reply arrives as server-sent events in one body. */
-  ask: async (text: string) => {
-    const response = await fetch(`${base}/api/backend/yggdras/requests`, {
+  planning: (
+    start: string,
+    end: string,
+    timezone: string,
+    signal?: AbortSignal,
+  ) =>
+    request<Snapshot>(
+      `application/planning?${new URLSearchParams({ start, end, timezone })}`,
+      { signal },
+    ),
+  plan: (operation: string, data: object = {}, id?: string, version?: number) =>
+    command("application/planning/commands", operation, data, id, version),
+  time: (operation: string, data: object = {}, id?: string, version?: number) =>
+    command("application/time/commands", operation, data, id, version),
+  conversations: (q = "", before?: string, archived = false) =>
+    request<{ conversations: Conversation[]; next: string | null }>(
+      `chat/conversations?${new URLSearchParams({ q, archived: String(archived), ...(before ? { before } : {}) })}`,
+    ),
+  history: (id: string, before?: number) =>
+    request<History>(
+      `chat/conversations/${id}${before ? `?before=${before}` : ""}`,
+    ),
+  chat: <T = unknown>(
+    operation: string,
+    data: object = {},
+    id?: string,
+    version?: number,
+  ) => command<T>("chat/commands", operation, data, id, version),
+  catalog: () => request<{ catalog: Catalog }>("chat/capabilities"),
+  export: (id: string) => request(`chat/conversations/${id}/export`),
+  reviews: () =>
+    request<{
+      reviews: {
+        id: string;
+        version: number;
+        agent_id: string;
+        blocked: string;
+        current: Record<string, unknown> | null;
+        payload: {
+          operation: string;
+          data: Record<string, unknown>;
+          explanation: string;
+        };
+      }[];
+    }>("application/agents/reviews"),
+  resolve: async (
+    id: string,
+    version: number,
+    decision: "accept" | "dismiss",
+  ) => {
+    const fingerprint = JSON.stringify([id, version, decision]);
+    let key = pending.get(fingerprint);
+    if (!key) {
+      key = randomUUID();
+      pending.set(fingerprint, key);
+    }
+    const result = await request("application/agents/reviews/resolve", {
       method: "POST",
-      headers: { "Content-Type": "application/json", Origin: base, "X-Yggdress-CSRF": csrf },
-      body: JSON.stringify({ text, source: "mobile" }),
+      body: JSON.stringify({ key, id, version, decision }),
     });
-    const raw = await response.text();
-    const events = raw
-      .split("\n\n")
-      .filter((chunk) => chunk.startsWith("data: "))
-      .map((chunk) => JSON.parse(chunk.slice(6)));
-    return {
-      answer: events.map((e) => e.delta || "").join(""),
-      cards: events.filter((e) => e.card).map((e) => e.card as Card),
-      error: events.find((e) => e.error)?.error as string | undefined,
-    };
+    pending.delete(fingerprint);
+    return result;
   },
-  cards: () => call<Card[]>("yggdras/cards"),
-  approve: (id: string) => call(`yggdras/cards/${id}/approve`, {}),
-  reject: (id: string, correction = "") => call(`yggdras/cards/${id}/reject`, { correction }),
-  undo: () => call("yggdras/undo", {}),
+  upload: (
+    conversation: string,
+    file: { name: string; mimeType?: string; uri: string; size?: number },
+    bytes: ArrayBuffer,
+    uploadId: string,
+  ) => {
+    if (bytes.byteLength > 10 * 1024 * 1024)
+      throw new Error("Choose a file smaller than 10 MB.");
+    return request<Attachment>(
+      `chat/attachments?${new URLSearchParams({ conversation_id: conversation, name: file.name, upload_id: uploadId })}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/octet-stream" },
+        body: bytes,
+      },
+    );
+  },
   registerDevice: (pushToken: string) =>
-    call("yggdras/devices", { platform: "android", push_token: pushToken, label: "phone" }),
-  answer: (id: string) =>
-    call<{ url: string; token: string; simulated: boolean }>(`calls/${id}/answer`, { device: "phone" }),
-  decline: (id: string) => call(`calls/${id}/decline`, {}),
-  callYggdras: () => call<{ id: string; url: string; token: string; simulated: boolean }>("calls", {}),
+    request("calls/devices", {
+      method: "POST",
+      body: JSON.stringify({
+        platform: "android",
+        push_token: pushToken,
+        label: "phone",
+      }),
+    }),
+  logout: async () => {
+    try {
+      await request("auth/logout", { method: "POST", body: "{}" });
+    } catch (error) {
+      if (!(error instanceof MobileError && error.status === 401)) throw error;
+    }
+    current = null;
+    pending.clear();
+    await SecureStore.deleteItemAsync(SESSION_KEY);
+    await SecureStore.deleteItemAsync("yggdras.push.enabled");
+    await SecureStore.deleteItemAsync("yggdras.push.device");
+  },
 };

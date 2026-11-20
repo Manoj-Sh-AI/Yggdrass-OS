@@ -73,6 +73,21 @@ export function BrainGraphPage() {
   }, [router]);
   const retry = () => setGeneration((value) => value + 1);
   useEffect(() => {
+    let last = 0;
+    const refresh = () => {
+      if (document.visibilityState !== "visible" || Date.now() - last < 1000)
+        return;
+      last = Date.now();
+      setGeneration((value) => value + 1);
+    };
+    window.addEventListener("yggdras:foreground", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      window.removeEventListener("yggdras:foreground", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, []);
+  useEffect(() => {
     if (ready)
       frame.current?.contentWindow?.postMessage(
         {

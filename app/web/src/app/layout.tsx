@@ -13,6 +13,8 @@ import "./calendar-workspace.css";
 import "./linked-work.css";
 import "./chat.css";
 import "./yggdras.css";
+import "./catalog.css";
+import "./calls.css";
 export const metadata: Metadata = {
   title: {
     default: "Yggdras · A little clarity, every day",

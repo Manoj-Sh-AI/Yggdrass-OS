@@ -16,12 +16,24 @@ async function proxy(
     /^application\/(workflow\/(capabilities|reviews(\/resolve)?)|agents\/(status|reviews(\/resolve)?|executions(\/[a-fA-F0-9-]{36}(\/cancel)?)?)|background(\/cancel)?|work-graph(\/roots)?)$/;
   const calendarContext =
     /^application\/connections\/calendar-context\/(date_item|availability)\/[a-fA-F0-9-]{36}$/;
-  // Yggdras: requests, approval cards, Undo, feedback, events, devices, connectors and calls.
+  // Yggdras: requests, approval cards, Undo, feedback, events, devices, connector and skill
+  // catalogs, and calls.
   const yggdras =
-    /^(yggdras\/(requests|cards(\/[a-f0-9]{12}\/(approve|reject))?|undo|runs|events|devices|connectors(\/[a-z0-9-]{1,40})?|notifications\/[a-zA-Z0-9-]{1,100}\/reply)|calls(\/(ring|schedule)|\/[a-fA-F0-9-]{36}\/(answer|decline|end))?)$/;
+    /^(yggdras\/(requests|cards(\/[a-f0-9]{12}\/(approve|reject))?|undo|runs|events|devices|connectors(\/[a-z0-9-]{1,40}(\/(connect|disconnect))?)?|skills(\/[a-z0-9-]{1,40})?|notifications\/[a-zA-Z0-9-]{1,100}\/reply)|calls(\/(ring|schedule)|\/[a-fA-F0-9-]{36}\/(answer|decline|end))?)$/;
   // Server-sent event streams pass through unbuffered (a reply as it is written; rings).
-  const streaming = path === "yggdras/requests" || path === "yggdras/events";
+  const streaming =
+    path === "yggdras/requests" ||
+    path === "yggdras/events" ||
+    path === "calls/events";
+  const callRoutes =
+    /^calls(\/(capabilities|preferences|devices|schedule|reviews|simulation|events)|\/devices\/[a-fA-F0-9-]{36}|\/[a-fA-F0-9-]{36}\/(answer|decline|media|end)|\/reviews\/[a-fA-F0-9-]{36})?$/;
+  const mobile = path === "mobile/auth/login";
+  // The browser tab that finishes an app sign-in lands here; the API answers with a page.
+  const signInReturn =
+    path === "connectors/callback" && request.method === "GET";
+  const slow = signInReturn || /^yggdras\/connectors\/[a-z0-9-]+\//.test(path);
   if (
+    !signInReturn &&
     !allowed.test(path) &&
     !connections.test(path) &&
     !chat.test(path) &&
@@ -29,6 +41,8 @@ async function proxy(
     !receivingUi.test(path) &&
     !calendarContext.test(path) &&
     !yggdras.test(path) &&
+    !mobile &&
+    !callRoutes.test(path) &&
     path !== "graph/status"
   )
     return NextResponse.json(
@@ -93,7 +107,9 @@ async function proxy(
           : AbortSignal.timeout(
               path.startsWith("notes/") || path.startsWith("yggdras/cards/")
                 ? 60000
-                : path === "application/agents/reviews/resolve"
+                : slow
+                  ? 45000
+                  : path === "application/agents/reviews/resolve"
                   ? 30000
                   : 12000,
             ),
@@ -102,9 +118,12 @@ async function proxy(
             ? "application/octet-stream"
             : "application/json",
           Cookie: request.headers.get("cookie") || "",
+          ...(request.headers.get("authorization")?.startsWith("Bearer ")
+            ? { Authorization: request.headers.get("authorization")! }
+            : {}),
           ...(origin ? { Origin: origin } : {}),
           "X-Yggdress-CSRF": request.headers.get("x-yggdress-csrf") || "",
-          "X-Yggdress-Login": path === "auth/login" ? "1" : "",
+          "X-Yggdress-Login": path === "auth/login" || mobile ? "1" : "",
         },
       },
     );
@@ -121,6 +140,17 @@ async function proxy(
     if (streaming && upstream.ok && upstream.body) {
       headers.set("Content-Type", "text/event-stream");
       return new Response(upstream.body, { status: upstream.status, headers });
+    }
+    if (signInReturn) {
+      headers.set("Content-Type", "text/html; charset=utf-8");
+      headers.set(
+        "Content-Security-Policy",
+        "default-src 'none'; style-src 'unsafe-inline'",
+      );
+      return new Response(await upstream.text(), {
+        status: upstream.status,
+        headers,
+      });
     }
     if (download && upstream.ok) {
       headers.set(

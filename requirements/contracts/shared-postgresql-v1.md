@@ -11,6 +11,9 @@ logical separation or Lia's ownership of memory algorithms.
   never overwrite or drop a source database. Refuse an existing destination.
 - Preserve the existing `app` and `brain` schemas, records, sequences, relationships,
   migration histories, views, indexes and functions. Do not redesign Brain tables.
+- Preserve Brain's encoding, collation, character classification and text-search
+  defaults; record any different application default and verify application CRUD
+  with Unicode text. A later Linux/Supabase migration needs a separate locale check.
 - Back up and restore-verify both sources before importing. Compare complete row
   fingerprints and schema definitions after importing, then restore-verify the
   combined backup. Reject unsupported extensions, large objects or extra schemas

@@ -28,6 +28,8 @@ from .temporal import temporal_router
 from .work_graph import work_graph_router
 from .workflow import workflow_routers
 
+MOBILE_SESSION = timedelta(days=30)  # phone sign-ins; renewed with use
+
 COOKIE = "yggdress_session"
 
 
@@ -93,6 +95,7 @@ def create_app(
     agents_ready=None,
     agent_issue="",
     yggdras=None,
+    calls=None,
 ):
     settings = settings or Settings.environment()
     settings.validate()
@@ -156,24 +159,73 @@ def create_app(
         if request.headers.get("origin") != settings.origin.rstrip("/"):
             raise HTTPException(403, "This request must come from your application origin.")
 
+    def renew_phone(found, token):
+        """Phone sign-ins last MOBILE_SESSION and renew with use (at most daily), and the
+        phone's call registration renews with them: it keeps ringing day to day without
+        signing in again (Manoj, 2026-11-20). Desktop sign-ins keep their 8 hours."""
+        now = datetime.now(UTC)
+        if found["expires_at"] - now > MOBILE_SESSION - timedelta(days=1):
+            return
+        renewed = now + MOBILE_SESSION
+        with database.connect() as db:
+            db.execute(
+                "UPDATE app.sessions SET expires_at=%s WHERE token_hash=%s",
+                (renewed, token_hash(token)),
+            )
+            db.execute(
+                "UPDATE app.devices SET session_expires_at=%s,last_seen_at=now(),version=version+1 "
+                "WHERE session_hash=%s AND revoked_at IS NULL",
+                (renewed, token_hash(found["csrf"])),
+            )
+        found["expires_at"] = renewed
+
     def session(request: Request):
-        token = request.cookies.get(COOKIE, "")
+        authorization = request.headers.get("authorization", "")
+        bearer = authorization.startswith("Bearer ")
+        token = authorization[7:] if bearer else request.cookies.get(COOKIE, "")
         if not token or len(token) > 200:
             raise HTTPException(401, "Sign in to continue.")
         with database.connect() as db:
             found = db.execute(
-                "SELECT csrf FROM app.sessions WHERE token_hash=%s AND expires_at>now() AND password_fingerprint=%s",
+                "SELECT csrf,expires_at FROM app.sessions WHERE token_hash=%s AND expires_at>now() AND password_fingerprint=%s",
                 (token_hash(token), fingerprint),
             ).fetchone()
         if not found:
             raise HTTPException(401, "Your session expired. Sign in again.")
-        if request.method not in ("GET", "HEAD"):
+        from .mobile_policy import is_mobile
+
+        mobile = is_mobile(found)
+        if mobile:
+            renew_phone(found, token)
+        found["mobile_sensitive_access"] = mobile and settings.mobile_sensitive_access
+        if bearer and not mobile:
+            raise HTTPException(401, "Use a mobile sign-in token.")
+        # The phone may read the connector and skill catalogs; switching a connector, like
+        # approving a card, stays on the laptop (planning/lia-and-connector.md, phone rights).
+        catalog_read = request.method in ("GET", "HEAD") and (
+            request.url.path == "/v1/yggdras/connectors"
+            or request.url.path == "/v1/yggdras/skills"
+            or request.url.path.startswith("/v1/yggdras/skills/")
+        )
+        if (
+            mobile
+            and request.url.path.startswith(("/v1/brain/", "/v1/yggdras/"))
+            and not catalog_read
+        ):
+            raise HTTPException(403, "Use the mobile-safe application interface.")
+        if request.method not in ("GET", "HEAD") and not bearer:
             origin(request)
             if not hmac.compare_digest(request.headers.get("x-yggdress-csrf", ""), found["csrf"]):
                 raise HTTPException(403, "Reload the application before making this change.")
         return found
 
     authenticated = Depends(session)
+    from .call_service import CallService, call_router
+
+    calls = calls or CallService(database, notes=notes)
+    calls.auth_fingerprint = fingerprint
+    api.state.calls = calls
+    api.include_router(call_router(calls, session))
     api.include_router(planning_router(database, session))
     api.include_router(notes_router(notes, session, observer=store if agents_enabled else None))
     api.include_router(
@@ -218,12 +270,14 @@ def create_app(
     def health():
         return {"status": "ok", "service": "application"}
 
+    @api.post("/v1/mobile/auth/login")
     @api.post("/v1/auth/login")
     def login(body: Login, request: Request, response: Response):
         origin(request)
         if request.headers.get("x-yggdress-login") != "1":
             raise HTTPException(403, "Use the application sign-in form.")
         now = datetime.now(UTC)
+        mobile = request.url.path == "/v1/mobile/auth/login"
         with database.connect() as db:
             guard = db.execute("SELECT * FROM app.login_guard WHERE id=1 FOR UPDATE").fetchone()
             if guard["locked_until"] and guard["locked_until"] > now:
@@ -248,16 +302,29 @@ def create_app(
                     (now,),
                 )
                 token, csrf = secrets.token_urlsafe(32), secrets.token_urlsafe(32)
+                if mobile:
+                    csrf = "mobile:v1:" + csrf
                 old = request.cookies.get(COOKIE)
                 if old:
                     db.execute("DELETE FROM app.sessions WHERE token_hash=%s", (token_hash(old),))
                 db.execute("DELETE FROM app.sessions WHERE expires_at<now()")
                 db.execute(
                     "INSERT INTO app.sessions(token_hash,csrf,password_fingerprint,expires_at) VALUES (%s,%s,%s,%s)",
-                    (token_hash(token), csrf, fingerprint, now + timedelta(hours=8)),
+                    (
+                        token_hash(token),
+                        csrf,
+                        fingerprint,
+                        now + (MOBILE_SESSION if mobile else timedelta(hours=8)),
+                    ),
                 )
         if not correct:
             raise HTTPException(401, "Incorrect password.")
+        if mobile:
+            return {
+                "authenticated": True,
+                "token": token,
+                "expires_at": (now + MOBILE_SESSION).isoformat(),
+            }
         response.set_cookie(
             COOKIE,
             token,
@@ -273,12 +340,45 @@ def create_app(
     def current_session(auth=authenticated):
         return {"authenticated": True, "csrf": auth["csrf"]}
 
+    @api.post("/v1/mobile/webview-session")
+    def webview_session(request: Request, response: Response, auth=authenticated):
+        from .mobile_policy import is_mobile
+
+        if not is_mobile(auth) or not request.headers.get("authorization", "").startswith(
+            "Bearer "
+        ):
+            raise HTTPException(403, "A signed-in mobile device is required.")
+        response.set_cookie(
+            COOKIE,
+            request.headers["authorization"][7:],
+            max_age=28800,
+            httponly=True,
+            secure=not settings.local_http,
+            samesite="strict",
+            path="/",
+        )
+        return {"authenticated": True}
+
     @api.post("/v1/auth/logout")
     def logout(request: Request, response: Response, _=authenticated):
         with database.connect() as db:
+            from .call_service import LOCK as CALL_LOCK
+            from .call_service import session_id
+
+            db.execute("SELECT pg_advisory_xact_lock(%s)", (CALL_LOCK,))
+            db.execute(
+                "UPDATE app.devices SET revoked_at=now(),version=version+1 WHERE session_hash=%s",
+                (session_id(_),),
+            )
             db.execute(
                 "DELETE FROM app.sessions WHERE token_hash=%s",
-                (token_hash(request.cookies[COOKIE]),),
+                (
+                    token_hash(
+                        request.headers["authorization"][7:]
+                        if request.headers.get("authorization", "").startswith("Bearer ")
+                        else request.cookies[COOKIE]
+                    ),
+                ),
             )
         response.delete_cookie(
             COOKIE, path="/", secure=not settings.local_http, httponly=True, samesite="strict"

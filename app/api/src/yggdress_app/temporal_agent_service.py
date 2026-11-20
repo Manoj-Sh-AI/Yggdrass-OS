@@ -2,6 +2,7 @@
 
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import AsyncExitStack
 from datetime import timedelta
 from threading import Event, Thread
 
@@ -27,6 +28,7 @@ class TemporalAgentService:
         namespace="default",
         queue="yggdras-agents-v1",
         local=None,
+        calls=None,
     ):
         self.runner, self.address, self.namespace, self.queue = runner, address, namespace, queue
         self.store = ExecutionStore(runner.store)
@@ -37,6 +39,7 @@ class TemporalAgentService:
         self.issue = "Execution service is connecting. Saved requests remain queued."
         self.thread = None
         self.local = local
+        self.calls = calls
         self.failure_stage = ""
         self.failure_type = ""
 
@@ -152,7 +155,30 @@ class TemporalAgentService:
                 )
                 for lane in ("chat", "background")
             ]
-            async with workers[0], workers[1]:
+            async with AsyncExitStack() as stack:
+                await stack.enter_async_context(workers[0])
+                await stack.enter_async_context(workers[1])
+                if self.calls and self.calls.mode != "disabled":
+                    from .temporal_calls import CallActivities, CallCheckIns
+
+                    await stack.enter_async_context(
+                        Worker(
+                            client,
+                            task_queue=self.queue + "-calls",
+                            workflows=[CallCheckIns],
+                            activities=[CallActivities(self.calls).sweep],
+                            activity_executor=executor,
+                            graceful_shutdown_timeout=timedelta(seconds=5),
+                        )
+                    )
+                    try:
+                        await client.start_workflow(
+                            CallCheckIns.run,
+                            id="yggdras-call-checkins-v1",
+                            task_queue=self.queue + "-calls",
+                        )
+                    except WorkflowAlreadyStartedError:
+                        pass
                 self.available, self.issue = True, ""
                 self.failure_stage = self.failure_type = ""
                 self.ready.set()
@@ -176,6 +202,8 @@ class TemporalAgentService:
                 except AgentError:
                     pass  # One unavailable response must not block other queued jobs.
                 self.issue = ""
+                if notified and self.calls and self.calls.mode != "disabled":
+                    await self.client.get_workflow_handle("yggdras-call-checkins-v1").signal("wake")
                 await self.dispatch(notified)
             except Exception:  # noqa: BLE001 -- never expose private transport details
                 self.issue = "Some queued work is waiting for its execution connection. It will be reconciled."

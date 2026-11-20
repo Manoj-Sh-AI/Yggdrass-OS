@@ -55,6 +55,9 @@ export function BrainExplorer({
     [error, setError] = useState("");
   const created = useRef(false);
   const note = state.notes.find((n) => n.id === noteId);
+  const [revealed, setRevealed] = useState<string | null>(null);
+  const contextVisible = context && (!note?.sensitive || revealed === note.id);
+  useEffect(() => setRevealed(null), [note?.id]);
   useEffect(() => {
     preloadNoteEditor();
   }, []);
@@ -154,27 +157,29 @@ export function BrainExplorer({
         <Match text={n.title} query={search} />
         {liveNotes && (
           <>
-            <small>{n.description}</small>
+            <small>{n.sensitive ? "Sensitive note" : n.description}</small>
             <small>{[n.area, ...n.also].join(" · ")}</small>
           </>
         )}
-        {search && n.content.toLowerCase().includes(search.toLowerCase()) && (
-          <small>
-            <Match
-              text={n.content.slice(
-                Math.max(
-                  0,
-                  n.content.toLowerCase().indexOf(search.toLowerCase()) - 20,
-                ),
-                Math.max(
-                  0,
-                  n.content.toLowerCase().indexOf(search.toLowerCase()) - 20,
-                ) + 95,
-              )}
-              query={search}
-            />
-          </small>
-        )}
+        {!n.sensitive &&
+          search &&
+          n.content.toLowerCase().includes(search.toLowerCase()) && (
+            <small>
+              <Match
+                text={n.content.slice(
+                  Math.max(
+                    0,
+                    n.content.toLowerCase().indexOf(search.toLowerCase()) - 20,
+                  ),
+                  Math.max(
+                    0,
+                    n.content.toLowerCase().indexOf(search.toLowerCase()) - 20,
+                  ) + 95,
+                )}
+                query={search}
+              />
+            </small>
+          )}
       </span>
     </button>
   );
@@ -268,7 +273,7 @@ export function BrainExplorer({
         </Panel>
       ) : (
         <div
-          className={`notes-workbench ${navigation ? "" : "navigation-collapsed"} ${context ? "" : "context-collapsed"}`}
+          className={`notes-workbench ${navigation ? "" : "navigation-collapsed"} ${contextVisible ? "" : "context-collapsed"}`}
         >
           {navigation && (
             <aside
@@ -399,7 +404,22 @@ export function BrainExplorer({
           )}
           <div className="notes-writing-panel panel">
             {note ? (
-              <NoteEditor key={note.id} note={note} />
+              note.sensitive && revealed !== note.id ? (
+                <Empty
+                  title="Sensitive note"
+                  detail="The contents stay hidden until you choose to read them."
+                  action={
+                    <button
+                      className="button primary"
+                      onClick={() => setRevealed(note.id)}
+                    >
+                      Show
+                    </button>
+                  }
+                />
+              ) : (
+                <NoteEditor key={note.id} note={note} />
+              )
             ) : (
               <Empty
                 title="Room for your next thought"
@@ -426,7 +446,7 @@ export function BrainExplorer({
               />
             )}
           </div>
-          {context && (
+          {contextVisible && (
             <aside className="note-context panel" aria-label="Note context">
               <div className="note-context-heading">
                 <Icon name="Orbit" size={17} />

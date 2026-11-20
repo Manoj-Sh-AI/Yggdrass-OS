@@ -15,13 +15,15 @@ from urllib.request import Request, urlopen
 import psycopg
 
 from .backup import fingerprints, private_database_url
-from .local_runtime import atomic_json, default_home, ensure, pg_start, status
+from .local_runtime import atomic_json, brain_http, default_home, ensure, pg_start, status
+from .notes_proxy import NotesError
 from .shared_database import (
     LAYOUT,
     ConsolidationError,
     _source_guard,
     prepare,
     schema_digest,
+    text_settings,
     verify_boundaries,
 )
 
@@ -106,11 +108,12 @@ def _stop_brain_launcher(config):
         os.kill(int(process["ProcessId"]), signal.SIGTERM)
 
 
-def prepare_local(home):
+def prepare_local(home, destination_text_settings=None):
     home = Path(home).resolve(strict=True)
     config_raw = (home / "runtime.json").read_bytes()
     config = json.loads(config_raw)
-    if config.get("storage_layout") == LAYOUT:
+    shared = config.get("storage_layout") == LAYOUT
+    if shared and destination_text_settings is None:
         raise ConsolidationError("This local runtime is already configured for shared storage.")
     marker = home / "maintenance.json"
     if marker.exists():
@@ -129,10 +132,12 @@ def prepare_local(home):
         copied = prepare(
             config["admin_url"],
             config["database_url"],
-            private_database_url(config["brain_env"]),
+            config["admin_url"] if shared else private_database_url(config["brain_env"]),
             Path(config["postgres_bin"]),
             archive,
             "yggdras_unified_" + stamp,
+            shared_source=shared,
+            destination_text_settings=destination_text_settings,
         )
         # These files contain credentials and remain inside the existing private
         # runtime directory. They are never copied to the checkout or console.
@@ -143,7 +148,20 @@ def prepare_local(home):
         atomic_json(archive / "prepared.json", copied)
         atomic_json(home / "consolidation.json", {"archive": str(archive), "state": "prepared"})
         return copied["report"]
-    except Exception:
+    except Exception as error:
+        import traceback
+
+        if archive.is_dir():
+            atomic_json(
+                archive / "prepare-error.json",
+                {
+                    "type": type(error).__name__,
+                    "frames": [
+                        {"file": Path(frame.filename).name, "line": frame.lineno}
+                        for frame in traceback.extract_tb(error.__traceback__)
+                    ],
+                },
+            )
         marker.unlink(missing_ok=True)
         if was_ready:
             ensure(home)
@@ -173,11 +191,18 @@ def activate_local(home):
     ):
         raise ConsolidationError("Service configuration changed after the verified copy.")
     switched = False
+    shared_source = config.get("storage_layout") == LAYOUT
+    brain_source = (
+        config["admin_url"] if shared_source else private_database_url(config["brain_env"])
+    )
     try:
         with ExitStack() as stack:
             app = stack.enter_context(psycopg.connect(config["admin_url"]))
-            brain = stack.enter_context(psycopg.connect(private_database_url(config["brain_env"])))
-            app_now, brain_now = _source_guard(app, "app"), _source_guard(brain, "brain")
+            brain = stack.enter_context(psycopg.connect(brain_source))
+            app_now, brain_now = (
+                _source_guard(app, "app", shared_source),
+                _source_guard(brain, "brain", shared_source),
+            )
             expected = prepared["report"]["snapshot"]
             if {**app_now["tables"], **brain_now["tables"]} != expected["tables"] or {
                 **app_now["sequences"],
@@ -186,8 +211,14 @@ def activate_local(home):
                 raise ConsolidationError(
                     "Source data changed after preparation; create a fresh copy."
                 )
-            for namespace, source in (("app", config["admin_url"]), ("brain", private_database_url(config["brain_env"]))):
-                if schema_digest(source, namespace, config["postgres_bin"]) != prepared["report"]["schema_hashes"][namespace]:
+            for namespace, source in (
+                ("app", config["admin_url"]),
+                ("brain", brain_source),
+            ):
+                if (
+                    schema_digest(source, namespace, config["postgres_bin"])
+                    != prepared["report"]["schema_hashes"][namespace]
+                ):
                     raise ConsolidationError("A source schema changed after preparation.")
             with psycopg.connect(prepared["admin_url"]) as target:
                 if fingerprints(target) != expected:
@@ -219,13 +250,37 @@ def activate_local(home):
             (home / "maintenance.json").unlink()
             if not ensure(home).get("ready"):
                 raise ConsolidationError("Combined local services did not become ready.")
+            # Read the actual existing Brain API before accepting the cutover.
+            # This never invokes a model or submits a Brain mutation.
+            for attempt in range(10):
+                try:
+                    brain_http(config["brain_env"]).call("GET", "search?q=")
+                    break
+                except NotesError:
+                    if attempt == 9:
+                        raise ConsolidationError(
+                            "The existing Brain API did not become readable."
+                        ) from None
+                    time.sleep(0.5)
         pointer["state"] = "active"
         atomic_json(home / "consolidation.json", pointer)
         atomic_json(
             archive / "activation.json", {"active": True, "original_databases_retained": True}
         )
         return {**prepared["report"], "activated": True, "services_ready": True}
-    except Exception:
+    except Exception as error:
+        import traceback
+
+        atomic_json(
+            archive / "activation-error.json",
+            {
+                "type": type(error).__name__,
+                "frames": [
+                    {"file": Path(frame.filename).name, "line": frame.lineno}
+                    for frame in traceback.extract_tb(error.__traceback__)
+                ],
+            },
+        )
         if switched:
             _stop_application(home)
             _stop_brain_launcher(config)
@@ -242,10 +297,48 @@ def activate_local(home):
 def main():
     parser = argparse.ArgumentParser(description="Verified local PostgreSQL consolidation")
     parser.add_argument("--home", type=Path, default=default_home())
-    parser.add_argument("action", choices=("prepare", "activate"))
+    parser.add_argument("action", choices=("prepare", "activate", "retry", "preserve-brain-text"))
     args = parser.parse_args()
     try:
-        result = prepare_local(args.home) if args.action == "prepare" else activate_local(args.home)
+        if args.action == "preserve-brain-text":
+            home = args.home.resolve(strict=True)
+            config = json.loads((home / "runtime.json").read_text())
+            pointer = json.loads((home / "consolidation.json").read_text())
+            archive = Path(pointer["archive"])
+            prior = json.loads((archive / "prepared.json").read_text())
+            desired = prior["report"].get("text_settings")
+            if desired is None:
+                with psycopg.connect(private_database_url(archive / "brain-before.env")) as source:
+                    desired = text_settings(source)
+            with psycopg.connect(config["admin_url"]) as current:
+                if text_settings(current) == desired:
+                    raise ConsolidationError("The Brain text settings are already preserved.")
+            prepare_local(home, desired)
+            result = activate_local(home)
+        elif args.action == "retry":
+            home = args.home.resolve(strict=True)
+            pointer = json.loads((home / "consolidation.json").read_text())
+            if pointer["state"] != "rolled_back":
+                raise ConsolidationError("Retry requires a previously rolled-back activation.")
+            if (home / "maintenance.json").exists():
+                raise ConsolidationError("Another maintenance operation is already in progress.")
+            atomic_json(home / "maintenance.json", {"operation": "shared-database-retry"})
+            config = json.loads((home / "runtime.json").read_text())
+            try:
+                _stop_application(home)
+                _stop_brain_launcher(config)
+                pg_start(home, config)
+                pointer["state"] = "prepared"
+                atomic_json(home / "consolidation.json", pointer)
+                result = activate_local(home)
+            except Exception:
+                (home / "maintenance.json").unlink(missing_ok=True)
+                ensure(home)
+                raise
+        else:
+            result = (
+                prepare_local(args.home) if args.action == "prepare" else activate_local(args.home)
+            )
         print(
             json.dumps(
                 {key: value for key, value in result.items() if key not in ("snapshot", "archive")}

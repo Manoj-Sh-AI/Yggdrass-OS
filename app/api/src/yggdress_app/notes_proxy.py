@@ -153,9 +153,12 @@ def targets(line):
 
 
 def note_view(data, requested=None):
+    from .mobile_policy import sensitive
+
     if not isinstance(data, dict) or not isinstance(data.get("body", data.get("text")), str):
         raise NotesError(502, "The Brain note response must include its full body.")
     body = data.get("body", data.get("text"))
+    hidden = sensitive(data)
     slug = str(data.get("slug") or requested or "")
     slug_path(slug)
     version = data.get("version")
@@ -182,7 +185,11 @@ def note_view(data, requested=None):
         "id": slug,
         "slug": slug,
         "title": str(data.get("title") or data.get("name") or slug),
-        "description": facts[0] if facts else str(data.get("description") or ""),
+        "description": "Sensitive note"
+        if hidden
+        else facts[0]
+        if facts
+        else str(data.get("description") or ""),
         "content": display,
         "rawBody": body,
         "bodyPrefix": prefix,
@@ -196,6 +203,7 @@ def note_view(data, requested=None):
         ],
         "updated": str(data.get("updated") or ""),
         "source": "lia",
+        "sensitive": hidden,
         "version": str(version),
     }
 
@@ -549,19 +557,52 @@ def notes_router(proxy, session, on_saved=None, observer=None):
     def search(q: str = "", auth=authenticated):
         if len(q) > 500:
             raise NotesError(422, "Use a shorter search query.")
-        return proxy.search(auth["csrf"], q)
+        result = proxy.search(auth["csrf"], q)
+        from .mobile_policy import mobile_restricted, sensitive
+
+        if mobile_restricted(auth):
+            hidden = {n["slug"] for n in result["notes"] if sensitive(n)}
+            allowed = {n["slug"] for n in result["notes"]} - hidden
+            proxy.state(auth["csrf"])["mobile_allowed"] = allowed
+            result["notes"] = [
+                {
+                    **n,
+                    "links": [s for s in n["links"] if s in allowed],
+                    "backlinks": [s for s in n["backlinks"] if s in allowed],
+                }
+                for n in result["notes"]
+                if n["slug"] not in hidden
+            ]
+        return result
 
     @router.get("/items/{slug}")
     def get(slug: str, auth=authenticated):
-        return proxy.get(auth["csrf"], slug)
+        from .mobile_policy import mobile_restricted, require_mobile_safe
+
+        result = proxy.get(auth["csrf"], slug)
+        require_mobile_safe(result["note"], auth)
+        if mobile_restricted(auth):
+            allowed = proxy.state(auth["csrf"]).get("mobile_allowed", set())
+            for field in ("links", "backlinks"):
+                result["note"][field] = [slug for slug in result["note"][field] if slug in allowed]
+        return result
 
     @router.post("/items/{slug}/preview")
     def preview(slug: str, body: PreviewInput, auth=authenticated):
+        from .mobile_policy import mobile_restricted, require_mobile_safe
+
+        if mobile_restricted(auth):
+            require_mobile_safe(proxy.get(auth["csrf"], slug)["note"], auth)
+        require_mobile_safe({"body": body.body}, auth)
         return proxy.preview(auth["csrf"], slug, body.fetchToken, body.body)
 
     @router.post("/previews/{token}/confirm")
     def confirm(token: str, auth=authenticated):
         snapshot = proxy.state(auth["csrf"])["previews"].get(token)
+        from .mobile_policy import mobile_restricted, require_mobile_safe
+
+        if snapshot and mobile_restricted(auth):
+            require_mobile_safe(proxy.get(auth["csrf"], snapshot["slug"])["note"], auth)
         intent = (
             observer.prepare_write(snapshot["slug"], snapshot["raw"]["version"], "save")
             if observer and snapshot and snapshot["state"] == "pending"
@@ -586,6 +627,9 @@ def notes_router(proxy, session, on_saved=None, observer=None):
 
     @router.post("/create")
     def create(body: CreateInput, auth=authenticated):
+        from .mobile_policy import require_mobile_safe
+
+        require_mobile_safe({"body": body.text}, auth)
         intent = observer.prepare_write(body.slug, None, "create") if observer else None
         try:
             return observed(proxy.create(auth["csrf"], body.text, body.slug), intent)
@@ -596,6 +640,10 @@ def notes_router(proxy, session, on_saved=None, observer=None):
     @router.post("/undo")
     def undo(auth=authenticated):
         slug = proxy.state(auth["csrf"]).get("undo_slug")
+        from .mobile_policy import mobile_restricted, require_mobile_safe
+
+        if slug and mobile_restricted(auth):
+            require_mobile_safe(proxy.get(auth["csrf"], slug)["note"], auth)
         before = proxy.get(auth["csrf"], slug)["note"]["version"] if observer and slug else None
         intent = observer.prepare_write(slug, before, "undo") if observer and slug else None
         try:

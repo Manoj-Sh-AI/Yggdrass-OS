@@ -1,105 +1,367 @@
-/** Yggdras on the phone: Chat with approval cards, calls, and Notes and Graph (web components,
- * in a WebView). Today, Tasks, Calendar and Settings native screens are not built yet. */
-import { useState } from "react";
-import { Pressable, SafeAreaView, ScrollView, Text, TextInput, View } from "react-native";
-import { WebView } from "react-native-webview";
-import { api, signIn, type Card } from "./src/api";
-import { ringer } from "./src/calls";
+import { useEffect, useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StatusBar,
+  Text,
+  View,
+} from "react-native";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { onSessionExpired, restore, session, signIn } from "./src/api";
+import { BackgroundJobs } from "./src/background-ui";
+import { CallProvider, Calls } from "./src/call-ui";
+import { Calendar } from "./src/calendar";
+import { Connectors, Skills } from "./src/catalogs";
+import { Chat } from "./src/chat";
+import { Embedded } from "./src/embedded";
+import { Scenery } from "./src/scenery";
+import { Settings } from "./src/settings";
+import { Tasks, Today } from "./src/tasks";
+import {
+  Button,
+  ErrorText,
+  Field,
+  Loading,
+  Page,
+  Panel,
+  Sheet,
+  styles,
+  colors,
+} from "./src/ui";
+import { Workspace } from "./src/workspace";
 
-type Tab = "chat" | "notes" | "graph" | "call";
-
-function CardView({ card, done }: { card: Card; done: () => void }) {
-  return (
-    <View style={{ borderWidth: 2, borderColor: card.offer ? "#10b981" : "#f59e0b", borderRadius: 14, padding: 14, marginBottom: 10 }}>
-      <Text style={{ fontWeight: "700", fontSize: 16 }}>{card.title}</Text>
-      {card.old_text !== null && <Text style={{ backgroundColor: "#fee2e2", padding: 6, marginTop: 6, textDecorationLine: "line-through" }}>{card.old_text}</Text>}
-      {card.new_text !== null && <Text style={{ backgroundColor: "#dcfce7", padding: 6, marginTop: 6 }}>{card.new_text}</Text>}
-      {card.links_added.length > 0 && <Text>Links added: {card.links_added.join(", ")}</Text>}
-      {card.warning !== "" && <Text style={{ color: "#991b1b", fontWeight: "700", marginTop: 6 }}>{card.warning}</Text>}
-      <View style={{ flexDirection: "row", gap: 10, marginTop: 10 }}>
-        <Pressable onPress={() => void api.approve(card.id).then(done)} style={{ backgroundColor: "#15803d", padding: 14, borderRadius: 10, flex: 1 }}>
-          <Text style={{ color: "#fff", fontWeight: "700", textAlign: "center" }}>{card.offer ? "File it" : "Approve"}</Text>
-        </Pressable>
-        <Pressable onPress={() => void api.reject(card.id).then(done)} style={{ backgroundColor: "#e5e7eb", padding: 14, borderRadius: 10, flex: 1 }}>
-          <Text style={{ fontWeight: "700", textAlign: "center" }}>Reject</Text>
-        </Pressable>
-      </View>
-    </View>
-  );
-}
-
-function Chat() {
-  const [text, setText] = useState("");
-  const [answer, setAnswer] = useState("");
-  const [cards, setCards] = useState<Card[]>([]);
-  const send = async () => {
-    const out = await api.ask(text);
-    setText("");
-    setAnswer(out.error || out.answer);
-    setCards(out.cards);
-  };
-  return (
-    <ScrollView contentContainerStyle={{ padding: 16 }}>
-      {cards.map((c) => (
-        <CardView key={c.id} card={c} done={() => setCards((all) => all.filter((x) => x.id !== c.id))} />
-      ))}
-      {answer !== "" && <Text style={{ marginBottom: 12 }}>{answer}</Text>}
-      <TextInput value={text} onChangeText={setText} placeholder="Ask Yggdras" multiline style={{ borderWidth: 1, borderRadius: 12, padding: 10, minHeight: 60 }} />
-      <Pressable onPress={() => void send()} style={{ backgroundColor: "#0f172a", padding: 12, borderRadius: 10, marginTop: 8 }}>
-        <Text style={{ color: "#fff", textAlign: "center" }}>Send</Text>
-      </Pressable>
-    </ScrollView>
-  );
-}
-
-export default function App() {
-  const [origin, setOrigin] = useState("");
-  const [password, setPassword] = useState("");
+type Tab =
+  | "today"
+  | "tasks"
+  | "calendar"
+  | "chat"
+  | "more"
+  | "notes"
+  | "graph"
+  | "settings"
+  | "calls"
+  | "background"
+  | "connectors"
+  | "skills";
+const moreTabs: Tab[] = [
+  "notes",
+  "graph",
+  "connectors",
+  "skills",
+  "settings",
+  "calls",
+  "background",
+];
+function Application() {
   const [ready, setReady] = useState(false);
-  const [tab, setTab] = useState<Tab>("chat");
-  const [status, setStatus] = useState("");
+  const [reauthenticate, setReauthenticate] = useState(false);
+  const [restoring, setRestoring] = useState(true);
+  const [error, setError] = useState("");
+  const [origin, setOrigin] = useState("http://127.0.0.1:3000");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [tab, setTab] = useState<Tab>("today");
+  const [visited, setVisited] = useState<Tab[]>(["today"]);
+  useEffect(
+    () =>
+      onSessionExpired(() => {
+        if (ready) {
+          setError(
+            "Your session expired. Sign in again; your open drafts are preserved.",
+          );
+          setReauthenticate(true);
+        }
+      }),
+    [ready],
+  );
+  useEffect(() => {
+    let live = true;
+    void restore()
+      .then((value) => {
+        if (live) setReady(!!value);
+      })
+      .catch((e) => {
+        if (live) {
+          setError(e.message);
+          setOrigin(session()?.origin || origin);
+        }
+      })
+      .finally(() => {
+        if (live) setRestoring(false);
+      });
+    return () => {
+      live = false;
+    };
+  }, []);
+  const selected = (value: Tab) =>
+    tab === value || (value === "more" && moreTabs.includes(tab));
+  function open(value: Tab) {
+    setVisited((all) => (all.includes(value) ? all : [...all, value]));
+    setTab(value);
+  }
+  async function login() {
+    setBusy(true);
+    setError("");
+    try {
+      await signIn(origin, password);
+      setPassword("");
+      setReauthenticate(false);
+      setReady(true);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not sign in.");
+    } finally {
+      setBusy(false);
+    }
+  }
+  if (restoring)
+    return (
+      <View style={[styles.screen, { justifyContent: "center" }]}>
+        <Loading />
+      </View>
+    );
   if (!ready)
     return (
-      <SafeAreaView style={{ flex: 1, padding: 24, gap: 12, justifyContent: "center" }}>
-        <Text style={{ fontSize: 24, fontWeight: "800" }}>Yggdras</Text>
-        <TextInput placeholder="App address (https://…)" autoCapitalize="none" value={origin} onChangeText={setOrigin} style={{ borderWidth: 1, borderRadius: 10, padding: 10 }} />
-        <TextInput placeholder="Password" secureTextEntry value={password} onChangeText={setPassword} style={{ borderWidth: 1, borderRadius: 10, padding: 10 }} />
-        <Pressable
-          onPress={() =>
-            void signIn(origin, password)
-              .then(() => ringer.register().catch((e: Error) => setStatus(e.message)))
-              .then(() => setReady(true))
-              .catch((e: Error) => setStatus(e.message))
-          }
-          style={{ backgroundColor: "#15803d", padding: 14, borderRadius: 10 }}
-        >
-          <Text style={{ color: "#fff", textAlign: "center", fontWeight: "700" }}>Sign in</Text>
-        </Pressable>
-        {status !== "" && <Text>{status}</Text>}
-      </SafeAreaView>
+      <Page title="">
+        <View style={{ height: 40 }} />
+        <Panel>
+          <Text style={eyebrow}>YOUR PERSONAL WORKSPACE</Text>
+          <Text
+            accessibilityRole="header"
+            style={[styles.title, { fontSize: 27 }]}
+          >
+            Welcome to Yggdras
+          </Text>
+          <Text style={[styles.subtitle, { marginBottom: 6 }]}>
+            A little clarity, wherever you are.
+          </Text>
+          <Field
+            label="Application address"
+            value={origin}
+            onChangeText={setOrigin}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="url"
+          />
+          <Field
+            label="Password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            textContentType="password"
+            autoCapitalize="none"
+            onSubmitEditing={() => void login()}
+          />
+          <ErrorText message={error} />
+          <Button
+            title={busy ? "Signing in…" : "Sign in"}
+            primary
+            disabled={busy || !password}
+            onPress={() => void login()}
+          />
+          {session() && (
+            <Button
+              title="Retry saved connection"
+              onPress={() => {
+                setError("");
+                void restore()
+                  .then((value) => setReady(!!value))
+                  .catch((e) => setError(e.message));
+              }}
+            />
+          )}
+        </Panel>
+        <Text style={styles.subtitle}>
+          For USB testing, your computer and this phone use a private
+          port-forwarded connection. Otherwise enter your application’s HTTPS
+          address.
+        </Text>
+      </Page>
     );
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <View style={{ flex: 1 }}>
-        {tab === "chat" && <Chat />}
-        {tab === "notes" && <WebView source={{ uri: `${api.origin()}/notes` }} sharedCookiesEnabled />}
-        {tab === "graph" && <WebView source={{ uri: `${api.origin()}/graph` }} sharedCookiesEnabled />}
-        {tab === "call" && (
-          <View style={{ flex: 1, justifyContent: "center", padding: 24 }}>
-            <Pressable onPress={() => void api.callYggdras().then((c) => setStatus(c.simulated ? "Connected (simulated: voice keys not set up)" : "Connected"))} style={{ backgroundColor: "#15803d", padding: 18, borderRadius: 999 }}>
-              <Text style={{ color: "#fff", textAlign: "center", fontWeight: "700", fontSize: 18 }}>Call Yggdras</Text>
-            </Pressable>
-            {status !== "" && <Text style={{ marginTop: 12, textAlign: "center" }}>{status}</Text>}
+    <Workspace>
+      <CallProvider>
+        <View style={styles.screen}>
+          <Sheet
+            visible={reauthenticate}
+            title="Sign in again"
+            onClose={() => setReauthenticate(false)}
+          >
+            <Text style={styles.subtitle}>Your open drafts stay in place.</Text>
+            <Field
+              label="Password"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              autoCapitalize="none"
+            />
+            <ErrorText message={error} />
+            <Button
+              title={busy ? "Signing in…" : "Sign in"}
+              primary
+              disabled={busy || !password}
+              onPress={() => void login()}
+            />
+          </Sheet>
+          {visited.map((value) => (
+            <View
+              key={value}
+              style={{ flex: 1, display: value === tab ? "flex" : "none" }}
+            >
+              {value === "today" && (
+                <Today active={tab === value} openNotes={() => open("notes")} />
+              )}
+              {value === "tasks" && <Tasks active={tab === value} />}
+              {value === "calendar" && <Calendar active={tab === value} />}
+              {value === "chat" && <Chat active={tab === value} />}
+              {value === "calls" && <Calls />}
+              {value === "connectors" && <Connectors active={tab === value} />}
+              {value === "skills" && <Skills active={tab === value} />}
+              {value === "background" && (
+                <BackgroundJobs active={tab === value} />
+              )}
+              {(value === "notes" || value === "graph") && (
+                <Embedded view={value} active={tab === value} />
+              )}
+              {value === "settings" && (
+                <Settings
+                  active={tab === value}
+                  onLogout={() => {
+                    setReady(false);
+                    setTab("today");
+                    setVisited(["today"]);
+                  }}
+                />
+              )}
+              {value === "more" && (
+                <Page title="Your workspace">
+                  <Panel>
+                    {(
+                      [
+                        ["notes", "Notes", "Your brain, note by note"],
+                        ["graph", "Graph", "How your notes connect"],
+                        [
+                          "connectors",
+                          "Connectors",
+                          "Services Yggdras can reach",
+                        ],
+                        ["skills", "Skills", "What Yggdras knows how to do"],
+                        ["calls", "Calls", "Talk with Yggdras"],
+                        [
+                          "background",
+                          "Background jobs",
+                          "Work running for you",
+                        ],
+                        ["settings", "Settings", "Account and preferences"],
+                      ] as const
+                    ).map(([value, label, hint], index) => (
+                      <Pressable
+                        key={value}
+                        accessibilityRole="button"
+                        accessibilityLabel={label}
+                        onPress={() => open(value)}
+                        style={({ pressed }) => ({
+                          flexDirection: "row",
+                          alignItems: "center",
+                          minHeight: 56,
+                          paddingVertical: 8,
+                          borderTopWidth: index ? 1 : 0,
+                          borderTopColor: colors.line,
+                          opacity: pressed ? 0.7 : 1,
+                        })}
+                      >
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.text}>{label}</Text>
+                          <Text style={[styles.subtitle, { fontSize: 12 }]}>
+                            {hint}
+                          </Text>
+                        </View>
+                        <Text style={{ color: colors.muted, fontSize: 20 }}>
+                          ›
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </Panel>
+                </Page>
+              )}
+            </View>
+          ))}
+          <View
+            accessibilityRole="tablist"
+            style={{
+              flexDirection: "row",
+              marginHorizontal: 12,
+              marginBottom: 10,
+              marginTop: 4,
+              padding: 4,
+              borderRadius: 20,
+              borderWidth: 1,
+              borderColor: colors.glassBorder,
+              backgroundColor: colors.glass,
+            }}
+          >
+            {(["today", "tasks", "calendar", "chat", "more"] as const).map(
+              (value) => (
+                <Pressable
+                  key={value}
+                  accessibilityRole="tab"
+                  accessibilityState={{ selected: selected(value) }}
+                  onPress={() => open(value)}
+                  style={({ pressed }) => ({
+                    flex: 1,
+                    minHeight: 48,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: 16,
+                    backgroundColor: selected(value)
+                      ? "rgba(255, 255, 255, 0.1)"
+                      : "transparent",
+                    opacity: pressed ? 0.7 : 1,
+                  })}
+                >
+                  <Text
+                    style={{
+                      fontSize: 13,
+                      fontWeight: selected(value) ? "600" : "400",
+                      color: selected(value) ? colors.text : colors.muted,
+                    }}
+                  >
+                    {value[0].toUpperCase() + value.slice(1)}
+                  </Text>
+                </Pressable>
+              ),
+            )}
           </View>
-        )}
+        </View>
+      </CallProvider>
+    </Workspace>
+  );
+}
+const eyebrow = {
+  fontSize: 10,
+  letterSpacing: 1.6,
+  fontWeight: "600" as const,
+  color: colors.muted,
+};
+export default function App() {
+  return (
+    <SafeAreaProvider>
+      <View style={styles.root}>
+        <Scenery />
+        <SafeAreaView style={styles.screen}>
+          <StatusBar
+            barStyle="light-content"
+            translucent
+            backgroundColor="transparent"
+          />
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+          >
+            <Application />
+          </KeyboardAvoidingView>
+        </SafeAreaView>
       </View>
-      <View style={{ flexDirection: "row", borderTopWidth: 1, borderColor: "#e5e7eb" }}>
-        {(["chat", "notes", "graph", "call"] as Tab[]).map((t) => (
-          <Pressable key={t} onPress={() => setTab(t)} style={{ flex: 1, padding: 14 }}>
-            <Text style={{ textAlign: "center", fontWeight: tab === t ? "800" : "400" }}>{t[0].toUpperCase() + t.slice(1)}</Text>
-          </Pressable>
-        ))}
-      </View>
-    </SafeAreaView>
+    </SafeAreaProvider>
   );
 }

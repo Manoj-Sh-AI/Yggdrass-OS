@@ -40,7 +40,7 @@ def room_token(identity: str, room: str, *, key: str, secret: str, ttl: int = 60
     header = {"alg": "HS256", "typ": "JWT"}
     claims = {"iss": key, "sub": identity, "nbf": issued, "exp": issued + ttl,
               "video": {"room": room, "roomJoin": True, "canPublish": True,
-                        "canSubscribe": True}}  # fmt: skip
+                        "canSubscribe": True, "canPublishData": False, "canPublishSources": ["microphone"]}}  # fmt: skip
     signing = f"{_b64(json.dumps(header, separators=(',', ':')).encode())}." + _b64(
         json.dumps(claims, separators=(",", ":")).encode()
     )
@@ -72,6 +72,10 @@ class PushNotConfigured(RuntimeError):
     pass
 
 
+class PushDeviceExpired(PushNotConfigured):
+    pass
+
+
 @dataclass
 class SimulatedPusher:
     """Records what would have been pushed; used until FIREBASE_* keys exist, and in tests."""
@@ -90,7 +94,33 @@ class FcmPusher:
             raise PushNotConfigured("FIREBASE_PROJECT_ID and FIREBASE_SERVICE_ACCOUNT_FILE")
 
     def send(self, device: dict, message: dict) -> None:  # pragma: no cover - needs Firebase
-        raise PushNotConfigured("Firebase delivery is wired when the service account exists")
+        try:
+            import firebase_admin
+            from firebase_admin import credentials, messaging
+
+            try:
+                app = firebase_admin.get_app("yggdras-calls")
+            except ValueError:
+                app = firebase_admin.initialize_app(
+                    credentials.Certificate(os.environ["FIREBASE_SERVICE_ACCOUNT_FILE"]),
+                    {"projectId": os.environ["FIREBASE_PROJECT_ID"]},
+                    name="yggdras-calls",
+                )
+            try:
+                messaging.send(
+                    messaging.Message(
+                        token=device["push_token"],
+                        data={k: str(v) for k, v in {"type": "yggdras_call", **message}.items()},
+                        android=messaging.AndroidConfig(priority="high", ttl=timedelta(seconds=45)),
+                    ),
+                    app=app,
+                )
+            except messaging.UnregisteredError:
+                raise PushDeviceExpired("This device push token expired.") from None
+        except ImportError:
+            raise PushNotConfigured(
+                "Install the application voice dependencies before enabling push."
+            ) from None
 
 
 class IosVoipPusher:

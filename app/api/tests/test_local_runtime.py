@@ -72,3 +72,50 @@ def test_verified_import_restart_and_reprovision_refusal(postgres, tmp_path):
             ["-D", home / "postgres", "-m", "fast", "-w", "stop"],
             capture=False,
         )
+
+
+def test_stopping_a_child_also_stops_what_it_started(tmp_path):
+    """A .venv python.exe on Windows is a launcher whose real interpreter is its child;
+    terminate() alone left the brain service, voice worker and web server running."""
+    import subprocess
+    import sys
+    import time
+
+    from yggdress_app.local_runtime import quietly, stop_tree
+
+    marker = tmp_path / "grandchild.pid"
+    launcher = subprocess.Popen(
+        [sys.executable, "-c",
+         ("import subprocess, sys, time; "
+          "c = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(120)']); "
+          f"open(r'{marker}', 'w').write(str(c.pid)); time.sleep(120)")],
+    )  # fmt: skip
+    for _ in range(100):
+        if marker.exists() and marker.read_text():
+            break
+        time.sleep(0.1)
+    grandchild = int(marker.read_text())
+    stop_tree(launcher)
+    assert launcher.poll() is not None
+
+    def alive(pid):
+        if sys.platform == "win32":
+            out = subprocess.run(
+                ["tasklist", "/FI", f"PID eq {pid}"], check=False, capture_output=True, text=True
+            )
+            return str(pid) in out.stdout
+        import os
+
+        try:
+            os.kill(pid, 0)
+        except OSError:
+            return False
+        return True
+
+    for _ in range(50):
+        if not alive(grandchild):
+            break
+        time.sleep(0.1)
+    assert not alive(grandchild)
+    stop_tree(None)  # nothing to stop is fine
+    quietly(lambda: 1 / 0)  # a failing shutdown step never raises

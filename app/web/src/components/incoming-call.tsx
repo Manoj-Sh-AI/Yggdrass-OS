@@ -1,148 +1,338 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { listen, yggdrasApi, type HubEvent, type RoomAccess } from "@/lib/yggdras-api";
-
-/** This window's name for "who answered" (each tab and the desktop window is one device). */
-function windowId() {
-  try {
-    const saved = sessionStorage.getItem("yggdras.window");
-    if (saved) return saved;
-    const made = `web-${crypto.randomUUID().slice(0, 8)}`;
-    sessionStorage.setItem("yggdras.window", made);
-    return made;
-  } catch {
-    return "web";
-  }
+import { ApiError, applicationApi } from "@/lib/api";
+import { startRingtone, unlockOnFirstGesture } from "@/lib/ringtone";
+import { Icon, Modal } from "./ui";
+type Call = {
+  id: string;
+  state: string;
+  version: number;
+  expires_at: string;
+  answered_by: string;
+  simulated: boolean;
+  reason?: string;
+};
+type Access = Call & { url: string; token: string };
+function identity() {
+  const prior = sessionStorage.getItem("yggdras.window");
+  if (prior) return prior;
+  const id = "web-" + crypto.randomUUID();
+  sessionStorage.setItem("yggdras.window", id);
+  return id;
 }
-
-/** A soft two-tone ring made in the page (no audio file), until answered or stopped. */
-function ringer() {
-  let context: AudioContext | null = null;
-  let timer: ReturnType<typeof setInterval> | null = null;
-  const beep = () => {
-    if (!context) return;
-    for (const [freq, at] of [[660, 0], [880, 0.25]] as const) {
-      const osc = context.createOscillator();
-      const gain = context.createGain();
-      osc.frequency.value = freq;
-      gain.gain.value = 0.08;
-      osc.connect(gain).connect(context.destination);
-      osc.start(context.currentTime + at);
-      osc.stop(context.currentTime + at + 0.2);
-    }
-  };
-  return {
-    start() {
-      try {
-        context = new AudioContext();
-        beep();
-        timer = setInterval(beep, 2000);
-      } catch {
-        context = null; // autoplay blocked: the screen still rings visibly
-      }
-    },
-    stop() {
-      if (timer) clearInterval(timer);
-      void context?.close();
-      context = null;
-      timer = null;
-    },
-  };
-}
-
-type Ringing = { id: string; reason: string };
-
-/** Mounted once in the shell: when Yggdras calls, every open window rings; the first to
- * answer takes the call and the others stop. */
+/** The shared durable call service owns records; the media SDK owns connection truth. */
 export function IncomingCall() {
-  const [ringing, setRinging] = useState<Ringing | null>(null);
-  const [room, setRoom] = useState<(RoomAccess & { id: string }) | null>(null);
+  const [ringing, setRinging] = useState<Call | null>(null);
+  const [active, setActive] = useState<Call | null>(null);
+  const [recoverable, setRecoverable] = useState<Call | null>(null);
+  const [ready, setReady] = useState(false);
+  const [status, setStatus] = useState("");
   const [error, setError] = useState("");
-  const ring = useRef(ringer());
-
-  useEffect(() => {
-    const stop = listen((event: HubEvent) => {
-      if (event.type !== "call") return;
-      if (event.state === "ringing") {
-        setRinging({ id: event.id, reason: event.reason || "Yggdras is calling" });
-        ring.current.start();
-      } else {
-        ring.current.stop();
-        setRinging((current) => (current?.id === event.id ? null : current));
-        if (event.state === "ended") setRoom((r) => (r?.id === event.id ? null : r));
-      }
+  const [busy, setBusy] = useState(false);
+  const [muted, setMuted] = useState(false);
+  const current = useRef<Call | null>(null);
+  const room = useRef<import("livekit-client").Room | null>(null);
+  const audio = useRef<HTMLMediaElement[]>([]);
+  const keys = useRef(new Map<string, string>());
+  // Stops the ringtone the moment Answer or Decline is pressed, before the server replies.
+  const silence = useRef<() => void>(() => {});
+  async function command<T>(path: string, data: object = {}) {
+    const fingerprint = JSON.stringify([path, data]);
+    const key = keys.current.get(fingerprint) || crypto.randomUUID();
+    keys.current.set(fingerprint, key);
+    const result = await applicationApi<T>("calls" + path, {
+      method: "POST",
+      body: JSON.stringify({ key, device: identity(), ...data }),
     });
-    const tone = ring.current;
+    keys.current.delete(fingerprint);
+    return result;
+  }
+  async function closeAudio() {
+    const previous = room.current;
+    room.current = null;
+    previous?.removeAllListeners();
+    await previous?.disconnect();
+    for (const element of audio.current) {
+      element.pause();
+      element.remove();
+    }
+    audio.current = [];
+  }
+  async function refresh() {
+    const result = await applicationApi<{
+      calls: Call[];
+      capabilities: { voice_ready: boolean };
+    }>("calls");
+    setReady(result.capabilities.voice_ready);
+    setRinging(
+      result.calls.find(
+        (c) => c.state === "ringing" && Date.parse(c.expires_at) > Date.now(),
+      ) || null,
+    );
+    if (current.current) {
+      const next = result.calls.find((c) => c.id === current.current!.id);
+      if (!next || next.state !== "answered") {
+        current.current = null;
+        setActive(null);
+        await closeAudio();
+      } else {
+        current.current = next;
+        setActive(next);
+      }
+    }
+  }
+  async function report(state: string) {
+    setStatus(state);
+    if (
+      !current.current ||
+      !["connected", "reconnecting", "failed", "ended"].includes(state)
+    )
+      return;
+    const call = current.current;
+    try {
+      const next = await command<Call>(`/${call.id}/media`, {
+        state,
+        version: call.version,
+      });
+      current.current = next;
+      setActive(next);
+    } catch {
+      await refresh();
+    }
+  }
+  async function join(path: string) {
+    if (busy) return;
+    silence.current();
+    setBusy(true);
+    setError("");
+    try {
+      const access = await command<Access>(path);
+      current.current = access;
+      setActive(access);
+      setRinging(null);
+      if (access.simulated) {
+        setStatus("Simulation · no microphone or paid services");
+        return;
+      }
+      if (!access.url.startsWith("wss://"))
+        throw new Error("A secure voice connection is required.");
+      const { Room, RoomEvent, ConnectionState, Track } =
+        await import("livekit-client");
+      const connected = new Room();
+      room.current = connected;
+      const check = () => {
+        if (
+          connected.state === ConnectionState.Connected &&
+          [...connected.remoteParticipants.values()].some((p) => p.isAgent) &&
+          connected.localParticipant.isMicrophoneEnabled
+        )
+          void report("connected");
+        else setStatus("Waiting for Yggdras…");
+      };
+      connected.on(RoomEvent.ParticipantConnected, check);
+      connected.on(RoomEvent.Reconnecting, () => void report("reconnecting"));
+      connected.on(RoomEvent.Reconnected, check);
+      connected.on(RoomEvent.Disconnected, () => void report("ended"));
+      connected.on(RoomEvent.TrackSubscribed, (track) => {
+        if (track.kind === Track.Kind.Audio) {
+          const element = track.attach();
+          audio.current.push(element);
+          document.body.appendChild(element);
+        }
+      });
+      setStatus("Connecting…");
+      await connected.connect(access.url, access.token);
+      await connected.localParticipant.setMicrophoneEnabled(true);
+      check();
+    } catch (failure) {
+      setRinging(null);
+      setError(
+        failure instanceof ApiError
+          ? failure.status === 409 && path.endsWith("/answer")
+            ? ""
+            : failure.message
+          : "Voice could not connect. Check microphone permission and try again.",
+      );
+      if (current.current) await report("failed");
+      await closeAudio();
+    } finally {
+      setBusy(false);
+    }
+  }
+  useEffect(() => {
+    let mounted = true;
+    const source = new EventSource("/api/backend/calls/events");
+    source.onmessage = (event) => {
+      if (!mounted) return;
+      const data = JSON.parse(event.data) as {
+        calls: Call[];
+        capabilities: { voice_ready: boolean };
+      };
+      setReady(data.capabilities.voice_ready);
+      setRecoverable(
+        data.calls.find(
+          (c) => c.state === "answered" && c.answered_by === identity(),
+        ) || null,
+      );
+      setRinging(
+        data.calls.find(
+          (c) => c.state === "ringing" && Date.parse(c.expires_at) > Date.now(),
+        ) || null,
+      );
+      if (current.current) {
+        const next = data.calls.find((c) => c.id === current.current!.id);
+        if (!next || next.state !== "answered") {
+          current.current = null;
+          setActive(null);
+          void closeAudio();
+        } else {
+          current.current = next;
+          setActive(next);
+        }
+      }
+    };
+    source.addEventListener("expired", () => {
+      setReady(false);
+      source.close();
+      void closeAudio();
+      setActive(null);
+    });
+    source.onerror = () => {
+      if (current.current) setStatus("Reconnecting to your application…");
+    };
     return () => {
-      stop();
-      tone.stop();
+      mounted = false;
+      source.close();
+      void closeAudio();
     };
   }, []);
-
-  async function answer() {
+  useEffect(() => unlockOnFirstGesture(window), []);
+  // Rings until answered, declined, expired (45 s) or answered on another device:
+  // each of those clears `ringing`, and the cleanup stops the sound at once.
+  useEffect(() => {
+    if (!ringing || ringing.simulated) return;
+    const stop = startRingtone();
+    silence.current = stop;
+    return () => {
+      stop();
+      silence.current = () => {};
+    };
+  }, [ringing?.id, ringing?.simulated]);
+  useEffect(() => {
     if (!ringing) return;
-    ring.current.stop();
-    try {
-      const access = await yggdrasApi.answer(ringing.id, windowId());
-      setRoom({ ...access, id: ringing.id });
-    } catch (failure) {
-      setError(failure instanceof Error ? failure.message : "Another device took the call.");
-    }
-    setRinging(null);
-  }
-
-  async function startCall() {
-    try {
-      const call = await yggdrasApi.callYggdras();
-      setRoom(call);
-    } catch (failure) {
-      setError(failure instanceof Error ? failure.message : "Yggdras could not be called.");
-    }
-  }
-
+    const timer = setTimeout(
+      () => setRinging(null),
+      Math.max(0, Date.parse(ringing.expires_at) - Date.now()),
+    );
+    return () => clearTimeout(timer);
+  }, [ringing?.id, ringing?.expires_at]);
   return (
     <>
-      {ringing && (
-        <div className="ygg-ring" role="alertdialog" aria-label="Incoming call from Yggdras">
-          <div className="ygg-ring-card">
-            <p className="ygg-ring-who">Yggdras</p>
-            <p className="ygg-ring-why">{ringing.reason}</p>
-            <div className="ygg-ring-actions">
-              <button className="ygg-answer" onClick={() => void answer()} autoFocus>
-                Answer
-              </button>
-              <button
-                className="ygg-decline"
-                onClick={() => {
-                  ring.current.stop();
-                  void yggdrasApi.decline(ringing.id);
-                  setRinging(null);
-                }}
-              >
-                Decline
-              </button>
-            </div>
+      {ready && !active && !ringing && (
+        <button
+          className="ygg-call-button"
+          onClick={() =>
+            recoverable
+              ? void command(`/${recoverable.id}/end`).then(() => {
+                  setRecoverable(null);
+                  return refresh();
+                })
+              : void join("")
+          }
+          disabled={busy}
+        >
+          {recoverable ? "End previous call" : "Call Yggdras"}
+        </button>
+      )}
+      <Modal
+        open={!!ringing}
+        onOpenChange={() => {}}
+        title="Yggdras"
+        description={
+          ringing?.simulated
+            ? "Silent simulation. No real call."
+            : ringing?.reason || "Yggdras check-in"
+        }
+        preventDismiss
+      >
+        <div className="call-incoming">
+          <span className="call-avatar" aria-hidden="true">
+            <Icon name="Sprout" size={34} />
+          </span>
+          <p className="call-incoming-label">Incoming call</p>
+        </div>
+        <div className="call-ring-actions">
+          <div className="call-action">
+            <button
+              className="call-round call-decline"
+              aria-label="Decline"
+              onClick={() => {
+                silence.current();
+                void command(`/${ringing!.id}/decline`)
+                  .then(refresh)
+                  .catch(() => setError("This invitation is no longer active."));
+              }}
+            >
+              <Icon name="PhoneOff" size={24} />
+            </button>
+            <span>Decline</span>
+          </div>
+          <div className="call-action">
+            <button
+              className="call-round call-answer"
+              aria-label="Answer"
+              disabled={busy}
+              onClick={() => void join(`/${ringing!.id}/answer`)}
+            >
+              <Icon name="Phone" size={24} />
+            </button>
+            <span>Answer</span>
           </div>
         </div>
-      )}
-      {room && (
-        <div className="ygg-in-call" role="status">
-          <span>
-            On a call with Yggdras{room.simulated ? " (simulated: voice keys not set up yet)" : ""}
+      </Modal>
+      {active?.state === "answered" && (
+        <div className="ygg-in-call call-bar" role="status">
+          <span className="call-avatar small" aria-hidden="true">
+            <Icon name="Sprout" size={18} />
           </span>
-          <button className="ygg-decline" onClick={() => void yggdrasApi.end(room.id).then(() => setRoom(null))}>
-            End
+          <span className="call-bar-text">
+            <strong>{active.reason || "Yggdras"}</strong>
+            <small>{status}</small>
+          </span>
+          <button
+            className="call-round small"
+            aria-label={muted ? "Unmute" : "Mute"}
+            aria-pressed={muted}
+            disabled={active.simulated}
+            onClick={() =>
+              void room.current?.localParticipant
+                .setMicrophoneEnabled(muted)
+                .then(() => setMuted(!muted))
+                .catch(() => setError("Microphone permission is unavailable."))
+            }
+          >
+            <Icon name={muted ? "MicOff" : "Mic"} size={18} />
+          </button>
+          <button
+            className="call-round small call-decline"
+            aria-label="End call"
+            onClick={() =>
+              void report("ended")
+                .then(closeAudio)
+                .then(() => {
+                  current.current = null;
+                  setActive(null);
+                })
+            }
+          >
+            <Icon name="PhoneOff" size={18} />
           </button>
         </div>
       )}
-      {!room && !ringing && (
-        <button className="ygg-call-button" onClick={() => void startCall()} aria-label="Call Yggdras">
-          Call Yggdras
-        </button>
-      )}
       {error && (
-        <p className="ygg-error ygg-call-error" role="alert" onClick={() => setError("")}>
+        <p className="ygg-error ygg-call-error" role="alert">
           {error}
+          <button onClick={() => setError("")}>Dismiss</button>
         </p>
       )}
     </>

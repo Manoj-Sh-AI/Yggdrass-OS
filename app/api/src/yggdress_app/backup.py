@@ -102,7 +102,9 @@ def verify_markdown(path, records):
                 raise BackupError("Markdown archive checksum mismatch.")
 
 
-def tool(binary, args, env=None, capture=True):
+def tool(binary, args, env=None, capture=True, explain=None):
+    """Run a PostgreSQL tool. `explain` maps private paths to placeholders and opts in to
+    showing the tool's own error lines; use it only for tools that never see credentials."""
     output = (
         {"capture_output": True}
         if capture
@@ -117,8 +119,25 @@ def tool(binary, args, env=None, capture=True):
     )
     if result.returncode:
         # Tool errors can contain private SQL/object names; never print raw stderr or URLs.
-        raise BackupError(f"{Path(binary).stem} failed with exit code {result.returncode}.")
+        message = f"{Path(binary).stem} failed with exit code {result.returncode}."
+        if explain is not None:
+            message += error_excerpt(result.stderr, explain)
+        raise BackupError(message)
     return result.stdout or b""
+
+
+def error_excerpt(stderr, placeholders, limit=3):
+    """The tool's own error/detail/hint lines, with private paths replaced, never raw output."""
+    text = (stderr or b"").decode("utf8", "replace")
+    for private, label in sorted(placeholders.items(), key=lambda item: -len(item[0])):
+        for spelling in {private, private.replace("\\", "/"), private.replace("/", "\\")}:
+            text = text.replace(spelling, label)
+    keep = [
+        line.strip()[:300]
+        for line in text.splitlines()
+        if any(tag in line for tag in (": error:", ": detail:", ": hint:", "FATAL:"))
+    ]
+    return (" " + " | ".join(keep[-limit:])) if keep else ""
 
 
 def client_environment(url=None):
@@ -149,14 +168,18 @@ def client_environment(url=None):
     return env
 
 
-def fingerprints(conn):
+def fingerprints(conn, schemas=None):
+    """Row, sequence and large-object fingerprints. `schemas` limits them to those
+    schemas (a hosted database such as Supabase also holds the host's own schemas)."""
     # Timestamp JSON must compare independently of each server/session timezone.
     conn.execute("SET TIME ZONE 'UTC'")
     tables, sequences, objects = {}, {}, []
     names = conn.execute(
         "SELECT n.nspname,c.relname,c.relkind FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace "
         "WHERE c.relkind IN ('r','p','m','f','S') AND n.nspname NOT IN ('pg_catalog','information_schema') "
-        "AND n.nspname NOT LIKE 'pg_toast%' AND n.nspname NOT LIKE 'pg_temp%' ORDER BY 1,2"
+        "AND n.nspname NOT LIKE 'pg_toast%%' AND n.nspname NOT LIKE 'pg_temp%%' "
+        "AND (%s::text[] IS NULL OR n.nspname = ANY(%s::text[])) ORDER BY 1,2",
+        (schemas, schemas),
     ).fetchall()
     for namespace, name, kind in names:
         identifier = sql.Identifier(namespace, name)
@@ -185,10 +208,11 @@ def fingerprints(conn):
     return {"tables": tables, "sequences": sequences, "large_objects": objects}
 
 
-def schema_fingerprint(binary, env, snapshot=None):
+def schema_fingerprint(binary, env, snapshot=None, schemas=None):
     args = ["--schema-only", "--no-owner", "--no-privileges", "--no-password"]
     if snapshot:
         args.append("--snapshot=" + snapshot)
+    args += [f"--schema={name}" for name in schemas or ()]
     text = tool(binary, args, env).decode("utf-8")
     lines = [
         line.rstrip()
@@ -212,6 +236,8 @@ def fresh_cluster(binary_dir, parent):
     tool(
         binary("initdb"),
         ["-D", data, "-A", "trust", "-U", "backup_verify", "--no-locale", "--encoding=UTF8"],
+        # initdb gets no connection or password, so its own error lines are safe to show.
+        explain={str(data): "<restore-cluster>", str(parent.resolve()): "<restore-workspace>"},
     )
     tool(
         binary("pg_ctl"),
@@ -227,8 +253,14 @@ def fresh_cluster(binary_dir, parent):
             tool(binary("pg_ctl"), ["-D", data, "-m", "fast", "-w", "stop"], capture=False)
 
 
-def database_backup(url, target, binary_dir, workspace):
+def database_backup(url, target, binary_dir, workspace, schemas=None):
+    """Dump and verify by a complete isolated restore. `schemas` limits the dump to the
+    app's own schemas on a hosted database (Supabase keeps its own beside them)."""
     suffix = ".exe" if os.name == "nt" else ""
+    # A schema filter would leave out large objects (they belong to no schema): keep them.
+    scope = [f"--schema={name}" for name in schemas or ()] + (
+        ["--large-objects"] if schemas else []
+    )
     pg_dump = binary_dir / ("pg_dump" + suffix)
     env = client_environment(url)
     with psycopg.connect(url, connect_timeout=10) as source:
@@ -236,17 +268,18 @@ def database_backup(url, target, binary_dir, workspace):
         source.isolation_level = IsolationLevel.REPEATABLE_READ
         source.execute("SET TIME ZONE 'UTC'")
         snapshot = source.execute("SELECT pg_export_snapshot()").fetchone()[0]
-        expected = fingerprints(source)
+        expected = fingerprints(source, schemas)
         roles = [
             r[0]
             for r in source.execute("SELECT rolname FROM pg_roles WHERE rolname NOT LIKE 'pg_%'")
         ]
-        schema_hash = schema_fingerprint(pg_dump, env, snapshot)
+        schema_hash = schema_fingerprint(pg_dump, env, snapshot, schemas)
         tool(
             pg_dump,
-            ["--format=custom", "--no-password", "--snapshot=" + snapshot, "--file", target],
+            ["--format=custom", "--no-password", "--snapshot=" + snapshot, *scope,
+             "--file", target],
             env,
-        )
+        )  # fmt: skip
         source.rollback()
     # List is an extra format check; the actual verification is the complete isolated restore.
     tool(binary_dir / ("pg_restore" + suffix), ["--list", target])
@@ -275,8 +308,8 @@ def database_backup(url, target, binary_dir, workspace):
         with psycopg.connect(target_url) as restored:
             restored.read_only = True
             restored.execute("SET TIME ZONE 'UTC'")
-            actual = fingerprints(restored)
-        restored_schema = schema_fingerprint(pg_dump, restore_env)
+            actual = fingerprints(restored, schemas)
+        restored_schema = schema_fingerprint(pg_dump, restore_env, schemas=schemas)
         if actual != expected:
             raise BackupError("Restored database data differs from the exported snapshot.")
         if restored_schema != schema_hash:
@@ -285,7 +318,11 @@ def database_backup(url, target, binary_dir, workspace):
         "status": "restore_verified",
         "snapshot": expected,
         "schema_sha256": schema_hash,
-        "scope": "full logical database; server roles/passwords and server configuration excluded",
+        "scope": (
+            "schemas " + ", ".join(schemas)
+            if schemas
+            else "full logical database; server roles/passwords and server configuration excluded"
+        ),
         "verification_ownership": "isolated verification role; production ownership/ACLs not replayed",
     }
 

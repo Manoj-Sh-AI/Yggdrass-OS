@@ -4,6 +4,24 @@ Research date: 16 November 2026, Europe/Berlin. Recommendation only: no resource
 creation, deployment, database migration, provider call or application-code change
 was authorized or performed during this research.
 
+## Subsequent owner selection
+
+The owner subsequently chose a free-first target: Vercel Hobby, **one Supabase
+project** containing separate `app` and `brain` schemas/roles, Oracle Always Free
+for the existing backend and workers (subject to actual capacity/compatibility),
+and LiveKit Build for later in-app voice. This supersedes the paid-budget
+recommendation below as the owner's preferred target, not its price evidence.
+
+The owner separately authorized local database consolidation before deployment;
+see [the local consolidation procedure](shared-postgresql.md). No cloud resource
+has been provisioned. One Supabase Free project shares its 500 MB database
+allowance across Brain/application data. Attachments, indexes and execution/chat
+records count too; unlimited API requests do not mean unlimited processing.
+Properly self-hosting Temporal on Oracle is an option for avoiding Cloud usage
+fees, subject to sizing and production configuration; the current local Temporal
+development server is not a public deployment configuration. Claude/speech usage
+and services exceeding free allowances remain separately billable.
+
 Owner's constraints: one user; prefer free tiers where useful; aim for €15–25 per
 month excluding Claude and calling usage. First calling target is voice inside
 web/desktop/mobile apps, rather than regular telephone-number calls.

@@ -2,9 +2,9 @@ name: Application foundation
 on:
   push:
     branches: [main]
-    paths: ['app/web/**', 'app/api/**', 'app/desktop/**', '.github/workflows/frontend.yml']
+    paths: ['app/web/**', 'app/api/**', 'app/desktop/**', 'app/mobile/**', '.github/workflows/frontend.yml']
   pull_request:
-    paths: ['app/web/**', 'app/api/**', 'app/desktop/**', '.github/workflows/frontend.yml']
+    paths: ['app/web/**', 'app/api/**', 'app/desktop/**', 'app/mobile/**', '.github/workflows/frontend.yml']
 jobs:
   windows-host:
     runs-on: windows-latest
@@ -59,12 +59,12 @@ jobs:
           cache: npm
           cache-dependency-path: app/web/package-lock.json
       - uses: astral-sh/setup-uv@v5
-      - run: uv sync --locked --project ../api
+      - run: uv sync --locked --extra voice --project ../api
       - name: Install verified local Temporal test server
         run: uv run --project ../api python ../api/scripts/install_temporal.py --directory ../api/runtime/temporal-tools
       - run: uv run --project ../api ruff check ../api/src ../api/tests ../api/scripts
       - run: uv run --project ../api ruff format --check ../api/src ../api/tests ../api/scripts
-      - run: uv run --project ../api pytest ../api/tests
+      - run: uv run --project ../api --extra voice pytest ../api/tests
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
@@ -83,3 +83,19 @@ jobs:
         with:
           name: frontend-browser-results
           path: app/web/test-results
+
+  mobile:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app/mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/mobile/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test -- --silent
