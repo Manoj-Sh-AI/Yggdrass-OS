@@ -10,6 +10,18 @@ from pathlib import Path
 from threading import Event
 
 
+def render_graph():
+    """Build the graph viewer's files from the rows, as the Yggdras connector does at its
+    start (a fresh host has none until the first note change). Notes never depend on it."""
+    try:
+        from yggdras.interface import writing
+
+        writing.row_store().render_viewers()
+        print("Brain graph viewer built.", flush=True)
+    except Exception as exc:  # noqa: BLE001 - the graph is optional; notes keep working
+        print(f"Brain graph viewer not built: {type(exc).__name__}", file=sys.stderr, flush=True)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Existing PostgreSQL Brain API service")
     parser.add_argument("--brain-project", type=Path, required=True)
@@ -34,6 +46,7 @@ def main():
         parser.error("The private Brain API credentials are not configured.")
     # Startup verifies the existing database-backed reader, without changing data.
     api.read("search", "")
+    render_graph()
     server = note_server.start(
         lambda: RowLibrary(api.writes.store.snapshot()),
         args.port,
