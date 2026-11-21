@@ -302,7 +302,8 @@ def main():
     def load(server):
         return 1.0 if server.active_jobs else 0.0
 
-    server = AgentServer(host="127.0.0.1", port=0, num_idle_processes=1, log_level=level,
+    idle = int(os.environ.get("YGGDRAS_VOICE_IDLE_PROCESSES", "1"))  # 0 on a small host
+    server = AgentServer(host="127.0.0.1", port=0, num_idle_processes=idle, log_level=level,
                          initialize_process_timeout=60.0,
                          load_fnc=load, load_threshold=0.5)  # fmt: skip
     server.rtc_session(agent_name="yggdras-voice")(voice_session)

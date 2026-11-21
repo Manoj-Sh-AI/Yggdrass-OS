@@ -50,9 +50,13 @@ def test_the_brain_env_holds_only_the_brain_settings_and_a_fresh_service_passwor
 def test_runtime_settings_are_the_hosted_remote_layout(tmp_path, binary):
     config = hosted.runtime({**VARIABLES, "TEMPORAL_BINARY": binary}, tmp_path)
     assert config["database_host"] == "remote" and config["origin"] == "http://127.0.0.1:3000"
-    assert config["agents"]["execution_backend"] == "temporal"
+    assert config["agents"]["execution_backend"] == "threads"  # lean: no Temporal server
+    assert "temporal" not in config["agents"]
     assert Path(config["agents"]["lia_skills"]).name == "lia"
-    assert len(config["agents"]["temporal"]["sha256"]) == 64
+    full = hosted.runtime(
+        {**VARIABLES, "TEMPORAL_BINARY": binary, "YGGDRAS_EXECUTION_BACKEND": "temporal"}, tmp_path
+    )
+    assert len(full["agents"]["temporal"]["sha256"]) == 64
     assert config["mobile_sensitive_access"] is True
     assert Path(config["brain_env"]) == hosted.REPO / ".env"
 
@@ -92,3 +96,18 @@ def test_the_laptop_web_app_talks_to_the_hosted_backend_when_one_is_set():
     env = web_environment(hosted_backend, 0)
     assert env["YGGDRESS_API_URL"] == "https://backend.example.up.railway.app"
     assert env["YGGDRESS_ORIGIN"] == "http://127.0.0.1:3000"
+
+
+def test_without_temporal_a_thread_sweeps_the_calls_and_survives_a_failure(capsys):
+    from yggdress_app.local_runtime import sweep_calls
+
+    class Calls:
+        ticks = 0
+
+        def tick(self):
+            Calls.ticks += 1
+            if Calls.ticks == 2:
+                raise RuntimeError("database briefly away")
+
+    sweep_calls(Calls(), every=0, rounds=3)
+    assert Calls.ticks == 3 and "call sweep failed: RuntimeError" in capsys.readouterr().out

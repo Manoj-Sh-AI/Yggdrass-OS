@@ -91,7 +91,8 @@ def test_turns_are_detected_by_speech_to_text_not_a_local_vad():
     assert 'turn_detection="stt"' in session and "vad=" not in session
     assert "livekit.plugins" not in session and "silero" not in main
     assert "initialize_process_timeout=60.0" in main
-    assert "num_idle_processes=1" in main and "asyncio.to_thread(beat)" in main
+    assert "num_idle_processes=idle" in main and "asyncio.to_thread(beat)" in main
+    assert 'YGGDRAS_VOICE_IDLE_PROCESSES", "1"' in main  # one warm process unless told 0
     assert "load_fnc=load" in main  # busy means a call is running, never laptop CPU
 
 

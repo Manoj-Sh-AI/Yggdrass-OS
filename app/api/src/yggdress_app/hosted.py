@@ -101,10 +101,18 @@ def runtime(env=os.environ, folder: Path | None = None) -> dict:
         "agents": {
             "enabled": True,
             "lia_skills": str(REPO / "app" / "skills" / "lia"),
-            "execution_backend": "temporal",
-            "temporal": temporal(env.get("TEMPORAL_BINARY")),
+            **execution(env),
         },
     }
+
+
+def execution(env=os.environ) -> dict:
+    """Lean by default (fits a 1 GB container): agents run in threads and a plain thread
+    sweeps the calls every 15 s, with no Temporal server. YGGDRAS_EXECUTION_BACKEND=temporal
+    brings the laptop's Temporal set-up back when the host has the memory for it."""
+    if env.get("YGGDRAS_EXECUTION_BACKEND", "threads") == "temporal":
+        return {"execution_backend": "temporal", "temporal": temporal(env.get("TEMPORAL_BINARY"))}
+    return {"execution_backend": "threads"}
 
 
 def bootstrap(env=os.environ, folder: Path | None = None) -> Path:
@@ -132,6 +140,9 @@ def main():
 
     folder = bootstrap()
     os.environ["YGGDRAS_LOG_STDOUT"] = "1"  # child services log to Railway's log stream
+    # The voice worker starts a call's process when a call comes in, instead of keeping a
+    # spare one in memory (a few seconds more at answer, a few hundred MB less).
+    os.environ.setdefault("YGGDRAS_VOICE_IDLE_PROCESSES", "0")
     print(json.dumps({"hosted": True, "home": str(folder)}), flush=True)
     serve(folder, hosted=True)
 

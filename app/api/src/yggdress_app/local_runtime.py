@@ -348,6 +348,20 @@ def brain_http(path):
     )
 
 
+def sweep_calls(calls, every=15.0, rounds=None):
+    """The call scheduler without Temporal: one sweep every 15 s, a failure logged by its
+    type only and never ending the loop. `rounds` bounds it for tests."""
+    done = 0
+    while rounds is None or done < rounds:
+        try:
+            calls.tick()
+        except Exception as exc:  # noqa: BLE001 -- the next sweep retries
+            print(f"call sweep failed: {type(exc).__name__}", flush=True)
+        done += 1
+        if rounds is None or done < rounds:
+            time.sleep(every)
+
+
 @contextlib.contextmanager
 def child_log(path):
     """Where a child service writes: its private log file on the laptop, or the host's
@@ -693,6 +707,10 @@ def serve(home, hosted=False):
                 # with the laptop's agent worker for the same queued requests.
                 if worker and os.environ.get("YGGDRAS_BACKGROUND", "on") != "off":
                     worker.start()
+                    if config.get("agents", {}).get("execution_backend") != "temporal":
+                        # Without Temporal a plain thread sweeps the calls (as its workflow does).
+                        Thread(target=sweep_calls, args=(application.state.calls,),
+                               daemon=True, name="yggdras-call-sweep").start()  # fmt: skip
                 while not stopping and api_thread.is_alive():
                     time.sleep(0.5)
                 return

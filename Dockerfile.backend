@@ -10,6 +10,7 @@ ENV PYTHONUNBUFFERED=1 \
     UV_LINK_MODE=copy \
     UV_COMPILE_BYTECODE=1 \
     YGGDRAS_HOME=/data \
+    MALLOC_ARENA_MAX=2 \
     TEMPORAL_BINARY=/opt/temporal/temporal
 
 RUN apt-get update \
