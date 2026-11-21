@@ -30,3 +30,7 @@ dumps on the laptop: nightly (kept 14 days) and before every migration or cutove
 restores it.
 
 **Done.** Cut over 2026-11-20 18:50; see the plan for the verification results.
+
+**Superseded in part (2026-11-21, Manoj):** the database moves on to Railway's Hobby plan beside the backend (`planning/backend-server-move.md`). The privacy amendment above still applies, now to Railway; Railway's own Postgres template is used; Supabase is deleted right after the verified move, keeping a final verified dump on the laptop as the rollback copy.
+
+**Moved to Railway 2026-11-21 01:47** (verified identical; see `planning/backend-server-move.md`).

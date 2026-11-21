@@ -1,21 +1,22 @@
-"""Moving the shared database to Supabase (planning/supabase-database-move.md).
+"""Moving the shared database to a hosted PostgreSQL: Supabase (2026-11-20), then
+Railway (planning/backend-server-move.md). The source is whatever the app uses now (the
+laptop's cluster or a hosted database); the target is chosen with --target.
 
-The Supabase admin connection (session pooler, IPv4) is read only from a private file,
-never from the command line, chat or the repository:
-    %LOCALAPPDATA%/Yggdras/supabase-admin.url
+The target's admin connection is read only from a private file, never from the command
+line, chat or the repository:
+    %LOCALAPPDATA%/Yggdras/railway-admin.url    (Railway: Postgres -> Connect -> Public)
+    %LOCALAPPDATA%/Yggdras/supabase-admin.url   (Supabase: Connect -> Session pooler)
 
-    python -m yggdress_app.cloud_move check     # read-only: can we reach it, what is it
-    python -m yggdress_app.cloud_move dry-run   # copy a verified snapshot, compare, remove
-    python -m yggdress_app.cloud_move cutover   # stop, copy, verify, switch, start (~5 min)
-    python -m yggdress_app.cloud_move rollback  # back to the laptop database
+    python -m yggdress_app.cloud_move check    --target railway  # read-only facts
+    python -m yggdress_app.cloud_move dry-run  --target railway  # copy, compare, remove
+    python -m yggdress_app.cloud_move cutover  --target railway  # stop, copy, verify, switch
+    python -m yggdress_app.cloud_move rollback --target railway  # back to the previous one
 """
 
 from __future__ import annotations
 
 import argparse
 import json
-import os
-import subprocess
 from pathlib import Path
 
 import psycopg
@@ -24,16 +25,20 @@ from psycopg.conninfo import conninfo_to_dict
 
 from .local_runtime import SCHEMAS, default_home
 
-ADMIN_FILE = "supabase-admin.url"
+TARGETS = {
+    "railway": ("railway-admin.url", "Railway: Postgres service -> Connect -> Public Network"),
+    "supabase": ("supabase-admin.url", "Supabase: Connect -> Session pooler"),
+}
 MIN_SERVER = 150000  # PostgreSQL 15
 
 
-def admin_url(home: Path) -> str:
-    path = home / ADMIN_FILE
+def admin_url(home: Path, target: str = "railway") -> str:
+    name, where = TARGETS[target]
+    path = home / name
     if not path.is_file():
         raise SystemExit(
-            f"Put the Supabase session-pooler connection string in {path} first "
-            "(Dashboard -> Connect -> Session pooler; percent-encode special characters)."
+            f"Put the {target} admin connection string in {path} first "
+            f"({where}; percent-encode special characters in the password)."
         )
     url = path.read_text(encoding="utf-8").strip()
     parts = conninfo_to_dict(url)
@@ -114,14 +119,14 @@ def sort_order_differences(local, hosted, schemas=SCHEMAS) -> list[str]:
 def restore(url: str, dump: Path, binary: Path) -> None:
     """Restore the app's schemas into the hosted database, without owners or grants
     (roles and grants are set separately at cutover)."""
-    from .backup import client_environment, tool
+    from .backup import BackupError, client_environment, restore_portable
 
-    tool(
-        binary / ("pg_restore" + (".exe" if os.name == "nt" else "")),
-        ["--no-password", "--no-owner", "--no-privileges", "--single-transaction",
-         "--exit-on-error", "--dbname", conninfo_to_dict(url).get("dbname", "postgres"), dump],
-        client_environment(url),
+    code, _ = restore_portable(
+        binary, dump, client_environment(url), conninfo_to_dict(url).get("dbname", "postgres"),
+        ["--no-owner", "--no-privileges"],
     )  # fmt: skip
+    if code:
+        raise BackupError(f"Restoring into the target failed with exit code {code}.")
 
 
 def remove_schemas(url: str) -> None:
@@ -130,21 +135,22 @@ def remove_schemas(url: str) -> None:
             db.execute(sql.SQL("DROP SCHEMA IF EXISTS {} CASCADE").format(sql.Identifier(name)))
 
 
-def dry_run(home: Path) -> dict:
-    """Copy a verified snapshot of app + brain into Supabase, compare every table's rows
+def dry_run(home: Path, target: str = "railway") -> dict:
+    """Copy a verified snapshot of app + brain into the target, compare every table's rows
     and sequences with the snapshot, compare text sort order, then remove the copy.
-    The laptop database is only read."""
+    The current database is only read."""
     import tempfile
     import time
 
     from .backup import database_backup, fingerprints
 
-    hosted = admin_url(home)
+    hosted = admin_url(home, target)
     config = json.loads((home / "runtime.json").read_text(encoding="utf-8"))
     binary = Path(config["postgres_bin"])
+    same_server(config["admin_url"], hosted)
     if check(hosted)["app_schemas_already_there"]:
-        raise SystemExit("Supabase already holds app/brain schemas; nothing was changed.")
-    dump = home / "backups" / f"supabase-dryrun-{time.strftime('%Y%m%d-%H%M%S')}.dump"
+        raise SystemExit("The target already holds app/brain schemas; nothing was changed.")
+    dump = home / "backups" / f"{target}-dryrun-{time.strftime('%Y%m%d-%H%M%S')}.dump"
     with tempfile.TemporaryDirectory(prefix="yggdress-dryrun-") as work:
         report = database_backup(config["admin_url"], dump, binary, Path(work), schemas=SCHEMAS)
     try:
@@ -156,7 +162,7 @@ def dry_run(home: Path) -> dict:
                 local.read_only = True
                 differ = sort_order_differences(local, db)
     finally:
-        remove_schemas(hosted)  # a dry run leaves Supabase as it found it
+        remove_schemas(hosted)  # a dry run leaves the target as it found it
     expected = report["snapshot"]
     mismatched = sorted(
         k
@@ -171,15 +177,24 @@ def dry_run(home: Path) -> dict:
         "sequences_identical": expected["sequences"] == copied["sequences"],
         "sort_order_differs_in": differ,
         "backup": dump.name,
-        "supabase_left_clean": True,
+        "target_left_clean": True,
     }
 
 
 # ------------------------------------------------------------------ cutover
 
 BRAIN_ENV_KEY = "BRAIN_DATABASE_URL"
-BACKUP_SUFFIX = ".before-supabase"
 PUBLIC_ROLES = ("anon", "authenticated")  # Supabase's API roles: never on app/brain
+
+
+def suffix(target: str) -> str:
+    return f".before-{target}"
+
+
+def same_server(current: str, hosted: str) -> None:
+    a, b = conninfo_to_dict(current), conninfo_to_dict(hosted)
+    if (a.get("host"), a.get("port")) == (b.get("host"), b.get("port")):
+        raise SystemExit("The app already uses that database server; nothing was changed.")
 
 
 def login(admin: str, role: str) -> str:
@@ -189,17 +204,27 @@ def login(admin: str, role: str) -> str:
 
 
 def role_url(admin: str, role: str, password: str) -> str:
+    """A service role's login on the same server; encryption is mandatory off the laptop."""
     from psycopg.conninfo import make_conninfo
 
-    return make_conninfo(admin, user=login(admin, role), password=password)
+    extra = {} if conninfo_to_dict(admin).get("host") in LOCAL_HOSTS else {"sslmode": "require"}
+    return make_conninfo(admin, user=login(admin, role), password=password, **extra)
+
+
+LOCAL_HOSTS = (None, "", "localhost", "127.0.0.1", "::1")
 
 
 def roles_of(config: dict, brain_url: str) -> dict:
-    """The role names in use today (kept the same; only passwords change)."""
+    """The role names in use today (kept the same; only passwords change). A Supabase
+    pooler login '<role>.<project>' is the role '<role>'."""
+
+    def role(url):
+        return conninfo_to_dict(url)["user"].split(".", 1)[0]
+
     return {
-        "app": conninfo_to_dict(config["migration_url"])["user"],
-        "brain": conninfo_to_dict(brain_url)["user"],
-        "runtime": conninfo_to_dict(config["database_url"])["user"],
+        "app": role(config["migration_url"]),
+        "brain": role(brain_url),
+        "runtime": role(config["database_url"]),
     }
 
 
@@ -211,7 +236,7 @@ def install(hosted: str, local_admin: str, dump: Path, binary: Path, roles: dict
     own services depend on them."""
     import secrets
 
-    from .backup import BackupError, client_environment
+    from .backup import BackupError, client_environment, restore_portable
     from .shared_database import copy_runtime_grants
 
     passwords = {key: secrets.token_urlsafe(32) for key in roles}
@@ -235,14 +260,12 @@ def install(hosted: str, local_admin: str, dump: Path, binary: Path, roles: dict
         for key in ("app", "brain"):
             with psycopg.connect(urls[key], autocommit=True, connect_timeout=15) as owner:
                 owner.execute(sql.SQL("CREATE SCHEMA {}").format(sql.Identifier(key)))
-            restored = subprocess.run(
-                [str(binary / ("pg_restore" + (".exe" if os.name == "nt" else ""))),
-                 "--no-password", "--no-owner", "--no-privileges", "--single-transaction",
-                 "--exit-on-error", "--schema=" + key, "--dbname", dbname, str(dump)],
-                env=client_environment(urls[key]), capture_output=True, timeout=600, check=False,
+            code, errors = restore_portable(
+                binary, dump, client_environment(urls[key]), dbname,
+                ["--no-owner", "--no-privileges", "--schema=" + key],
             )  # fmt: skip
-            if restored.returncode:
-                (dump.parent / f"{key}-restore-error.log").write_bytes(restored.stderr)
+            if code:
+                (dump.parent / f"{key}-restore-error.log").write_bytes(errors)
                 raise BackupError(f"Restoring {key} failed; the log is beside the backup.")
     finally:
         with psycopg.connect(hosted, autocommit=True, connect_timeout=15) as admin:
@@ -365,29 +388,30 @@ def stop_local_cluster(home: Path, config: dict) -> None:
          capture=False)  # fmt: skip
 
 
-def cutover(home: Path) -> dict:
-    """Stop the app, copy a final verified snapshot into Supabase, verify every table,
-    sequence and permission, switch the app and Lia to Supabase, start the app.
-    The laptop cluster and the old settings are kept for rollback."""
+def cutover(home: Path, target: str = "railway") -> dict:
+    """Stop the app, copy a final verified snapshot of the current database into the
+    target, verify every table, sequence and permission, switch the app and Lia to the
+    target, start the app. The old settings and the snapshot are kept for rollback."""
     import tempfile
     import time
 
     from .backup import database_backup, fingerprints
     from .local_runtime import atomic_json, ensure
 
-    hosted = admin_url(home)
+    hosted = admin_url(home, target)
     config_file = home / "runtime.json"
     config = json.loads(config_file.read_text(encoding="utf-8"))
-    if config.get("database_host") == "remote":
-        raise SystemExit("The app already uses the hosted database.")
+    same_server(config["admin_url"], hosted)
+    from_laptop = config.get("database_host") != "remote"
     env_file = Path(config["brain_env"])
     roles = roles_of(config, read_brain_url(env_file))
     if check(hosted)["app_schemas_already_there"]:
-        raise SystemExit("Supabase already holds app/brain schemas; nothing was changed.")
+        raise SystemExit("The target already holds app/brain schemas; nothing was changed.")
     binary = Path(config["postgres_bin"])
     stop_app(home)
-    start_local_cluster(home, config)  # the app is stopped: only this copy reads it
-    dump = home / "backups" / f"supabase-cutover-{time.strftime('%Y%m%d-%H%M%S')}.dump"
+    if from_laptop:
+        start_local_cluster(home, config)  # the app is stopped: only this copy reads it
+    dump = home / "backups" / f"{target}-cutover-{time.strftime('%Y%m%d-%H%M%S')}.dump"
     try:
         with tempfile.TemporaryDirectory(prefix="yggdress-cutover-") as work:
             report = database_backup(config["admin_url"], dump, binary, Path(work), schemas=SCHEMAS)
@@ -398,20 +422,21 @@ def cutover(home: Path) -> dict:
         if copied["tables"] != report["snapshot"]["tables"] or (
             copied["sequences"] != report["snapshot"]["sequences"]
         ):
-            raise RuntimeError("The Supabase copy differs from the snapshot.")
+            raise RuntimeError("The copy differs from the snapshot.")
         isolated(urls, roles)
     except BaseException:
-        remove_schemas(hosted)  # nothing half-copied stays in Supabase
-        ensure(home)  # the laptop database is untouched: carry on as before
+        remove_schemas(hosted)  # nothing half-copied stays in the target
+        ensure(home)  # the current database is untouched: carry on as before
         raise
     for path in (config_file, env_file):
-        backup = path.with_name(path.name + BACKUP_SUFFIX)
+        backup = path.with_name(path.name + suffix(target))
         if not backup.exists():
             backup.write_bytes(path.read_bytes())
     write_brain_url(env_file, urls["brain"])
     atomic_json(config_file, {**config, "database_host": "remote", "admin_url": hosted,
                               "migration_url": urls["app"], "database_url": urls["runtime"]})  # fmt: skip
-    stop_local_cluster(home, config)  # nothing may keep writing to the old copy unnoticed
+    if from_laptop:
+        stop_local_cluster(home, config)  # nothing may keep writing to the old copy
     ready = ensure(home).get("ready", False)
     with psycopg.connect(urls["runtime"], connect_timeout=15) as db:
         tasks = db.execute("SELECT count(*) FROM app.tasks").fetchone()[0]
@@ -426,41 +451,45 @@ def cutover(home: Path) -> dict:
         "tasks_visible_to_app": tasks,
         "notes_visible_to_brain": notes,
         "backup": dump.name,
-        "rollback": "python -m yggdress_app.cloud_move rollback",
+        "rollback": f"python -m yggdress_app.cloud_move rollback --target {target}",
     }
 
 
-def rollback(home: Path) -> dict:
-    """Back to the laptop database: restore the saved settings and restart. Anything
-    written to Supabase after the cutover is NOT copied back (it is left in Supabase)."""
+def rollback(home: Path, target: str = "railway") -> dict:
+    """Back to the database used before the cutover to `target`: restore the saved
+    settings and restart. Anything written to the target after the cutover is NOT
+    copied back (it is left there)."""
     from .local_runtime import ensure
 
     config_file = home / "runtime.json"
     config = json.loads(config_file.read_text(encoding="utf-8"))
     env_file = Path(config["brain_env"])
-    saved = [p.with_name(p.name + BACKUP_SUFFIX) for p in (config_file, env_file)]
+    saved = [p.with_name(p.name + suffix(target)) for p in (config_file, env_file)]
     if not all(p.exists() for p in saved):
-        raise SystemExit("No saved pre-Supabase settings; nothing was changed.")
-    stop_app(home)  # the laptop cluster starts again with the app (local mode)
+        raise SystemExit(f"No settings saved before the {target} cutover; nothing was changed.")
+    stop_app(home)
     for original, backup in zip((config_file, env_file), saved, strict=True):
         original.write_bytes(backup.read_bytes())
-    return {"serving": ensure(home).get("ready", False), "database": "laptop"}
+    previous = json.loads(config_file.read_text(encoding="utf-8")).get("database_host")
+    return {"serving": ensure(home).get("ready", False),
+            "database": "hosted (previous)" if previous == "remote" else "laptop"}  # fmt: skip
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Move the database to Supabase.")
+    parser = argparse.ArgumentParser(description="Move the database to a hosted server.")
     parser.add_argument("action", choices=["check", "dry-run", "cutover", "rollback"])
+    parser.add_argument("--target", choices=sorted(TARGETS), default="railway")
     parser.add_argument("--home", type=Path, default=default_home())
     args = parser.parse_args()
     try:
         if args.action in ("dry-run", "cutover", "rollback"):
             step = {"dry-run": dry_run, "cutover": cutover, "rollback": rollback}[args.action]
-            print(json.dumps(step(args.home), indent=2))
+            print(json.dumps(step(args.home, args.target), indent=2))
             return
-        print(json.dumps(check(admin_url(args.home)), indent=2))
+        print(json.dumps(check(admin_url(args.home, args.target)), indent=2))
     except (psycopg.Error, RuntimeError) as exc:  # messages can hold addresses: type only
         raise SystemExit(
-            f"Stopped safely: {type(exc).__name__}. Supabase was cleaned up."
+            f"Stopped safely: {type(exc).__name__}. The target was cleaned up."
         ) from None
 
 

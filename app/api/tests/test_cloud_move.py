@@ -79,13 +79,13 @@ def test_a_hosted_database_is_verified_and_never_started_as_a_local_cluster(post
 
 
 def test_the_check_refuses_the_ipv6_only_host_and_reads_facts_only(postgres, tmp_path):
-    with pytest.raises(SystemExit, match="first"):
-        admin_url(tmp_path)
+    with pytest.raises(SystemExit, match="railway admin connection string"):
+        admin_url(tmp_path)  # Railway is the default target now
     (tmp_path / "supabase-admin.url").write_text(
         "postgresql://postgres:x@db.example123.supabase.co:5432/postgres"
     )
     with pytest.raises(SystemExit, match="IPv6-only"):
-        admin_url(tmp_path)
+        admin_url(tmp_path, "supabase")
     facts = check(postgres["admin"])
     assert facts["version_ok"] and facts["encoding"] == "UTF8"
     assert facts["app_schemas_exposed"] == []
@@ -153,3 +153,19 @@ def test_install_recreates_owners_data_and_isolated_grants_in_a_hosted_database(
     write_brain_url(env, "user=c password=d host=e")
     assert read_brain_url(env) == "user=c password=d host=e"
     assert env.read_text(encoding="utf-8").splitlines()[0::2] == ["OTHER=1", "LAST=2"]
+
+
+def test_a_hosted_to_hosted_move_keeps_role_names_and_refuses_the_same_server():
+    from yggdress_app.cloud_move import roles_of, same_server, suffix
+
+    pooled = "host=aws-0-eu.pooler.supabase.com port=5432 dbname=postgres user={} password=x"
+    config = {
+        "migration_url": pooled.format("ygg_app_owner_1.abc"),
+        "database_url": pooled.format("yggdras_application.abc"),
+    }
+    assert roles_of(config, pooled.format("ygg_brain_1.abc")) == {
+        "app": "ygg_app_owner_1", "brain": "ygg_brain_1", "runtime": "yggdras_application"}  # fmt: skip
+    with pytest.raises(SystemExit, match="already uses that database server"):
+        same_server(pooled.format("postgres.abc"), pooled.format("postgres.abc"))
+    same_server(pooled.format("postgres.abc"), "host=x.proxy.rlwy.net port=12345 user=postgres")
+    assert suffix("railway") == ".before-railway"

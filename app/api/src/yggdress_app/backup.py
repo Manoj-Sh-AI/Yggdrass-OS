@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import secrets
 import shutil
 import socket
@@ -208,12 +209,42 @@ def fingerprints(conn, schemas=None):
     return {"tables": tables, "sequences": sequences, "large_objects": objects}
 
 
+# Supabase stores its own per-column setting (pg_attver) that standard PostgreSQL
+# rejects; it is host bookkeeping, not data. Dumps keep it; restores and schema
+# comparisons drop exactly these lines.
+HOST_ONLY = re.compile(
+    rb"^ALTER TABLE ONLY [^\n]*ALTER COLUMN [^\n]*SET \(pg_attver=\d+\);\r?\n", re.MULTILINE
+)
+
+
+def portable(text: bytes) -> bytes:
+    return HOST_ONLY.sub(b"", text)
+
+
+def restore_portable(binary_dir, dump, env, dbname, args=()):
+    """pg_restore -> SQL -> drop host-only lines -> psql in one transaction that stops at
+    the first error. Returns (exit code, stderr)."""
+    suffix = ".exe" if os.name == "nt" else ""
+    script = subprocess.run(
+        [str(Path(binary_dir) / ("pg_restore" + suffix)), "--file=-", *map(str, args), str(dump)],
+        capture_output=True, check=False, timeout=600,
+    )  # fmt: skip
+    if script.returncode:
+        return script.returncode, script.stderr
+    applied = subprocess.run(
+        [str(Path(binary_dir) / ("psql" + suffix)), "-X", "-q", "--no-password",
+         "-v", "ON_ERROR_STOP=1", "--single-transaction", "-d", dbname, "-f", "-"],
+        input=portable(script.stdout), env=env, capture_output=True, check=False, timeout=600,
+    )  # fmt: skip
+    return applied.returncode, applied.stderr
+
+
 def schema_fingerprint(binary, env, snapshot=None, schemas=None):
     args = ["--schema-only", "--no-owner", "--no-privileges", "--no-password"]
     if snapshot:
         args.append("--snapshot=" + snapshot)
     args += [f"--schema={name}" for name in schemas or ()]
-    text = tool(binary, args, env).decode("utf-8")
+    text = portable(tool(binary, args, env)).decode("utf-8")
     lines = [
         line.rstrip()
         for line in text.splitlines()
@@ -289,22 +320,12 @@ def database_backup(url, target, binary_dir, workspace, schemas=None):
                 if role != "backup_verify":
                     restored.execute(sql.SQL("CREATE ROLE {} NOLOGIN").format(sql.Identifier(role)))
         restore_env = client_environment(target_url)
-        tool(
-            binary_dir / ("pg_restore" + suffix),
-            [
-                "--no-password",
-                "--clean",
-                "--if-exists",
-                "--single-transaction",
-                "--exit-on-error",
-                "--no-owner",
-                "--no-privileges",
-                "--dbname",
-                "postgres",
-                target,
-            ],
-            restore_env,
-        )
+        code, _ = restore_portable(
+            binary_dir, target, restore_env, "postgres",
+            ["--clean", "--if-exists", "--no-owner", "--no-privileges"],
+        )  # fmt: skip
+        if code:
+            raise BackupError(f"The verification restore failed with exit code {code}.")
         with psycopg.connect(target_url) as restored:
             restored.read_only = True
             restored.execute("SET TIME ZONE 'UTC'")
