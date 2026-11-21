@@ -187,11 +187,12 @@ PUBLIC_DEBUG_SIGNER = "fac61745dc0903786fb9ede62a962b399f7348f0bb6f899b833266759
 
 def apk_signers(apk):
     tools = ROOT / ".cache/android-tools"
-    apksigner = sorted((tools / "sdk/build-tools").glob("*/apksigner.bat"))[-1]
-    java = next((tools / "java").glob("jdk-*"))
+    # The jar runs on the project's Java directly: no cmd.exe, so paths with
+    # spaces (".../Yggdrass OS/...") are passed intact.
+    apksigner = sorted((tools / "sdk/build-tools").glob("*/lib/apksigner.jar"))[-1]
+    java = next((tools / "java").glob("jdk-*/bin/java.exe"))
     result = subprocess.run(
-        ["cmd.exe", "/c", str(apksigner), "verify", "--print-certs", str(apk)],
-        env={**os.environ, "JAVA_HOME": str(java)},
+        [str(java), "-jar", str(apksigner), "verify", "--print-certs", str(apk)],
         check=True,
         capture_output=True,
         text=True,
