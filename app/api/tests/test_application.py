@@ -385,3 +385,29 @@ def test_runtime_role_cannot_reduce_goal_or_rewrite_progress_history(postgres):
             Database(postgres["runtime"]).connect() as db,
         ):
             db.execute(query)
+
+
+def test_the_hosted_and_the_laptop_web_app_may_both_call_the_backend(setup):
+    """YGGDRESS_ORIGIN lists the allowed web apps; anything else is refused, and plain HTTP
+    is only for a loopback web app. An HTTPS one makes cookies secure."""
+    from dataclasses import replace
+
+    _, _, password, settings = setup
+    both = replace(settings, origin="https://web.example.up.railway.app,http://127.0.0.1:3000",
+                   local_http=False)  # fmt: skip
+    both.validate()
+    assert both.origins == ("https://web.example.up.railway.app", "http://127.0.0.1:3000")
+    client = TestClient(create_app(both), base_url="https://web.example.up.railway.app")
+    for origin, allowed in (("https://web.example.up.railway.app", True),
+                            ("http://127.0.0.1:3000", True), ("https://evil.example", False)):  # fmt: skip
+        answer = client.post("/v1/auth/login", json={"password": password},
+                             headers={"Origin": origin, "X-Yggdress-Login": "1"})  # fmt: skip
+        assert (answer.status_code != 403) is allowed, (origin, answer.status_code)
+        if allowed:
+            assert "secure" in answer.headers.get("set-cookie", "").lower()
+    with pytest.raises(ValueError):
+        replace(settings, origin="http://web.example.com", local_http=False).validate()
+    with pytest.raises(ValueError):
+        replace(
+            settings, origin="https://a.example,http://127.0.0.1:3000", local_http=True
+        ).validate()

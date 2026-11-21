@@ -25,30 +25,40 @@ class Settings:
         settings.validate()
         return settings
 
+    @property
+    def origins(self) -> tuple[str, ...]:
+        """The web apps allowed to call this backend (YGGDRESS_ORIGIN, comma-separated): e.g.
+        the hosted web app and, while it is still in use, the laptop's own web app."""
+        return tuple(o.strip().rstrip("/") for o in self.origin.split(",") if o.strip())
+
     def validate(self):
         from .security import valid_hash
 
         if not self.database_url or not valid_hash(self.password_hash):
             raise ValueError("Application database and password hash must be configured privately.")
-        origin = urlparse(self.origin)
-        if (
-            origin.scheme not in ("https", "http")
-            or not origin.netloc
-            or origin.path
-            or origin.query
-            or origin.fragment
-            or origin.username
-            or origin.password
-        ):
+        if not self.origins:
             raise ValueError("Configure an exact application origin.")
-        if self.local_http and (
-            origin.scheme != "http" or origin.hostname not in ("127.0.0.1", "localhost", "::1")
-        ):
-            raise ValueError("Insecure cookies are permitted only for loopback HTTP development.")
-        if origin.scheme != "https" and not (
-            self.local_http and origin.hostname in ("127.0.0.1", "localhost", "::1")
-        ):
-            raise ValueError("HTTP sessions are permitted only for loopback development.")
+        for value in self.origins:
+            origin = urlparse(value)
+            if (
+                origin.scheme not in ("https", "http")
+                or not origin.netloc
+                or origin.path
+                or origin.query
+                or origin.fragment
+                or origin.username
+                or origin.password
+            ):
+                raise ValueError("Configure an exact application origin.")
+            loopback = origin.hostname in ("127.0.0.1", "localhost", "::1")
+            if self.local_http and (origin.scheme != "http" or not loopback):
+                raise ValueError(
+                    "Insecure cookies are permitted only for loopback HTTP development."
+                )
+            # Plain HTTP only for a loopback web app (browsers treat it as a secure context,
+            # so it also works beside an HTTPS one with secure cookies).
+            if origin.scheme != "https" and not loopback:
+                raise ValueError("HTTP sessions are permitted only for loopback development.")
         if type(self.mobile_sensitive_access) is not bool:
             raise ValueError("Mobile sensitive access requires an explicit owner setting.")
         if self.brain_mode not in ("mock", "unavailable"):

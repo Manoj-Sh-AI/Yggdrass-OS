@@ -156,7 +156,7 @@ def create_app(
         )
 
     def origin(request: Request):
-        if request.headers.get("origin") != settings.origin.rstrip("/"):
+        if request.headers.get("origin") not in settings.origins:
             raise HTTPException(403, "This request must come from your application origin.")
 
     def renew_phone(found, token):

@@ -566,8 +566,9 @@ def serve(home, hosted=False):
             config["database_url"],
             config["password_hash"],
             config["origin"],
-            # Insecure (HTTP) cookies only for a loopback web app; HTTPS origins get secure ones.
-            urlsplit(config["origin"]).scheme == "http",
+            # Insecure (HTTP) cookies only when every web app is a loopback one; as soon as
+            # an HTTPS web app is allowed, cookies are secure (the laptop's still works).
+            all(urlsplit(o.strip()).scheme == "http" for o in config["origin"].split(",")),
             "unavailable",
             mobile_sensitive_access=config.get("mobile_sensitive_access") is True,
         )
@@ -621,7 +622,8 @@ def serve(home, hosted=False):
             # Temporal changes execution plumbing; the HTTP service stays the same.
             uvicorn.Config(
                 application,
-                host="0.0.0.0" if hosted else "127.0.0.1",
+                # "::" also answers on Railway's IPv6 private network (and on IPv4).
+                host="::" if hosted else "127.0.0.1",
                 port=api_port,
                 log_level="error",
             )
