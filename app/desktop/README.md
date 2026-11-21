@@ -6,7 +6,9 @@ Build `app/desktop/build.ps1` in PowerShell. It fetches the pinned Microsoft Web
 
 Provision the persistent application runtime explicitly through `yggdress_app.local_runtime.provision`, using an application-only source database and a verified dedicated production frontend build. This is an engineering import, not an ordinary startup action. It refuses an existing destination. Keep the private `runtime.json`, PostgreSQL data, webview profile and backups under `%LOCALAPPDATA%/Yggdras`, outside OneDrive. Never commit them or include them in the desktop folder.
 
-The ignored `dist/desktop.json` contains only three local paths: `python` (application virtual environment), `moduleRoot` (API `src`), and `dataRoot` (private local data directory). It contains no password or API credential. Launch `dist/Yggdras.exe` or its desktop shortcut. The normal personal password remains required; desktop sign-in persists in its own profile. Closing the window leaves shared services available to other clients.
+**Hosted (Railway):** add `"url": "https://<web app address>"` to `dist/desktop.json` and the window opens that HTTPS address directly, starting and checking nothing on the laptop; the microphone and in-app navigation are allowed for that address only. Remove `url` to use the laptop runtime again.
+
+The ignored `dist/desktop.json` contains three local paths: `python` (application virtual environment), `moduleRoot` (API `src`), and `dataRoot` (private local data directory). It contains no password or API credential. Launch `dist/Yggdras.exe` or its desktop shortcut. The normal personal password remains required; desktop sign-in persists in its own profile. Closing the window leaves shared services available to other clients.
 
 Recovery is available in the window. To stop only the owned local application services, run the API environment's Python with `-m yggdress_app.local_runtime stop`. PostgreSQL shuts down cleanly and records remain on disk. Starting the app brings them back. This does not stop an independently running Brain service.
 

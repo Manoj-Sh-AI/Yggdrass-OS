@@ -830,7 +830,7 @@ def ensure(home):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--home", type=Path, default=default_home())
-    parser.add_argument("action", choices=("ensure", "serve", "status", "stop"))
+    parser.add_argument("action", choices=("ensure", "serve", "status", "stop", "backup"))
     args = parser.parse_args()
     try:
         if args.action == "serve":
@@ -839,6 +839,11 @@ def main():
             print(json.dumps(ensure(args.home)))
         elif args.action == "status":
             print(json.dumps(status(args.home)))
+        elif args.action == "backup":
+            # Scheduled nightly when nothing else runs here (the app is hosted).
+            config = json.loads((args.home / "runtime.json").read_text(encoding="utf-8"))
+            made = nightly_backup(args.home, config)
+            print(json.dumps({"backup": made.name if made else "already done today or before 03:00"}))
         else:
             state = json.loads((args.home / "service.json").read_text())
             request = Request(

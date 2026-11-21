@@ -16,6 +16,9 @@ namespace YggdrasDesktop {
         public string python { get; set; }
         public string moduleRoot { get; set; }
         public string dataRoot { get; set; }
+        // Set when Yggdras is hosted (Railway): the window opens this HTTPS address and
+        // starts nothing on this laptop. Unset: the laptop runtime as before.
+        public string url { get; set; }
     }
     public class ServiceStatus {
         public bool ready { get; set; }
@@ -102,7 +105,7 @@ namespace YggdrasDesktop {
             }
             health.Interval = 15000;
             health.Tick += async (sender, args) => {
-                if (opening || origin == null) return;
+                if (opening || origin == null || Hosted) return;  // a hosted app has no local service
                 try {
                     var result = await Runtime("status");
                     if (!result.ready) ShowFailure("The local service stopped. Your saved data is preserved.");
@@ -110,11 +113,24 @@ namespace YggdrasDesktop {
             };
         }
 
-        async Task<ServiceStatus> Runtime(string action) {
-            if (config == null) {
-                config = json.Deserialize<DesktopConfig>(File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "desktop.json")));
-                if (!File.Exists(config.python) || !Directory.Exists(config.moduleRoot) || !Directory.Exists(config.dataRoot)) throw new InvalidOperationException();
+        DesktopConfig Config() {
+            if (config != null) return config;
+            var loaded = json.Deserialize<DesktopConfig>(File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "desktop.json")));
+            if (!Directory.Exists(loaded.dataRoot)) throw new InvalidOperationException();
+            if (String.IsNullOrEmpty(loaded.url)) {
+                if (!File.Exists(loaded.python) || !Directory.Exists(loaded.moduleRoot)) throw new InvalidOperationException();
+            } else {
+                Uri hosted;
+                // Only an exact HTTPS origin: no path, no credentials.
+                if (!Uri.TryCreate(loaded.url, UriKind.Absolute, out hosted) || hosted.Scheme != "https" || !String.IsNullOrEmpty(hosted.UserInfo) || hosted.AbsolutePath != "/") throw new InvalidOperationException();
             }
+            return config = loaded;
+        }
+
+        bool Hosted { get { return !String.IsNullOrEmpty(Config().url); } }
+
+        async Task<ServiceStatus> Runtime(string action) {
+            Config();
             var start = new ProcessStartInfo(config.python) {
                 Arguments = "-m yggdress_app.local_runtime --home \"" + config.dataRoot + "\" " + action,
                 UseShellExecute = false, CreateNoWindow = true,
@@ -140,9 +156,13 @@ namespace YggdrasDesktop {
             opening = true; retry.Visible = false;
             status.Text = "Opening Yggdras…"; status.Visible = true;
             try {
-                var service = await Runtime("ensure");
-                if (!service.ready) throw new InvalidOperationException();
-                origin = new Uri(service.origin);
+                if (Hosted) {
+                    origin = new Uri(Config().url);
+                } else {
+                    var service = await Runtime("ensure");
+                    if (!service.ready) throw new InvalidOperationException();
+                    origin = new Uri(service.origin);
+                }
                 if (view.CoreWebView2 == null) {
                     var environment = await CoreWebView2Environment.CreateAsync(null, Path.Combine(config.dataRoot, "webview"));
                     await view.EnsureCoreWebView2Async(environment);
@@ -190,7 +210,9 @@ namespace YggdrasDesktop {
                 view.CoreWebView2.Navigate(new Uri(origin, "/today").ToString());
                 health.Start();
             } catch (Exception) {
-                ShowFailure("Yggdras could not start. Check that this laptop’s local services are available, then try again.");
+                ShowFailure(config != null && !String.IsNullOrEmpty(config.url)
+                    ? "Yggdras could not be reached. Check the internet connection, then try again."
+                    : "Yggdras could not start. Check that this laptop’s local services are available, then try again.");
                 if (Program.VerifyOutput != null) { File.WriteAllText(Program.VerifyOutput + ".error", "Desktop startup failed."); Close(); }
             } finally { opening = false; }
         }
