@@ -409,6 +409,17 @@ def quietly(step, *args):
         pass
 
 
+def web_environment(config, api_port):
+    """Settings for the laptop's web server. A hosted backend has no web server and no
+    build folder, so nothing here may be required of it."""
+    return {
+        **clean_environment(),
+        "YGGDRESS_API_URL": f"http://127.0.0.1:{api_port}",
+        "YGGDRESS_ORIGIN": config["origin"],
+        "YGGDRESS_BUILD_DIR": config.get("build_dir", ".next"),
+    }
+
+
 def serve(home, hosted=False):
     """The laptop runtime, or with `hosted` the same backend in a hosted container
     (hosted.py): no web server, no local PostgreSQL, the API on the host's PORT."""
@@ -499,12 +510,7 @@ def serve(home, hosted=False):
         )
         api_thread = Thread(target=api.run, daemon=True)
         api_thread.start()
-        environment = {
-            **clean_environment(),
-            "YGGDRESS_API_URL": f"http://127.0.0.1:{api_port}",
-            "YGGDRESS_ORIGIN": config["origin"],
-            "YGGDRESS_BUILD_DIR": config["build_dir"],
-        }
+        environment = web_environment(config, api_port)
         frontend = None
         voice_process = None
         if application.state.calls.mode == "live":

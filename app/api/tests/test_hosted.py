@@ -72,3 +72,12 @@ def test_bootstrap_writes_private_runtime_settings(tmp_path, binary, monkeypatch
     assert written["runtime"]["database_url"] == VARIABLES["YGGDRESS_DATABASE_URL"]
     assert (tmp_path / "repo" / ".env").read_text().count("\n") >= 6
     assert (folder / "local-data").is_dir()
+
+
+def test_serve_needs_no_laptop_only_setting_in_hosted_mode(tmp_path, binary):
+    """Regression: the first Railway start failed on the laptop's web build folder."""
+    from yggdress_app.local_runtime import web_environment
+
+    config = hosted.runtime({**VARIABLES, "TEMPORAL_BINARY": binary}, tmp_path)
+    assert "build_dir" not in config and "node" not in config and "web" not in config
+    assert web_environment(config, 8080)["YGGDRESS_API_URL"] == "http://127.0.0.1:8080"
