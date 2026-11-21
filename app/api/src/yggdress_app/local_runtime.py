@@ -429,8 +429,15 @@ def serve_web_only(home, config):
         frontend_port = urlsplit(config["origin"]).port
         if urlsplit(config["origin"]).hostname != "127.0.0.1" or not frontend_port:
             raise RuntimeError("The local web app must use an explicit loopback port.")
-        with socket.socket() as probe:
-            probe.bind(("127.0.0.1", frontend_port))
+        for attempt in range(30):  # a just-stopped web server may still hold the port
+            try:
+                with socket.socket() as probe:
+                    probe.bind(("127.0.0.1", frontend_port))
+                break
+            except OSError:
+                if attempt == 29:
+                    raise
+                time.sleep(0.5)
         control_port, token = port(), secrets.token_urlsafe(40)
         state = {"pid": os.getpid(), "control_port": control_port, "token": token,
                  "origin": config["origin"], "ready": False, "backend": "hosted"}  # fmt: skip
