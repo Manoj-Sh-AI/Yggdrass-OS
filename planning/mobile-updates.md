@@ -61,10 +61,17 @@ npm run release:android -- --publish
 ```
 
 This packages `android/app/build/outputs/apk/release/app-release.apk` with its
-build metadata. A phone on an older build sees Download Android VERSION in
-Settings. Android's installer performs the update and validates the APK signing
-identity. The app does not silently grant new Android permissions or install
-native code. Every APK is signed with the owner's upload key in
+build metadata. From 0.3.3 the phone installs it by itself, "when safe"
+(`rationale/decisions/android-self-update.md`): it checks on open (at most every
+6 h, or on Check for updates), downloads in the background, and installs once the
+app has been in the background for 2 minutes with no call ringing or in progress.
+Before installing, it checks the hash, the package, a higher version code and that
+the APK carries the installed app's own signing certificate; Android checks the key
+again. It needs the one-time "Allow Yggdras to install updates" permission in
+Settings → App updates. The first self-update may ask for one tap (a notification);
+after that Android 12+ installs without a prompt. Download Android VERSION stays as
+a manual fallback. New Android permissions are still never granted silently: Android
+asks for them as usual. Every APK is signed with the owner's upload key in
 `local-data/android-signing` (see `rationale/decisions/android-release-signing.md`);
 back it up with the update key. Keep the same key for subsequent APKs.
 

@@ -22,6 +22,8 @@ type Context = {
   start: () => Promise<void>;
   state: string;
   busy: boolean;
+  /** A call is ringing, connecting or in progress: nothing may restart the app. */
+  callBusy: boolean;
 };
 const Context = createContext<Context | null>(null);
 export const useCalls = () => useContext(Context)!;
@@ -235,6 +237,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
         start: () => join(""),
         state,
         busy,
+        callBusy: !!ringing || !!active || busy || state !== "idle",
       }}
     >
       {children}

@@ -1,31 +1,63 @@
-import { useState } from "react";
-import { Alert, Linking, Text } from "react-native";
+import { useEffect, useState } from "react";
+import { Alert, AppState, Linking, Text } from "react-native";
 import * as Application from "expo-application";
 import * as Updates from "expo-updates";
 import { SERVER_ORIGIN } from "./server";
+import {
+  availableAndroidRelease,
+  nativeUpdater,
+  selfUpdater,
+  type AndroidRelease,
+} from "./self-update";
 import { Button, ErrorText, Panel, styles } from "./ui";
 
-type AndroidRelease = {
-  version: string;
-  versionCode: number;
-  sha256: string;
-  url: string;
-};
-export function availableAndroidRelease(value: unknown): AndroidRelease | null {
-  if (!value || typeof value !== "object") return null;
-  const release = value as AndroidRelease;
-  if (
-    !Number.isSafeInteger(release.versionCode) ||
-    release.versionCode < 1 ||
-    !/^\d+\.\d+\.\d+$/.test(release.version) ||
-    !/^[a-f0-9]{64}$/.test(release.sha256) ||
-    release.url !==
-      `${SERVER_ORIGIN}/api/mobile-updates/apk/${release.sha256}.apk`
-  )
-    return null;
-  return release.versionCode > Number(Application.nativeBuildVersion || 0)
-    ? release
-    : null;
+export { availableAndroidRelease };
+
+function describeStatus(last: string | null) {
+  if (!last) return "";
+  if (last.startsWith("updated:")) return `Last update: installed ${last.slice(8)}.`;
+  if (last === "needs-tap") return "Last update is waiting for one tap in its notification.";
+  if (last === "installing") return "An update is being installed.";
+  if (last.startsWith("failed")) return "The last automatic update failed; it will retry.";
+  return "";
+}
+
+/** Whether Android lets Yggdras install its own updates, plus the last result. */
+function AutomaticUpdates() {
+  const [allowed, setAllowed] = useState<boolean | null>(null);
+  const [last, setLast] = useState<string | null>(null);
+  useEffect(() => {
+    if (!nativeUpdater) return;
+    const read = () => {
+      void nativeUpdater!.canInstall().then(setAllowed).catch(() => {});
+      void nativeUpdater!.lastStatus().then(setLast).catch(() => {});
+    };
+    read();
+    // Re-read after returning from Android's "Install unknown apps" page.
+    const subscription = AppState.addEventListener("change", (state) => {
+      if (state === "active") read();
+    });
+    return () => subscription.remove();
+  }, []);
+  if (!nativeUpdater || !selfUpdater) return null;
+  return (
+    <>
+      <Text style={styles.subtitle}>
+        {allowed
+          ? "Automatic Android updates: on. New versions install while the app is in the background with no call."
+          : "Automatic Android updates need permission to install Yggdras updates."}
+      </Text>
+      {allowed === false && (
+        <Button
+          title="Allow Yggdras to install updates"
+          onPress={() => nativeUpdater!.openInstallSettings()}
+        />
+      )}
+      {describeStatus(last) ? (
+        <Text style={styles.subtitle}>{describeStatus(last)}</Text>
+      ) : null}
+    </>
+  );
 }
 
 export function AppUpdates() {
@@ -44,6 +76,7 @@ export function AppUpdates() {
       );
       if (!response.ok) throw new Error();
       setNative(availableAndroidRelease((await response.json()).release));
+      void selfUpdater?.check(true);
       if (!Updates.isEnabled) {
         setMessage(
           "Screen updates are available in the installed release app.",
@@ -95,6 +128,7 @@ export function AppUpdates() {
         Screen updates can download and reload here. Android features use a new
         app package and Android's installer.
       </Text>
+      <AutomaticUpdates />
       <Button
         title={busy ? "Checking updates…" : "Check for updates"}
         disabled={busy}

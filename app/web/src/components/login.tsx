@@ -11,8 +11,9 @@ export function LoginForm() {
   return (
     <main className="login-page">
       <div className="panel login-panel">
-        <span className="brand-mark">
-          <Icon name="Brain" size={26} />
+        <span className="brand-mark brand-logo">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/logo-mark.png" alt="" width={48} height={48} />
         </span>
         <span className="eyebrow">YOUR PERSONAL WORKSPACE</span>
         <h1>Welcome to Yggdress</h1>

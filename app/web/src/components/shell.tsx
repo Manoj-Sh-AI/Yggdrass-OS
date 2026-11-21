@@ -26,8 +26,9 @@ function Sidebar({ close }: { close: () => void }) {
   return (
     <>
       <Link href="/today" onClick={close} className="brand">
-        <span className="brand-mark">
-          <Icon name="Sprout" size={22} />
+        <span className="brand-mark brand-logo">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/logo-mark.png" alt="" width={30} height={30} />
         </span>
         Yggdras
       </Link>

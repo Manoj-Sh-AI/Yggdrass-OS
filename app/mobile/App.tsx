@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -10,7 +11,8 @@ import {
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { onSessionExpired, restore, session, signIn } from "./src/api";
 import { BackgroundJobs } from "./src/background-ui";
-import { CallProvider, Calls } from "./src/call-ui";
+import { CallProvider, Calls, useCalls } from "./src/call-ui";
+import { useSelfUpdate } from "./src/self-update";
 import { Calendar } from "./src/calendar";
 import { Connectors, Skills } from "./src/catalogs";
 import { Chat } from "./src/chat";
@@ -54,6 +56,11 @@ const moreTabs: Tab[] = [
   "calls",
   "background",
 ];
+/** Native updates install only while no call is ringing or in progress. */
+function SelfUpdate() {
+  useSelfUpdate(useCalls().callBusy);
+  return null;
+}
 function Application() {
   const [ready, setReady] = useState(false);
   const [reauthenticate, setReauthenticate] = useState(false);
@@ -126,6 +133,11 @@ function Application() {
       <Page title="">
         <View style={{ height: 40 }} />
         <Panel>
+          <Image
+            source={require("./assets/brand/logo-mark.png")}
+            accessibilityIgnoresInvertColors
+            style={{ width: 56, height: 56, borderRadius: 14, marginBottom: 6 }}
+          />
           <Text style={eyebrow}>YOUR PERSONAL WORKSPACE</Text>
           <Text
             accessibilityRole="header"
@@ -182,6 +194,7 @@ function Application() {
   return (
     <Workspace>
       <CallProvider>
+        <SelfUpdate />
         <View style={styles.screen}>
           <Sheet
             visible={reauthenticate}
