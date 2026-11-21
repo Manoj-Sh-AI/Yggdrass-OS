@@ -11,6 +11,7 @@
 **/.env
 **/.env.*
 local-data
+.local-data
 app/web
 app/mobile
 app/desktop

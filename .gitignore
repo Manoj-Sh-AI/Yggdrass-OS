@@ -5,6 +5,7 @@
 
 # Personal data: never committed
 local-data/*
+.local-data/
 !local-data/.gitkeep
 
 # Python

@@ -83,7 +83,7 @@ export function Embedded({
         }}
         onError={() => {
           setError(
-            "Cannot reach the application. Check the USB connection and retry.",
+            "Cannot reach the application. Check your internet connection and retry.",
           );
           setLoading(false);
         }}

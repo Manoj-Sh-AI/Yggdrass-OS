@@ -30,6 +30,7 @@ import {
   colors,
 } from "./src/ui";
 import { Workspace } from "./src/workspace";
+import { DEV_USB, SERVER_ORIGIN } from "./src/server";
 
 type Tab =
   | "today"
@@ -58,7 +59,7 @@ function Application() {
   const [reauthenticate, setReauthenticate] = useState(false);
   const [restoring, setRestoring] = useState(true);
   const [error, setError] = useState("");
-  const [origin, setOrigin] = useState("http://127.0.0.1:3000");
+  const [origin, setOrigin] = useState(SERVER_ORIGIN);
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [tab, setTab] = useState<Tab>("today");
@@ -172,9 +173,9 @@ function Application() {
           )}
         </Panel>
         <Text style={styles.subtitle}>
-          For USB testing, your computer and this phone use a private
-          port-forwarded connection. Otherwise enter your application’s HTTPS
-          address.
+          {DEV_USB
+            ? "Developer build: http://127.0.0.1:3000 works over USB with adb reverse."
+            : "Connects to your hosted Yggdras over HTTPS. Change the address only if it moved."}
         </Text>
       </Page>
     );

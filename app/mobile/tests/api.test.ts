@@ -76,7 +76,9 @@ test("logout revokes server access before clearing local credentials", async () 
   expect(SecureStore.deleteItemAsync).toHaveBeenCalled();
 });
 test("cleartext credentials are confined to loopback USB development", () => {
-  expect(validOrigin("http://127.0.0.1:3000")).toBe("http://127.0.0.1:3000");
+  expect(validOrigin("http://127.0.0.1:3000", true)).toBe("http://127.0.0.1:3000");
+  expect(() => validOrigin("http://127.0.0.1:3000", false)).toThrow("HTTPS");
+  expect(validOrigin("https://web.example.test/")).toBe("https://web.example.test");
   expect(() => validOrigin("http://example.test")).toThrow("HTTPS");
   expect(() => validOrigin("https://user:password@example.test")).toThrow(
     "credentials",

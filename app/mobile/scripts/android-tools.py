@@ -3,6 +3,7 @@
 import hashlib
 import json
 import os
+import secrets
 import shutil
 import subprocess
 import sys
@@ -13,6 +14,33 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CACHE = ROOT / ".cache" / "android-tools"
+# The owner's APK upload key. Git-ignored; back it up privately. Losing it means
+# the next APK cannot install over the current one (uninstall + reinstall).
+SIGNING = ROOT.parents[1] / "local-data" / "android-signing"
+
+
+def android_key():
+    """Create the release upload key once. Never overwrites an existing key."""
+    keystore = SIGNING / "yggdras-upload.p12"
+    properties = SIGNING / "signing.properties"
+    if keystore.exists() or properties.exists():
+        raise RuntimeError("An Android signing key already exists; it is never replaced.")
+    SIGNING.mkdir(parents=True, exist_ok=True)
+    password = secrets.token_urlsafe(32)
+    keytool = next((CACHE / "java").glob("jdk-*")) / "bin" / "keytool.exe"
+    subprocess.run(
+        [str(keytool), "-genkeypair", "-storetype", "PKCS12", "-keystore", str(keystore),
+         "-alias", "yggdras-upload", "-keyalg", "RSA", "-keysize", "4096", "-validity", "10000",
+         "-dname", "CN=Yggdras Android", "-storepass:env", "YGGDRAS_KEY_PASSWORD",
+         "-keypass:env", "YGGDRAS_KEY_PASSWORD"],
+        env={**os.environ, "YGGDRAS_KEY_PASSWORD": password}, check=True, capture_output=True,
+    )
+    # Java properties: backslashes must be escaped; forward slashes avoid that.
+    properties.write_text(
+        f"storeFile={keystore.as_posix()}\nstorePassword={password}\n"
+        f"keyAlias=yggdras-upload\nkeyPassword={password}\n"
+    )
+    print("Created the Android upload key in local-data/android-signing. Back it up privately.")
 
 
 def short_root():
@@ -70,8 +98,11 @@ def environment():
     sdk = cache / "sdk"
     return {**os.environ, "JAVA_HOME": str(jdk), "ANDROID_HOME": str(sdk),
             "ANDROID_SDK_ROOT": str(sdk), "ANDROID_USER_HOME": str(cache / "android-user"),
-            "GRADLE_USER_HOME": str(cache / "gradle"),
+            # A short physical cache outside OneDrive avoids Java's SUBST probing,
+            # Ninja's path limit, and sync locks during Gradle's atomic moves.
+            "GRADLE_USER_HOME": str(Path.home() / "AppData/Local/Temp/yggdras-gradle"),
             "YGGDRAS_NATIVE_CACHE": str(short_root() / ".cache/cxx"),
+            "YGGDRAS_ANDROID_SIGNING": str(SIGNING / "signing.properties"),
             "CMAKE_BUILD_PARALLEL_LEVEL": "2", "EXPO_NO_TELEMETRY": "1", "CI": "1",
             "PATH": str(jdk / "bin") + os.pathsep + str(sdk / "platform-tools") + os.pathsep + os.environ.get("PATH", "")}
 
@@ -164,6 +195,8 @@ if __name__ == "__main__":
     try:
         if len(sys.argv) == 1 or sys.argv[1] == "setup":
             setup()
+        elif sys.argv[1] == "android-key":
+            android_key()
         else:
             raise SystemExit(run(sys.argv[1:]))
     except Exception as error:

@@ -5,6 +5,7 @@ import { api, session } from "./api";
 import { dayKey } from "./dates";
 import { Button, ErrorText, Field, Page, Panel, styles } from "./ui";
 import { usePlanning, useWorkspace } from "./workspace";
+import { AppUpdates } from "./updates";
 
 export function Settings({
   active,
@@ -83,6 +84,7 @@ export function Settings({
         <Button title="Save timezone" onPress={() => void saveZone()} />
       </Panel>
       <PlanningLibrary snapshot={snapshot} changed={changed} />
+      <AppUpdates />
       <Panel>
         <Button
           title="Prepare today’s routines"

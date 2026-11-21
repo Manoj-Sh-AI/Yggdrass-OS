@@ -96,17 +96,28 @@ Windows path limits. It does not install tools machine-wide.
     ../api/.venv/Scripts/python.exe scripts/android-tools.py expo prebuild --platform android --no-install
     ../api/.venv/Scripts/python.exe scripts/android-tools.py build
 
-The release test APK is generated under `android/app/build/outputs/apk/release/`;
-it uses Expo's development signing key, not a production/store key.
+The release APK is generated under `android/app/build/outputs/apk/release/`.
+It is signed with the owner's own upload key in `local-data/android-signing`
+(git-ignored), created once with:
 
-For an authorized USB-debugging device:
+    ../api/.venv/Scripts/python.exe scripts/android-tools.py android-key
+
+A release build stops if that key is missing, and the release tool refuses an
+APK signed with the public debug key. Back the folder up privately: without it
+the next APK cannot install over the current one.
+
+Install on a USB-debugging device:
 
     ../api/.venv/Scripts/python.exe scripts/android-tools.py adb install -r android/app/build/outputs/apk/release/app-release.apk
-    ../api/.venv/Scripts/python.exe scripts/android-tools.py adb reverse tcp:3000 tcp:3000
 
-Start the existing laptop application, then use `http://127.0.0.1:3000` and its
-application password. The laptop must stay awake and connected by USB. Cleartext
-is allowed only on loopback; a future remote service must use HTTPS.
+The app connects to the hosted application over HTTPS. Its address is set in one
+place, `app.config.ts` (`serverOrigin`), and can be overridden at build time with
+`YGGDRAS_SERVER_ORIGIN=https://...` before `expo prebuild` and `build`. Release
+builds allow HTTPS only.
+
+Developer option (laptop over USB): build with `YGGDRAS_DEV_USB=1` (allows cleartext
+to `127.0.0.1` only), run `adb reverse tcp:3000 tcp:3000`, and sign in at
+`http://127.0.0.1:3000`.
 
 Device smoke tests use `../api/scripts/mobile_device_fixture.py` and port 3300,
 with invented data, a disposable PostgreSQL database and zero paid model calls.
@@ -118,3 +129,18 @@ Never use personal Brain notes as test fixtures. See
 Android 0.3.1 follows the approved owner catalogue setting and refreshes embedded
 views when returning to them. See [parity verification](../../planning/mobile-note-parity.md)
 for the live 82-note / 190-connection comparison and the revised privacy policy.
+
+## Android 0.3.2 calls and updates
+
+This build includes the project's Firebase Android configuration when
+`google-services.json` is present. Enable incoming calls in More → Calls after
+installation and grant the Android permissions shown there.
+
+Settings includes signed screen-update checks and an Android-package download
+when native changes require a new installation. See the [Railway update and
+release guide](../../planning/mobile-updates.md) for publishing commands.
+The first installation of this build is required before screen updates work.
+
+On Windows, the Android helper keeps Gradle's reproducible cache in the user's
+local temporary directory. This avoids OneDrive cache-move locks and Windows
+native-tool path limits; the SDK and Java installation remain project-local.

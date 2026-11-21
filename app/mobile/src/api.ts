@@ -1,6 +1,7 @@
 /** Only application session credentials live on the phone. Never Brain/provider keys. */
 import * as SecureStore from "expo-secure-store";
 import { randomUUID } from "expo-crypto";
+import { DEV_USB } from "./server";
 import type {
   Session,
   Snapshot,
@@ -39,7 +40,7 @@ export class MobileError extends Error {
     super(message);
   }
 }
-export function validOrigin(value: string) {
+export function validOrigin(value: string, allowLoopback = DEV_USB) {
   const url = new URL(value.trim());
   if (
     url.username ||
@@ -54,12 +55,13 @@ export function validOrigin(value: string) {
   if (
     url.protocol !== "https:" &&
     !(
+      allowLoopback &&
       url.protocol === "http:" &&
       ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname)
     )
   )
     throw new Error(
-      "Use HTTPS. Local USB testing can use http://127.0.0.1 with port forwarding.",
+      "Use your application’s HTTPS address.",
     );
   return url.origin;
 }

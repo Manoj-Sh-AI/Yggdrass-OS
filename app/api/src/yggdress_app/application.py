@@ -20,6 +20,7 @@ from .connections import connections_router
 from .database import Database
 from .graph_proxy import existing_graph, graph_router
 from .handoffs import handoff_routers
+from .mobile_updates import MAX_RELEASE, mobile_update_router
 from .notes_proxy import NotesError, NotesProxy, notes_router
 from .planning import LOCK, execute_task, history, planning_router
 from .planning_models import ExecutionInput
@@ -114,9 +115,13 @@ def create_app(
     async def limits_and_headers(request, call_next):
         length = request.headers.get("content-length", "0")
         limit = (
-            MAX_FILE
-            if request.url.path == "/v1/chat/attachments" and request.method == "POST"
-            else 250000
+            MAX_RELEASE
+            if request.url.path == "/v1/mobile-updates/publish"
+            else (
+                MAX_FILE
+                if request.url.path == "/v1/chat/attachments" and request.method == "POST"
+                else 250000
+            )
         )
         if not length.isdigit() or int(length) > limit:
             return JSONResponse({"detail": "Request too large."}, status_code=413)
@@ -220,6 +225,7 @@ def create_app(
         return found
 
     authenticated = Depends(session)
+    api.include_router(mobile_update_router(session))
     from .call_service import CallService, call_router
 
     calls = calls or CallService(database, notes=notes)
