@@ -55,7 +55,18 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-    except Exception:  # noqa: BLE001 - startup errors must not expose private DSNs
-        # A database exception can include a connection string. Keep details private.
-        print("Brain API startup failed; check the private service configuration.", file=sys.stderr)
+    except Exception as exc:  # noqa: BLE001 - startup errors must not expose private DSNs
+        # A database exception can include a connection string: print only the error's
+        # type and where it happened, never its message.
+        import traceback
+
+        frames = traceback.extract_tb(exc.__traceback__)[-3:]
+        where = " <- ".join(
+            f"{Path(f.filename).name}:{f.lineno} {f.name}" for f in reversed(frames)
+        )
+        print(
+            f"Brain API startup failed: {type(exc).__name__} at {where}",
+            file=sys.stderr,
+            flush=True,
+        )
         sys.exit(1)
