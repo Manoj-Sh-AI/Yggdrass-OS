@@ -410,11 +410,14 @@ class Builder:
         self.change.log.append(f"archive {slug}")
 
 
-def build_change(root: Path, flat: bool, ops: list[dict], today: str, title: str = "") -> Change:
-    """Apply *ops* in order to the current files (in memory) and return the change."""
+def build_change(
+    root: Path, flat: bool, ops: list[dict], today: str, title: str = "", builder=None
+) -> Change:
+    """Apply *ops* in order to the current files (in memory) and return the change.
+    *builder*: a Builder subclass (the row store's, which restores from rows, not git)."""
     if not ops:
         raise OpError("nothing to change")
-    b = Builder(root, flat, today)
+    b = (builder or Builder)(root, flat, today)
     for op in ops:
         kind = op.get("op")
         handler = getattr(b, kind, None) if kind in (*ADDING, *CHANGING) else None

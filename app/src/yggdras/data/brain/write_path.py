@@ -57,9 +57,9 @@ class WritePath:
         viewer_dirs: tuple[Path, ...] = (),
     ):
         self.repo, self.root, self.flat = repo.resolve(), root.resolve(), flat
-        # Where the graph viewer's page lives: the library's own generated/ folder, plus any
-        # copy a note server serves (local-data/viewer).
-        self.viewer_dirs = tuple(viewer_dirs) + (() if flat else (st.generated_dir(self.repo),))
+        # The graph viewer lives in one folder (local-data/brain-view), passed in by the caller;
+        # the brain repo gets no copy of its own, so no stale page can survive a write.
+        self.viewer_dirs = tuple(viewer_dirs)
         self.lock_dir = lock_dir
         self.today = today or dt.date.today().isoformat()
         self.root_rel = self.root.relative_to(self.repo).as_posix()

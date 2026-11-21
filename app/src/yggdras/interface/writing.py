@@ -41,12 +41,30 @@ def write_side(library, root: Path, flat: bool, client_factory, note_url: str | 
     repo = repo_of(root, flat)
     if repo is None:
         return None
-    # The note server's viewer copy (local-data/viewer) is re-rendered after every write, so
-    # "show in graph" shows new notes on refresh. (A flat demo brain has no copy there.)
-    viewers = () if flat else (config.local_data() / "viewer",)
+    # The one viewer folder (local-data/brain-view, served at /graph and through the app's
+    # proxy) is re-rendered after every write and Undo. (A flat demo brain has none.)
+    viewers = () if flat else (config.brain_view(),)
     wp = WritePath(repo, root, config.local_data() / "locks", flat=flat, viewer_dirs=viewers)
     side = IngestSide if kind == "ingest" else WriteSide
     return side(client_factory(config.lia_model()), library, wp, store(), note_url)
+
+
+def row_store():
+    """The brain in rows (D44), on the local PostgreSQL in BRAIN_DATABASE_URL."""
+    from yggdras.data.brain_db import db
+    from yggdras.data.brain_db.store import RowStore
+
+    return RowStore(db.connect, viewer_dirs=(config.brain_view(),), raw_root=config.brain_raw())
+
+
+def row_write_side(library, rows, client_factory, note_url: str | None = None,
+                   kind: str = "write"):  # fmt: skip
+    """Lia's writing side on the rows: the same sides, the row store as their write path."""
+    from yggdras.processing.lia.ingest import IngestSide
+    from yggdras.processing.lia.write import WriteSide
+
+    side = IngestSide if kind == "ingest" else WriteSide
+    return side(client_factory(config.lia_model()), library, rows, store(), note_url)
 
 
 # ---------------------------------------------------------------- uploads (D37)
