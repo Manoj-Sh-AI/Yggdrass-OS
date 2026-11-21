@@ -81,3 +81,14 @@ def test_serve_needs_no_laptop_only_setting_in_hosted_mode(tmp_path, binary):
     config = hosted.runtime({**VARIABLES, "TEMPORAL_BINARY": binary}, tmp_path)
     assert "build_dir" not in config and "node" not in config and "web" not in config
     assert web_environment(config, 8080)["YGGDRESS_API_URL"] == "http://127.0.0.1:8080"
+
+
+def test_the_laptop_web_app_talks_to_the_hosted_backend_when_one_is_set():
+    from yggdress_app.local_runtime import web_environment
+
+    laptop = {"origin": "http://127.0.0.1:3000", "build_dir": ".next-x"}
+    assert web_environment(laptop, 8100)["YGGDRESS_API_URL"] == "http://127.0.0.1:8100"
+    hosted_backend = {**laptop, "backend_url": "https://backend.example.up.railway.app"}
+    env = web_environment(hosted_backend, 0)
+    assert env["YGGDRESS_API_URL"] == "https://backend.example.up.railway.app"
+    assert env["YGGDRESS_ORIGIN"] == "http://127.0.0.1:3000"

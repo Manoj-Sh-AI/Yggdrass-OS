@@ -411,19 +411,105 @@ def quietly(step, *args):
 
 def web_environment(config, api_port):
     """Settings for the laptop's web server. A hosted backend has no web server and no
-    build folder, so nothing here may be required of it."""
+    build folder, so nothing here may be required of it. With `backend_url` the web app
+    talks to the hosted backend instead of a local one."""
     return {
         **clean_environment(),
-        "YGGDRESS_API_URL": f"http://127.0.0.1:{api_port}",
+        "YGGDRESS_API_URL": config.get("backend_url") or f"http://127.0.0.1:{api_port}",
         "YGGDRESS_ORIGIN": config["origin"],
         "YGGDRESS_BUILD_DIR": config.get("build_dir", ".next"),
     }
+
+
+def serve_web_only(home, config):
+    """The laptop when the backend is hosted (runtime.json `backend_url`): only the web app
+    runs here, talking to the hosted backend; the laptop keeps its nightly backups of the
+    hosted database. No local API, Lia, scheduler, voice worker or PostgreSQL."""
+    with manager_lock(home):
+        frontend_port = urlsplit(config["origin"]).port
+        if urlsplit(config["origin"]).hostname != "127.0.0.1" or not frontend_port:
+            raise RuntimeError("The local web app must use an explicit loopback port.")
+        with socket.socket() as probe:
+            probe.bind(("127.0.0.1", frontend_port))
+        control_port, token = port(), secrets.token_urlsafe(40)
+        state = {"pid": os.getpid(), "control_port": control_port, "token": token,
+                 "origin": config["origin"], "ready": False, "backend": "hosted"}  # fmt: skip
+        frontend, stopping = None, False
+
+        class Control(BaseHTTPRequestHandler):
+            def log_message(self, *_):
+                pass
+
+            def do_GET(self):
+                if self.path != "/health" or not hmac.compare_digest(
+                    self.headers.get("Authorization", ""), "Bearer " + token
+                ):
+                    self.send_error(403)
+                    return
+                ready = state["ready"] and frontend is not None and frontend.poll() is None
+                body = json.dumps({"origin": config["origin"], "ready": ready}).encode()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(body)
+
+            def do_POST(self):
+                nonlocal stopping
+                if self.path != "/stop" or not hmac.compare_digest(
+                    self.headers.get("Authorization", ""), "Bearer " + token
+                ):
+                    self.send_error(403)
+                    return
+                stopping = True
+                self.send_response(204)
+                self.end_headers()
+
+        control = ThreadingHTTPServer(("127.0.0.1", control_port), Control)
+        Thread(target=control.serve_forever, daemon=True).start()
+        atomic_json(home / "service.json", state)
+        try:
+            with (home / "frontend.log").open("a", encoding="utf-8") as log:
+                frontend = subprocess.Popen(
+                    [config["node"], str(Path(config["web"]) / "node_modules/next/dist/bin/next"),
+                     "start", "--hostname", "127.0.0.1", "--port", str(frontend_port)],
+                    cwd=config["web"], env=web_environment(config, 0), stdout=log, stderr=log,
+                    creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
+                )  # fmt: skip
+                for _ in range(180):
+                    if frontend.poll() is not None:
+                        raise RuntimeError("Frontend startup failed. Inspect the private log.")
+                    try:
+                        with urlopen(config["origin"] + "/login", timeout=2) as response:
+                            if response.status == 200:
+                                state["ready"] = True
+                                atomic_json(home / "service.json", state)
+                                break
+                    except OSError:
+                        pass
+                    time.sleep(0.25)
+                else:
+                    raise RuntimeError("Application startup timed out.")
+                backups, checked = None, 0.0
+                while not stopping and frontend.poll() is None:
+                    if time.monotonic() - checked > 600 and not (backups and backups.is_alive()):
+                        checked = time.monotonic()
+                        backups = Thread(target=backup_quietly, args=(home, config), daemon=True)
+                        backups.start()
+                    time.sleep(0.5)
+        finally:
+            stop_tree(frontend)
+            state["ready"] = False
+            quietly(atomic_json, home / "service.json", state)
+            quietly(control.shutdown)
 
 
 def serve(home, hosted=False):
     """The laptop runtime, or with `hosted` the same backend in a hosted container
     (hosted.py): no web server, no local PostgreSQL, the API on the host's PORT."""
     config = json.loads((home / "runtime.json").read_text(encoding="utf-8"))
+    if config.get("backend_url") and not hosted:
+        serve_web_only(home, config)
+        return
     with manager_lock(home):
         db_start(home, config)
         frontend_port = urlsplit(config["origin"]).port
