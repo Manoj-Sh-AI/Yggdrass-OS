@@ -131,6 +131,7 @@ def main():
     from .local_runtime import serve
 
     folder = bootstrap()
+    os.environ["YGGDRAS_LOG_STDOUT"] = "1"  # child services log to Railway's log stream
     print(json.dumps({"hosted": True, "home": str(folder)}), flush=True)
     serve(folder, hosted=True)
 

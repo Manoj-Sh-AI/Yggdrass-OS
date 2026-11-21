@@ -348,6 +348,17 @@ def brain_http(path):
     )
 
 
+@contextlib.contextmanager
+def child_log(path):
+    """Where a child service writes: its private log file on the laptop, or the host's
+    own log stream in a hosted container (YGGDRAS_LOG_STDOUT=1), so failures are visible."""
+    if os.environ.get("YGGDRAS_LOG_STDOUT") == "1":
+        yield None  # inherit this process's stdout/stderr
+        return
+    with path.open("a", encoding="utf-8") as log:
+        yield log
+
+
 def start_brain_if_needed(config, home):
     """Reuse the previously approved service launcher, never replace a listener."""
     from urllib.parse import urlsplit
@@ -367,7 +378,7 @@ def start_brain_if_needed(config, home):
     launcher = Path(__file__).resolve().parents[2] / "scripts/brain_api_service.py"
     if not python.is_file() or not launcher.is_file():
         return None
-    with (home / "brain-service.log").open("a", encoding="utf-8") as log:
+    with child_log(home / "brain-service.log") as log:
         return subprocess.Popen(
             [str(python), str(launcher), "--brain-project", str(project), "--port", "8100"],
             cwd=project,
@@ -610,7 +621,7 @@ def serve(home, hosted=False):
             from .voice import LIVEKIT_VARS, missing
 
             if not missing(LIVEKIT_VARS):
-                with (home / "voice-worker.log").open("a", encoding="utf-8") as voice_log:
+                with child_log(home / "voice-worker.log") as voice_log:
                     voice_process = subprocess.Popen(
                         [sys.executable, "-m", "yggdress_app.voice_worker", "--home", str(home)],
                         env={
