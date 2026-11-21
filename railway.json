@@ -1,0 +1,15 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "Dockerfile.backend",
+    "watchPatterns": ["app/api/**", "app/src/**", "app/skills/**", "app/pyproject.toml", "app/uv.lock", "Dockerfile.backend"]
+  },
+  "deploy": {
+    "numReplicas": 1,
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10,
+    "healthcheckPath": "/v1/auth/session",
+    "healthcheckTimeout": 300
+  }
+}

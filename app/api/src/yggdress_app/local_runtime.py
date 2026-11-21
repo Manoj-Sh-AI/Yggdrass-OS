@@ -360,9 +360,10 @@ def start_brain_if_needed(config, home):
         if probe.connect_ex(("127.0.0.1", 8100)) == 0:
             return None
     project = Path(config["brain_env"]).parent
-    python = project / ".venv/Scripts/python.exe"
+    venv = ".venv/Scripts/python.exe" if os.name == "nt" else ".venv/bin/python"
+    python = project / venv
     if not python.is_file():
-        python = project / "app/.venv/Scripts/python.exe"
+        python = project / "app" / venv
     launcher = Path(__file__).resolve().parents[2] / "scripts/brain_api_service.py"
     if not python.is_file() or not launcher.is_file():
         return None
@@ -408,18 +409,22 @@ def quietly(step, *args):
         pass
 
 
-def serve(home):
+def serve(home, hosted=False):
+    """The laptop runtime, or with `hosted` the same backend in a hosted container
+    (hosted.py): no web server, no local PostgreSQL, the API on the host's PORT."""
     config = json.loads((home / "runtime.json").read_text(encoding="utf-8"))
     with manager_lock(home):
         db_start(home, config)
-        # Fail before starting children if another application occupies our origin.
         frontend_port = urlsplit(config["origin"]).port
-        if urlsplit(config["origin"]).hostname != "127.0.0.1" or not frontend_port:
-            raise RuntimeError("The local service must use an explicit loopback port.")
-        with socket.socket() as probe:
-            probe.bind(("127.0.0.1", frontend_port))
+        if not hosted:
+            # Fail before starting children if another application occupies our origin.
+            if urlsplit(config["origin"]).hostname != "127.0.0.1" or not frontend_port:
+                raise RuntimeError("The local service must use an explicit loopback port.")
+            with socket.socket() as probe:
+                probe.bind(("127.0.0.1", frontend_port))
         brain_process = start_brain_if_needed(config, home)
-        api_port, control_port, token = port(), port(), secrets.token_urlsafe(40)
+        api_port = int(os.environ.get("PORT", "8080")) if hosted else port()
+        control_port, token = port(), secrets.token_urlsafe(40)
         from .agent_receivers import Receivers
         from .agent_worker import AgentWorker, prepare_agent_configuration
 
@@ -432,7 +437,8 @@ def serve(home):
             config["database_url"],
             config["password_hash"],
             config["origin"],
-            True,
+            # Insecure (HTTP) cookies only for a loopback web app; HTTPS origins get secure ones.
+            urlsplit(config["origin"]).scheme == "http",
             "unavailable",
             mobile_sensitive_access=config.get("mobile_sensitive_access") is True,
         )
@@ -486,7 +492,7 @@ def serve(home):
             # Temporal changes execution plumbing; the HTTP service stays the same.
             uvicorn.Config(
                 application,
-                host="127.0.0.1",
+                host="0.0.0.0" if hosted else "127.0.0.1",
                 port=api_port,
                 log_level="error",
             )
@@ -541,8 +547,7 @@ def serve(home):
                         "origin": config["origin"],
                         "ready": state["ready"]
                         and api.started
-                        and frontend is not None
-                        and frontend.poll() is None,
+                        and (hosted or (frontend is not None and frontend.poll() is None)),
                     }
                 ).encode()
                 self.send_response(200)
@@ -565,6 +570,22 @@ def serve(home):
         Thread(target=control.serve_forever, daemon=True).start()
         atomic_json(home / "service.json", state)
         try:
+            if hosted:  # no web server here: ready once the API answers
+                for _ in range(240):
+                    if api.started:
+                        break
+                    time.sleep(0.25)
+                else:
+                    raise RuntimeError("Application startup timed out.")
+                state["ready"] = True
+                atomic_json(home / "service.json", state)
+                # YGGDRAS_BACKGROUND=off: a test deploy beside the laptop never competes
+                # with the laptop's agent worker for the same queued requests.
+                if worker and os.environ.get("YGGDRAS_BACKGROUND", "on") != "off":
+                    worker.start()
+                while not stopping and api_thread.is_alive():
+                    time.sleep(0.5)
+                return
             with (home / "frontend.log").open("a", encoding="utf-8") as log:
                 frontend = subprocess.Popen(
                     [
