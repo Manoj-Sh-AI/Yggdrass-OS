@@ -27,6 +27,7 @@ WHEN = datetime(2026, 11, 24, 13, tzinfo=UTC)
 def runner(postgres, monkeypatch):
     dbs = Database(postgres["runtime"])
     with Database(postgres["admin"]).connect() as db:
+        db.execute("SET LOCAL statement_timeout='60s'")
         db.execute(
             "TRUNCATE app.scheduled_jobs,app.tasks,app.calls,app.call_preferences,"
             "app.daily_briefs,app.calendar_events CASCADE"

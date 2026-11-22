@@ -114,7 +114,7 @@ def claim(db, fingerprint, key):
         nonce = secrets.token_urlsafe(24)
         token = nonce + "." + signature(nonce, key)
         db.execute(
-            "INSERT INTO app.web_push_tokens(digest,delivery) VALUES (%s,%s)",
+            "INSERT INTO app.web_push_tokens(digest,delivery,expires_at) VALUES (%s,%s,now()+interval '20 minutes')",
             (token_hash(token), row["id"]),
         )
         payload["token"] = token
@@ -255,7 +255,7 @@ def delivery_router(database, session, fingerprint, ack, *, calls=None):
                 JOIN app.web_push_deliveries d ON d.id=t.delivery
                 JOIN app.web_push_subscriptions s ON s.id=d.subscription
                 JOIN app.sessions a ON a.token_hash=s.session_hash
-                WHERE t.digest=%s AND t.used_at IS NULL AND d.expires_at>now()
+                WHERE t.digest=%s AND t.used_at IS NULL AND t.expires_at>now()
                   AND a.expires_at>now() AND a.password_fingerprint=%s FOR UPDATE OF t
                 """,
                 (token_hash(body.token), fingerprint),

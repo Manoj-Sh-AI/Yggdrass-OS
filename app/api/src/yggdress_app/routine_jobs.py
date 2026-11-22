@@ -210,7 +210,7 @@ def keep_lease(database, job, now):
                 with database.connect() as db:
                     if not renew(db, job, now()):
                         return
-            except Exception:  # noqa: BLE001 -- retry on the next beat within the existing lease
+            except Exception:  # noqa: BLE001, S112 -- retry on the next beat within the existing lease
                 continue
 
     thread = Thread(target=heartbeat, daemon=True, name="routine-lease")

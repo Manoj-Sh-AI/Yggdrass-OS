@@ -9,7 +9,7 @@ from yggdress_app.routine_jobs import RoutineScheduler, anchor_instant
 
 
 def test_custom_wakeup_moves_and_restart_does_not_repeat(signed_in, monkeypatch):
-    client, app, _ = signed_in
+    _client, app, _ = signed_in
     database = app.state.database
     now = datetime(2026, 11, 25, 8, tzinfo=UTC)
     event = uuid4()
@@ -78,7 +78,7 @@ def test_custom_wakeup_moves_and_restart_does_not_repeat(signed_in, monkeypatch)
 
 
 def test_routines_require_auth_and_preview_has_no_writes(setup):
-    client, app, *_ = setup
+    client, _app, *_ = setup
     assert (
         client.post("/v1/application/daily-routines/trigger", json={"kind": "morning"}).status_code
         == 401

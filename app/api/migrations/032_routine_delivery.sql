@@ -13,7 +13,7 @@ CREATE TABLE app.web_push_deliveries (
 CREATE INDEX web_push_due ON app.web_push_deliveries(expires_at) WHERE status IN ('pending','sending');
 CREATE TABLE app.web_push_tokens (
     digest text PRIMARY KEY, delivery uuid UNIQUE NOT NULL REFERENCES app.web_push_deliveries ON DELETE CASCADE,
-    used_at timestamptz
+    expires_at timestamptz NOT NULL, used_at timestamptz
 );
 CREATE TABLE app.routine_voice_bindings (
     call_id uuid PRIMARY KEY REFERENCES app.calls ON DELETE CASCADE, escalation_id uuid NOT NULL,
