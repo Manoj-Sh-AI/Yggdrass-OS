@@ -9,12 +9,15 @@ export type AnswerApprovalCommand = {
   reason?: string;
 };
 export type CancelRunCommand = { type: "cancel-run"; runId: string };
+/** "Try again": another answer to the same request, kept as a sibling branch. */
+export type RegenerateCommand = { type: "regenerate"; runId: string };
 
 declare module "@assistant-ui/react" {
   namespace Assistant {
     interface Commands {
       answerApproval: AnswerApprovalCommand;
       cancelRun: CancelRunCommand;
+      regenerate: RegenerateCommand;
     }
   }
 }

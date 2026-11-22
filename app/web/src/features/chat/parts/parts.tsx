@@ -9,13 +9,17 @@ import type {
   ReasoningMessagePartProps,
   TextMessagePartProps,
 } from "@assistant-ui/react";
-import { useAssistantTransportSendCommand, useAuiState } from "@assistant-ui/react";
+import {
+  useAssistantTransportSendCommand,
+  useAuiState,
+} from "@assistant-ui/react";
 import { code } from "@streamdown/code";
 import { math } from "@streamdown/math";
 import { mermaid } from "@streamdown/mermaid";
 import {
   AlertTriangle,
   Check,
+  ChevronLeft,
   ChevronRight,
   Circle,
   CircleDashed,
@@ -26,10 +30,14 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { Streamdown } from "streamdown";
 import { Badge, Button } from "@/components/primitives";
-import type { RunState, ToolCall } from "../runtime/types";
+import type { Branch, RunState, ToolCall } from "../runtime/types";
+import { DiffCard, TerminalCard } from "./cards";
 import {
+  branchIndex,
+  branchLabel,
   formatSeconds,
   openApprovals,
+  outputView,
   reasoningIsStreaming,
   stepView,
   TOOL_BADGE,
@@ -83,8 +91,12 @@ export function ReasoningBlock({ text }: ReasoningMessagePartProps) {
         }}
         className="flex cursor-pointer list-none items-center gap-1 py-1"
       >
-        <ChevronRight className="size-3.5 transition-transform group-open:rotate-90" />
-        {streaming ? "Thinking…" : duration ? `Thought for ${duration}` : "Reasoning"}
+        <ChevronRight className="size-3.5 transition-transform motion-short group-open:rotate-90" />
+        {streaming
+          ? "Thinking…"
+          : duration
+            ? `Thought for ${duration}`
+            : "Reasoning"}
       </summary>
       <p className="whitespace-pre-wrap border-l-hairline border-hairline-strong pl-3 text-text-2">
         {text}
@@ -94,7 +106,105 @@ export function ReasoningBlock({ text }: ReasoningMessagePartProps) {
 }
 
 export function RunPart({ data }: DataMessagePartProps<RunState>) {
-  const run = data;
+  return <RunView run={data} />;
+}
+
+/**
+ * A request answered more than once ("Try again"): a `< 2/3 >` picker and the chosen
+ * answer. The newest shows by default, and a new one arriving is shown as it streams.
+ */
+export function BranchesPart({
+  data,
+}: DataMessagePartProps<{ branches: Branch[] }>) {
+  return <Branches branches={data.branches} />;
+}
+
+export function Branches({ branches }: { branches: Branch[] }) {
+  const count = branches.length;
+  const seen = useRef(count);
+  const [index, setIndex] = useState(count - 1);
+  useEffect(() => {
+    setIndex((current) => branchIndex(current, count, seen.current));
+    seen.current = count;
+  }, [count]);
+  const run = branches[Math.min(index, count - 1)]?.run;
+  const streaming = run?.status === "running";
+  return (
+    <div className="flex flex-col gap-2">
+      <nav
+        aria-label="Answers"
+        className="flex items-center gap-1 text-xs text-text-2"
+      >
+        <Button
+          size="icon"
+          variant="ghost"
+          aria-label="Previous answer"
+          disabled={index <= 0}
+          onClick={() => setIndex((i) => Math.max(0, i - 1))}
+          className="size-6"
+        >
+          <ChevronLeft className="size-3.5" />
+        </Button>
+        <span aria-live="polite">{branchLabel(index, count)}</span>
+        <Button
+          size="icon"
+          variant="ghost"
+          aria-label="Next answer"
+          disabled={index >= count - 1}
+          onClick={() => setIndex((i) => Math.min(count - 1, i + 1))}
+          className="size-6"
+        >
+          <ChevronRight className="size-3.5" />
+        </Button>
+      </nav>
+      {run ? (
+        <>
+          <RunView run={run} />
+          {run.reasoning ? (
+            <details
+              className="text-xs text-text-2"
+              open={streaming && !run.text}
+            >
+              <summary className="cursor-pointer py-1">
+                {streaming && !run.text ? "Thinking…" : "Reasoning"}
+              </summary>
+              <p className="whitespace-pre-wrap border-l-hairline border-hairline-strong pl-3">
+                {run.reasoning}
+              </p>
+            </details>
+          ) : null}
+          {run.text ? (
+            <Streamdown
+              className="text-sm leading-relaxed text-text-1"
+              plugins={PLUGINS}
+              isAnimating={streaming}
+              caret={streaming ? "block" : undefined}
+            >
+              {run.text}
+            </Streamdown>
+          ) : null}
+        </>
+      ) : null}
+    </div>
+  );
+}
+
+/** "Try again" under the last finished answer: a sibling answer, never a lost one. */
+export function TryAgain({ runId }: { runId: string }) {
+  const send = useAssistantTransportSendCommand();
+  return (
+    <Button
+      size="sm"
+      variant="ghost"
+      className="self-start text-text-2"
+      onClick={() => send({ type: "regenerate", runId })}
+    >
+      <RotateCcw className="size-3.5" /> Try again
+    </Button>
+  );
+}
+
+function RunView({ run }: { run: RunState }) {
   const approvals = openApprovals(run.tools);
   return (
     <div className="flex flex-col gap-2">
@@ -117,8 +227,8 @@ function RunNotice({ run }: { run: RunState }) {
   if (run.status === "interrupted")
     return (
       <p className="flex items-center gap-1 text-xs text-warning">
-        <AlertTriangle className="size-3.5" /> Interrupted: the server stopped while this was
-        running. Send the request again to retry.
+        <AlertTriangle className="size-3.5" /> Interrupted: the server stopped
+        while this was running. Send the request again to retry.
       </p>
     );
   if (run.status === "failed" && run.error)
@@ -127,7 +237,8 @@ function RunNotice({ run }: { run: RunState }) {
         <AlertTriangle className="size-3.5" /> {run.error}
       </p>
     );
-  if (run.status === "cancelled") return <p className="text-xs text-text-2">Stopped.</p>;
+  if (run.status === "cancelled")
+    return <p className="text-xs text-text-2">Stopped.</p>;
   return null;
 }
 
@@ -155,15 +266,28 @@ export function PlanCard({ run }: { run: RunState }) {
       <ol className="flex flex-col gap-1">
         {plan.steps.map((step) => {
           const view = stepView(step);
-          const tools = run.tools.filter((t) => t.step_id === step.id && t.state !== "approval-requested");
+          const tools = run.tools.filter(
+            (t) => t.step_id === step.id && t.state !== "approval-requested",
+          );
           return (
             <li key={step.id} className="flex flex-col gap-1">
-              <div className="flex items-center gap-2 text-sm" title={step.check}>
+              <div
+                className="flex items-center gap-2 text-sm"
+                title={step.check}
+              >
                 {STEP_ICON[view.tone]}
-                <span className={view.tone === "done" ? "text-text-2" : "text-text-1"}>{view.label}</span>
+                <span
+                  className={
+                    view.tone === "done" ? "text-text-2" : "text-text-1"
+                  }
+                >
+                  {view.label}
+                </span>
               </div>
               {view.detail ? (
-                <p className={`pl-6 text-xs ${view.tone === "failed" ? "text-danger" : "text-warning"}`}>
+                <p
+                  className={`pl-6 text-xs ${view.tone === "failed" ? "text-danger" : "text-warning"}`}
+                >
                   {view.detail}
                 </p>
               ) : null}
@@ -202,9 +326,13 @@ export function ToolCard({ tool }: { tool: ToolCall }) {
         onClick={() => setOpen((o) => !o)}
         className="flex h-7 w-full items-center gap-2 px-2 text-left text-text-1"
       >
-        <ChevronRight className={`size-3.5 transition-transform ${open ? "rotate-90" : ""}`} />
+        <ChevronRight
+          className={`size-3.5 transition-transform motion-short ${open ? "rotate-90" : ""}`}
+        />
         <span className="font-mono">{tool.name}</span>
-        <Badge className={`ml-auto ${BADGE_TONE[tool.state] ?? "bg-surface-3 text-text-2"}`}>
+        <Badge
+          className={`ml-auto ${BADGE_TONE[tool.state] ?? "bg-surface-3 text-text-2"}`}
+        >
           {TOOL_BADGE[tool.state]}
         </Badge>
       </button>
@@ -216,9 +344,7 @@ export function ToolCard({ tool }: { tool: ToolCall }) {
           </pre>
           {tool.error ? <p className="text-danger">{tool.error}</p> : null}
           {tool.state === "output-available" && tool.output !== null ? (
-            <pre className="max-h-48 overflow-auto rounded-sm bg-surface-sunken p-2 text-text-2">
-              {JSON.stringify(tool.output, null, 2)}
-            </pre>
+            <ToolOutput output={tool.output} />
           ) : null}
         </div>
       ) : null}
@@ -226,8 +352,26 @@ export function ToolCard({ tool }: { tool: ToolCall }) {
   );
 }
 
+function ToolOutput({ output }: { output: unknown }) {
+  const view = outputView(output);
+  if (view.kind === "diff") return <DiffCard diff={view.diff} />;
+  if (view.kind === "terminal")
+    return <TerminalCard output={view.output} exitCode={view.exitCode} />;
+  return (
+    <pre className="max-h-48 overflow-auto rounded-sm bg-surface-sunken p-2 text-text-2">
+      {JSON.stringify(output, null, 2)}
+    </pre>
+  );
+}
+
 /** Intent Preview + explicit permission (high stakes) or confirmation (low stakes). */
-export function ApprovalCard({ runId, tool }: { runId: string; tool: ToolCall }) {
+export function ApprovalCard({
+  runId,
+  tool,
+}: {
+  runId: string;
+  tool: ToolCall;
+}) {
   const send = useAssistantTransportSendCommand();
   const [sent, setSent] = useState(false);
   const answer = (approved: boolean) => {
@@ -244,12 +388,19 @@ export function ApprovalCard({ runId, tool }: { runId: string; tool: ToolCall })
         <ShieldQuestion className="size-4 text-warning" /> Approve this action?
       </header>
       <p className="text-sm text-text-1">{tool.intent}</p>
-      {irreversible ? <p className="text-xs text-text-2">This cannot be undone.</p> : null}
+      {irreversible ? (
+        <p className="text-xs text-text-2">This cannot be undone.</p>
+      ) : null}
       <div className="flex gap-2">
         <Button size="sm" disabled={sent} onClick={() => answer(true)}>
           Approve
         </Button>
-        <Button size="sm" variant="secondary" disabled={sent} onClick={() => answer(false)}>
+        <Button
+          size="sm"
+          variant="secondary"
+          disabled={sent}
+          onClick={() => answer(false)}
+        >
           Decline
         </Button>
       </div>

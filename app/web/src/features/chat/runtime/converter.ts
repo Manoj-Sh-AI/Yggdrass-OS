@@ -9,12 +9,21 @@ import type {
   AssistantTransportConnectionMetadata,
   ThreadMessageLike,
 } from "@assistant-ui/react";
-import type { AssistantMessage, RunState, ThreadState, UserMessage } from "./types";
+import type { AssistantMessage, Branch, RunState, ThreadState, UserMessage } from "./types";
 import { TERMINAL } from "./types";
 
 type Part = Exclude<ThreadMessageLike["content"], string>[number];
 
+/** The answer shown by default and driving the message status: the newest one. */
+export function currentRun(message: AssistantMessage): RunState | null | undefined {
+  const branches = message.branches;
+  return branches && branches.length > 1 ? branches.at(-1)!.run : message.run;
+}
+
 export function assistantParts(message: AssistantMessage): Part[] {
+  const branches: Branch[] = message.branches ?? [];
+  if (branches.length > 1)
+    return [{ type: "data", name: "branches", data: { branches } } as Part];
   const run = message.run;
   if (!run) return message.text ? [{ type: "text", text: message.text }] : [];
   const parts: Part[] = [{ type: "data", name: "run", data: run } as Part];
@@ -48,7 +57,7 @@ export function toMessages(
           id: message.id,
           role: "assistant",
           content: assistantParts(message),
-          status: runStatus(message.run),
+          status: runStatus(currentRun(message)),
         },
   );
   for (const command of metadata.pendingCommands) {
@@ -69,10 +78,8 @@ export function toMessages(
 export function liveRun(state: ThreadState): RunState | null {
   for (let i = state.messages.length - 1; i >= 0; i--) {
     const message = state.messages[i];
-    if (message.role === "assistant" && message.run)
-      return TERMINAL.has(message.run.status) || message.run.status === "interrupted"
-        ? null
-        : message.run;
+    const run = message.role === "assistant" ? currentRun(message) : null;
+    if (run) return TERMINAL.has(run.status) || run.status === "interrupted" ? null : run;
   }
   return null;
 }

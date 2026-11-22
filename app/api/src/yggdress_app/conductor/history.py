@@ -26,14 +26,24 @@ class ChatHistory:
             ).fetchone()
             return str(row["id"])
 
-    def recent(self, conversation_id: str, limit: int = HISTORY_TURNS) -> list[dict[str, str]]:
-        """The last messages as model turns, oldest first, adjacent same-role merged."""
+    def recent(self, conversation_id: str, limit: int = HISTORY_TURNS,
+               before: str | None = None) -> list[dict[str, str]]:  # fmt: skip
+        """The last messages as model turns, oldest first, adjacent same-role merged.
+        `before` (a message id) keeps only what came before it: a "Try again" answer sees
+        the conversation as it was when the request was first asked."""
         with self.database.connect() as db:
             rows = db.execute(
                 """SELECT role,content FROM app.chat_messages
                    WHERE conversation_id=%s AND deleted_at IS NULL AND content<>''
+                     AND NOT EXISTS (SELECT 1 FROM app.chat_messages newer
+                          WHERE newer.role='assistant' AND chat_messages.role='assistant'
+                            AND newer.source_message_id=chat_messages.source_message_id
+                            AND newer.source_version>chat_messages.source_version
+                            AND newer.deleted_at IS NULL)
+                     AND (%s::uuid IS NULL OR ordinal <
+                          (SELECT ordinal FROM app.chat_messages WHERE id=%s::uuid))
                    ORDER BY ordinal DESC LIMIT %s""",
-                (conversation_id, limit),
+                (conversation_id, before, before, limit),
             ).fetchall()
         turns: list[dict[str, str]] = []
         for row in reversed(rows):
@@ -58,15 +68,29 @@ class ChatHistory:
             )
         return str(row["id"])
 
-    def save_assistant(self, conversation_id: str, text: str, source_id: str, model: str) -> None:
+    def user_message_for(self, conversation_id: str, request: str) -> str | None:
+        """The conductor's latest user row with this text (runs older than branching
+        did not record their row id)."""
+        with self.database.connect() as db:
+            row = db.execute(
+                """SELECT id FROM app.chat_messages WHERE conversation_id=%s AND role='user'
+                   AND agent_id='conductor' AND content=%s AND deleted_at IS NULL
+                   ORDER BY ordinal DESC LIMIT 1""",
+                (conversation_id, request),
+            ).fetchone()
+        return str(row["id"]) if row else None
+
+    def save_assistant(self, conversation_id: str, text: str, source_id: str, model: str,
+                       version: int = 1) -> None:  # fmt: skip
+        """`version` > 1 is another answer to the same request (a "Try again" branch)."""
         if not text:
             return
         with self.database.connect() as db:
             db.execute(
                 """INSERT INTO app.chat_messages
                    (conversation_id,role,content,source_message_id,source_version,model_id,agent_id)
-                   VALUES (%s,'assistant',%s,%s,1,%s,'conductor')""",
-                (conversation_id, text, source_id, model),
+                   VALUES (%s,'assistant',%s,%s,%s,%s,'conductor')""",
+                (conversation_id, text, source_id or None, version, model),
             )
             db.execute(
                 "UPDATE app.chat_conversations SET updated_at=now() WHERE id=%s",

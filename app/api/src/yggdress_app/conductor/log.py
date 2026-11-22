@@ -17,7 +17,6 @@ Guarantees of `append`, all checked inside one row-locked transaction:
 
 from __future__ import annotations
 
-import copy
 import logging
 import math
 import threading
@@ -196,7 +195,9 @@ class RunLog:
             if not row:
                 raise RunNotFound(run_id)
             before = RunState.model_validate(row["state"])
-            state = copy.deepcopy(row["state"])
+            # The stored shape, upgraded to the current model (a row written before a new
+            # optional field existed gains it with its default; nothing else changes).
+            state = before.model_dump(mode="json")
             for op in ops:
                 apply(state, op)
             after = RunState.model_validate(state)

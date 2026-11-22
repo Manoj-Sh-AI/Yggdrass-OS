@@ -9,7 +9,7 @@
 import { MessagePrimitive, ThreadPrimitive, useAui, useAuiState } from "@assistant-ui/react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Composer } from "./composer/composer";
-import { AnswerText, ReasoningBlock, RunPart } from "./parts/parts";
+import { AnswerText, BranchesPart, ReasoningBlock, RunPart, TryAgain } from "./parts/parts";
 
 /** Jobs Yggdras can actually do from the chat (it reads calendar, tasks and notes). */
 export const STARTERS = [
@@ -42,15 +42,23 @@ function UserBubble() {
 }
 
 function AssistantTurn() {
+  // Only a conductor run can be answered again (its id is the run id); plain history
+  // messages from the old chat or the phone have no run.
+  const retry = useAuiState((s) => {
+    const m = s.message;
+    const ran = m.content.some((p) => p.type === "data");
+    return m.isLast && !s.thread.isRunning && m.status?.type !== "running" && ran ? m.id : "";
+  });
   return (
     <MessagePrimitive.Root className="flex flex-col gap-2">
       <MessagePrimitive.Parts
         components={{
           Text: AnswerText,
           Reasoning: ReasoningBlock,
-          data: { by_name: { run: RunPart } },
+          data: { by_name: { run: RunPart, branches: BranchesPart } },
         }}
       />
+      {retry ? <TryAgain runId={retry} /> : null}
     </MessagePrimitive.Root>
   );
 }

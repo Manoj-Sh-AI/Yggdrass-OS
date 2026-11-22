@@ -180,6 +180,10 @@ class RunState(_Model):
     model: str = ""
     usage: list[Usage] = Field(default_factory=list)
     error: str = Field(default="", max_length=2000)
+    # Branching (`< 2/3 >`): a "Try again" run answers the same request as `branch_of`,
+    # the first run of its group. `user_message` is the chat row the answers belong to.
+    branch_of: str | None = None
+    user_message: str | None = None
 
     def cost_usd(self) -> float:
         return round(sum(u.cost_usd for u in self.usage), 6)

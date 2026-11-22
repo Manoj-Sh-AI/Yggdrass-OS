@@ -332,3 +332,67 @@ def test_images_reach_the_model_and_bad_images_are_refused(http):
     bad = {"type": "add-message", "message": {"role": "user", "parts": [
         {"type": "image", "image": "data:application/pdf;base64,AAAA"}]}}  # fmt: skip
     assert client.post("/v1/assistant", json={"commands": [bad]}).status_code == 422
+
+
+# ---- branching ("Try again", `< 2/3 >`) -----------------------------------------------
+def test_try_again_answers_the_same_request_without_the_first_answer(database):
+    models = FakeModels({"orchestrator": ["Earlier answer.", "First try.", "Second try."]})
+    conductor = make_conductor(database, models)
+    earlier = conductor.start("Invented earlier question")
+    convo = wait_for(conductor.log, earlier.run_id)[0].conversation_id
+    first = conductor.start("Invented question to retry", convo)
+    wait_for(conductor.log, first.run_id)
+    again = conductor.branch(first.run_id)
+    state = wait_for(conductor.log, again.run_id)[0]
+    assert state.branch_of == first.run_id and state.text == "Second try."
+    sent = [c for c in models.calls if c["role"] == "orchestrator"][-1]["messages"]
+    assert [m["role"] for m in sent] == ["user", "assistant", "user"]
+    assert sent[1]["content"] == "Earlier answer." and "First try." not in json.dumps(sent)
+    # one copy of the request in the chat; the next turn sees only the latest answer
+    turns = ChatHistory(database).recent(convo)
+    assert [t["content"] for t in turns][-2:] == ["Invented question to retry", "Second try."]
+
+
+def test_a_branch_of_a_branch_joins_the_same_group(database):
+    conductor = make_conductor(database, FakeModels({"orchestrator": ["A.", "B.", "C."]}))
+    first = conductor.start("Invented question")
+    wait_for(conductor.log, first.run_id)
+    second = conductor.branch(first.run_id)
+    wait_for(conductor.log, second.run_id)
+    third = conductor.branch(second.run_id)
+    assert wait_for(conductor.log, third.run_id)[0].branch_of == first.run_id
+
+
+def test_try_again_is_refused_while_an_answer_is_running(database):
+    models = SlowModels()
+    conductor = make_conductor(database, models)
+    run = conductor.start("Invented slow question")
+    with pytest.raises(ValueError, match="still running"):
+        conductor.branch(run.run_id)
+    models.release.set()
+    wait_for(conductor.log, run.run_id)
+
+
+def test_regenerate_streams_into_branches_and_the_thread_rebuilds_them(http):
+    client, _conductor, models = http
+    models.release.set()
+    models.replies["orchestrator"] = [ANSWER, "Another invented answer."]
+    first = client.post("/v1/assistant", json={"commands": [add_message("Invented question")]})
+    state = client_state(first.text, {"conversationId": None, "messages": []})
+    root = state["messages"][1]["id"]
+    again = client.post("/v1/assistant",
+                        json={"commands": [{"type": "regenerate", "runId": root}], "state": state})  # fmt: skip
+    assert again.status_code == 200
+    state = client_state(again.text, state)
+    assert [m["role"] for m in state["messages"]] == ["user", "assistant"]
+    branches = state["messages"][1]["branches"]
+    assert [b["run"]["text"] for b in branches] == [ANSWER, "Another invented answer."]
+    server = client.get(f"/v1/assistant/threads/{state['conversationId']}").json()
+    assert [b["run"] for b in server["messages"][1]["branches"]] == [b["run"] for b in branches]
+
+
+def test_regenerate_of_an_unknown_run_is_404(http):
+    client, _conductor, _models = http
+    response = client.post("/v1/assistant",
+                           json={"commands": [{"type": "regenerate", "runId": str(uuid.uuid4())}]})  # fmt: skip
+    assert response.status_code == 404

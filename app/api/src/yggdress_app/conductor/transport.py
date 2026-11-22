@@ -1,14 +1,18 @@
 """HTTP for the conductor: assistant-ui's Assistant Transport protocol [cited].
 
-- POST /v1/assistant            commands (add-message, cancel-run, add-tool-result); streams
+- POST /v1/assistant            commands (add-message, regenerate, cancel-run,
+                                 answer-approval); streams
 - POST /v1/assistant/resume-state?conversation=ID   {state, runId} of an unfinished run, or 204
 - POST /v1/assistant/resume     {runId: "<run>@<seq>"}; streams the rest of that run
 - GET  /v1/assistant/threads/{conversation_id}      the thread state to render on load
 
 Client state: {"conversationId": str|None, "messages": [Message]} where a message is
 {"id", "role": "user", "text"} or {"id", "role": "assistant", "text", "seq", "run"}.
-A streamed run is mirrored from the event log into assistant-stream's state with the
-path prefix ["messages", index, "run"], so the client applies exactly the logged ops.
+An assistant message answered more than once ("Try again") also has
+"branches": [{"id", "seq", "run"}, ...], the first answer first; the client shows one
+and a `< 2/3 >` picker. A streamed run is mirrored from the event log into
+assistant-stream's state under its path (["messages", i, "run"] or
+["messages", i, "branches", k, "run"]), so the client applies exactly the logged ops.
 """
 
 from __future__ import annotations
@@ -111,6 +115,37 @@ def message_parts(command: Command) -> tuple[str, list[dict[str, Any]]]:
     return text, images
 
 
+def run_path(messages: list[dict[str, Any]], run_id: str) -> list | None:
+    """Where a run lives in the client state: a message of its own or a branch."""
+    for i, message in enumerate(messages):
+        if message.get("id") == run_id:
+            return ["messages", i, "run"]
+        for k, branch in enumerate(message.get("branches") or []):
+            if branch.get("id") == run_id:
+                return ["messages", i, "branches", k, "run"]
+    return None
+
+
+def put(state: dict[str, Any], path: list, value: Any) -> None:
+    node: Any = state
+    for key in path[:-1]:
+        node = node[key]
+    node[path[-1]] = value
+
+
+def add_branch(messages: list[dict[str, Any]], root_id: str, run: RunState) -> list | None:
+    """Append a new answer to the root's group; the path of its run, or None."""
+    for i, message in enumerate(messages):
+        if message.get("id") == root_id and message.get("role") == "assistant":
+            branches = message.get("branches") or [
+                {"id": root_id, "seq": message.get("seq", 0), "run": message.get("run")}
+            ]
+            branches.append({"id": run.run_id, "seq": 0, "run": run.model_dump(mode="json")})
+            message["branches"] = branches
+            return ["messages", i, "branches", len(branches) - 1, "run"]
+    return None
+
+
 def assistant_message(state: RunState, seq: int) -> dict[str, Any]:
     return {"id": state.run_id, "role": "assistant", "text": "", "seq": seq,
             "run": state.model_dump(mode="json")}  # fmt: skip
@@ -173,11 +208,13 @@ def conductor_router(conductor: Conductor, session) -> APIRouter:
         state = body.state if isinstance(body.state, dict) else empty_thread()
         if not isinstance(state.get("messages"), list):
             state["messages"] = []
-        start_text, images, answered = None, [], None
+        start_text, images, answered, again = None, [], None, None
         for command in body.commands:
             extra = command.model_extra or {}
             if command.type == "add-message":
                 start_text, images = message_parts(command)
+            elif command.type == "regenerate":
+                again = valid_id(extra.get("runId"))
             elif command.type == "cancel-run":
                 conductor.cancel(valid_id(extra.get("runId")))
             elif command.type == "answer-approval":
@@ -185,6 +222,8 @@ def conductor_router(conductor: Conductor, session) -> APIRouter:
                 _, before = await asyncio.to_thread(conductor.log.snapshot, run_id)
                 if await asyncio.to_thread(conductor.answer_approval, {**extra, "runId": run_id}):
                     answered = (run_id, before)
+        if again and start_text is None:
+            return await regenerate(conductor, state, again, body.model)
         if start_text is None and answered:
             return continue_after_answer(conductor, state, *answered)
         if start_text is None:
@@ -208,9 +247,10 @@ def conductor_router(conductor: Conductor, session) -> APIRouter:
     async def resume_state(conversation: str = Query(min_length=1, max_length=64)):
         thread = await asyncio.to_thread(thread_state, conductor, valid_id(conversation))
         for message in reversed(thread["messages"]):
-            run = message.get("run")
-            if run and run["status"] == "running":
-                return {"state": thread, "runId": f"{run['run_id']}@{message['seq']}"}
+            for holder in [*(message.get("branches") or [])[::-1], message]:
+                run = holder.get("run")
+                if run and run["status"] == "running":
+                    return {"state": thread, "runId": f"{run['run_id']}@{holder['seq']}"}
         return Response(status_code=204)
 
     @router.post("/resume")
@@ -221,12 +261,12 @@ def conductor_router(conductor: Conductor, session) -> APIRouter:
             raise HTTPException(404, "That run is not available.")
         seq = int(seq_text)
         try:
-            thread, index, base = await asyncio.to_thread(resume_point, conductor, run_id, seq)
+            thread, path, base = await asyncio.to_thread(resume_point, conductor, run_id, seq)
         except RunNotFound as error:
             raise HTTPException(404, "That run is not available.") from error
 
         async def stream(controller: RunController):
-            await tail(controller, conductor, run_id, seq, ["messages", index, "run"], base)
+            await tail(controller, conductor, run_id, seq, path, base)
 
         # The server-side state starts as the client has it: the run as of `seq`.
         return AssistantTransportResponse(create_run(stream, state=thread))
@@ -259,15 +299,40 @@ def continue_after_answer(conductor: Conductor, state: dict, run_id: str, before
     """After Manoj answers an approval card, stream the rest of that run. The client's
     copy may be behind (parallel steps kept writing), so the run is rebuilt exactly as of
     `before` and replaces it; the stream then continues from there."""
-    messages = state.get("messages") or []
-    index = next((i for i, m in enumerate(messages) if m.get("id") == run_id), None)
-    if index is None:
+    path = run_path(state.get("messages") or [], run_id)
+    if path is None:
         return Response(status_code=204)
 
     async def stream(controller: RunController):
         base = await asyncio.to_thread(rebuild, conductor, run_id, before)
-        controller.state["messages"][index]["run"] = copy.deepcopy(base)
-        await tail(controller, conductor, run_id, before, ["messages", index, "run"], base)
+        put(controller.state, path, copy.deepcopy(base))
+        await tail(controller, conductor, run_id, before, path, base)
+
+    return AssistantTransportResponse(create_run(stream, state=state))
+
+
+async def regenerate(conductor: Conductor, state: dict, run_id: str, model: str):
+    """Try again on an answer: a sibling run, streamed into the root's branches."""
+    try:
+        run = await asyncio.to_thread(conductor.branch, run_id, model)
+    except RunNotFound as error:
+        raise HTTPException(404, "That answer is not available.") from error
+    except ValueError as error:
+        raise HTTPException(409, str(error)) from error
+
+    async def stream(controller: RunController):
+        messages = copy.deepcopy(state.get("messages") or [])
+        path = add_branch(messages, run.branch_of or run_id, run)
+        if path is None:  # the client's copy lacks the root: send the whole thread
+            thread = await asyncio.to_thread(thread_state, conductor, run.conversation_id or "")
+            messages = thread["messages"]
+            path = run_path(messages, run.run_id)
+        controller.state["conversationId"] = run.conversation_id
+        controller.state["messages"] = messages
+        node: Any = {"messages": messages}  # the plain copy: the controller's is a proxy
+        for key in path[:-1]:
+            node = node[key]
+        await tail(controller, conductor, run.run_id, 0, path, node[path[-1]])
 
     return AssistantTransportResponse(create_run(stream, state=state))
 
@@ -283,15 +348,16 @@ def rebuild(conductor: Conductor, run_id: str, seq: int) -> dict[str, Any]:
     return start
 
 
-def resume_point(conductor: Conductor, run_id: str, seq: int) -> tuple[dict, int, dict]:
+def resume_point(conductor: Conductor, run_id: str, seq: int) -> tuple[dict, list, dict]:
     state, _ = conductor.log.snapshot(run_id)
     thread = thread_state(conductor, state.conversation_id)
     base = rebuild(conductor, run_id, seq)
-    for index, message in enumerate(thread["messages"]):
-        if message["id"] == run_id:
-            message["run"], message["seq"] = copy.deepcopy(base), seq
-            return thread, index, base
-    raise RunNotFound(run_id)
+    path = run_path(thread["messages"], run_id)
+    if path is None:
+        raise RunNotFound(run_id)
+    put(thread, path, copy.deepcopy(base))
+    put(thread, [*path[:-1], "seq"], seq)
+    return thread, path, base
 
 
 def thread_state(conductor: Conductor, conversation_id: str) -> dict[str, Any]:
@@ -302,10 +368,21 @@ def thread_state(conductor: Conductor, conversation_id: str) -> dict[str, Any]:
     for message in conductor.history.plain_messages(conversation_id):
         plain = {"id": message["id"], "role": message["role"], "text": message["content"]}
         timeline.append((message["at"], 0, [plain]))
-    for state, seq in conductor.log.runs_for(conversation_id):
+    answers: dict[str, dict[str, Any]] = {}
+    for state, seq in conductor.log.runs_for(conversation_id):  # a group's first comes first
+        if state.branch_of and state.branch_of in answers:
+            group = answers[state.branch_of]
+            group.setdefault(
+                "branches", [{"id": group["id"], "seq": group["seq"], "run": group["run"]}]
+            )
+            group["branches"].append(
+                {"id": state.run_id, "seq": seq, "run": state.model_dump(mode="json")}
+            )
+            continue
         request, at = requests[state.run_id]
         user = {"id": f"user-{state.run_id}", "role": "user", "text": request}
-        timeline.append((at, 1, [user, assistant_message(state, seq)]))
+        answers[state.run_id] = assistant_message(state, seq)
+        timeline.append((at, 1, [user, answers[state.run_id]]))
     timeline.sort(key=lambda item: (item[0], item[1]))
     return {
         "conversationId": conversation_id,

@@ -41,7 +41,7 @@ from .models import (
 from .planning import PLANNER_SYSTEM, ROUTER_SYSTEM, PlanDraft, RouteDecision, to_plan
 from .policy import Decision, Policy, PolicyStore
 from .recorder import Recorder
-from .state import MAX_ATTEMPTS, Approval, Plan, RunState, ToolCall
+from .state import MAX_ATTEMPTS, TERMINAL, Approval, Plan, RunState, ToolCall
 from .tools import StaticToolbox, Toolbox
 from .verify import verify
 from .workers import WorkerResult, run_worker
@@ -84,6 +84,7 @@ class Context:
     history: list[dict[str, Any]]
     cancel: threading.Event
     user_message_id: str
+    version: int = 1  # > 1: a "Try again" answer to the same request
     lock: threading.Lock = field(default_factory=threading.Lock)
     usage_count: int = 0
     waiting: int = 0  # approval cards currently open (run status is 'waiting' while > 0)
@@ -136,6 +137,37 @@ class Conductor:
         # shown as plain history, so this run's own messages must come after it.
         self.log.start(state, request, self.owner)
         user_message = self.history.save_user(conversation, request, model)
+        self.log.append(state.run_id, [set_(["user_message"], user_message)])
+        return self._launch(state, conversation, request, model,
+                            with_request(context_turns, request, images or []), user_message)  # fmt: skip
+
+    def branch(self, run_id: str, model: str = "") -> RunState:
+        """ "Try again": another answer to the same request, as a sibling of `run_id`'s
+        group. It sees the conversation as it was before that request, never the earlier
+        answers, and adds no second copy of the request to the chat."""
+        first, _ = self.log.snapshot(run_id)
+        root_id = first.branch_of or first.run_id
+        root, _ = self.log.snapshot(root_id)
+        siblings = [s for s, _ in self.log.runs_for(root.conversation_id or "")
+                    if s.run_id == root_id or s.branch_of == root_id]  # fmt: skip
+        if any(s.status not in TERMINAL and s.status != "interrupted" for s in siblings):
+            raise ValueError("An answer to this request is still running.")
+        request = self.log.requests_for(root.conversation_id or "")[root_id][0]
+        user_message = root.user_message or self.history.user_message_for(
+            root.conversation_id or "", request
+        )
+        model = model if model in CHOOSABLE else (root.model or CHAT_DEFAULT)
+        state = RunState(run_id=str(uuid.uuid4()), conversation_id=root.conversation_id,
+                         model=model, status="running", branch_of=root_id,
+                         user_message=user_message)  # fmt: skip
+        self.log.start(state, request, self.owner)
+        turns = self.history.recent(root.conversation_id or "", before=user_message)
+        return self._launch(state, root.conversation_id or "", request, model,
+                            with_request(turns, request), user_message or "",
+                            version=len(siblings) + 1)  # fmt: skip
+
+    def _launch(self, state: RunState, conversation: str, request: str, model: str,
+                history: list[dict[str, Any]], user_message: str, version: int = 1) -> RunState:  # fmt: skip
         cancel = threading.Event()
         with self._lock:
             self._cancels[state.run_id] = cancel
@@ -150,9 +182,10 @@ class Conductor:
             request=request,
             model=model,
             recorder=Recorder(self.log, state.run_id, self.owner),
-            history=with_request(context_turns, request, images or []),
+            history=history,
             cancel=cancel,
             user_message_id=user_message,
+            version=version,
         )
         self._pool.submit(self._execute, context)
         return state
@@ -196,7 +229,7 @@ class Conductor:
             ctx.recorder.flush()
             final, _ = self.log.snapshot(ctx.run_id)
             self.history.save_assistant(
-                ctx.conversation_id, final.text, ctx.user_message_id, ctx.model
+                ctx.conversation_id, final.text, ctx.user_message_id, ctx.model, ctx.version
             )
             ctx.recorder.set(["status"], "completed")
         except Cancelled:

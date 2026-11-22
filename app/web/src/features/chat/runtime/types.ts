@@ -87,7 +87,12 @@ export type RunState = {
   model: string;
   usage: Usage[];
   error: string;
+  branch_of: string | null;
+  user_message: string | null;
 };
+
+/** One answer of a request answered more than once ("Try again"), first answer first. */
+export type Branch = { id: string; seq?: number; run: RunState | null };
 
 export type UserMessage = { id: string; role: "user"; text: string };
 export type AssistantMessage = {
@@ -96,6 +101,7 @@ export type AssistantMessage = {
   text: string;
   seq?: number;
   run?: RunState | null;
+  branches?: Branch[];
 };
 export type ThreadState = {
   conversationId: string | null;

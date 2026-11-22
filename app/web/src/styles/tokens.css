@@ -245,3 +245,32 @@
   border-right-width: var(--border-width);
   border-right-style: solid;
 }
+
+/* Motion utilities (A5 applied): duration + the practical easing from the tokens above,
+   never a raw ms value. The global prefers-reduced-motion rule in globals.css sets every
+   transition and animation to none, so these need no separate reduced-motion branch. */
+@utility motion-xshort {
+  transition-duration: var(--duration-xshort);
+  animation-duration: var(--duration-xshort);
+  transition-timing-function: var(--ease-practical);
+}
+@utility motion-short {
+  transition-duration: var(--duration-short);
+  animation-duration: var(--duration-short);
+  transition-timing-function: var(--ease-practical);
+}
+@utility motion-medium {
+  transition-duration: var(--duration-medium);
+  animation-duration: var(--duration-medium);
+  transition-timing-function: var(--ease-practical);
+}
+@utility motion-long {
+  transition-duration: var(--duration-long);
+  animation-duration: var(--duration-long);
+  transition-timing-function: var(--ease-practical);
+}
+@utility motion-xlong {
+  transition-duration: var(--duration-xlong);
+  animation-duration: var(--duration-xlong);
+  transition-timing-function: var(--ease-practical);
+}

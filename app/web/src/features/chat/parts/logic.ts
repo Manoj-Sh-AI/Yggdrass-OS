@@ -57,7 +57,8 @@ export function stepView(step: Step, maxAttempts = 3): StepView {
       label: step.title,
       detail: `Retrying (${Math.min(step.attempts + 1, maxAttempts)}/${maxAttempts}): ${step.reason}`,
     };
-  if (step.status === "in_progress") return { tone: "active", label: step.title, detail: "" };
+  if (step.status === "in_progress")
+    return { tone: "active", label: step.title, detail: "" };
   return { tone: "pending", label: step.title, detail: "" };
 }
 
@@ -66,7 +67,73 @@ export function openApprovals(tools: ToolCall[]): ToolCall[] {
   return tools.filter((t) => t.state === "approval-requested");
 }
 
+/** The `< 2/3 >` picker: which answer shows. A new answer arriving jumps to it. */
+export function branchIndex(
+  current: number | null,
+  count: number,
+  previousCount: number,
+): number {
+  if (count <= 0) return 0;
+  if (current === null || count > previousCount) return count - 1;
+  return Math.min(Math.max(current, 0), count - 1);
+}
+
+export function branchLabel(index: number, count: number): string {
+  return `${index + 1}/${count}`;
+}
+
 export function formatSeconds(ms: number): string {
   const s = Math.max(1, Math.round(ms / 1000));
   return s < 60 ? `${s}s` : `${Math.floor(s / 60)}m ${s % 60}s`;
+}
+
+export type DiffLine = {
+  kind: "add" | "remove" | "hunk" | "file" | "context";
+  text: string;
+};
+
+/** A unified diff as lines to colour. Header lines (diff/index/---/+++) are files. */
+export function parseDiff(diff: string): DiffLine[] {
+  return diff
+    .replace(/\n$/, "")
+    .split("\n")
+    .map((line): DiffLine => {
+      if (/^(diff --git|index |--- |\+\+\+ )/.test(line))
+        return { kind: "file", text: line };
+      if (line.startsWith("@@")) return { kind: "hunk", text: line };
+      if (line.startsWith("+")) return { kind: "add", text: line.slice(1) };
+      if (line.startsWith("-")) return { kind: "remove", text: line.slice(1) };
+      return {
+        kind: "context",
+        text: line.startsWith(" ") ? line.slice(1) : line,
+      };
+    });
+}
+
+// eslint-disable-next-line no-control-regex
+const ANSI = /\u001b\[[0-9;?]*[ -/]*[@-~]|\u001b\][^\u0007]*\u0007/g;
+
+/** Terminal output without colour codes (the plain fallback and screen readers). */
+export function stripAnsi(text: string): string {
+  return text.replace(ANSI, "");
+}
+
+export type ToolOutputView =
+  | { kind: "diff"; diff: string }
+  | { kind: "terminal"; output: string; exitCode: number | null }
+  | { kind: "json" };
+
+/** Which renderer a tool's output gets: `{diff}` or `{terminal, exit_code?}`, else JSON. */
+export function outputView(output: unknown): ToolOutputView {
+  if (output && typeof output === "object" && !Array.isArray(output)) {
+    const o = output as Record<string, unknown>;
+    if (typeof o.diff === "string") return { kind: "diff", diff: o.diff };
+    if (typeof o.terminal === "string")
+      return {
+        kind: "terminal",
+        output: o.terminal,
+        exitCode: typeof o.exit_code === "number" ? o.exit_code : null,
+      };
+  }
+  return { kind: "json" };
 }

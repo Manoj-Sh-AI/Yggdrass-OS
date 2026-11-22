@@ -24,7 +24,8 @@ describe("contract with the API (fixture written by app/api tests)", () => {
   it("has exactly the keys the web types declare", () => {
     const runKeys: Record<keyof RunState, true> = {
       run_id: true, conversation_id: true, status: true, mode: true, plan: true, tools: true,
-      reasoning: true, text: true, model: true, usage: true, error: true,
+      reasoning: true, text: true, model: true, usage: true, error: true, branch_of: true,
+      user_message: true,
     };
     const stepKeys: Record<keyof Step, true> = {
       id: true, title: true, status: true, depends_on: true, check: true, verdict: true,
