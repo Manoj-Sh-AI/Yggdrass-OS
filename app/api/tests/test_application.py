@@ -364,6 +364,27 @@ def test_migrations_are_application_only_and_runtime_cannot_create_tables(postgr
             "conductor_runs",
             "conductor_events",
             "conductor_policy",
+            "routine_important_blocks",
+            "scheduled_jobs",
+            "scheduled_job_attempts",
+            "routine_escalations",
+            "daily_routine_settings",
+            "routine_checkins",
+            "routine_predictions",
+            "routine_pool",
+            "routine_editions",
+            "routine_hypotheses",
+            "journal_entries",
+            "daily_reviews",
+            "daily_lessons",
+            "daily_briefs",
+            "daily_inputs",
+            "daily_filing_runs",
+            "daily_filing_actions",
+            "web_push_subscriptions",
+            "web_push_deliveries",
+            "web_push_tokens",
+            "routine_voice_bindings",
         }
     with (
         pytest.raises(psycopg.errors.InsufficientPrivilege),
@@ -372,7 +393,7 @@ def test_migrations_are_application_only_and_runtime_cannot_create_tables(postgr
         db.execute("CREATE TABLE app.forbidden(id integer)")
     source = Path(__file__).parents[1] / "src" / "yggdress_app"
     assert all(
-        "from yggdras" not in p.read_text() and "import yggdras" not in p.read_text()
+        "from yggdras" not in p.read_text(encoding="utf-8") and "import yggdras" not in p.read_text(encoding="utf-8")
         for p in source.glob("*.py")
     )
 

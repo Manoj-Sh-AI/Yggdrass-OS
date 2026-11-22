@@ -227,7 +227,13 @@ class CallService:
             }
         if self.transport:
             try:
-                self.transport.dispatch(str(row["id"]), row["room"])
+                from .routine_voice import dispatch_metadata
+
+                restricted = dispatch_metadata(self.database, row, self.auth_fingerprint)
+                if restricted:
+                    self.transport.dispatch(str(row["id"]), row["room"], metadata=restricted)
+                else:
+                    self.transport.dispatch(str(row["id"]), row["room"])
             except Exception:  # noqa: BLE001 -- sanitized transport boundary
                 raise HTTPException(
                     503,
@@ -314,6 +320,14 @@ class CallService:
                         (template["id"], day),
                     ).fetchone()
                     if task and task["state"] in ("completed", "skipped", "in_progress"):
+                        continue
+                    # A marked routine block belongs to the push-first flow for that day.
+                    # Otherwise the original call would ring before the owner can tap Started.
+                    if task and db.execute(
+                        "SELECT 1 FROM app.routine_important_blocks i JOIN app.execution_blocks b "
+                        "ON b.id=i.block_id CROSS JOIN app.daily_routine_settings s WHERE s.enabled "
+                        "AND b.task_id=%s AND NOT b.cancelled", (task["id"],),
+                    ).fetchone():
                         continue
                     block = (
                         db.execute(
@@ -446,7 +460,9 @@ class CallService:
                     active = db.execute(
                         "SELECT id,state FROM app.calls WHERE state IN ('ringing','answered') ORDER BY created_at LIMIT 1"
                     ).fetchone()
-                    if active and active["state"] == "answered":
+                    if (active and active["state"] == "answered"
+                        and not db.execute("SELECT 1 FROM app.routine_voice_bindings WHERE call_id=%s",
+                                           (active["id"],)).fetchone()):
                         # Manoj is already talking to Yggdras: the voice worker announces this
                         # reminder inside that call instead of ringing a second one.
                         db.execute(

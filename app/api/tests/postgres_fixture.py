@@ -142,6 +142,9 @@ def isolated_database():
                     )
                 )
             runtime = make_conninfo(migrated, user=role, password=password)
+            from yggdress_app.runtime_grants import grant_runtime
+            with psycopg.connect(migrated) as connection:
+                grant_runtime(connection,role)
             yield {"admin": migrated, "runtime": runtime, "role": role}
         finally:
             if "name" in locals():

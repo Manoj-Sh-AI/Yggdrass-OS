@@ -232,6 +232,11 @@ def create_app(
     calls = calls or CallService(database, notes=notes)
     calls.auth_fingerprint = fingerprint
     api.state.calls = calls
+    from .daily_routine_api import routine_router
+    from .routine_delivery import delivery_router
+    from .routine_jobs import acknowledge
+    api.include_router(routine_router(database, session, lia=lambda: getattr(api.state, "routine_lia", None)))
+    api.include_router(delivery_router(database, session, fingerprint, acknowledge, calls=calls))
     api.include_router(call_router(calls, session))
     api.include_router(planning_router(database, session))
     api.include_router(notes_router(notes, session, observer=store if agents_enabled else None))

@@ -584,6 +584,13 @@ def serve(home, hosted=False):
             agents_ready=bool(agent_config),
             agent_issue=agent_issue,
         )
+        from .routine_jobs import RoutineScheduler
+
+        application.state.routine_lia = agent_config["lia"] if agent_config else None
+        routine_worker = RoutineScheduler(
+            application.state.database, application.state.calls,
+            application.state.routine_lia,
+        )
         if agent_config:
             from .call_briefs import BriefPreparer
 
@@ -642,6 +649,8 @@ def serve(home, hosted=False):
                         [sys.executable, "-m", "yggdress_app.voice_worker", "--home", str(home)],
                         env={
                             **clean_environment(),
+                            "YGGDRAS_ROUTINE_INTERNAL_API": f"http://127.0.0.1:{api_port}",
+                            "YGGDRAS_REMINDER_LLM": os.environ.get("YGGDRAS_REMINDER_LLM", ""),
                             "PYTHONPATH": str(Path(__file__).resolve().parents[1]),
                         },
                         stdin=subprocess.DEVNULL,
@@ -705,6 +714,8 @@ def serve(home, hosted=False):
                     raise RuntimeError("Application startup timed out.")
                 state["ready"] = True
                 atomic_json(home / "service.json", state)
+                if os.environ.get("YGGDRAS_BACKGROUND", "on") != "off":
+                    routine_worker.start()
                 # YGGDRAS_BACKGROUND=off: a test deploy beside the laptop never competes
                 # with the laptop's agent worker for the same queued requests.
                 if worker and os.environ.get("YGGDRAS_BACKGROUND", "on") != "off":
@@ -745,6 +756,8 @@ def serve(home, hosted=False):
                                 atomic_json(home / "service.json", state)
                                 if worker:
                                     worker.start()
+                                if os.environ.get("YGGDRAS_BACKGROUND", "on") != "off":
+                                    routine_worker.start()
                                 break
                     except OSError:
                         pass
@@ -762,6 +775,7 @@ def serve(home, hosted=False):
             # Every step runs even if an earlier one fails: a half-stopped app left the brain
             # service, voice worker and web server running and blocked the next start.
             stop_tree(voice_process)
+            quietly(routine_worker.stop)
             if worker:
                 quietly(worker.stop)
             state["ready"] = False

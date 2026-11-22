@@ -28,6 +28,12 @@ def setup(postgres):
     with Database(postgres["admin"]).connect() as db:
         # Bulk fixture cleanup is not an interactive application request.
         db.execute("SET LOCAL statement_timeout='60s'")
+        db.execute("TRUNCATE app.scheduled_jobs,app.routine_important_blocks,app.routine_escalations,"
+                   "app.journal_entries,app.daily_briefs,app.daily_inputs,app.daily_filing_runs,"
+                   "app.routine_checkins,app.routine_predictions,app.routine_pool,app.routine_editions,"
+                   "app.routine_hypotheses CASCADE")
+        db.execute("UPDATE app.daily_routine_settings SET enabled=false,wake_time=NULL,midday_time=NULL,"
+                   "evening_time=NULL,open_channel=false,enabled_since=NULL,version=1 WHERE id=1")
         db.execute("TRUNCATE app.agent_executions,app.agent_effects RESTART IDENTITY CASCADE")
         db.execute("TRUNCATE app.conductor_events,app.conductor_runs,app.conductor_policy RESTART IDENTITY CASCADE")
         db.execute(
