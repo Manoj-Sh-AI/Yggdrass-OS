@@ -910,80 +910,80 @@ Ordered. Each item is independently verifiable by an agent and auditable by a hu
 **Stage 1 — Containment**
 5. [~] Install WSL2 with `bubblewrap` and `socat`; confirm `wsl -l -v` shows VERSION 2. **Verify:** inside a session, `touch ~/sandbox-probe` fails with `Read-only file system`.
     - **Audit 2026-11-22:** WSL2 Ubuntu VERSION 2 installed; Claude Code is not run inside it; bubblewrap/socat not checked (owner decision: move dev into WSL2)
-6. [ ] Write the `permissions.deny` / `permissions.ask` block into `~/.claude/settings.json` (not the repo). **Verify:** Claude refuses `cat .env`; `claude doctor` reports no rejected entries.
-    - **Audit 2026-11-22:** ~/.claude/settings.json holds only `theme`: no permissions.deny/ask
-7. [ ] Write the `autoMode` block including the explicit `Repository visibility: ... PUBLIC` line and `classifyAllShell: true`. **Verify:** `claude auto-mode config` shows the custom entries spliced after `$defaults`; `claude auto-mode critique` raises no ambiguity you have not considered.
-    - **Audit 2026-11-22:** no autoMode block
+6. [~] Write the `permissions.deny` / `permissions.ask` block into `~/.claude/settings.json` (not the repo). **Verify:** Claude refuses `cat .env`; `claude doctor` reports no rejected entries.
+    - **Audit 2026-11-22 (updated):** written to ~/.claude/settings.json 2026-11-22 (deny incl. .env, runtime.json, signing keys); claude doctor clean; live refusal not yet observed (applies to new sessions)
+7. [~] Write the `autoMode` block including the explicit `Repository visibility: ... PUBLIC` line and `classifyAllShell: true`. **Verify:** `claude auto-mode config` shows the custom entries spliced after `$defaults`; `claude auto-mode critique` raises no ambiguity you have not considered.
+    - **Audit 2026-11-22 (updated):** autoMode block written (public repo, real deploy branch, native Windows); `claude auto-mode critique` not run
 8. [ ] Write the `sandbox` block inside WSL2, including `credentials.files` deny on every `.env`, `network.strictAllowlist: true`, and `excludedCommands` for `pytest`/`alembic`. **Verify:** `curl --noproxy '*' https://example.com` fails with `Could not resolve host`; `pytest --version` still works.
     - **Audit 2026-11-22:** no sandbox block (needs Claude Code inside WSL2)
 9. [x] Confirm `sandbox.failIfUnavailable` is **not** set in `~/.claude/settings.json` if you still launch Claude Code on native Windows. **Verify:** Claude Code starts on native Windows.
     - **Audit 2026-11-22:** sandbox.failIfUnavailable not set
-10. [ ] Set `permissions.blockReadsOutsideWorkingDirectories: true`. **Verify:** a read of a path outside the working directory is refused.
-    - **Audit 2026-11-22:** blockReadsOutsideWorkingDirectories not set
+10. [~] Set `permissions.blockReadsOutsideWorkingDirectories: true`. **Verify:** a read of a path outside the working directory is refused.
+    - **Audit 2026-11-22 (updated):** set in ~/.claude/settings.json; live refusal not yet observed
 
 **Stage 2 — Verification gates**
-11. [ ] Create `.claude/hooks/` with `protect-paths.sh`, `t1-python.sh`, `t1-ts.sh`, `t2-task-gate.sh`, `t3-turn-gate.sh`, `full-suite-async.sh`; `chmod +x` all of them. **Verify:** each runs standalone — `echo '{"tool_name":"Bash","tool_input":{"command":"ls"}}' | ./hook.sh; echo $?`.
-    - **Audit 2026-11-22:** no .claude/hooks/
-12. [ ] Add the `hooks` block to `.claude/settings.json` (committed). **Verify:** `/hooks` lists all of them grouped by event.
-    - **Audit 2026-11-22:** no hooks block
-13. [ ] Add a `PreToolUse` deny on `Edit`/`Write` to `.claude/**` and `.github/**` so the agent cannot rewrite its own gate. **Verify:** ask Claude to edit `.claude/settings.json`; it is blocked.
-    - **Audit 2026-11-22:** no protection of .claude/** or .github/**
-14. [ ] Confirm every gate script uses `set -uo pipefail` (**not** `-e`), exits 2 only for "the code is wrong", and exits 0 with a `systemMessage` for infrastructure failures. **Verify:** `mv $(which ruff) /tmp` and confirm the T1 gate passes with a skip message rather than blocking.
-    - **Audit 2026-11-22:** no gate scripts
-15. [ ] Confirm the `Stop` gate guards on `stop_hook_active` and on a non-empty `background_tasks`. **Verify:** `grep -c stop_hook_active .claude/hooks/t3-turn-gate.sh` ≥ 1.
-    - **Audit 2026-11-22:** no Stop gate
-16. [ ] Confirm no hook has a `timeout` long enough to run the full suite, and that the `Stop` gate reads `.claude/state/last-full-run.json` rather than running tests. **Verify:** `claude --debug` shows no `timed out after` line on any blocking gate across a working session.
-    - **Audit 2026-11-22:** no gates
-17. [ ] Create a scratch-database provisioning script and export `GATE_SCRATCH_DB_URL`; confirm no gate inherits the real `DATABASE_URL` or brain-API credentials. **Verify:** a gate run against a deliberately wrong `GATE_SCRATCH_DB_URL` skips rather than blocks.
-    - **Audit 2026-11-22:** no scratch-DB provisioning for gates (tests use an isolated cluster via tests/postgres_fixture.py)
-18. [ ] Add the non-empty-selection assertion and the test-only-change tripwire to T2. **Verify:** a branch that edits only a test file is refused at `TaskCompleted` with the file named.
-    - **Audit 2026-11-22:** no T2 tripwire
-19. [ ] Mark known-flaky tests `@pytest.mark.flaky` and exclude them from every gate with `-m "not flaky and not slow"`. Add `PYTHONHASHSEED=0`, `-p no:randomly`, `--timeout=60`, `--color=no` to every gate invocation. **Verify:** ten consecutive gate runs on an unchanged tree all pass.
-    - **Audit 2026-11-22:** no flaky/slow markers or gate flags
-20. [ ] Prime `.testmondata` and add it to `.gitignore`. Add a rule that changes under `api/alembic/`, `pyproject.toml`, `conftest.py` or `.env*` force the full tier. **Verify:** `git check-ignore .testmondata` succeeds.
-    - **Audit 2026-11-22:** no .testmondata ignore
+11. [x] Create `.claude/hooks/` with `protect-paths.sh`, `t1-python.sh`, `t1-ts.sh`, `t2-task-gate.sh`, `t3-turn-gate.sh`, `full-suite-async.sh`; `chmod +x` all of them. **Verify:** each runs standalone — `echo '{"tool_name":"Bash","tool_input":{"command":"ls"}}' | ./hook.sh; echo $?`.
+    - **Audit 2026-11-22 (updated):** .claude/hooks/{protect-paths,t1-python,t1-ts,t2-task-gate,t3-turn-gate,full-suite-async}.sh + gate.py; each run standalone (commit fa28524)
+12. [~] Add the `hooks` block to `.claude/settings.json` (committed). **Verify:** `/hooks` lists all of them grouped by event.
+    - **Audit 2026-11-22 (updated):** .claude/settings.json hooks block committed; T1 and PreToolUse fired live this session; /hooks listing not checked
+13. [x] Add a `PreToolUse` deny on `Edit`/`Write` to `.claude/**` and `.github/**` so the agent cannot rewrite its own gate. **Verify:** ask Claude to edit `.claude/settings.json`; it is blocked.
+    - **Audit 2026-11-22 (updated):** protect-paths blocked this agent's own Write to .github/workflows/pr.yml live (2026-11-22)
+14. [x] Confirm every gate script uses `set -uo pipefail` (**not** `-e`), exits 2 only for "the code is wrong", and exits 0 with a `systemMessage` for infrastructure failures. **Verify:** `mv $(which ruff) /tmp` and confirm the T1 gate passes with a skip message rather than blocking.
+    - **Audit 2026-11-22 (updated):** gate.py: exit 2 only for code faults; tooling failures exit 0 + systemMessage; crash handler skips
+15. [x] Confirm the `Stop` gate guards on `stop_hook_active` and on a non-empty `background_tasks`. **Verify:** `grep -c stop_hook_active .claude/hooks/t3-turn-gate.sh` ≥ 1.
+    - **Audit 2026-11-22 (updated):** gate.py t3() returns early on stop_hook_active or background_tasks
+16. [~] Confirm no hook has a `timeout` long enough to run the full suite, and that the `Stop` gate reads `.claude/state/last-full-run.json` rather than running tests. **Verify:** `claude --debug` shows no `timed out after` line on any blocking gate across a working session.
+    - **Audit 2026-11-22 (updated):** Stop gate is ruff + cached last-full-run.json verdict (90 s timeout); --debug check not run
+17. [~] Create a scratch-database provisioning script and export `GATE_SCRATCH_DB_URL`; confirm no gate inherits the real `DATABASE_URL` or brain-API credentials. **Verify:** a gate run against a deliberately wrong `GATE_SCRATCH_DB_URL` skips rather than blocks.
+    - **Audit 2026-11-22 (updated):** gates strip DATABASE_URL/brain/Anthropic vars and run tests on the throwaway cluster; no separate GATE_SCRATCH_DB_URL script
+18. [x] Add the non-empty-selection assertion and the test-only-change tripwire to T2. **Verify:** a branch that edits only a test file is refused at `TaskCompleted` with the file named.
+    - **Audit 2026-11-22 (updated):** verified: editing only a test file -> T2 exit 2 naming app/api/tests/test_conductor_state.py
+19. [~] Mark known-flaky tests `@pytest.mark.flaky` and exclude them from every gate with `-m "not flaky and not slow"`. Add `PYTHONHASHSEED=0`, `-p no:randomly`, `--timeout=60`, `--color=no` to every gate invocation. **Verify:** ten consecutive gate runs on an unchanged tree all pass.
+    - **Audit 2026-11-22 (updated):** PYTHONHASHSEED=0 and -m 'not flaky and not slow' in gates; markers not registered; pytest-timeout not installed
+20. [~] Prime `.testmondata` and add it to `.gitignore`. Add a rule that changes under `api/alembic/`, `pyproject.toml`, `conftest.py` or `.env*` force the full tier. **Verify:** `git check-ignore .testmondata` succeeds.
+    - **Audit 2026-11-22 (updated):** .testmondata ignored (git check-ignore ok); testmon not installed; full-tier triggers in gate.py
 
 **Stage 3 — CI, rulesets, deploy gate**
 21. [~] Create `.github/workflows/pr.yml` with the `changes` job, per-stack jobs, `concurrency: pr-<number>` + `cancel-in-progress: true`, and the `ci-gate` aggregator with `if: always()`. Pin `dorny/paths-filter` to a full commit SHA. **Verify:** a mobile-only PR shows `ci-gate` green with backend jobs skipped.
-    - **Audit 2026-11-22:** .github/workflows/ci.yml + frontend.yml exist, but no changes job, no concurrency, no ci-gate aggregator; ci.yml runs `app/` tests only, NOT app/api (~400 tests)
-22. [ ] Create `.github/workflows/ci-integrity.yml` implementing GitHub's checklist: workflow/test-config changes require a hand-applied label; new `|| true` / `continue-on-error` blocked; new skip/xfail/`.only` markers blocked; net test deletion over 50 lines blocked; code-changed-with-no-test-change warns; **only-tests-changed warns**; generated-file drift regenerate-and-diff; lockfile discipline. **Verify:** a PR adding `|| true` to a workflow fails.
-    - **Audit 2026-11-22:** no ci-integrity workflow
-23. [ ] Add diff-only secret scanning to the integrity job. **Verify the gitleaks release URL and version before use — the version in the research notes is unverified.**
-    - **Audit 2026-11-22:** no secret scanning
+    - **Audit 2026-11-22 (updated):** planning/ci/workflows/pr.yml drafted (YAML-valid, SHA-pinned, adds app/api suite); agents cannot write .github -> owner installs
+22. [~] Create `.github/workflows/ci-integrity.yml` implementing GitHub's checklist: workflow/test-config changes require a hand-applied label; new `|| true` / `continue-on-error` blocked; new skip/xfail/`.only` markers blocked; net test deletion over 50 lines blocked; code-changed-with-no-test-change warns; **only-tests-changed warns**; generated-file drift regenerate-and-diff; lockfile discipline. **Verify:** a PR adding `|| true` to a workflow fails.
+    - **Audit 2026-11-22 (updated):** planning/ci/workflows/ci-integrity.yml drafted; owner installs
+23. [~] Add diff-only secret scanning to the integrity job. **Verify the gitleaks release URL and version before use — the version in the research notes is unverified.**
+    - **Audit 2026-11-22 (updated):** diff-only gitleaks v8.30.1 (verified release) in the integrity draft; owner installs
 24. [~] Create `.github/workflows/main.yml` with an `on: push: branches: [main]` trigger and `cancel-in-progress: false`. **Verify:** a merge to `main` produces exactly one non-cancellable run.
-    - **Audit 2026-11-22:** ci.yml triggers on push to main but shares no non-cancelling group and is not a separate main.yml
+    - **Audit 2026-11-22 (updated):** planning/ci/workflows/main.yml drafted (push main, non-cancelling); owner installs
 25. [ ] Run `pytest --durations=25` and record where the 18 minutes go. Mark the slow tests `@pytest.mark.slow`. **Verify:** PR-tier wall clock under 5 minutes.
     - **Audit 2026-11-22:** durations not measured in CI; full API suite is ~15-23 min locally
 26. [ ] Add `pytest --store-durations`, commit `.test_durations`, and shard with `--splits 6 --group ${{ matrix.group }}`, `fail-fast: true`. Add a nightly job that regenerates durations and opens a PR. **Verify:** six shards each finish under the job `timeout-minutes`.
     - **Audit 2026-11-22:** no sharding
-27. [ ] Create the ruleset on `main` per the table: linear history, require a PR, 0 required approvals, squash-only merge method, require status checks (**strict**, check = `ci-gate` only), bypass = repository admin only. **Verify:** a direct push to `main` is refused.
-    - **Audit 2026-11-22:** main has no ruleset and no branch protection (gh api: 0 rulesets, 'Branch not protected')
+27. [x] Create the ruleset on `main` per the table: linear history, require a PR, 0 required approvals, squash-only merge method, require status checks (**strict**, check = `ci-gate` only), bypass = repository admin only. **Verify:** a direct push to `main` is refused.
+    - **Audit 2026-11-22 (updated):** ruleset 27852848 on main (PR, squash, linear, strict ci-gate, no force-push/deletion, admin bypass); gh api rules/branches/main lists all five
 28. [ ] Create a **push** ruleset restricting file paths `.github/**`, `.claude/**`, `railway.json`, `railway.toml`, `api/alembic/env.py`, and the Temporal schema directory, with you as the only bypass actor. **Verify:** a commit touching `.github/**` from a non-bypass context is refused.
-    - **Audit 2026-11-22:** no push ruleset
+    - **Audit 2026-11-22 (updated):** GitHub refused: push (file-path) rulesets need an org-owned repo; public user repos cannot. Compensated by protect-paths + ci-integrity label
 29. [ ] Enable "Restrict code coverage" (preview) with a maximum coverage drop. **Verify:** a PR that drops coverage past the threshold is blocked.
     - **Audit 2026-11-22:** coverage rule not enabled
 30. [ ] Add the Alembic single-head check to CI. **Verify:** create two revisions off the same parent on a scratch branch; CI fails naming the head count.
     - **Audit 2026-11-22:** project has no Alembic (numbered SQL migrations in app/api/migrations); no duplicate-number check
 31. [ ] Create `.github/workflows/migrations.yml`: single head, forward against the base schema with seeded data, `downgrade -1` then `upgrade head`, base-branch contract tests against the new schema, and a destructive-DDL tripwire requiring a hand-applied label. **Verify:** a migration adding a `NOT NULL` column to a seeded table fails.
     - **Audit 2026-11-22:** no migrations workflow
-32. [ ] Decide and record the expand-contract rule in `AGENTS.md`. **Verify:** the rule is present and the destructive-DDL tripwire cites it in its failure message.
-    - **Audit 2026-11-22:** no AGENTS.md / expand-contract rule
+32. [x] Decide and record the expand-contract rule in `AGENTS.md`. **Verify:** the rule is present and the destructive-DDL tripwire cites it in its failure message.
+    - **Audit 2026-11-22 (updated):** AGENTS.md 'Migrations: expand-contract'; T2 refuses edits to committed migrations and duplicate numbers
 33. [ ] Enable Railway **Wait for CI**; confirm `main.yml` has the `push` trigger and is outside any cancelling concurrency group. **Verify:** a red `main.yml` leaves production on the previous commit.
     - **Audit 2026-11-22:** Railway Wait for CI not verifiable from here; production deploys from codex/android-completion, not main
 34. [~] Expose `RAILWAY_GIT_COMMIT_SHA` from `/health` and make `/health` return 200 only after DB connectivity is confirmed. Set the healthcheck path in Railway. **Verify:** `curl https://<prod>/health | jq -r .commit` returns a SHA that matches a real commit.
-    - **Audit 2026-11-22:** /health exists (application.py:289) but returns no commit SHA and does not check the DB; Railway healthcheck is /v1/auth/session
-35. [ ] Create `.github/workflows/deploy-watchdog.yml`. **Verify:** manually revert production to an older deployment and confirm the watchdog fails within 30 minutes.
-    - **Audit 2026-11-22:** no deploy watchdog
-36. [ ] Gate side effects (email, payments, webhooks, push notifications) on `RAILWAY_ENVIRONMENT_NAME`. **Verify:** a non-production environment cannot send an email.
-    - **Audit 2026-11-22:** side effects not gated on RAILWAY_ENVIRONMENT_NAME
+    - **Audit 2026-11-22 (updated):** /health returns commit (RAILWAY_GIT_COMMIT_SHA) and 503 without DB (test in test_conductor_contract.py); Railway healthcheck path is owner (railway.json protected)
+35. [~] Create `.github/workflows/deploy-watchdog.yml`. **Verify:** manually revert production to an older deployment and confirm the watchdog fails within 30 minutes.
+    - **Audit 2026-11-22 (updated):** watchdog job in planning/ci/workflows/main.yml (needs PRODUCTION_HEALTH_URL variable); owner installs
+36. [x] Gate side effects (email, payments, webhooks, push notifications) on `RAILWAY_ENVIRONMENT_NAME`. **Verify:** a non-production environment cannot send an email.
+    - **Audit 2026-11-22 (updated):** side_effects.py: push only in production/laptop; FcmPusher refuses elsewhere (tests/test_side_effects.py)
 37. [ ] Rehearse a Railway rollback once, on purpose, and record how far back retention goes. **Verify:** a written note in the repo with the date and the retention depth observed.
     - **Audit 2026-11-22:** rollback not rehearsed (owner)
 38. [ ] Confirm you can restore a database backup. **This is not covered by any source in this research — verify it yourself.**
     - **Audit 2026-11-22:** backup restore not rehearsed (owner)
 
 **Stage 4 — Cost**
-39. [ ] Set `promptCacheTtl: "1h"` and `subagentPromptCacheTtl: "1h"` in `~/.claude/settings.json`. **Verify:** `/usage` → `Prompt cache (main)` shows `warm (1h TTL)`.
-    - **Audit 2026-11-22:** promptCacheTtl not set
+39. [~] Set `promptCacheTtl: "1h"` and `subagentPromptCacheTtl: "1h"` in `~/.claude/settings.json`. **Verify:** `/usage` → `Prompt cache (main)` shows `warm (1h TTL)`.
+    - **Audit 2026-11-22 (updated):** promptCacheTtl/subagentPromptCacheTtl 1h set; /usage not checked
 40. [ ] Stop using `opusplan`; pick one model per session. **Verify:** `/usage` shows zero unexpected misses across a working session, with ≥90% of input tokens from cache.
     - **Audit 2026-11-22:** not verifiable from the repo (session habit)
 41. [ ] Leave `ENABLE_TOOL_SEARCH` unset (default). Disable unused MCP servers via `/mcp`; prefer `gh` and other CLIs over MCP servers where both exist. **Verify:** `/context` shows MCP tools at roughly a few hundred tokens, not thousands.
@@ -996,40 +996,40 @@ Ordered. Each item is independently verifiable by an agent and auditable by a hu
     - **Audit 2026-11-22:** no LSP plugins
 45. [ ] Set a Console workspace spend limit as the hard ceiling. **Verify:** the limit is visible in the Console.
     - **Audit 2026-11-22:** Console spend limit: owner (not visible from here)
-46. [ ] Adopt `claude -p --max-budget-usd <80% of target> --max-turns N --permission-prompts none --output-format json` for every unattended run, and understand that the budget **resets on `--continue`/`--resume`**. **Verify:** an unattended run terminates at the cap and reports `Budget limit reached`.
-    - **Audit 2026-11-22:** no unattended-run wrapper
+46. [~] Adopt `claude -p --max-budget-usd <80% of target> --max-turns N --permission-prompts none --output-format json` for every unattended run, and understand that the budget **resets on `--continue`/`--resume`**. **Verify:** an unattended run terminates at the cap and reports `Budget limit reached`.
+    - **Audit 2026-11-22 (updated):** tools/agent-run.sh (80% budget, turn cap, JSON); not run
 47. [ ] Switch the review workflow to `claude_code_oauth_token` (generated with `claude setup-token`) and trigger it on `opened`/`ready_for_review`/`reopened` only. **Verify:** a PR with five pushes triggers one review.
     - **Audit 2026-11-22:** no review workflow
-48. [ ] Set `CLAUDE_CODE_GOAL_CHECKIN_MINUTES=0` and `crossSessionInbound: "hold"`. **Verify:** `/usage` shows no idle-drain rows.
-    - **Audit 2026-11-22:** not set
+48. [~] Set `CLAUDE_CODE_GOAL_CHECKIN_MINUTES=0` and `crossSessionInbound: "hold"`. **Verify:** `/usage` shows no idle-drain rows.
+    - **Audit 2026-11-22 (updated):** CLAUDE_CODE_GOAL_CHECKIN_MINUTES=0, crossSessionInbound hold set; /usage not checked
 
 **Stage 5 — Review and multi-agent hygiene**
 49. [ ] Create `.github/workflows/review.yml` from the official `code-review` plugin example, with `--comment`, the `--allowedTools` line kept, `--max-turns 20`, and the `--append-system-prompt` checklist. **Verify:** a PR receives inline findings, not just a run log.
     - **Audit 2026-11-22:** no review.yml (needs owner decision on the Claude GitHub App)
-50. [ ] Create `REVIEW.md` on `main`. Confirm the reviewer reads it from the base branch only. **Verify:** a PR that edits `REVIEW.md` does not change its own review guidance.
-    - **Audit 2026-11-22:** no REVIEW.md
+50. [~] Create `REVIEW.md` on `main`. Confirm the reviewer reads it from the base branch only. **Verify:** a PR that edits `REVIEW.md` does not change its own review guidance.
+    - **Audit 2026-11-22 (updated):** REVIEW.md on this branch (reviewer workflow needs the GitHub App decision)
 51. [ ] Add the Tier 1/2/3 labeller and the diff-size job (>400 lines, >10 files, >5 top-level dirs). **Verify:** a 600-line PR gets `tier3` and is blocked without the hand-applied label.
     - **Audit 2026-11-22:** no tier labeller / diff-size job
 52. [ ] Make Tier 3 "merge by hand", not "label present", because the Claude GitHub App probably can set labels. **Verify:** no workflow auto-merges a Tier 3 PR.
     - **Audit 2026-11-22:** no tier policy
 53. [~] Rename all ADRs to `YYYYMMDD-slug.md` and add the CI check rejecting numeric-prefixed ADRs and duplicate slugs. **Verify:** adding `docs/adr/0043-foo.md` fails CI.
     - **Audit 2026-11-22:** rationale/decisions mixes numeric (0001-project-setup.md) and plain slugs; no CI check
-54. [ ] Consolidate instruction files: one `AGENTS.md`, a thin `CLAUDE.md` containing `@AGENTS.md`. **Use the import, not a symlink.** Delete any `SessionStart` hook that prints `AGENTS.md`. **Verify:** `/context` shows the instructions loaded exactly once.
-    - **Audit 2026-11-22:** no AGENTS.md
+54. [x] Consolidate instruction files: one `AGENTS.md`, a thin `CLAUDE.md` containing `@AGENTS.md`. **Use the import, not a symlink.** Delete any `SessionStart` hook that prints `AGENTS.md`. **Verify:** `/context` shows the instructions loaded exactly once.
+    - **Audit 2026-11-22 (updated):** AGENTS.md holds everything; CLAUDE.md is a thin @AGENTS.md import
 55. [~] Adopt `claude/<date>-<slug>` and `codex/<date>-<slug>` branch prefixes. Move the changelog to one file per change. Put dev ports in one committed constants file. **Verify:** `git branch -r` shows the agent prefix on every agent branch.
     - **Audit 2026-11-22:** codex/ prefix in use; claude/ prefix not enforced; no per-change changelog
 56. [ ] Add a diff-scoped mutation-testing job in CI with the published thresholds (80% new code, 90% auth and data integrity, no decline on modified code). **Verify:** the job reports a score and fails below threshold. **Confirm the `mutmut`/Stryker invocations against their own docs first.**
     - **Audit 2026-11-22:** no mutation testing
 
 **Stage 6 — Parallelism**
-57. [ ] Create `.worktreeinclude` listing `.env`, `.env.local`, `api/.env`. Add `.claude/worktrees/` to `.gitignore`. **Verify:** `claude --worktree probe` produces a worktree containing `.env`.
-    - **Audit 2026-11-22:** no .worktreeinclude
+57. [~] Create `.worktreeinclude` listing `.env`, `.env.local`, `api/.env`. Add `.claude/worktrees/` to `.gitignore`. **Verify:** `claude --worktree probe` produces a worktree containing `.env`.
+    - **Audit 2026-11-22 (updated):** .worktreeinclude committed; .claude/worktrees/ ignored; claude --worktree not run
 58. [ ] Commit a project-scoped `Explore` subagent with `model: haiku` and `tools: Read, Grep, Glob`. **Verify:** `/usage` attributes Explore work to Haiku, not Opus.
     - **Audit 2026-11-22:** no project Explore subagent
 59. [ ] Commit a `refactorer` subagent with `isolation: worktree`. **Verify:** it cannot write into the main checkout.
     - **Audit 2026-11-22:** no refactorer subagent
-60. [ ] Add the brief template to `AGENTS.md`, including the stop condition verbatim: "If you can't reach something you need, say exactly what's missing in your first message and stop. Don't substitute, mock, or guess."
-    - **Audit 2026-11-22:** no brief template
+60. [x] Add the brief template to `AGENTS.md`, including the stop condition verbatim: "If you can't reach something you need, say exactly what's missing in your first message and stop. Don't substitute, mock, or guess."
+    - **Audit 2026-11-22 (updated):** AGENTS.md 'Briefs for parallel agents' with the stop line verbatim
 61. [ ] Create a per-worker scratch-database provisioning script keyed on the worktree name. **Verify:** two concurrent worktrees run migrations without colliding.
     - **Audit 2026-11-22:** no per-worker scratch DB script
 62. [ ] Run exactly one dynamic workflow on one directory as a cost probe before any repo-wide sweep. **Verify:** `/usage` shows the run's token total, and it is within an order of magnitude of your estimate.
@@ -1047,7 +1047,7 @@ Not checkable from here (Railway dashboard, Anthropic Console): marked [ ] with 
 
 ### UI rebuild, Phases A-F
 - [x] **A Token layer**: app/web/src/styles/tokens.css, primitives in app/web/src/components/primitives, scripts/lint-tokens.mjs as prebuild, CLAUDE.md rule; tests/token-layer.test.ts. Commit 347a47d.
-- [~] **B Chat**: conductor engine (app/api/src/yggdress_app/conductor, 59 tests), new chat page app/web/src/features/chat (22 tests), commit ebe204e. Missing: layout bug (chat column does not fill height in the workspace shell), message branching, Sources part, shadcn AI Elements not copied (own primitives instead).
+- [~] **B Chat** (layout bug FIXED 2026-11-22, screenshot taken; message sent end to end through the proxy with the fake model): conductor engine (app/api/src/yggdress_app/conductor, 59 tests), new chat page app/web/src/features/chat (22 tests), commit ebe204e. Missing: layout bug (chat column does not fill height in the workspace shell), message branching, Sources part, shadcn AI Elements not copied (own primitives instead).
 - [ ] **C Calendar**: not started.
 - [ ] **D Notes list**: not started.
 - [ ] **E Side chat panel + page context**: not started.

@@ -51,7 +51,9 @@ export function ChatPage() {
   };
 
   return (
-    <div className="grid h-full min-h-0 grid-cols-1 md:grid-cols-[240px_1fr]">
+    <div className="grid h-[calc(100dvh-91px)] min-h-[420px] grid-cols-1 md:grid-cols-[240px_1fr]">
+      {/* The shell's <main> is sized by content, so the chat fills the viewport below the
+          top bar: measured 76px offset + 15px bottom padding (DESIGN-DECISIONS.md). */}
       <nav aria-label="Conversations" className="hidden min-h-0 flex-col bg-surface-1 md:flex">
         <button
           type="button"
