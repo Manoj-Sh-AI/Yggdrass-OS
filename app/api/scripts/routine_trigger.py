@@ -2,8 +2,8 @@
 import argparse
 import json
 import os
-from urllib.request import Request, urlopen
 from urllib.parse import urlsplit
+from urllib.request import Request, urlopen
 
 
 def main():
