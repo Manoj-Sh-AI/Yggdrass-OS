@@ -40,6 +40,13 @@ def grant_runtime(db, role):
         "SELECT,INSERT,UPDATE ON app.call_preferences,app.call_events,app.call_delivery,app.voice_worker_lease,app.call_commands,app.call_reviews",
         "SELECT,INSERT,UPDATE,DELETE ON app.call_briefs",
         "SELECT,INSERT ON app.item_outcomes",
+        "SELECT,INSERT,DELETE ON app.routine_important_blocks",
+        "SELECT,INSERT,UPDATE ON app.scheduled_jobs,app.scheduled_job_attempts,app.routine_escalations",
+        "SELECT,INSERT,UPDATE ON app.daily_routine_settings,app.routine_checkins,app.routine_predictions,app.routine_pool,app.routine_editions,app.routine_hypotheses",
+        "SELECT,INSERT ON app.journal_entries",
+        "SELECT,INSERT,UPDATE ON app.daily_reviews,app.daily_lessons,app.daily_briefs,app.daily_inputs,app.daily_filing_runs,app.daily_filing_actions",
+        "SELECT,INSERT,UPDATE,DELETE ON app.web_push_subscriptions,app.web_push_tokens,app.web_push_deliveries",
+        "SELECT,INSERT,UPDATE ON app.routine_voice_bindings",
         "USAGE,SELECT ON ALL SEQUENCES IN SCHEMA app",
     ]
     for grant in grants:

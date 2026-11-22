@@ -1,4 +1,4 @@
-"""Adapter to Claude-owned Lia. No Brain writes, traces, temp notes or engine edits.
+"""Adapter to Claude-owned Lia. Reads plus explicitly approved, narrowly scoped daily filings.
 
 Run with the existing Brain environment's Python. JSON travels over stdin/stdout;
 credentials are loaded privately by the existing config module, never arguments.
@@ -54,7 +54,9 @@ def main():
     if len(raw) > 240000:
         raise ValueError("The Lia context exceeds its input limit.")
     request = json.loads(raw)
-    if (
+    if not isinstance(request, dict):
+        raise TypeError("Invalid Lia request.")
+    if "operation" not in request and (
         set(request) - {"question", "context", "model"}
         or not 0 < len(request.get("question", "")) <= 12000
         or len(request.get("context", "")) > 30000
@@ -74,6 +76,11 @@ def main():
         rows=row_store(),
         cite_url="/notes?note={slug}#cite={block}",
     )
+    if "operation" in request:
+        from lia_daily_bridge import perform
+
+        print(json.dumps(perform(service, request)))
+        return
     selected = request.get("model", "default")
     if selected != "default":
         if selected not in PRICES:

@@ -1,4 +1,4 @@
-"""Read-only subprocess boundary to the existing Lia, using her own environment."""
+"""Subprocess boundary to Lia. Interactive lookups and approved daily filing are separate."""
 
 import json
 import os
@@ -59,3 +59,16 @@ class ExistingLia:
         if not isinstance(answer, str) or not answer.strip():
             raise AgentError("Lia returned no answer.")
         return answer[:20000]
+
+    def propose_daily(self, entries, corrections):
+        return self._call(
+            {"operation": "daily_propose", "entries": entries, "corrections": corrections}
+        )
+
+    def file_daily_fact(self, target, fact, action_id):
+        return self._call(
+            {"operation": "daily_file", "target": target, "fact": fact, "action_id": str(action_id)}
+        )
+
+    def undo_daily_fact(self, receipt):
+        return self._call({"operation": "daily_undo", "receipt": receipt})

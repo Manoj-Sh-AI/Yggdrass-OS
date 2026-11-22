@@ -15,7 +15,7 @@ from .call_briefs import PERSONA, LiaForVoice
 
 
 class LiveKitTransport:
-    def dispatch(self, identifier, room):
+    def dispatch(self, identifier, room, *, metadata=None):
         async def send():
             from livekit import api
 
@@ -29,7 +29,7 @@ class LiveKitTransport:
                         api.CreateAgentDispatchRequest(
                             room=room,
                             agent_name="yggdras-voice",
-                            metadata=json.dumps({"call_id": identifier}),
+                            metadata=json.dumps(metadata or {"call_id": identifier}),
                         )
                     )
 

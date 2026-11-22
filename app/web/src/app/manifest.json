@@ -1,0 +1,11 @@
+{
+  "name": "Yggdras",
+  "short_name": "Yggdras",
+  "id": "/",
+  "start_url": "/today",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#171c1b",
+  "theme_color": "#171c1b",
+  "icons": [{ "src": "/icon.png", "sizes": "512x512", "type": "image/png" }]
+}

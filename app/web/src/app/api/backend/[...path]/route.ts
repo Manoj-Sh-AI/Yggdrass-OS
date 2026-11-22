@@ -28,6 +28,9 @@ async function proxy(
   const callRoutes =
     /^calls(\/(capabilities|preferences|devices|schedule|reviews|simulation|events)|\/devices\/[a-fA-F0-9-]{36}|\/[a-fA-F0-9-]{36}\/(answer|decline|media|end)|\/reviews\/[a-fA-F0-9-]{36})?$/;
   const mobile = path === "mobile/auth/login";
+  const routines =
+    /^application\/daily-routines(\/(settings|trigger|important|ack|journal|review|lessons|energy|pool|feedback|hypotheses|predictions(\/[a-fA-F0-9-]{36})?|filing(\/[a-fA-F0-9-]{36})?))?$/.test(path) ||
+    /^routine-delivery\/(status|subscribe|unsubscribe|respond)$/.test(path);
   // The browser tab that finishes an app sign-in lands here; the API answers with a page.
   const signInReturn =
     path === "connectors/callback" && request.method === "GET";
@@ -42,6 +45,7 @@ async function proxy(
     !calendarContext.test(path) &&
     !yggdras.test(path) &&
     !mobile &&
+    !routines &&
     !callRoutes.test(path) &&
     path !== "graph/status"
   )

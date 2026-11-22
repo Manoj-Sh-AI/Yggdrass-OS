@@ -87,6 +87,16 @@ def reminder_answerer(database, runtime, agent_config, call_id):
 
 
 async def voice_session(ctx):
+    try:
+        metadata = json.loads(ctx.job.metadata)
+        identifier = UUID(metadata["call_id"])
+    except (ValueError, KeyError, TypeError):
+        return
+    if metadata.get("purpose") == "daily-routine":
+        from .routine_voice_agent import reminder_session
+
+        return await reminder_session(ctx, identifier, metadata.get("capability", ""))
+
     from livekit.agents import Agent, AgentSession, inference
 
     from .agent_worker import private_agent_configuration
@@ -104,13 +114,10 @@ async def voice_session(ctx):
         agent_config["model_factory"](agent_config["default_model"]),
         lia=agent_config.get("lia"),
     )
-    try:
-        identifier = UUID(json.loads(ctx.job.metadata)["call_id"])
-    except (ValueError, KeyError, TypeError):
-        return
     with database.connect() as db:
         call = db.execute(
-            "SELECT * FROM app.calls WHERE id=%s AND room=%s AND state='answered'",
+            "SELECT * FROM app.calls WHERE id=%s AND room=%s AND state='answered' "
+            "AND NOT EXISTS (SELECT 1 FROM app.routine_voice_bindings WHERE call_id=app.calls.id)",
             (identifier, ctx.job.room.name),
         ).fetchone()
     if not call:
