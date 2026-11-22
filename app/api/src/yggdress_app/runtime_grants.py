@@ -42,6 +42,7 @@ def grant_runtime(db, role):
         "SELECT,INSERT ON app.item_outcomes",
         "SELECT,INSERT,UPDATE ON app.conductor_runs",
         "SELECT,INSERT ON app.conductor_events",
+        "SELECT,INSERT,UPDATE ON app.conductor_policy",
         "USAGE,SELECT ON ALL SEQUENCES IN SCHEMA app",
     ]
     for grant in grants:

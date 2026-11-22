@@ -45,6 +45,12 @@ export async function applicationApi<T>(
   }
   return data as T;
 }
+/** The session's CSRF token, for requests that do not go through applicationApi
+ * (the chat's streaming transport). */
+export async function csrfToken(): Promise<string> {
+  if (!csrf) csrf = (await applicationApi<{ csrf: string }>("auth/session")).csrf;
+  return csrf;
+}
 export async function logout() {
   await applicationApi("auth/logout", { method: "POST", body: "{}" });
   csrf = undefined;

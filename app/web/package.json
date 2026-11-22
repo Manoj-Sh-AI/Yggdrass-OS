@@ -14,11 +14,15 @@
     "test:e2e": "node scripts/browser-check.mjs"
   },
   "dependencies": {
+    "@assistant-ui/react": "0.15.37",
     "@blocknote/ariakit": "0.57.0",
     "@blocknote/core": "0.57.0",
     "@blocknote/react": "0.57.0",
     "@dnd-kit/react": "0.5.3",
     "@radix-ui/react-dialog": "^1.1.6",
+    "@streamdown/code": "2.0.1",
+    "@streamdown/math": "1.0.4",
+    "@streamdown/mermaid": "1.0.4",
     "@tanstack/react-virtual": "^3.13.0",
     "class-variance-authority": "0.7.1",
     "cn": "^0.5.2",
@@ -29,14 +33,18 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-markdown": "10.1.0",
-    "remark-gfm": "4.0.1"
+    "remark-gfm": "4.0.1",
+    "streamdown": "2.8.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.51.0",
     "@tailwindcss/postcss": "^4.1.0",
+    "@testing-library/dom": "10.4.2",
+    "@testing-library/react": "16.3.3",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "jsdom": "31.0.1",
     "prettier": "^3.9.10",
     "sharp": "^0.34.0",
     "tailwindcss": "^4.1.0",

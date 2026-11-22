@@ -8,3 +8,4 @@ export * from "./sheet";
 export * from "./dialog";
 export * from "./separator";
 export * from "./badge";
+export * from "./popover";

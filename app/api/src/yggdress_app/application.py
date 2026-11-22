@@ -97,6 +97,7 @@ def create_app(
     agent_issue="",
     yggdras=None,
     calls=None,
+    conductor=None,
 ):
     settings = settings or Settings.environment()
     settings.validate()
@@ -214,7 +215,7 @@ def create_app(
         )
         if (
             mobile
-            and request.url.path.startswith(("/v1/brain/", "/v1/yggdras/"))
+            and request.url.path.startswith(("/v1/brain/", "/v1/yggdras/", "/v1/assistant"))
             and not catalog_read
         ):
             raise HTTPException(403, "Use the mobile-safe application interface.")
@@ -271,6 +272,14 @@ def create_app(
 
     for router in orchestrator_api.yggdras_routers(yggdras, session):
         api.include_router(router)
+
+    # The chat's orchestrator (rationale/decisions/chat-conductor.md).
+    from .conductor.setup import build_conductor
+    from .conductor.transport import conductor_router
+
+    conductor = conductor or build_conductor(database, notes)
+    api.state.conductor = conductor
+    api.include_router(conductor_router(conductor, session))
 
     @api.get("/health")
     def health():

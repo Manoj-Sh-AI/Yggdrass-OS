@@ -21,7 +21,12 @@ async function proxy(
   const yggdras =
     /^(yggdras\/(requests|cards(\/[a-f0-9]{12}\/(approve|reject))?|undo|runs|events|devices|connectors(\/[a-z0-9-]{1,40}(\/(connect|disconnect))?)?|skills(\/[a-z0-9-]{1,40})?|notifications\/[a-zA-Z0-9-]{1,100}\/reply)|calls(\/(ring|schedule)|\/[a-fA-F0-9-]{36}\/(answer|decline|end))?)$/;
   // Server-sent event streams pass through unbuffered (a reply as it is written; rings).
+  // The chat's orchestrator (Assistant Transport); the run streams are SSE.
+  const assistant =
+    /^assistant(\/(resume|resume-state|policy|threads\/[a-fA-F0-9-]{36}))?$/;
   const streaming =
+    path === "assistant" ||
+    path === "assistant/resume" ||
     path === "yggdras/requests" ||
     path === "yggdras/events" ||
     path === "calls/events";
@@ -41,6 +46,7 @@ async function proxy(
     !receivingUi.test(path) &&
     !calendarContext.test(path) &&
     !yggdras.test(path) &&
+    !assistant.test(path) &&
     !mobile &&
     !callRoutes.test(path) &&
     path !== "graph/status"

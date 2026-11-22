@@ -363,6 +363,7 @@ def test_migrations_are_application_only_and_runtime_cannot_create_tables(postgr
             "item_outcomes",
             "conductor_runs",
             "conductor_events",
+            "conductor_policy",
         }
     with (
         pytest.raises(psycopg.errors.InsufficientPrivilege),

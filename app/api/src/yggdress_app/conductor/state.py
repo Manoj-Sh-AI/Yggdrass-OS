@@ -6,6 +6,7 @@ the event log (log.py), so a reconnecting client rebuilds exactly the same state
 
 from __future__ import annotations
 
+import json
 from typing import Any, Literal, get_args
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -43,9 +44,13 @@ STEP_TRANSITIONS: dict[str, frozenset[str]] = {
 }
 TOOL_TRANSITIONS: dict[str, frozenset[str]] = {
     "input-streaming": frozenset({"input-available", "output-error"}),
-    "input-available": frozenset({"approval-requested", "output-available", "output-error"}),
+    # A hard deny rule refuses a call outright, without asking (policy layer 1).
+    "input-available": frozenset(
+        {"approval-requested", "output-available", "output-error", "output-denied"}
+    ),
     "approval-requested": frozenset({"approval-responded", "output-denied"}),
-    "approval-responded": frozenset({"output-available", "output-error"}),
+    # A "no" is recorded as a response first, then the call is denied [cited AI SDK flow].
+    "approval-responded": frozenset({"output-available", "output-error", "output-denied"}),
     "output-available": frozenset(),
     "output-error": frozenset(),
     "output-denied": frozenset(),
@@ -56,12 +61,17 @@ Stakes = Literal["low-reversible", "low-irreversible", "high-reversible", "high-
 Decider = Literal["rule", "classifier", "user"]
 
 
+MAX_ATTEMPTS = 3  # first try + two retries after a failed verification
+MAX_PAYLOAD_CHARS = 50_000  # tool input/output, serialised
+
+
 class _Model(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    # strict: "2" is not an int. What is stored is exactly what clients replay.
+    model_config = ConfigDict(extra="forbid", strict=True)
 
 
 class Step(_Model):
-    id: str = Field(pattern=r"^[a-z0-9-]{1,40}$")
+    id: str = Field(pattern=r"^[A-Za-z0-9_-]{1,40}$")
     # Action word + specific item + limits ("Verifying policy coverage for 2025"):
     # trust tracks specificity, not volume [cited].
     title: str = Field(min_length=1, max_length=120)
@@ -71,7 +81,7 @@ class Step(_Model):
     check: str = Field(min_length=1, max_length=500)
     verdict: Verdict | None = None
     reason: str = Field(default="", max_length=1000)
-    attempts: int = Field(default=0, ge=0, le=3)
+    attempts: int = Field(default=0, ge=0, le=MAX_ATTEMPTS)
     model: str = ""
     result: str = Field(default="", max_length=20000)
 
@@ -120,6 +130,13 @@ def cyclic(steps: list[Step]) -> bool:
     return any(visit(n) for n in graph)
 
 
+class Approval(_Model):
+    """Manoj's answer to an approval card."""
+
+    approved: bool
+    reason: str = Field(default="", max_length=1000)
+
+
 class ToolCall(_Model):
     id: str = Field(min_length=1, max_length=80)
     name: str = Field(min_length=1, max_length=80)
@@ -133,6 +150,14 @@ class ToolCall(_Model):
     decided_by: Decider | None = None
     # What will happen, in plain words, shown before a high-stakes approval.
     intent: str = Field(default="", max_length=500)
+    approval: Approval | None = None
+
+    @model_validator(mode="after")
+    def _bounded_payloads(self) -> ToolCall:
+        for name in ("input", "output"):
+            if len(json.dumps(getattr(self, name), default=str)) > MAX_PAYLOAD_CHARS:
+                raise ValueError(f"Tool {name} is larger than {MAX_PAYLOAD_CHARS} characters.")
+        return self
 
 
 class Usage(_Model):
@@ -168,3 +193,41 @@ def check_step_move(current: str, target: str) -> None:
 def check_tool_move(current: str, target: str) -> None:
     if target not in TOOL_TRANSITIONS[current]:
         raise ValueError(f"A tool call cannot move from {current} to {target}.")
+
+
+RUN_TRANSITIONS: dict[str, frozenset[str]] = {
+    "running": frozenset({"waiting", "completed", "failed", "cancelled", "interrupted"}),
+    "waiting": frozenset({"running", "cancelled", "failed", "interrupted"}),
+    # An interrupted run (server stopped mid-flight) can be resumed or abandoned.
+    "interrupted": frozenset({"running", "cancelled"}),
+    "completed": frozenset(),
+    "failed": frozenset(),
+    "cancelled": frozenset(),
+}
+
+
+def check_moves(old: RunState, new: RunState) -> None:
+    """Every change between two snapshots must be a legal forward move."""
+    if new.run_id != old.run_id or new.conversation_id != old.conversation_id:
+        raise ValueError("A run's identity cannot change.")
+    if old.status in TERMINAL and new != old:
+        raise ValueError(f"The run is {old.status}; it cannot change.")
+    if new.status != old.status and new.status not in RUN_TRANSITIONS[old.status]:
+        raise ValueError(f"A run cannot move from {old.status} to {new.status}.")
+    if old.plan is not None:
+        if new.plan is None:
+            raise ValueError("A plan cannot be removed.")
+        before = {s.id: s for s in old.plan.steps}
+        after = {s.id: s for s in new.plan.steps}
+        if not set(before) <= set(after):
+            raise ValueError("A plan cannot drop steps.")
+        for step_id, step in before.items():
+            if after[step_id].status != step.status:
+                check_step_move(step.status, after[step_id].status)
+    tools_before = {t.id: t for t in old.tools}
+    tools_after = {t.id: t for t in new.tools}
+    if not set(tools_before) <= set(tools_after):
+        raise ValueError("A tool call cannot be removed.")
+    for tool_id, tool in tools_before.items():
+        if tools_after[tool_id].state != tool.state:
+            check_tool_move(tool.state, tools_after[tool_id].state)

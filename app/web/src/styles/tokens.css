@@ -16,6 +16,8 @@
  * mandatory: plain @theme resolves var() at its definition site and breaks dark mode.
  */
 @import "tailwindcss";
+/* Streamdown renders chat answers; Tailwind v4 must see its classes [cited]. */
+@source "../../node_modules/streamdown/dist/*.js";
 @custom-variant dark (&:is(.dark *));
 
 /* ---------------------------------------------------------------- mode values */

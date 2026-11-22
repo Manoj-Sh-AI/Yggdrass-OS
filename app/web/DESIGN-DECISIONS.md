@@ -146,3 +146,87 @@ values (`bg-[#…]`, `p-[13px]`, `rounded-[7px]`, `text-[…]`, `shadow-[…]`, 
 `[var(--…)]` allowed), palette classes, and colours in inline styles. Ratchet: the
 legacy counts in `scripts/lint-tokens-baseline.json` (1,145 values in 24 files) may only
 fall. New violations warn locally and fail when `CI=1`.
+
+## Phase B: chat (2026-11-22)
+
+Built on the conductor (rationale/decisions/chat-conductor.md): one orchestrator per
+conversation, streamed over assistant-ui's Assistant Transport.
+
+### Surfaces (B1) [cited brief]
+Conversation list `surface-1`, separated by colour alone (no border). Transcript is
+transparent content on the canvas. Composer `surface-2` + `--panel-highlight` + a 0.5px
+top edge. Popovers `surface-3` + `shadow-lg` + 0.5px (new `Popover` primitive). Plan card
+`surface-1`, tool cards `surface-2`, code/JSON wells `surface-sunken`.
+
+### Deleted (B2)
+"Response connection configured" / "Messages saved here…" status line, every per-message
+state line, the old empty-state copy, and the two full-width Agent/Model selects (the old
+page component `components/chat.tsx` is no longer routed; kept for one-line rollback).
+
+### Model choice (B2) [proposal]
+A small text button in the composer's bottom-left opens a popover: Sonnet 5.5 (default,
+owner decision), Opus 5.5, Fable 5.2, Haiku 5.5, each with a cost note. Remembered per
+browser (localStorage). Haiku stays the router/verifier.
+
+### Composer (B3-B6)
+- One composer, one DOM position; the container is `grid-rows-[1fr_auto]` [cited pattern].
+  A new conversation receiving its id mid-answer does not remount it.
+- No product publishes composer pixels [said plainly]. Chosen [proposal]: `rows={1}`
+  [cited], max-height `40vh`, input `text-base` (16px, avoids iOS zoom), padding
+  `px-2 py-1.5`. assistant-ui's input is react-textarea-autosize (JS-measured height),
+  so `field-sizing: content` is not needed and Firefox needs no fallback.
+- Shrink hysteresis [cited, exact]: grow freely; shrink only when the value is empty
+  (held as a minimum row count, `composer/logic.ts`).
+- Bottom-anchored growth: the composer is the grid's bottom row, so its top edge rises;
+  a ResizeObserver adds the growth to the transcript's scrollTop in the same frame.
+- Send button, six states (`sendState`): idle = low-contrast glyph on surface-3 (never a
+  grey "disabled" fill); ready = primary (ink) fill; blocked = inert + a line of copy
+  (today: "You're offline. Your draft is kept."); sending/generating = Stop in the same
+  slot (also cancels the run on the server); error = Retry + the error inline.
+- "+" menu, not a bare paperclip [cited]; inline dismissible previews; the whole composer
+  is a drop target (`AttachmentDropzone`, `data-dragging`). Images (PNG/JPEG/WebP/GIF,
+  ≤5 MB, ≤4) go to the model; text files become text. PDFs are refused with a visible
+  note: they need their own upload path [cited], not built yet.
+- Keyboard: `submitMode` "enter" on fine pointers, "none" on coarse (Enter = newline,
+  Send submits) [cited]; `cancelOnEscape` on. Shift+Enter hint on the first-run empty
+  composer or first wrap, then remembered [proposal].
+
+### Empty state (B7)
+One line ("What should we work on?"), three starter pills that are real jobs here
+(calendar week, plan Saturday around tasks, what notes say about goals), the composer.
+Placeholder is a mode signal: "Ask Yggdras, or give it a job".
+
+### Streaming (B8)
+Streamdown **2.8.0** (not 1.5.0) with `@streamdown/code` 2.0.1, `math` 1.0.4, `mermaid`
+1.0.4; `isAnimating` while streaming. Streamdown 2.8 ships a `caret` prop, so the caret is
+the library's ("block"), not a hand-made pseudo-element (the brief's "no library exposes
+it" is out of date). `@source` for its classes is in tokens.css [cited].
+
+### Tool cards and the seven states (B9)
+Badges exactly: Pending, Running, Awaiting Approval, Responded, Completed, Error, Denied.
+**Contradiction in the brief, resolved:** its table marks output-available as
+auto-opening, but its rule says "successes collapse, errors and approvals expand". The
+rule wins: only `approval-requested` and `output-error` open by themselves.
+Reasoning opens only when last message ∧ thread running ∧ last part is reasoning; the
+app owns the "Thought for Ns" timer.
+
+### Plan and the failed step (B10) [own design, undocumented anywhere]
+One progress surface per turn: the Plan card when there is a plan (tool cards nest under
+their step), otherwise the tool list. A step keeps the 3-value status; `verdict: failed`
+shows a danger glyph and the reason; while another attempt comes it reads
+"Retrying (n/3): reason"; after the last, "Gave up after 3 attempts: …"; a dependent
+reads "Skipped: it needs step X, which failed." A step that already made a change is
+never retried ("Not retried: this step already made a change"). Step titles follow
+action + item + limits [cited].
+
+### Approvals
+Intent preview built from the real fields (operation, target id, data), with the
+model's explanation labelled as its note; "This cannot be undone" on irreversible calls.
+
+### Not done in Phase B (flagged)
+- shadcn's AI Elements compositions were not copied in. They are written against AI-SDK
+  message types; the parts here are built on our token primitives with the same
+  anatomy instead (Plan/Task/Tool/Reasoning/Confirmation), Streamdown providing code
+  blocks. Copying them later is mechanical if wanted.
+- Sources/citations part: the conductor does not emit sources yet.
+- The phone keeps the old chat path.

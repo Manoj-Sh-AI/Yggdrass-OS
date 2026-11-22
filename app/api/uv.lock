@@ -199,6 +199,25 @@ wheels = [
 ]
 
 [[package]]
+name = "anthropic"
+version = "2.12.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "anyio" },
+    { name = "docstring-parser" },
+    { name = "httpx2" },
+    { name = "jiter" },
+    { name = "opentelemetry-api" },
+    { name = "pydantic" },
+    { name = "sniffio" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/26/05/fdf767b3da8fc8e2d78eef15c98a5ead03be2753b4e9cfcda58f0995f0b0/anthropic-2.12.0.tar.gz", hash = "sha256:571e6d250bcd6bbaf5fd5f3c764b8e11af9901ad2e44b025f8e773c6cc7a7173", size = 2025823, upload-time = "2026-11-20T15:57:03.541Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/4a/a6/1cde7a75d1be07582f6b3c2dd12ddba9d1fb278f5b9685f30dbf6b39dc2c/anthropic-2.12.0-py3-none-any.whl", hash = "sha256:8631e3880ee18b0f87ce61d5d08e67804200463cf27c4182024715e232c99ba6", size = 2556840, upload-time = "2026-11-20T15:57:01.546Z" },
+]
+
+[[package]]
 name = "anyio"
 version = "4.16.0"
 source = { registry = "https://pypi.org/simple" }
@@ -209,6 +228,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/a1/98/7e457a3b014976887a050561955c0b76e1e7e2d6e27b78ecef2ef80518f2/anyio-4.16.0.tar.gz", hash = "sha256:59bb03251907983d1603d27c3087ddb1e93299ea2163adcdba37899a4fb12ffb", size = 310971, upload-time = "2026-11-01T11:20:07.282Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a9/16/7757fb84c819accc7d7e9af5291b261e4abb8627ee040f99e7d35ef2457a/anyio-4.16.0-py3-none-any.whl", hash = "sha256:c66ae634e0b8228396b801741beb3294326d4b6102f7bba4041c0dfb58c29026", size = 134521, upload-time = "2026-11-01T11:20:05.59Z" },
+]
+
+[[package]]
+name = "assistant-stream"
+version = "0.0.38"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "anyio" },
+    { name = "starlette" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/46/52/a57dcf1797045fd3db19f8cb75a42799cd7e629c9e93af0ee7aef418cdef/assistant_stream-0.0.38.tar.gz", hash = "sha256:12af18cbdbda2702ea847b10e209d9f9a98673f5dc984cebc9d7d323962cf05f", size = 214576, upload-time = "2026-11-13T17:54:05.941Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/69/cc/df0088c9c5a189fbb117d3c7e6f94325072e28d7868dbad8b58e4d190a2c/assistant_stream-0.0.38-py3-none-any.whl", hash = "sha256:58393b1d1c7cdcc4debdadfbf65cf5d7200bc8e52f1f29835277fcc4613a52b4", size = 56464, upload-time = "2026-11-13T17:54:04.734Z" },
 ]
 
 [[package]]
@@ -2958,6 +2990,8 @@ name = "yggdress-application"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "anthropic" },
+    { name = "assistant-stream" },
     { name = "cryptography" },
     { name = "fastapi" },
     { name = "httpx" },
@@ -2982,6 +3016,8 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "anthropic", specifier = "==2.12.0" },
+    { name = "assistant-stream", specifier = "==0.0.38" },
     { name = "cryptography", specifier = ">=44" },
     { name = "fastapi", specifier = ">=0.115,<1" },
     { name = "firebase-admin", marker = "extra == 'voice'", specifier = ">=7,<8" },

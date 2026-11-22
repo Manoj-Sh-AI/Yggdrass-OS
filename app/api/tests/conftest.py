@@ -29,7 +29,7 @@ def setup(postgres):
         # Bulk fixture cleanup is not an interactive application request.
         db.execute("SET LOCAL statement_timeout='60s'")
         db.execute("TRUNCATE app.agent_executions,app.agent_effects RESTART IDENTITY CASCADE")
-        db.execute("TRUNCATE app.conductor_events,app.conductor_runs RESTART IDENTITY CASCADE")
+        db.execute("TRUNCATE app.conductor_events,app.conductor_runs,app.conductor_policy RESTART IDENTITY CASCADE")
         db.execute(
             "TRUNCATE app.agent_write_intents,app.agent_proposals,app.agent_steps,app.agent_runs,app.agent_note_events RESTART IDENTITY CASCADE"
         )
