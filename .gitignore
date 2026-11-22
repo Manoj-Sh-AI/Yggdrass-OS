@@ -24,3 +24,8 @@ build/
 Thumbs.db
 .vscode/
 .idea/
+
+# Agent gates (planning/agentic-engineering.md)
+.claude/state/
+.claude/worktrees/
+.testmondata

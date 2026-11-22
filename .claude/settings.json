@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/protect-paths.sh\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Edit(*.py)",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/t1-python.sh\"",
+            "timeout": 30,
+            "statusMessage": "ruff on the changed file"
+          },
+          {
+            "type": "command",
+            "if": "Edit(*.ts)",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/t1-ts.sh\"",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "if": "Edit(*.tsx)",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/t1-ts.sh\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "TaskCompleted": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/t2-task-gate.sh\"",
+            "timeout": 180,
+            "statusMessage": "changed-area tests + migration check"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/t3-turn-gate.sh\"",
+            "timeout": 90
+          }
+        ]
+      }
+    ]
+  }
+}
