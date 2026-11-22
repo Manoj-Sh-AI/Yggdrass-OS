@@ -90,6 +90,10 @@ class FcmPusher:
     """Android: a high-priority FCM data message wakes the app's full-screen call screen."""
 
     def __init__(self):
+        from .side_effects import side_effects_allowed
+
+        if not side_effects_allowed():  # a non-production environment never rings a phone
+            raise PushNotConfigured("push (disabled outside production)")
         if missing(FIREBASE_VARS):
             raise PushNotConfigured("FIREBASE_PROJECT_ID and FIREBASE_SERVICE_ACCOUNT_FILE")
 
