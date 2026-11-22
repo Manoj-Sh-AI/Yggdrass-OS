@@ -40,6 +40,8 @@ def grant_runtime(db, role):
         "SELECT,INSERT,UPDATE ON app.call_preferences,app.call_events,app.call_delivery,app.voice_worker_lease,app.call_commands,app.call_reviews",
         "SELECT,INSERT,UPDATE,DELETE ON app.call_briefs",
         "SELECT,INSERT ON app.item_outcomes",
+        "SELECT,INSERT,UPDATE ON app.conductor_runs",
+        "SELECT,INSERT ON app.conductor_events",
         "USAGE,SELECT ON ALL SEQUENCES IN SCHEMA app",
     ]
     for grant in grants:
