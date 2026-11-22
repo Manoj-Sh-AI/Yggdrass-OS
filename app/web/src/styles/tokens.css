@@ -1,0 +1,245 @@
+/*
+ * Yggdras token layer: the closed set of values every screen draws from.
+ * Phase A of the UI rebuild. Rationale and sources: app/web/DESIGN-DECISIONS.md.
+ *
+ * Tags: [cited] primary source in the rebuild brief; [proposal] unsourced
+ * starting point to tune; [measured] measured in this repo; [derived] computed
+ * from cited values. Owner decision is marked [owner].
+ *
+ * RULE: a value missing from this file is ASKED FOR, never invented. No fifth
+ * radius, no ninth grey, no new hue. Pages never write raw colours, radii,
+ * shadows or durations; they use these tokens or the primitives in
+ * src/components/primitives.
+ *
+ * Structure (Tailwind v4): theme variables must be top level, so mode-dependent
+ * values live in :root/.dark and @theme inline only points at them. `inline` is
+ * mandatory: plain @theme resolves var() at its definition site and breaks dark mode.
+ */
+@import "tailwindcss";
+@custom-variant dark (&:is(.dark *));
+
+/* ---------------------------------------------------------------- mode values */
+:root,
+.dark {
+  /* Surface ladder (A2). Lightest-last, explicit names; NOT Anthropic's
+     inverted background-primary naming. */
+  --surface-0: #141413; /* app canvas [cited] */
+  --surface-1: #262624; /* panel / card [cited] */
+  --surface-2: #30302e; /* raised, hover, active [cited] */
+  --surface-3: #3a3a37; /* overlay, popover, menu [proposal: continues ladder] */
+  --surface-sunken: color-mix(in oklab, var(--surface-0) 85%, #000); /* [proposal] */
+
+  /* Ink (A3), all [cited]. One ink at fixed alphas, never an opaque palette grey. */
+  --text-1: #faf9f5;
+  --text-2: #c2c0b6;
+  --text-3: #9c9a92;
+  --text-disabled: color-mix(in oklab, #faf9f5 50%, transparent);
+  --hairline-ink: #dedcd1;
+  --hairline: color-mix(in oklab, var(--hairline-ink) 15%, transparent);
+  --hairline-strong: color-mix(in oklab, var(--hairline-ink) 30%, transparent);
+  --hairline-strongest: color-mix(in oklab, var(--hairline-ink) 40%, transparent);
+  --ring: color-mix(in oklab, #faf9f5 70%, transparent);
+
+  /* Row states as foreground alpha (D5) [cited brief values]. */
+  --state-hover: rgba(255, 255, 255, 0.05);
+  --state-active: rgba(255, 255, 255, 0.08);
+
+  /* Semantic (A3), all [cited]. Surface + text pairs; rings at 50% [cited]. */
+  --info-surface: #253e5f;
+  --info-text: #80aadd;
+  --danger-surface: #602a28;
+  --danger-text: #ee8884;
+  --success-surface: #1b4614;
+  --success-text: #7ab948;
+  --warning-surface: #483a0f;
+  --warning-text: #d1a041;
+  --info-ring: color-mix(in oklab, var(--info-text) 50%, transparent);
+  --danger-ring: color-mix(in oklab, var(--danger-text) 50%, transparent);
+  --success-ring: color-mix(in oklab, var(--success-text) 50%, transparent);
+  --warning-ring: color-mix(in oklab, var(--warning-text) 50%, transparent);
+
+  /* The one accent [owner: ink, 2026-11-21]. 17.5:1 on --surface-0 [measured].
+     No accent-tinted surfaces anywhere. */
+  --primary: var(--text-1);
+  --primary-foreground: var(--surface-0);
+
+  /* shadcn aliases onto the ladder, so shadcn components work untouched.
+     accent/secondary/muted are the raised surface, never a hue. */
+  --background: var(--surface-0);
+  --foreground: var(--text-1);
+  --card: var(--surface-1);
+  --card-foreground: var(--text-1);
+  --popover: var(--surface-3);
+  --popover-foreground: var(--text-1);
+  --secondary: var(--surface-2);
+  --secondary-foreground: var(--text-1);
+  --muted: var(--surface-2);
+  --muted-foreground: var(--text-3);
+  --accent: var(--surface-2);
+  --accent-foreground: var(--text-1);
+  --destructive: var(--danger-text);
+  --border: var(--hairline);
+  --input: var(--hairline-strong);
+  --radius: 10px; /* shadcn's base radius = --radius-lg, not a new value */
+}
+
+/* ------------------------------------------------- non-utility tokens (:root) */
+:root {
+  /* Motion (A5). Tailwind ships easings but no durations. Durations [cited Atlassian]. */
+  --duration-instant: 0ms;
+  --duration-xxshort: 50ms;
+  --duration-xshort: 100ms;
+  --duration-short: 150ms;
+  --duration-medium: 200ms;
+  --duration-long: 250ms;
+  --duration-xlong: 400ms;
+  --duration-xxlong: 600ms;
+
+  /* Glass and photography (A6). */
+  --panel-bg: color-mix(in oklab, var(--surface-1) 92%, transparent); /* [derived] */
+  --panel-blur: 16px; /* [cited, tune 12-30] -webkit- needs it hardcoded */
+  --panel-saturate: 180%; /* [cited, tune 140-200] */
+  --panel-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.08); /* [proposal] */
+  /* [measured] scripts/measure-scrim.mjs: every scene's lightest 48px region
+     (night: the moon's reflection on the lake, autumn-night-clear x1244 y800).
+     0.66 lets --text-1 AND --text-2 clear 4.5:1 directly on the canvas on all 24
+     scenes (night alone: 0.60). --text-3 needs 0.78, so --text-3 never sits on
+     the bare canvas: panels only (5.16:1 on a 92% panel at this scrim). */
+  --scrim: rgba(0, 0, 0, 0.66);
+
+  --border-width: 0.5px; /* the only width token [cited] */
+  --row-h: 28px; /* [derived] 14px x 1.4 + 2 x 4px; Notion's 28px indicative only */
+}
+
+/* --------------------------------------------------- Tailwind theme (inline) */
+@theme inline {
+  /* Closed palette: Tailwind's default colours (blue-500, zinc-800 ...) do not exist. */
+  --color-*: initial;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+  --color-surface-0: var(--surface-0);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-text-1: var(--text-1);
+  --color-text-2: var(--text-2);
+  --color-text-3: var(--text-3);
+  --color-text-disabled: var(--text-disabled);
+  --color-hairline: var(--hairline);
+  --color-hairline-strong: var(--hairline-strong);
+  --color-hairline-strongest: var(--hairline-strongest);
+  --color-info: var(--info-text);
+  --color-info-surface: var(--info-surface);
+  --color-danger: var(--danger-text);
+  --color-danger-surface: var(--danger-surface);
+  --color-success: var(--success-text);
+  --color-success-surface: var(--success-surface);
+  --color-warning: var(--warning-text);
+  --color-warning-surface: var(--warning-surface);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-scrim: var(--scrim); /* overlays use the measured scrim */
+
+  /* Radii (A4) [cited]. Exactly these five plus full. */
+  --radius-*: initial;
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+  --radius-full: 9999px;
+
+  /* Shadows (A4) [cited]: exactly four, Tailwind's xs/sm/md/lg values.
+     xs IS the brief's "hairline" shadow, named xs so shadcn's shadow-xs resolves. */
+  --shadow-*: initial;
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+  /* Type (A4) [cited]. Body 12/14/16/20; headings add 24/28/36.
+     Line heights: 1.4 xs-base, 1.25 lg-xl, 1.1 2xl, 1 3xl. */
+  --text-*: initial;
+  --text-xs: 12px;
+  --text-xs--line-height: 1.4;
+  --text-sm: 14px;
+  --text-sm--line-height: 1.4;
+  --text-base: 16px;
+  --text-base--line-height: 1.4;
+  --text-lg: 20px;
+  --text-lg--line-height: 1.25;
+  --text-xl: 24px;
+  --text-xl--line-height: 1.25;
+  --text-2xl: 28px;
+  --text-2xl--line-height: 1.1;
+  --text-3xl: 36px;
+  --text-3xl--line-height: 1;
+  --font-weight-*: initial;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Easing: Tailwind's three plus the practical curve [cited]. */
+  --ease-practical: cubic-bezier(0.4, 1, 0.6, 1);
+
+  /* Spacing: Tailwind v4's --spacing: 0.25rem multiplier, inherited, not redeclared. */
+}
+
+/* ------------------------------------------------------------- base defaults */
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  html {
+    background: var(--background);
+  }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+/* The cited 0.5px border width as utilities; colour comes from the base
+   `* { border-color: var(--border) }` or a border-* colour utility. */
+@utility border-hairline {
+  border-width: var(--border-width);
+  border-style: solid;
+}
+@utility border-t-hairline {
+  border-top-width: var(--border-width);
+  border-top-style: solid;
+}
+@utility border-b-hairline {
+  border-bottom-width: var(--border-width);
+  border-bottom-style: solid;
+}
+@utility border-l-hairline {
+  border-left-width: var(--border-width);
+  border-left-style: solid;
+}
+@utility border-r-hairline {
+  border-right-width: var(--border-width);
+  border-right-style: solid;
+}

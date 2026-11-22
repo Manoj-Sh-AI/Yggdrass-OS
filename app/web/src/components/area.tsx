@@ -452,7 +452,7 @@ export function AreaPage({ id }: { id: string }) {
   return (
     <div
       className="standard-page area-page"
-      style={{ "--accent": area.color } as CSSProperties}
+      style={{ "--legacy-accent": area.color } as CSSProperties}
     >
       <div className="page-intro">
         <div>

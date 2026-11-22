@@ -9,7 +9,7 @@
   display: flex;
   gap: 3px;
   padding: 3px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--legacy-border);
   border-radius: 12px;
   background: #ffffff03;
 }

@@ -1,0 +1,89 @@
+{
+  "src/app/calendar-workspace.css": {
+    "raw-hex": 73,
+    "raw-rgb-hsl": 1
+  },
+  "src/app/calls.css": {
+    "raw-hex": 18,
+    "raw-rgb-hsl": 1
+  },
+  "src/app/catalog.css": {
+    "raw-hex": 21,
+    "raw-rgb-hsl": 2
+  },
+  "src/app/chat.css": {
+    "raw-hex": 26,
+    "raw-rgb-hsl": 1
+  },
+  "src/app/globals.css": {
+    "raw-hex": 341,
+    "raw-rgb-hsl": 15
+  },
+  "src/app/graph.css": {
+    "raw-hex": 27,
+    "raw-rgb-hsl": 1
+  },
+  "src/app/interface-feel.css": {
+    "raw-hex": 2
+  },
+  "src/app/kanban.css": {
+    "raw-hex": 41
+  },
+  "src/app/nature-glass.css": {
+    "raw-hex": 159,
+    "raw-rgb-hsl": 18
+  },
+  "src/app/notes.css": {
+    "raw-hex": 76,
+    "raw-rgb-hsl": 1
+  },
+  "src/app/open-air.css": {
+    "raw-hex": 124,
+    "raw-rgb-hsl": 6
+  },
+  "src/app/planning.css": {
+    "raw-hex": 108,
+    "raw-rgb-hsl": 3
+  },
+  "src/app/signal-workspace.css": {
+    "raw-hex": 5,
+    "raw-rgb-hsl": 1
+  },
+  "src/app/yggdras.css": {
+    "raw-hex": 33,
+    "raw-rgb-hsl": 3
+  },
+  "src/components/area.tsx": {
+    "raw-hex": 4,
+    "inline-style-colour": 1
+  },
+  "src/components/catalogs.tsx": {
+    "inline-style-colour": 1
+  },
+  "src/components/dashboard.tsx": {
+    "raw-hex": 4,
+    "inline-style-colour": 1
+  },
+  "src/components/planning-daily.tsx": {
+    "raw-hex": 2
+  },
+  "src/components/planning-ui.tsx": {
+    "raw-hex": 2
+  },
+  "src/components/routine-execution-card.tsx": {
+    "raw-hex": 4
+  },
+  "src/components/settings.tsx": {
+    "raw-rgb-hsl": 1
+  },
+  "src/components/today.tsx": {
+    "raw-hex": 4,
+    "raw-rgb-hsl": 2
+  },
+  "src/lib/data.ts": {
+    "raw-hex": 8
+  },
+  "src/lib/kanban.ts": {
+    "raw-hex": 4
+  }
+}

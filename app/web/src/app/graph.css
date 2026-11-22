@@ -58,7 +58,7 @@
   align-items: center;
   gap: 20px;
   padding: 13px 18px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--legacy-border);
   border-bottom: 0;
   border-radius: 16px 16px 0 0;
   background: #14233aca;
@@ -85,7 +85,7 @@
   height: clamp(550px, calc(100dvh - 285px), 1000px);
   min-width: 0;
   background: #0b1728;
-  border: 1px solid var(--border);
+  border: 1px solid var(--legacy-border);
   border-radius: 0 0 16px 16px;
   overflow: hidden;
   box-shadow: 0 20px 60px #030a1633;
@@ -194,7 +194,7 @@
 }
 .workflow-review-item {
   padding: 16px 0;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--legacy-border);
 }
 .workflow-review-item h3 {
   margin: 0 0 6px;
@@ -205,7 +205,7 @@
 .workflow-review-item blockquote {
   margin: 12px 0;
   padding-left: 12px;
-  border-left: 2px solid var(--border);
+  border-left: 2px solid var(--legacy-border);
   color: var(--muted);
 }
 .workflow-review-item dl {

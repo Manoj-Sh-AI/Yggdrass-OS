@@ -1,4 +1,5 @@
-@import "tailwindcss";
+@import "../styles/tokens.css"; /* token layer: tailwind + tokens + base */
+@import "../styles/primitives.css";
 
 /* Application sign-in and the explicit Brain integration boundary. */
 .login-page {
@@ -114,13 +115,13 @@
   --bg: #09121c;
   --surface: rgba(23, 33, 50, 0.79);
   --surface-low: rgba(16, 26, 38, 0.86);
-  --border: rgba(183, 204, 242, 0.115);
+  --legacy-border: rgba(183, 204, 242, 0.115);
   --text: #edf1fa;
   --muted: #a1aec5;
   --faint: #7d8ba3;
   --blue: #83adfa;
-  --accent: #83adfa;
-  --radius: 17px;
+  --legacy-accent: #83adfa;
+  --legacy-radius: 17px;
   --sidebar: 194px;
   --font-sans: Inter, Arial, sans-serif;
   color-scheme: dark;
@@ -336,7 +337,7 @@ kbd {
     rgba(10, 22, 36, 0.88),
     rgba(7, 17, 25, 0.95)
   );
-  border-right: 1px solid var(--border);
+  border-right: 1px solid var(--legacy-border);
   padding: 17px 11px 18px;
   z-index: 30;
   display: flex;
@@ -438,7 +439,7 @@ kbd {
 }
 .nav-divider {
   height: 1px;
-  background: var(--border);
+  background: var(--legacy-border);
   margin: 13px 9px;
 }
 .sidebar-bottom {
@@ -602,8 +603,8 @@ kbd {
   height: 4px;
 }
 .panel {
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border: 1px solid var(--legacy-border);
+  border-radius: var(--legacy-radius);
   background: linear-gradient(
     130deg,
     rgba(34, 47, 70, 0.71),
@@ -885,7 +886,7 @@ kbd {
 .agenda-entry > time {
   width: 40px;
   font-size: 12px;
-  color: var(--accent);
+  color: var(--legacy-accent);
 }
 .agenda-entry > time small {
   display: block;
@@ -895,10 +896,10 @@ kbd {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--accent);
+  background: var(--legacy-accent);
   margin-left: 2px;
   flex-shrink: 0;
-  box-shadow: 0 0 8px color-mix(in srgb, var(--accent), transparent 55%);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--legacy-accent), transparent 55%);
 }
 .agenda-event {
   display: flex;
@@ -921,8 +922,8 @@ kbd {
   top: 0;
   bottom: 0;
   width: 5px;
-  background: var(--accent);
-  box-shadow: 2px 0 7px color-mix(in srgb, var(--accent), transparent 85%);
+  background: var(--legacy-accent);
+  box-shadow: 2px 0 7px color-mix(in srgb, var(--legacy-accent), transparent 85%);
 }
 .agenda-event:hover {
   background: #b9d3ff20;
@@ -933,7 +934,7 @@ kbd {
 }
 .agenda-event-name strong {
   display: block;
-  color: var(--accent);
+  color: var(--legacy-accent);
   font-size: 12px;
   font-weight: 400;
   white-space: nowrap;
@@ -1129,18 +1130,18 @@ kbd {
   display: grid;
   place-items: center;
   border-radius: 14px;
-  color: var(--accent);
+  color: var(--legacy-accent);
   background: linear-gradient(
     140deg,
-    color-mix(in srgb, var(--accent), transparent 84%),
-    color-mix(in srgb, var(--accent), transparent 92%)
+    color-mix(in srgb, var(--legacy-accent), transparent 84%),
+    color-mix(in srgb, var(--legacy-accent), transparent 92%)
   );
-  border: 1px solid color-mix(in srgb, var(--accent), transparent 93%);
+  border: 1px solid color-mix(in srgb, var(--legacy-accent), transparent 93%);
   transition: transform 0.2s;
 }
 .capture-shortcuts > button:hover > span {
   transform: translateY(-3px);
-  border-color: color-mix(in srgb, var(--accent), transparent 60%);
+  border-color: color-mix(in srgb, var(--legacy-accent), transparent 60%);
 }
 .capture-hint {
   font-size: 9px;
@@ -1263,12 +1264,12 @@ kbd {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  color: var(--accent);
+  color: var(--legacy-accent);
   font-size: 11px;
   border-radius: 7px;
-  background: color-mix(in srgb, var(--accent), transparent 90%);
+  background: color-mix(in srgb, var(--legacy-accent), transparent 90%);
   padding: 5px 8px;
-  border: 1px solid color-mix(in srgb, var(--accent), transparent 88%);
+  border: 1px solid color-mix(in srgb, var(--legacy-accent), transparent 88%);
   white-space: nowrap;
 }
 .area-badge.small {
@@ -1280,10 +1281,10 @@ kbd {
   border-radius: 7px;
   background: linear-gradient(
     135deg,
-    color-mix(in srgb, var(--accent), transparent 55%),
-    color-mix(in srgb, var(--accent), transparent 75%)
+    color-mix(in srgb, var(--legacy-accent), transparent 55%),
+    color-mix(in srgb, var(--legacy-accent), transparent 75%)
   );
-  color: color-mix(in srgb, var(--accent), white 40%);
+  color: color-mix(in srgb, var(--legacy-accent), white 40%);
   flex-shrink: 0;
 }
 .active-work strong {
@@ -1496,7 +1497,7 @@ kbd {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: var(--accent);
+  color: var(--legacy-accent);
 }
 .area-card-icon {
   width: 43px;
@@ -1504,8 +1505,8 @@ kbd {
   display: grid;
   place-items: center;
   border-radius: 12px;
-  background: color-mix(in srgb, var(--accent), transparent 86%);
-  border: 1px solid color-mix(in srgb, var(--accent), transparent 88%);
+  background: color-mix(in srgb, var(--legacy-accent), transparent 86%);
+  border: 1px solid color-mix(in srgb, var(--legacy-accent), transparent 88%);
 }
 .area-card h3 {
   font-size: 16px;
@@ -1548,11 +1549,11 @@ kbd {
   height: 350px;
 }
 .page-area-icon {
-  color: var(--accent);
+  color: var(--legacy-accent);
   display: grid;
   place-items: center;
-  background: color-mix(in srgb, var(--accent), transparent 85%);
-  border: 1px solid color-mix(in srgb, var(--accent), transparent 80%);
+  background: color-mix(in srgb, var(--legacy-accent), transparent 85%);
+  border: 1px solid color-mix(in srgb, var(--legacy-accent), transparent 80%);
   border-radius: 15px;
   width: 52px;
   height: 52px;
@@ -1593,7 +1594,7 @@ kbd {
   align-items: center;
   justify-content: space-between;
   padding: 15px 19px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--legacy-border);
   gap: 10px;
 }
 .area-toolbar > .muted {
@@ -1626,7 +1627,7 @@ kbd {
   display: flex;
   align-items: center;
   gap: 10px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--legacy-border);
   border-radius: 9px;
   background: #07142444;
   padding: 9px 11px;
@@ -1647,7 +1648,7 @@ kbd {
 .notes-filters select,
 .scene-library-heading select {
   background: #172638;
-  border: 1px solid var(--border);
+  border: 1px solid var(--legacy-border);
   padding: 9px 12px;
   font-size: 11px;
   max-width: 140px;
@@ -1957,8 +1958,8 @@ kbd {
   grid-template-columns: repeat(7, minmax(0, 1fr));
 }
 .calendar-weekdays {
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
+  border-top: 1px solid var(--legacy-border);
+  border-bottom: 1px solid var(--legacy-border);
 }
 .calendar-weekdays > span {
   font-size: 10px;
@@ -2113,7 +2114,7 @@ kbd {
   display: block;
   width: 100%;
   background: #09172a5c;
-  border: 1px solid var(--border);
+  border: 1px solid var(--legacy-border);
   padding: 9px 12px;
   font-size: 12px;
 }
@@ -2205,7 +2206,7 @@ kbd {
 .scene-selects select {
   padding: 10px 9px;
   background: #101f33;
-  border: 1px solid var(--border);
+  border: 1px solid var(--legacy-border);
   font-size: 10px;
   width: 100%;
   text-transform: capitalize;
@@ -2216,7 +2217,7 @@ kbd {
   justify-content: space-between;
   gap: 20px;
   padding: 17px 0;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--legacy-border);
 }
 .settings-line strong {
   font-size: 12px;
@@ -2365,7 +2366,7 @@ kbd {
   justify-content: space-between;
   text-align: left;
   padding: 10px 0;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--legacy-border);
 }
 .city-results strong {
   display: block;
@@ -2546,7 +2547,7 @@ kbd {
   color: #c4d3ea;
   line-height: 1.75;
   letter-spacing: -0.2px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--legacy-border);
   padding-bottom: 25px;
   margin-bottom: 25px;
 }
@@ -4118,7 +4119,7 @@ kbd {
   margin-top: 4px;
 }
 .routine-execution {
-  border-left: 1px solid var(--border);
+  border-left: 1px solid var(--legacy-border);
   padding-left: 30px;
   min-width: 0;
 }
@@ -4218,7 +4219,7 @@ kbd {
   }
   .routine-execution {
     border-left: 0;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--legacy-border);
     padding: 18px 0 0;
   }
 }

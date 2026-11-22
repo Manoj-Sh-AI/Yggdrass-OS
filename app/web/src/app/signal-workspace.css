@@ -16,7 +16,7 @@
 .quiet-task-filters > div { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
 .quiet-task-filters select { max-width: 100%; }
 .quiet-task-filters summary, .quiet-calendar-options summary, .quiet-disclosure summary { cursor: pointer; padding: 10px 4px; color: var(--text); }
-.quiet-disclosure { margin: 18px 0; border-top: 1px solid var(--border); }
+.quiet-disclosure { margin: 18px 0; border-top: 1px solid var(--legacy-border); }
 .today-workspace { max-width: 1040px; margin: 12px auto 70px; }
 .quiet-page-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 35px 3px 28px; }
 .quiet-page-heading h1 { font-size: clamp(32px,3vw,43px); font-weight: 400; letter-spacing: -1.2px; margin: 0 0 5px; text-shadow: 0 2px 15px #10202470; }

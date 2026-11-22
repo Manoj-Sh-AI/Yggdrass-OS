@@ -220,7 +220,7 @@ export function AreaBadge({
   return (
     <span
       className={`area-badge ${small ? "small" : ""}`}
-      style={{ "--accent": a.color } as CSSProperties}
+      style={{ "--legacy-accent": a.color } as CSSProperties}
     >
       <Icon name={a.icon} size={small ? 14 : 18} />
       {!small && a.name}

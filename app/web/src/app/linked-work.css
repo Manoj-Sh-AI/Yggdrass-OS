@@ -16,7 +16,7 @@
 .linked-work-list li {
   position: relative;
   padding: 12px 0;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--legacy-border);
   overflow-wrap: anywhere;
 }
 .linked-work-list :is(a, .text-link) {
@@ -62,7 +62,7 @@
   min-width: 0;
 }
 .linked-work-disclosure {
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--legacy-border);
   margin: 14px 0;
 }
 .linked-work-disclosure p {

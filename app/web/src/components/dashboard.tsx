@@ -75,7 +75,7 @@ export function DashboardPage() {
                   className="panel area-card"
                   href={`/areas/${a.id}`}
                   key={a.id}
-                  style={{ "--accent": a.color } as CSSProperties}
+                  style={{ "--legacy-accent": a.color } as CSSProperties}
                 >
                   <div className="area-card-heading">
                     <span className="area-card-icon">

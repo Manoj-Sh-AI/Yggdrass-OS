@@ -122,7 +122,7 @@ export function CaptureShortcuts() {
         <button
           key={c.kind}
           onClick={() => launchCapture(c.kind)}
-          style={{ "--accent": c.color } as CSSProperties}
+          style={{ "--legacy-accent": c.color } as CSSProperties}
         >
           <span>
             <Icon name={c.icon} size={24} />

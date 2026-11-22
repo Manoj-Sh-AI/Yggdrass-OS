@@ -52,6 +52,21 @@ uv run ruff format .     # format
 - Config from environment variables (see `.env.example`), loaded in one place.
 - Keep functions small and layers separate. Data access never imports from interface or processing.
 
+## UI values: the token layer is closed
+
+Web UI values come only from `app/web/src/styles/tokens.css` and the primitives in
+`app/web/src/components/primitives` (Surface/Panel, Card, Button, Input, Sheet, Dialog,
+Separator, Badge). Pages never compose a panel, card or button by hand.
+
+- **Never** write raw hex, `rgb()`/`hsl()`, Tailwind palette classes (`bg-blue-500`,
+  `border-zinc-800`) or arbitrary design values (`bg-[#…]`, `p-[13px]`, `rounded-[7px]`,
+  `text-[…]`, `shadow-[…]`, `duration-[…]`) in pages or components. `npm run lint:tokens`
+  (also `prebuild`) fails CI on any new one; the legacy baseline only ever goes down.
+- **If a value you need is missing from the token layer, ask Manoj.** Never invent a
+  fifth radius, a ninth grey, a new shadow, a new hue or a new duration.
+- Record why each visual choice was made in `app/web/DESIGN-DECISIONS.md`, tagged
+  [cited], [proposal], [measured] or [derived]. Never collapse those tags.
+
 ## Communication style
 
 Keep answers short and structured. Lead with the result and flag decisions that need Manoj clearly.

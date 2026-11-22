@@ -5,8 +5,8 @@
   --muted: #c5d9d0;
   --faint: #b7cec5;
   --blue: #b5dce5;
-  --accent: #b3e7d2;
-  --radius: 23px;
+  --legacy-accent: #b3e7d2;
+  --legacy-radius: 23px;
   --glass-rgb: 15, 40, 46;
   --glass-alpha: 0.86;
   --glass-fill: rgba(var(--glass-rgb), var(--glass-alpha));
@@ -22,7 +22,7 @@
   --focus-ring: #d1efaa;
   --surface: var(--glass-fill);
   --surface-low: #112e32;
-  --border: var(--glass-border);
+  --legacy-border: var(--glass-border);
 }
 body {
   font-size: 13px;
@@ -99,7 +99,7 @@ textarea {
   backdrop-filter: none;
 }
 .panel {
-  border-radius: var(--radius);
+  border-radius: var(--legacy-radius);
 }
 .sidebar {
   background:
@@ -749,7 +749,7 @@ select {
     --text: CanvasText;
     --muted: CanvasText;
     --faint: CanvasText;
-    --border: ButtonText;
+    --legacy-border: ButtonText;
     --glass-fill: Canvas;
     --glass-highlight: transparent;
     --glass-shadow: none;

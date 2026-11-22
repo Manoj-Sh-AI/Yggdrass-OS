@@ -1,0 +1,36 @@
+/*
+ * Elevation and glass, used ONLY by src/components/primitives/surface.tsx.
+ * Pages never compose a panel by hand.
+ *
+ * Glass rules (A6, all [cited]):
+ * - The solid fallback carries the contrast: --panel-bg is 92% opaque surface-1,
+ *   legible with no blur at all.
+ * - Blur only inside @supports AND prefers-reduced-transparency: no-preference.
+ *   Safari lacks that query and Firefox ships it disabled, so those browsers get
+ *   the solid panel, by design.
+ * - Custom properties do not resolve inside -webkit-backdrop-filter: hardcoded
+ *   to the --panel-blur / --panel-saturate values. Change both together.
+ * - Never animate blur radius; animate opacity. At most 3-4 glass layers per
+ *   viewport (canvas scrim + sidebar + main panel + one overlay).
+ */
+.surface-glass {
+  background: var(--panel-bg);
+  box-shadow: var(--panel-highlight);
+}
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  @media (prefers-reduced-transparency: no-preference) {
+    .surface-glass {
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+      backdrop-filter: blur(var(--panel-blur)) saturate(var(--panel-saturate));
+    }
+  }
+}
+
+/* The app canvas over a scene photograph: the measured scrim sits between the
+   photo and everything else. */
+.surface-scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--scrim);
+}

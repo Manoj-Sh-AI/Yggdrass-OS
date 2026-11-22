@@ -7,7 +7,7 @@
 .catalog-card-button { width: 100%; text-align: left; color: var(--text); border: 1px solid var(--glass-border); cursor: pointer; transition-property: background-color, border-color; transition-duration: 160ms; }
 .catalog-card-button:hover { border-color: #dde5d98c; background-color: rgba(44, 50, 51, 0.9); }
 .catalog-card-head { display: flex; align-items: center; gap: 12px; }
-.catalog-icon { display: grid; place-items: center; width: 36px; height: 36px; flex-shrink: 0; border-radius: 11px; border: 1px solid #eef2e526; background: #ffffff08; color: var(--accent); }
+.catalog-icon { display: grid; place-items: center; width: 36px; height: 36px; flex-shrink: 0; border-radius: 11px; border: 1px solid #eef2e526; background: #ffffff08; color: var(--legacy-accent); }
 .catalog-card-title { flex: 1; min-width: 0; }
 .catalog-card-title h2 { margin: 0; font-size: 16px; font-weight: 400; letter-spacing: -0.2px; overflow-wrap: anywhere; }
 .catalog-card-title small { color: var(--muted); font-size: 12px; }

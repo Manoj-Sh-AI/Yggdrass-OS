@@ -5,8 +5,8 @@
   --muted: #cbd2cc;
   --faint: #bec8c0;
   --blue: #c4d2d8;
-  --accent: #dce2cf;
-  --radius: 21px;
+  --legacy-accent: #dce2cf;
+  --legacy-radius: 21px;
   --sidebar: 174px;
   --glass-rgb: 32, 34, 35;
   --glass-alpha: 0.84;
@@ -21,7 +21,7 @@
   --focus-ring: #ece7d1;
   --surface: var(--glass-fill);
   --surface-low: #272e30;
-  --border: var(--glass-border);
+  --legacy-border: var(--glass-border);
 }
 body { line-height: 1.6; }
 ::selection { color: #27322d; background: #e0e6cf; }
@@ -35,7 +35,7 @@ input::placeholder, textarea::placeholder { color: var(--muted); }
 .sidebar {
   top: 20px; bottom: 20px; left: 20px;
   width: var(--sidebar); padding: 25px 12px 17px;
-  border: 1px solid var(--glass-border); border-radius: var(--radius);
+  border: 1px solid var(--glass-border); border-radius: var(--legacy-radius);
   background: linear-gradient(130deg, #ffffff08, transparent 65%), var(--glass-fill);
   box-shadow: var(--glass-shadow);
 }
