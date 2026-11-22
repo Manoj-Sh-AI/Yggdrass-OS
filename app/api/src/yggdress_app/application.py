@@ -235,7 +235,10 @@ def create_app(
     from .daily_routine_api import routine_router
     from .routine_delivery import delivery_router
     from .routine_jobs import acknowledge
-    api.include_router(routine_router(database, session, lia=lambda: getattr(api.state, "routine_lia", None)))
+
+    api.include_router(
+        routine_router(database, session, lia=lambda: getattr(api.state, "routine_lia", None))
+    )
     api.include_router(delivery_router(database, session, fingerprint, acknowledge, calls=calls))
     api.include_router(call_router(calls, session))
     api.include_router(planning_router(database, session))
@@ -287,8 +290,20 @@ def create_app(
     api.include_router(conductor_router(conductor, session))
 
     @api.get("/health")
-    def health():
-        return {"status": "ok", "service": "application"}
+    def health(response: Response):
+        """200 only once the database answers; reports the deployed commit so a watchdog
+        can check production runs what CI passed (planning/agentic-engineering.md 34)."""
+        import os
+
+        body = {"status": "ok", "service": "application",
+                "commit": os.environ.get("RAILWAY_GIT_COMMIT_SHA", "")}  # fmt: skip
+        try:
+            with database.connect() as db:
+                db.execute("SELECT 1")
+        except Exception:  # noqa: BLE001 - any database failure means "not healthy"
+            response.status_code = 503
+            body["status"] = "database unavailable"
+        return body
 
     @api.post("/v1/mobile/auth/login")
     @api.post("/v1/auth/login")

@@ -77,3 +77,17 @@ def test_the_web_contract_fixture_matches_the_schema():
     assert json.loads(FIXTURE.read_text(encoding="utf-8")) == current, (
         "RunState changed: regenerate the fixture and update the web types."
     )
+
+
+def test_health_reports_commit_and_needs_the_database(setup, monkeypatch):
+    from fastapi.testclient import TestClient
+
+    from yggdress_app.application import create_app
+
+    _, _, _, settings = setup
+    monkeypatch.setenv("RAILWAY_GIT_COMMIT_SHA", "abc123")
+    healthy = TestClient(create_app(settings), base_url=settings.origin).get("/health")
+    assert healthy.status_code == 200 and healthy.json()["commit"] == "abc123"
+    broken = settings.__class__(**{**settings.__dict__, "database_url": "postgresql://x@127.0.0.1:1/none"})
+    down = TestClient(create_app(broken), base_url=settings.origin).get("/health")
+    assert down.status_code == 503

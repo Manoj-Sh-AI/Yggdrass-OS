@@ -1,0 +1,63 @@
+# CI integrity (Stage 3, item 22-23): the changes an agent could make to pass CI
+# without fixing anything. Workflow/test-config changes need the hand-applied label
+# `ci-change-approved`; the rest fail outright or warn.
+name: CI integrity
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+concurrency:
+  group: integrity-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Diff checks
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+        run: |
+          set -uo pipefail
+          fail=0
+          files=$(git diff --name-only "$BASE"...HEAD)
+          added=$(git diff "$BASE"...HEAD | grep '^+' | grep -v '^+++' || true)
+          if echo "$files" | grep -Eq '^(\.github/|\.claude/|app/api/pyproject.toml|app/web/vitest.config|app/mobile/package.json)'; then
+            if ! echo ",$LABELS," | grep -q ',ci-change-approved,'; then
+              echo "::error::CI/test configuration changed; needs the hand-applied label ci-change-approved."; fail=1
+            fi
+          fi
+          if echo "$added" | grep -Eq '\|\| *true|continue-on-error: *true'; then
+            echo "::error::A new '|| true' or continue-on-error hides failures."; fail=1
+          fi
+          if echo "$added" | grep -Eq 'pytest\.mark\.(skip|xfail)|\b(it|describe|test)\.(only|skip)\('; then
+            echo "::error::A new skip/xfail/.only marker."; fail=1
+          fi
+          deleted=$(git diff --numstat "$BASE"...HEAD -- '*test*' | awk '{d+=$2-$1} END {print d+0}')
+          if [ "$deleted" -gt 50 ]; then echo "::error::Net test deletion of $deleted lines."; fail=1; fi
+          code=$(echo "$files" | grep -E '^app/.*\.(py|ts|tsx)$' | grep -Ev '(^|/)tests?/' || true)
+          tests=$(echo "$files" | grep -E '(^|/)tests?/' || true)
+          [ -n "$code" ] && [ -z "$tests" ] && echo "::warning::Code changed with no test change."
+          [ -z "$code" ] && [ -n "$tests" ] && echo "::warning::Only tests changed."
+          for lock in app/web/package-lock.json app/mobile/package-lock.json app/api/uv.lock; do
+            manifest=$(dirname "$lock")/$( [ "${lock##*.}" = lock ] && echo pyproject.toml || echo package.json )
+            if echo "$files" | grep -qx "$lock" && ! echo "$files" | grep -qx "$manifest"; then
+              echo "::warning::$lock changed without $manifest."
+            fi
+          done
+          exit $fail
+      - name: Secret scan (diff only; gitleaks v8.30.1, verified 2026-11-22)
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          curl -sSL -o gitleaks.tgz https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+          tar -xzf gitleaks.tgz gitleaks
+          ./gitleaks git --log-opts="$BASE..HEAD" --redact --exit-code 1 .
