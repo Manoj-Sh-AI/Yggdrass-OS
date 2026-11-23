@@ -24,7 +24,10 @@ STATE = ROOT / ".claude" / "state"
 PROTECTED = (".claude/", ".github/", "railway.json", "railway.toml", "Dockerfile.backend")
 SECRET_ENV = ("DATABASE_URL", "ADMIN_DATABASE_URL", "BRAIN_SERVER_URL", "BRAIN_API_USER",
               "BRAIN_API_PASSWORD", "ANTHROPIC_API_KEY")  # fmt: skip
-PYTEST_FLAGS = ["-q", "-p", "no:cacheprovider", "--color=no", "-m", "not flaky and not slow"]
+# Item 19: deterministic gates. --timeout needs pytest-timeout (dev dependency since
+# 2026-11-22); -p no:randomly is harmless when pytest-randomly is absent.
+PYTEST_FLAGS = ["-q", "-p", "no:cacheprovider", "-p", "no:randomly", "--color=no",
+                "--timeout=60", "-m", "not flaky and not slow"]  # fmt: skip
 FULL_TIER_TRIGGERS = ("app/api/migrations/", "pyproject.toml", "conftest.py", ".env")
 
 
@@ -48,7 +51,25 @@ def block(message: str) -> int:
 def clean_env() -> dict:
     env = {k: v for k, v in os.environ.items() if k not in SECRET_ENV}
     env.update(PYTHONHASHSEED="0", YGGDRAS_FAKE_MODEL="1")
+    # Item 17: an explicit scratch database for gates (tools/scratch-db.sh prints one).
+    # Without it the fixture starts its own throwaway cluster, so workers never share one.
+    scratch = os.environ.get("GATE_SCRATCH_DB_URL", "").strip()
+    if scratch:
+        env["YGGDRESS_TEST_ADMIN_URL"] = scratch
+    else:
+        env.pop("YGGDRESS_TEST_ADMIN_URL", None)
     return env
+
+
+def scratch_unreachable() -> str:
+    """A wrong GATE_SCRATCH_DB_URL is a tooling problem, never 'your code is wrong'."""
+    scratch = os.environ.get("GATE_SCRATCH_DB_URL", "").strip()
+    if not scratch:
+        return ""
+    probe = run(["uv", "run", "--no-sync", "python", "-c",
+                 "import sys,psycopg;psycopg.connect(sys.argv[1],connect_timeout=3).close()", scratch],
+                API, 20)  # fmt: skip
+    return "" if probe is not None and probe.returncode == 0 else "GATE_SCRATCH_DB_URL is unreachable"
 
 
 def run(cmd: list[str], cwd: Path, timeout: int) -> subprocess.CompletedProcess | None:
@@ -169,6 +190,9 @@ def t2() -> int:
         return 0
     if any(f.startswith(FULL_TIER_TRIGGERS) or Path(f).name in ("pyproject.toml", "conftest.py") for f in files):
         return skip("migration/config change: needs the full suite (run full-suite-async.sh or CI)")
+    unreachable = scratch_unreachable()
+    if unreachable:
+        return skip(unreachable)
     tests = selected_tests(py)
     if not tests:
         return block(f"Task '{subject}': Python changed ({', '.join(py[:4])}) but no test was selected. "

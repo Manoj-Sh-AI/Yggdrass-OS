@@ -1,0 +1,51 @@
+# Review tier + diff-size gate (planning/agentic-engineering.md items 51-52).
+# tools/ci/pr_tier.py decides tier1/2/3 (tested in app/api/tests/test_ci_tools.py).
+# Tier 3 = merge by hand: this check stays red until a human applies `tier3-reviewed`, and
+# NO workflow in this repo ever arms auto-merge (grep for `--auto` should find nothing).
+# The label is a speed bump, not the control: the owner merging by hand is the control.
+name: Tier
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+concurrency:
+  group: tier-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  tier:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Classify
+        id: classify
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: git diff --numstat "$BASE"...HEAD | python3 tools/ci/pr_tier.py
+      - name: Label the PR with its tier
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          TIER: ${{ steps.classify.outputs.tier }}
+        run: |
+          for t in tier1 tier2 tier3; do
+            if [ "$t" = "$TIER" ]; then gh pr edit "$PR" --add-label "$t"; else gh pr edit "$PR" --remove-label "$t" 2>/dev/null; fi
+          done
+      - name: Tier 3 waits for a human
+        if: steps.classify.outputs.tier == 'tier3' && !contains(github.event.pull_request.labels.*.name, 'tier3-reviewed')
+        run: |
+          echo "::error::Tier 3 (risky): read the whole diff, apply the label tier3-reviewed, and merge by hand."
+          exit 1
+      - name: Branch name shows its author
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          echo "$HEAD_REF" | grep -Eq '^(claude|codex)/[0-9]{8}-[a-z0-9-]+$' \
+            || echo "::warning::Agent branches are claude/<YYYYMMDD>-<slug> or codex/<YYYYMMDD>-<slug> (AGENTS.md)."

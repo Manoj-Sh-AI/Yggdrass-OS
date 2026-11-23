@@ -1,0 +1,64 @@
+# Diff-scoped mutation testing (planning/agentic-engineering.md item 56).
+# mutmut 3.8.0 (latest release, checked 2026-11-22). It needs os.fork, so it runs here on
+# Linux, never on the Windows laptop. Config keys from the mutmut docs: [tool.mutmut]
+# source_paths / pytest_add_cli_args_test_selection; `mutmut run "<module>*"` limits it to
+# the changed modules; `mutmut export-cicd-stats` writes the stats.
+#
+# MEASURE FIRST: the docs do not state the stats file's path or keys, so this job reports
+# and uploads the stats and does not yet fail. After the first real run, read the stats file,
+# then add the published thresholds (80% new code, 90% for auth/data-integrity paths, no
+# decline on modified code) as a failing step. Never invent the keys.
+name: Mutation
+
+on:
+  pull_request:
+    paths: ['app/api/src/**']
+
+concurrency:
+  group: mutation-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  mutation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: yggdress_test
+        ports: ['5432:5432']
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      YGGDRESS_TEST_ADMIN_URL: postgresql://postgres:postgres@localhost:5432/yggdress_test
+      PYTHONHASHSEED: "0"
+      YGGDRAS_FAKE_MODEL: "1"
+    defaults:
+      run:
+        working-directory: app/api
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+      - run: uv sync --locked
+      - name: Changed modules
+        id: changed
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          mods=$(git diff --name-only --diff-filter=AM "$BASE"...HEAD -- src/yggdress_app \
+            | grep '\.py$' | sed -E 's#^app/api/src/##; s#\.py$##; s#/__init__$##; s#/#.#g' | tr '\n' ' ')
+          echo "modules=$mods" >> "$GITHUB_OUTPUT"; echo "changed: $mods"
+      - name: Mutate the changed modules
+        if: steps.changed.outputs.modules != ''
+        run: |
+          printf '\n[tool.mutmut]\nsource_paths = ["src/"]\npytest_add_cli_args_test_selection = ["tests/"]\n' >> pyproject.toml
+          for m in ${{ steps.changed.outputs.modules }}; do uv run --with mutmut==3.8.0 mutmut run "$m*"; done
+          uv run --with mutmut==3.8.0 mutmut export-cicd-stats
+          # print every JSON file the export wrote, so the first run shows the real shape
+          find . -newer pyproject.toml -name '*.json' -not -path './.venv/*' -print -exec cat {} \;

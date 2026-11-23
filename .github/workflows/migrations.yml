@@ -1,0 +1,59 @@
+# Migration safety (planning/agentic-engineering.md items 30-31), adapted to this repo:
+# numbered SQL files in app/api/migrations applied forward-only by Database.migrate()
+# (checksummed; there is no Alembic and no downgrade, so "single head" = "no shared number"
+# and "downgrade -1 / upgrade head" has no equivalent).
+#  1. static: shared numbers, edited applied migrations, destructive DDL without the
+#     hand-applied label destructive-migration-approved (tools/ci/check_migrations.py)
+#  2. contract: the BASE branch's code and tests run against the PR's migrations. This is the
+#     expand-contract property itself: a migration that breaks the code still running in
+#     production fails here, before it deploys.
+name: Migrations
+
+on:
+  pull_request:
+    paths: ['app/api/migrations/**', 'app/api/src/yggdress_app/database.py', 'tools/ci/check_migrations.py']
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+concurrency:
+  group: migrations-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - env:
+          LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+        run: python3 tools/ci/check_migrations.py "${{ github.event.pull_request.base.sha }}"
+
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: yggdress_test
+        ports: ['5432:5432']
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      YGGDRESS_TEST_ADMIN_URL: postgresql://postgres:postgres@localhost:5432/yggdress_test
+      PYTHONHASHSEED: "0"
+      YGGDRAS_FAKE_MODEL: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+      - name: Base code, PR migrations
+        run: |
+          git worktree add ../base "${{ github.event.pull_request.base.sha }}"
+          cp app/api/migrations/*.sql ../base/app/api/migrations/
+          cd ../base/app/api && uv sync --locked && uv run pytest -q -p no:cacheprovider --color=no -x
