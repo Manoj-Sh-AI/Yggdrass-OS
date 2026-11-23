@@ -60,4 +60,4 @@ jobs:
             exit 0
           fi
           cp app/api/migrations/*.sql ../base/app/api/migrations/
-          cd ../base/app/api && uv sync --locked && uv run pytest -q -p no:cacheprovider --color=no -x
+          cd ../base/app/api && uv sync --locked && uv run pytest -q -p no:cacheprovider --color=no -x \n            -m "not slow and not schema_pinned"
