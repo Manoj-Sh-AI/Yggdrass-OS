@@ -138,6 +138,8 @@ def isolated_database():
                     "GRANT UPDATE(sensitivity) ON app.note_refs TO {}",
                     "GRANT USAGE ON SCHEMA api TO {}",
                     "GRANT SELECT ON ALL TABLES IN SCHEMA api TO {}",
+                    "GRANT SELECT ON app.events,app.event_exclusions TO {}",
+                    "GRANT SELECT,INSERT,UPDATE ON app.event_cursors TO {}",
                 ):
                     connection.execute(sql.SQL(grants).format(sql.Identifier(role)))
                 connection.execute(
