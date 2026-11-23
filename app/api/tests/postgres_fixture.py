@@ -134,6 +134,7 @@ def isolated_database():
                     "GRANT SELECT,INSERT,UPDATE ON app.conductor_runs TO {}",
                     "GRANT SELECT,INSERT ON app.conductor_events TO {}",
                     "GRANT SELECT,INSERT,UPDATE ON app.conductor_policy TO {}",
+                    "GRANT SELECT ON app.links,app.link_verbs TO {}",
                 ):
                     connection.execute(sql.SQL(grants).format(sql.Identifier(role)))
                 connection.execute(

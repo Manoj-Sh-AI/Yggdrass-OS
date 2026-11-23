@@ -35,6 +35,7 @@ pythonpath = ["src", "."]
 markers = [
     "slow: longer than the gate budget; CI only (planning/agentic-engineering.md item 25)",
     "flaky: known nondeterministic; excluded from every gate until fixed (item 19)",
+    "schema_pinned: asserts the exact schema, so it changes with every additive migration; the migrations contract job (old code, new schema) skips it",
 ]
 
 [tool.ruff]
