@@ -10,12 +10,18 @@
 # decline on modified code) as a failing step. Never invent the keys.
 name: Mutation
 
+# Run on demand only until a spike makes mutmut 3.8 work with this suite: on PR #46 it
+# failed inside its own copy ('Function' object has no attribute '_nodeid'; the test
+# database was not migrated there). Not part of ci-gate either way.
 on:
-  pull_request:
-    paths: ['app/api/src/**']
+  workflow_dispatch:
+    inputs:
+      base:
+        description: "Base commit or branch to diff against"
+        default: "origin/main"
 
 concurrency:
-  group: mutation-${{ github.event.pull_request.number }}
+  group: mutation-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -49,7 +55,7 @@ jobs:
       - name: Changed modules
         id: changed
         env:
-          BASE: ${{ github.event.pull_request.base.sha }}
+          BASE: ${{ github.event.pull_request.base.sha || inputs.base }}
         run: |
           mods=$(git diff --name-only --diff-filter=AM "$BASE"...HEAD -- src/yggdress_app \
             | grep '\.py$' | sed -E 's#^app/api/src/##; s#\.py$##; s#/__init__$##; s#/#.#g' | tr '\n' ' ')
