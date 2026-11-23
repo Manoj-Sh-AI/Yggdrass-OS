@@ -167,20 +167,22 @@ def item_for(db, schedule) -> dict | None:
 
 
 def linked_slugs(db, item) -> list[str]:
-    queries = []
+    """Notes linked to the item, read through api.note_links (043): a sensitive or not yet
+    checked note has no slug there, so it is never briefed or read aloud."""
+    things = []
     if item["kind"] == "event":
-        queries.append(("event_note_links", "event_id", item["id"]))
+        things.append(("event", item["id"]))
     if item.get("task_id"):
-        queries.append(("task_note_links", "task_id", item["task_id"]))
+        things.append(("task", item["task_id"]))
     slugs = []
-    for table, column, identifier in queries:
+    for kind, identifier in things:
         for row in db.execute(
-            f"SELECT n.external_id FROM app.{table} l JOIN app.note_refs n ON n.id=l.note_ref_id "
-            f"WHERE l.{column}=%s AND n.source='brain' LIMIT 10",
-            (identifier,),
+            "SELECT slug FROM api.note_links WHERE thing_kind=%s AND thing_id=%s "
+            "AND slug IS NOT NULL ORDER BY slug LIMIT 10",
+            (kind, identifier),
         ).fetchall():
-            if row["external_id"] not in slugs:
-                slugs.append(row["external_id"])
+            if row["slug"] not in slugs:
+                slugs.append(row["slug"])
     return slugs
 
 

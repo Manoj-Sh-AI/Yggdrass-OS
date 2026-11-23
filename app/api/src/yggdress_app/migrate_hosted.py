@@ -129,6 +129,49 @@ def grant(url: str, owner: str, runtime: str) -> None:
             db.execute(sql.SQL(statement).format(sql.Identifier(runtime)))
 
 
+def ensure_api_schema(url: str, owner: str) -> None:
+    """The api schema (043), owned by the app owner. The owner has no database-wide CREATE
+    on a hosted database, so the admin connection creates it, as cloud_move did for app."""
+    with psycopg.connect(url, autocommit=True, connect_timeout=15) as db:
+        db.execute(
+            sql.SQL("CREATE SCHEMA IF NOT EXISTS api AUTHORIZATION {}").format(
+                sql.Identifier(owner)
+            )
+        )
+
+
+def backfill_sensitivity(url: str, notes_table: str = "brain.notes") -> dict:
+    """Copy each referenced note's sensitivity from the brain (admin can read it; the app
+    owner cannot). The brain marks a sensitive note 'high' (mobile_policy.sensitive).
+    Only rows still 'unknown' change, so a rerun is a no-op; a ref whose note is gone
+    stays 'unknown', which every view treats as restricted."""
+    schema, _, table = notes_table.partition(".")
+    with psycopg.connect(url, connect_timeout=15) as db:
+        has_column = db.execute(
+            "SELECT 1 FROM information_schema.columns WHERE table_schema='app' "
+            "AND table_name='note_refs' AND column_name='sensitivity'"
+        ).fetchone()
+        if not has_column:
+            return {"skipped": "note_refs has no sensitivity column yet"}
+        if db.execute("SELECT to_regclass(%s)", (notes_table,)).fetchone()[0] is None:
+            return {"skipped": f"{notes_table} not found"}
+        changed = db.execute(
+            sql.SQL(
+                "UPDATE app.note_refs r SET sensitivity = CASE WHEN "
+                "lower(coalesce(n.sensitivity,''))='high' THEN 'restricted' ELSE 'normal' END "
+                "FROM {}.{} n WHERE n.slug = r.external_id AND r.sensitivity = 'unknown' "
+                "RETURNING r.sensitivity"
+            ).format(sql.Identifier(schema), sql.Identifier(table))
+        ).fetchall()
+        totals = dict(
+            db.execute("SELECT sensitivity, count(*) FROM app.note_refs GROUP BY 1").fetchall()
+        )
+    return {
+        "set_now": {k: sum(1 for (v,) in changed if v == k) for k in ("normal", "restricted")},
+        "totals": {k: totals.get(k, 0) for k in ("normal", "restricted", "unknown")},
+    }
+
+
 def pg_binaries() -> Path:
     found = shutil.which("pg_dump")
     folder = Path(found).parent if found else Path("C:/Program Files/PostgreSQL/18/bin")
@@ -160,6 +203,7 @@ def apply(url: str, backups: Path, runtime: str | None = None, binaries: Path | 
         result["backup"] = target.name
         with psycopg.connect(url, connect_timeout=15) as db:
             before = row_counts(db)
+        ensure_api_schema(url, before_plan["owner_role"])
         Database(url).migrate(role=before_plan["owner_role"])
         with psycopg.connect(url, connect_timeout=15) as db:
             after = row_counts(db)
@@ -168,6 +212,7 @@ def apply(url: str, backups: Path, runtime: str | None = None, binaries: Path | 
             raise SystemExit(f"Rows were lost in {', '.join(lost)}; restore {target.name}.")
         result["applied"] = before_plan["pending"]
     grant(url, before_plan["owner_role"], before_plan["runtime_role"])  # also repairs a rerun
+    result["sensitivity_backfill"] = backfill_sensitivity(url)
     result["still_pending"] = plan(url, before_plan["runtime_role"])["pending"]
     return result  # fmt: skip
 
