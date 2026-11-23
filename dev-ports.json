@@ -13,6 +13,7 @@
   "test_only": {
     "8080": "invented API port in test_hosted.py",
     "8912": "invented API port in mobile-proxy.test.ts",
-    "9999": "invented API port in graph-route.test.ts"
+    "9999": "invented API port in graph-route.test.ts",
+    "4321": "invented unlisted port in test_ci_tools.py (proves the check fails)"
   }
 }

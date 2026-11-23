@@ -588,7 +588,8 @@ def serve(home, hosted=False):
 
         application.state.routine_lia = agent_config["lia"] if agent_config else None
         routine_worker = RoutineScheduler(
-            application.state.database, application.state.calls,
+            application.state.database,
+            application.state.calls,
             application.state.routine_lia,
         )
         if agent_config:
@@ -857,7 +858,9 @@ def main():
             # Scheduled nightly when nothing else runs here (the app is hosted).
             config = json.loads((args.home / "runtime.json").read_text(encoding="utf-8"))
             made = nightly_backup(args.home, config)
-            print(json.dumps({"backup": made.name if made else "already done today or before 03:00"}))
+            print(
+                json.dumps({"backup": made.name if made else "already done today or before 03:00"})
+            )
         else:
             state = json.loads((args.home / "service.json").read_text())
             request = Request(

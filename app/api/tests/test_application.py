@@ -393,7 +393,8 @@ def test_migrations_are_application_only_and_runtime_cannot_create_tables(postgr
         db.execute("CREATE TABLE app.forbidden(id integer)")
     source = Path(__file__).parents[1] / "src" / "yggdress_app"
     assert all(
-        "from yggdras" not in p.read_text(encoding="utf-8") and "import yggdras" not in p.read_text(encoding="utf-8")
+        "from yggdras" not in p.read_text(encoding="utf-8")
+        and "import yggdras" not in p.read_text(encoding="utf-8")
         for p in source.glob("*.py")
     )
 

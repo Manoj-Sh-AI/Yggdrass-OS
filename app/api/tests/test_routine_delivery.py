@@ -136,9 +136,14 @@ def test_dead_subscription_and_expiry(channel):
             "UPDATE app.web_push_deliveries SET expires_at=now() WHERE id=%s", (push["tag"],)
         )
     # The short-lived notification expires while the five-minute response window remains open.
-    assert c.post(BASE + "/respond", json={"token": push["token"], "action": "not_yet"}).status_code == 200
+    assert (
+        c.post(BASE + "/respond", json={"token": push["token"], "action": "not_yet"}).status_code
+        == 200
+    )
     with channel.database.connect() as db:
-        db.execute("UPDATE app.web_push_tokens SET expires_at=now() WHERE delivery=%s", (push["tag"],))
+        db.execute(
+            "UPDATE app.web_push_tokens SET expires_at=now() WHERE delivery=%s", (push["tag"],)
+        )
     assert (
         c.post(BASE + "/respond", json={"token": push["token"], "action": "not_yet"}).status_code
         == 410

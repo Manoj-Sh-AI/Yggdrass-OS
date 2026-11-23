@@ -218,10 +218,12 @@ def delivery_router(database, session, fingerprint, ack, *, calls=None):
         with database.connect() as db:
             # A browser re-enrolling after sign-in or a key rotation cannot inherit old action tokens.
             db.execute("SELECT pg_advisory_xact_lock(hashtextextended(%s,4317))", (body.endpoint,))
-            db.execute("""DELETE FROM app.web_push_subscriptions s
+            db.execute(
+                """DELETE FROM app.web_push_subscriptions s
                        WHERE s.endpoint=%s AND (s.keys<>%s OR s.session_hash<>(
                            SELECT token_hash FROM app.sessions WHERE csrf=%s))""",
-                       (body.endpoint, Jsonb(body.keys.model_dump()), auth["csrf"]))
+                (body.endpoint, Jsonb(body.keys.model_dump()), auth["csrf"]),
+            )
             db.execute(
                 """
                 INSERT INTO app.web_push_subscriptions(id,endpoint,keys,session_hash)
