@@ -1,6 +1,6 @@
 import pytest
 
-from scripts.local_preview import preview_password, preview_restore_list
+from scripts.local_preview import clear_seeded_rows, preview_password, preview_restore_list
 
 
 def test_preview_restore_retains_business_records_without_replaying_login_and_migrations():
@@ -71,6 +71,7 @@ def test_data_restore_preserves_connections_and_journal_without_reemitting(
     )
     assert attached.status_code == 200
     with Database(settings.database_url).connect() as db:
+        db.execute("UPDATE app.daily_routine_settings SET wake_time='06:45' WHERE id=1")
         before = db.execute(
             "SELECT event_id,entity_id,detail FROM app.workspace_changes ORDER BY sequence"
         ).fetchall()
@@ -97,6 +98,10 @@ def test_data_restore_preserves_connections_and_journal_without_reemitting(
     restore_list = tmp_path / "restore.list"
     restore_list.write_text(preview_restore_list(listing), encoding="utf-8")
     with isolated_database() as restored:
+        # The fresh database already has the migration-seeded settings row; the preview
+        # script clears it so the backup's own row (saved settings) is restored instead.
+        with Database(restored["admin"]).connect() as db:
+            clear_seeded_rows(db, listing)
         subprocess.run(
             [
                 str(pg_restore),
@@ -118,8 +123,28 @@ def test_data_restore_preserves_connections_and_journal_without_reemitting(
                 "SELECT event_id,entity_id,detail FROM app.workspace_changes ORDER BY sequence"
             ).fetchall()
             assert after == before
+            saved = db.execute(
+                "SELECT wake_time::text AS t FROM app.daily_routine_settings"
+            ).fetchall()
+            assert [r["t"] for r in saved] == ["06:45:00"]
             assert db.execute("SELECT count(*) AS n FROM app.task_note_links").fetchone()["n"] == 1
             assert (
                 db.execute("SELECT objective FROM app.tasks").fetchone()["objective"]
                 == "Preserve original history"
             )
+
+
+def test_only_seeded_rows_that_the_backup_carries_are_cleared():
+    class Recorder:
+        def __init__(self):
+            self.sql = []
+
+        def execute(self, sql):
+            self.sql.append(sql)
+
+    with_settings = Recorder()
+    clear_seeded_rows(with_settings, "1; 0 0 TABLE DATA app daily_routine_settings owner\n")
+    assert with_settings.sql == ["DELETE FROM app.daily_routine_settings"]
+    without = Recorder()
+    clear_seeded_rows(without, "1; 0 0 TABLE DATA app tasks owner\n")
+    assert without.sql == []
