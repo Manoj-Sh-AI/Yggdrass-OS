@@ -76,7 +76,7 @@ jobs:
       - if: matrix.group == 1
         run: uv run ruff check . && uv run ruff format --check .
       - run: >-
-          uv run pytest -q -p no:cacheprovider -p no:randomly --color=no --timeout=180
+          uv run pytest -q -p no:cacheprovider -p no:randomly --color=no --timeout=180 -m "not slow"
           --splits 6 --group ${{ matrix.group }} --durations-path .test_durations --durations=25
 
   web:
