@@ -30,13 +30,24 @@ jobs:
           BASE: ${{ github.event.pull_request.base.sha }}
         run: git diff --numstat "$BASE"...HEAD | python3 tools/ci/pr_tier.py
       - name: Label the PR with its tier
+        # Labelling is a convenience; the gate below decides. A missing label never fails it.
         env:
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.pull_request.number }}
           TIER: ${{ steps.classify.outputs.tier }}
         run: |
+          existing=$(gh label list --limit 200 --json name --jq '.[].name')
+          current=$(gh pr view "$PR" --json labels --jq '.labels[].name')
           for t in tier1 tier2 tier3; do
-            if [ "$t" = "$TIER" ]; then gh pr edit "$PR" --add-label "$t"; else gh pr edit "$PR" --remove-label "$t" 2>/dev/null; fi
+            if ! grep -qx "$t" <<< "$existing"; then
+              echo "::warning::Label $t does not exist; create tier1, tier2 and tier3 once."
+              continue
+            fi
+            if [ "$t" = "$TIER" ]; then
+              grep -qx "$t" <<< "$current" || gh pr edit "$PR" --add-label "$t"
+            elif grep -qx "$t" <<< "$current"; then
+              gh pr edit "$PR" --remove-label "$t"
+            fi
           done
       - name: Tier 3 waits for a human
         if: steps.classify.outputs.tier == 'tier3' && !contains(github.event.pull_request.labels.*.name, 'tier3-reviewed')

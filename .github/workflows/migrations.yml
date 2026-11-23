@@ -55,5 +55,9 @@ jobs:
       - name: Base code, PR migrations
         run: |
           git worktree add ../base "${{ github.event.pull_request.base.sha }}"
+          if [ ! -d ../base/app/api/migrations ]; then
+            echo "::notice::The base branch has no app/api yet: no deployed code to check the migrations against."
+            exit 0
+          fi
           cp app/api/migrations/*.sql ../base/app/api/migrations/
           cd ../base/app/api && uv sync --locked && uv run pytest -q -p no:cacheprovider --color=no -x
