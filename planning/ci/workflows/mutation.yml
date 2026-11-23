@@ -57,7 +57,7 @@ jobs:
       - name: Mutate the changed modules
         if: steps.changed.outputs.modules != ''
         run: |
-          printf '\n[tool.mutmut]\nsource_paths = ["src/"]\npytest_add_cli_args_test_selection = ["tests/"]\n' >> pyproject.toml
+          printf '\n[tool.mutmut]\nsource_paths = ["src/"]\npytest_add_cli_args_test_selection = ["tests/"]\nalso_copy = ["scripts/"]\n' >> pyproject.toml
           for m in ${{ steps.changed.outputs.modules }}; do uv run --with mutmut==3.8.0 mutmut run "$m*"; done
           uv run --with mutmut==3.8.0 mutmut export-cicd-stats
           # print every JSON file the export wrote, so the first run shows the real shape

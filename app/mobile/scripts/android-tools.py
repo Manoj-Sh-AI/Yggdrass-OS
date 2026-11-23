@@ -1,7 +1,6 @@
 """Project-local Android tools. No machine-wide installation or private credentials."""
 
 import hashlib
-import json
 import os
 import secrets
 import shutil
@@ -241,7 +240,8 @@ if (configured) {
     def address = new URI(configured)
     ['http', 'https'].each { protocol ->
         System.setProperty(protocol + '.proxyHost', address.host)
-        System.setProperty(protocol + '.proxyPort', String.valueOf(address.port > 0 ? address.port : 80))
+        System.setProperty(protocol + '.proxyPort',
+            String.valueOf(address.port > 0 ? address.port : 80))
     }
     System.setProperty('http.nonProxyHosts', 'localhost|127.*|[::1]')
 }
@@ -249,7 +249,8 @@ gradle.beforeProject { project ->
     ['com.android.application', 'com.android.library'].each { plugin ->
         project.plugins.withId(plugin) {
             def android = project.extensions.findByName('android')
-            android.externalNativeBuild.cmake.buildStagingDirectory = new File(System.getenv('YGGDRAS_NATIVE_CACHE'), project.name)
+            android.externalNativeBuild.cmake.buildStagingDirectory = new File(
+                System.getenv('YGGDRAS_NATIVE_CACHE'), project.name)
             android.defaultConfig.externalNativeBuild.cmake.arguments.add('-DCMAKE_OBJECT_PATH_MAX=240')
         }
     }
