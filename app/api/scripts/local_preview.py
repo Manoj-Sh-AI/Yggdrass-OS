@@ -37,6 +37,19 @@ def preview_restore_list(listing):
     )
 
 
+# Rows a migration seeds into every new database that a data backup also carries. The
+# backup's copy wins (it holds the owner's saved settings), so the seeded row is removed
+# before the restore; otherwise the restore stops on a duplicate key.
+SEEDED_SINGLETONS = ("daily_routine_settings",)
+
+
+def clear_seeded_rows(db, listing):
+    """Delete the migration-seeded rows whose data the backup listing will restore."""
+    for table in SEEDED_SINGLETONS:
+        if re.search(rf"\bTABLE DATA app {table}\b", listing):
+            db.execute(f"DELETE FROM app.{table}")
+
+
 def preview_password():
     """Optionally keep the owner's existing local-preview password across a refresh."""
     value = os.environ.get("YGGDRESS_PREVIEW_PASSWORD")
@@ -98,6 +111,8 @@ def main():
             ) as file:
                 file.write(preview_restore_list(listing))
                 restore_list = Path(file.name)
+            with Database(database["admin"]).connect() as db:
+                clear_seeded_rows(db, listing)
             try:
                 subprocess.run(
                     [
