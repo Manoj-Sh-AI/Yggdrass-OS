@@ -230,3 +230,36 @@ model's explanation labelled as its note; "This cannot be undone" on irreversibl
   blocks. Copying them later is mechanical if wanted.
 - Sources/citations part: the conductor does not emit sources yet.
 - The phone keeps the old chat path.
+
+## Phase B, continued (2026-11-22)
+
+### Motion (A5 applied) [derived]
+- `motion-xshort … motion-xlong` utilities in tokens.css: one duration token plus
+  `--ease-practical`, nothing written by hand. Chevrons, buttons use `motion-short`; the
+  dialog `motion-medium` (exactly its old 200 ms).
+- The sheet had Tailwind's 300 ms close / 500 ms open, which are not token values. They
+  became `motion-long` (250 ms) / `motion-xlong` (400 ms), the nearest tokens, keeping
+  close faster than open. [derived]
+- Reduced motion: the existing global rule in globals.css (`prefers-reduced-motion:
+  reduce` → no transitions or animations) already covers every component; tested in
+  tests/motion.test.ts rather than duplicated per component.
+
+### Message branching (`< 2/3 >`) [own design]
+- "Try again" under the last finished answer starts a sibling run for the same request.
+  The picker is chevron, `n/m`, chevron, with the token ghost button. The newest
+  answer shows by default and a new one is shown while it streams; the reader's choice
+  is otherwise kept. Ends are disabled, not hidden, so the control never jumps.
+- Only answers are branched. Editing a sent message is not built (no source requires it).
+
+### Diff and terminal cards [own design]
+- A tool output `{diff}` renders as a diff: added lines on `success-surface`, removed on
+  `danger-surface`, hunks in `info`, with +n / -n counts. `{terminal, exit_code}`
+  renders in xterm.js 6.0.0 (read-only, lazy-loaded). Its theme is read from elements
+  styled with token utilities, so it follows the tokens with no colour written. Without a
+  canvas it falls back to plain text with ANSI codes removed.
+
+### Component gallery
+- `/chat/components` shows every component with invented data, for screenshots
+  (`scripts/shoot-chat-components.cjs`: desktop + phone, light + dark, and it fails on a
+  page error or horizontal scroll). It returns 404 in production unless
+  YGGDRAS_GALLERY=1.

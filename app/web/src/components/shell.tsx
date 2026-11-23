@@ -1,4 +1,6 @@
 "use client";
+import { PageContextProvider } from "@/features/side-chat/page-context";
+import { SideChat, SideChatToggle } from "@/features/side-chat/side-chat";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
@@ -112,102 +114,110 @@ export function AppShell({ children }: { children: ReactNode }) {
   const timezone = weather?.timezone || state.preferences.place.timezone;
   const fresh = weather && now.getTime() - weather.fetchedAt <= 7200000;
   return (
-    <div
-      className={`app-frame signal-workspace ${state.preferences.reducedMotion ? "reduce-motion" : ""}`}
-    >
-      <SceneBackground />
-      <a href="#main" className="skip-link">
-        Skip to content
-      </a>
-      <aside className="sidebar">
-        <Sidebar close={() => setMobile(false)} />
-      </aside>
-      <Modal open={mobile} onOpenChange={setMobile} title="Navigation">
-        <div className="mobile-nav">
+    <PageContextProvider>
+      <div
+        className={`app-frame signal-workspace ${state.preferences.reducedMotion ? "reduce-motion" : ""}`}
+      >
+        <SceneBackground />
+        <a href="#main" className="skip-link">
+          Skip to content
+        </a>
+        <aside className="sidebar">
           <Sidebar close={() => setMobile(false)} />
-        </div>
-      </Modal>
-      <div className="workspace">
-        <header className="topbar">
-          <button
-            className="icon-button mobile-toggle"
-            aria-label="Open navigation"
-            onClick={() => setMobile(true)}
-          >
-            <Icon name="Menu" />
-          </button>
-          <WorkspaceSearch />
-          <div className="topbar-right">
-            <Link
-              href="/settings"
-              className="weather"
-              aria-label="Weather and scenery settings"
-              title={fresh ? weatherLabel(weather.code) : status}
-            >
-              <Icon
-                name={
-                  fresh && weather.code >= 51
-                    ? "CloudRain"
-                    : (fresh ? weather.isDay : scene.phase !== "night")
-                      ? "Sun"
-                      : "Moon"
-                }
-                size={19}
-              />
-              <span>
-                <strong>
-                  {new Intl.DateTimeFormat("en", {
-                    timeZone: timezone,
-                    weekday: "short",
-                    month: "short",
-                    day: "numeric",
-                  }).format(now)}
-                </strong>
-                <small>
-                  {state.preferences.place.name}
-                  {fresh ? `, ${Math.round(weather.temperature)}°C` : ""}
-                </small>
-              </span>
-            </Link>
-            <button
-              className="avatar account-button"
-              aria-label="Open account menu"
-              onClick={() => setAccount(true)}
-            >
-              {state.preferences.name.slice(0, 1)}
-            </button>
-            <WorkflowReview />
-            <IncomingCall />
+        </aside>
+        <Modal open={mobile} onOpenChange={setMobile} title="Navigation">
+          <div className="mobile-nav">
+            <Sidebar close={() => setMobile(false)} />
           </div>
-        </header>
-        <main id="main" tabIndex={-1}>
-          {path === "/settings" && error && (
-            <div className="error-banner" role="alert">
-              {error}
+        </Modal>
+        <div className="workspace">
+          <header className="topbar">
+            <button
+              className="icon-button mobile-toggle"
+              aria-label="Open navigation"
+              onClick={() => setMobile(true)}
+            >
+              <Icon name="Menu" />
+            </button>
+            <WorkspaceSearch />
+            <div className="topbar-right">
+              <Link
+                href="/settings"
+                className="weather"
+                aria-label="Weather and scenery settings"
+                title={fresh ? weatherLabel(weather.code) : status}
+              >
+                <Icon
+                  name={
+                    fresh && weather.code >= 51
+                      ? "CloudRain"
+                      : (fresh ? weather.isDay : scene.phase !== "night")
+                        ? "Sun"
+                        : "Moon"
+                  }
+                  size={19}
+                />
+                <span>
+                  <strong>
+                    {new Intl.DateTimeFormat("en", {
+                      timeZone: timezone,
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                    }).format(now)}
+                  </strong>
+                  <small>
+                    {state.preferences.place.name}
+                    {fresh ? `, ${Math.round(weather.temperature)}°C` : ""}
+                  </small>
+                </span>
+              </Link>
+              <button
+                className="avatar account-button"
+                aria-label="Open account menu"
+                onClick={() => setAccount(true)}
+              >
+                {state.preferences.name.slice(0, 1)}
+              </button>
+              <SideChatToggle />
+              <WorkflowReview />
+              <IncomingCall />
             </div>
-          )}
-          {children}
-        </main>
-      </div>
-      <PlanningTaskSheet />
-      <Modal open={taskCapture} onOpenChange={setTaskCapture} title="New task">
-        <TaskForm onSaved={() => setTaskCapture(false)} />
-      </Modal>
-      <Modal open={account} onOpenChange={setAccount} title="Account">
-        <div className="account-card">
-          <h3>{state.preferences.name}</h3>
-          <button className="button" onClick={() => void logout()}>
-            Sign out
-          </button>
-          <Link
-            className="button"
-            href="/settings"
-            onClick={() => setAccount(false)}
-          >
-            Settings
-          </Link>
+          </header>
+          <main id="main" tabIndex={-1}>
+            {path === "/settings" && error && (
+              <div className="error-banner" role="alert">
+                {error}
+              </div>
+            )}
+            {children}
+          </main>
         </div>
-      </Modal>
-    </div>
+        <SideChat />
+        <PlanningTaskSheet />
+        <Modal
+          open={taskCapture}
+          onOpenChange={setTaskCapture}
+          title="New task"
+        >
+          <TaskForm onSaved={() => setTaskCapture(false)} />
+        </Modal>
+        <Modal open={account} onOpenChange={setAccount} title="Account">
+          <div className="account-card">
+            <h3>{state.preferences.name}</h3>
+            <button className="button" onClick={() => void logout()}>
+              Sign out
+            </button>
+            <Link
+              className="button"
+              href="/settings"
+              onClick={() => setAccount(false)}
+            >
+              Settings
+            </Link>
+          </div>
+        </Modal>
+      </div>
+    </PageContextProvider>
   );
 }

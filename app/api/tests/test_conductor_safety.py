@@ -229,3 +229,21 @@ def test_answer_approval_command_streams_the_rest_and_policy_settings(run_with_a
     assert put.status_code == 200
     assert client.get("/v1/assistant/policy").json()["denyRules"] == "change_calendar:*.remove"
     assert client.put("/v1/assistant/policy", json={"denyRules": "x" * 5000}).status_code == 422
+
+
+def test_shutdown_never_waits_out_an_open_approval_card(setup, postgres):
+    """Found by the timed full suite (2026-11-22): a run the conductor no longer tracks,
+    waiting on a card, kept shutdown() blocked for the 30-minute approval timeout."""
+    database = Database(postgres["runtime"])
+    models = FakeModels({"router": [ORCHESTRATE], "orchestrator": [one_step_plan(), "Answer."],
+                         "worker": [acting_worker] * 6})  # fmt: skip
+    toolbox = StaticToolbox([spec("change_task", reversible=False, run=lambda a: {"id": "t1"})])
+    conductor = Conductor(RunLog(database), models, ChatHistory(database), toolbox=toolbox,
+                          policy=policy(models), owner="test")  # fmt: skip
+    run = conductor.start("Invented: add a task")
+    until(conductor, run.run_id, lambda s: s.status == "waiting")
+    with conductor._lock:
+        conductor._cancels.pop(run.run_id)
+    started = time.monotonic()
+    conductor.shutdown()
+    assert time.monotonic() - started < 15

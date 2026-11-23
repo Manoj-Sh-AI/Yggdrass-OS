@@ -272,6 +272,7 @@ def test_saved_note_runs_lia_then_specialists_through_real_temporal(signed_in):
     asyncio.run(scenario())
 
 
+@pytest.mark.slow  # > 40 s (timed 2026-11-22); CI only, not gates
 def test_full_local_server_restart_preserves_waiting_approval(signed_in, tmp_path):
     client, app, runner, model, _ = fixture(
         signed_in, tool("propose_change", proposal()), text("Ready.")

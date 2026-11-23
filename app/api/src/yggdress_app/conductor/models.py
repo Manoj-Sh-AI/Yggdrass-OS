@@ -272,7 +272,9 @@ class FakeModels:
 
     def structured(self, *, role, model, system, messages, schema, max_tokens=4000):
         if not self.replies.get(role) and role in self.DEFAULTS:
-            self.calls.append({"role": role, "model": model, "messages": messages})
+            self.calls.append(
+                {"role": role, "model": model, "system": system, "messages": messages}
+            )
             value = schema.model_validate(self.DEFAULTS[role])
             return value, usage(role, model, 10, 5)
         reply = self._next(role, model=model, system=system, messages=messages, schema=schema)

@@ -7,7 +7,7 @@
  * compensated in the same frame so the reader's place is kept.
  */
 import { MessagePrimitive, ThreadPrimitive, useAui, useAuiState } from "@assistant-ui/react";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Composer } from "./composer/composer";
 import { AnswerText, BranchesPart, ReasoningBlock, RunPart, TryAgain } from "./parts/parts";
 
@@ -63,9 +63,16 @@ function AssistantTurn() {
   );
 }
 
-type Props = { model: string; onModel: (id: string) => void };
+type Props = {
+  model: string;
+  onModel: (id: string) => void;
+  /** Shown in the composer's chip row: what the agent can see (side chat). */
+  contextChip?: ReactNode;
+  /** The side panel has no room for the starter pills. */
+  compact?: boolean;
+};
 
-export function Thread({ model, onModel }: Props) {
+export function Thread({ model, onModel, contextChip, compact = false }: Props) {
   const aui = useAui();
   const empty = useAuiState((s) => s.thread.messages.length === 0);
   const lastRequest = useAuiState((s) => {
@@ -111,7 +118,7 @@ export function Thread({ model, onModel }: Props) {
         {empty ? (
           <div className="flex flex-col items-center gap-4 text-center">
             <p className="text-lg text-text-1">What should we work on?</p>
-            <div className="flex flex-wrap justify-center gap-2">
+            <div className={`flex flex-wrap justify-center gap-2 ${compact ? "hidden" : ""}`}>
               {STARTERS.map((starter) => (
                 <button
                   key={starter}
@@ -137,6 +144,7 @@ export function Thread({ model, onModel }: Props) {
           lastRequest={lastRequest}
           model={model}
           onModel={onModel}
+          contextChip={contextChip}
           placeholder={empty ? "Ask Yggdras, or give it a job" : "Reply, or give it the next job"}
         />
       </div>

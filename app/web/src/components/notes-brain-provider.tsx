@@ -1,4 +1,5 @@
 "use client";
+import { areaLabel } from "@/lib/brain-adapter";
 import {
   createContext,
   useCallback,
@@ -304,7 +305,7 @@ export function NotesBrainProvider({
     () =>
       [...new Set(notes.map((n) => n.shelfId))].sort().map((id) => ({
         id,
-        name: id.replace(/^\d+-/, "").replaceAll("-", " "),
+        name: areaLabel(id),
         isArea: true,
         noteIds: notes.filter((n) => n.shelfId === id).map((n) => n.id),
       })),

@@ -33,11 +33,27 @@ jobs:
             mobile: ['app/mobile/**', '.github/workflows/**']
             core: ['app/src/**', 'app/tests/**', 'app/pyproject.toml', 'app/uv.lock', '.github/workflows/**']
 
+  checks:
+    # Repo-wide checks scripted in tools/ci and tested in app/api/tests/test_ci_tools.py.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - run: python3 tools/ci/check_decisions.py "${{ github.event.pull_request.base.sha }}"
+      - run: python3 tools/ci/check_ports.py
+
   api:
+    # Item 26: six shards balanced by the committed app/api/.test_durations (pytest-split).
+    # Keep the job name stable: a skipped matrix leg still reports.
     needs: changes
     if: needs.changes.outputs.api == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 15
+    strategy:
+      fail-fast: true
+      matrix:
+        group: [1, 2, 3, 4, 5, 6]
     services:
       postgres:
         image: postgres:16
@@ -57,9 +73,11 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
       - run: uv sync --locked
-      - run: uv run ruff check .
-      - run: uv run ruff format --check .
-      - run: uv run pytest -q -p no:cacheprovider --color=no --durations=25
+      - if: matrix.group == 1
+        run: uv run ruff check . && uv run ruff format --check .
+      - run: >-
+          uv run pytest -q -p no:cacheprovider -p no:randomly --color=no --timeout=180
+          --splits 6 --group ${{ matrix.group }} --durations-path .test_durations --durations=25
 
   web:
     needs: changes
@@ -112,7 +130,7 @@ jobs:
       - run: uv run pytest -q
 
   ci-gate:
-    needs: [changes, api, web, mobile, core]
+    needs: [changes, checks, api, web, mobile, core]
     if: always()
     runs-on: ubuntu-latest
     steps:

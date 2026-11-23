@@ -38,6 +38,7 @@ from .models import (
     TextDelta,
     ToolUse,
 )
+from .page import PageContext, describe
 from .planning import PLANNER_SYSTEM, ROUTER_SYSTEM, PlanDraft, RouteDecision, to_plan
 from .policy import Decision, Policy, PolicyStore
 from .recorder import Recorder
@@ -90,9 +91,13 @@ class Context:
     waiting: int = 0  # approval cards currently open (run status is 'waiting' while > 0)
     tools: list[ToolCall] = field(default_factory=list)
     extra: dict[str, Any] = field(default_factory=dict)
+    # The conductor shutting down stops every run it executes, including one no longer
+    # in its cancel table (found by the timed full suite: shutdown waited 30 minutes on
+    # an approval card).
+    stopping: threading.Event = field(default_factory=threading.Event)
 
     def check_cancelled(self) -> None:
-        if self.cancel.is_set():
+        if self.cancel.is_set() or self.stopping.is_set():
             raise Cancelled
 
 
@@ -126,7 +131,8 @@ class Conductor:
 
     # ---- public API ------------------------------------------------------------------
     def start(self, request: str, conversation_id: str | None = None, model: str = "",
-              images: list[dict[str, Any]] | None = None) -> RunState:  # fmt: skip
+              images: list[dict[str, Any]] | None = None,
+              page: PageContext | None = None) -> RunState:  # fmt: skip
         model = model if model in CHOOSABLE else CHAT_DEFAULT
         conversation = self.history.ensure_conversation(conversation_id, request, model)
         context_turns = self.history.recent(conversation)
@@ -139,7 +145,8 @@ class Conductor:
         user_message = self.history.save_user(conversation, request, model)
         self.log.append(state.run_id, [set_(["user_message"], user_message)])
         return self._launch(state, conversation, request, model,
-                            with_request(context_turns, request, images or []), user_message)  # fmt: skip
+                            with_request(context_turns, request, images or []), user_message,
+                            page=page)  # fmt: skip
 
     def branch(self, run_id: str, model: str = "") -> RunState:
         """ "Try again": another answer to the same request, as a sibling of `run_id`'s
@@ -167,7 +174,8 @@ class Conductor:
                             version=len(siblings) + 1)  # fmt: skip
 
     def _launch(self, state: RunState, conversation: str, request: str, model: str,
-                history: list[dict[str, Any]], user_message: str, version: int = 1) -> RunState:  # fmt: skip
+                history: list[dict[str, Any]], user_message: str, version: int = 1,
+                page: PageContext | None = None) -> RunState:  # fmt: skip
         cancel = threading.Event()
         with self._lock:
             self._cancels[state.run_id] = cancel
@@ -186,6 +194,8 @@ class Conductor:
             cancel=cancel,
             user_message_id=user_message,
             version=version,
+            stopping=self._stopping,
+            extra={"page_note": describe(page)} if page else {},
         )
         self._pool.submit(self._execute, context)
         return state
@@ -252,7 +262,7 @@ class Conductor:
 
     def run(self, ctx: Context) -> None:
         if self.route(ctx) == "answer":
-            self.answer(ctx, system=SYSTEM, messages=ctx.history)
+            self.answer(ctx, system=with_page(ctx, SYSTEM), messages=ctx.history)
             return
         ctx.recorder.set(["mode"], "planning")
         plan = self.plan(ctx)
@@ -260,7 +270,9 @@ class Conductor:
         plan = self.execute(ctx, plan)
         # The last history turn is the (possibly merged) request; compose_turn restates it.
         self.answer(
-            ctx, system=COMPOSE_SYSTEM, messages=[*ctx.history[:-1], compose_turn(ctx, plan)]
+            ctx,
+            system=with_page(ctx, COMPOSE_SYSTEM),
+            messages=[*ctx.history[:-1], compose_turn(ctx, plan)],
         )
 
     # ---- deciding and planning -------------------------------------------------------
@@ -269,7 +281,7 @@ class Conductor:
         decision, usage = self.models.structured(
             role="router",
             model=ROLE_DEFAULTS["router"],
-            system=ROUTER_SYSTEM,
+            system=with_page(ctx, ROUTER_SYSTEM),
             messages=recent_turns(ctx.history, 6),
             schema=RouteDecision,
             max_tokens=300,
@@ -282,7 +294,7 @@ class Conductor:
         draft, usage = self.models.structured(
             role="orchestrator",
             model=ctx.model,
-            system=PLANNER_SYSTEM,
+            system=with_page(ctx, PLANNER_SYSTEM),
             messages=ctx.history,
             schema=PlanDraft,
         )
@@ -630,6 +642,12 @@ def intent(spec, arguments: dict[str, Any], why: str) -> str:
     note = str(arguments.get("explanation") or "").strip()
     note = f" Model's note: {note[:140]}." if note else ""
     return f"{head}{target}{fields}.{note} ({why})"[:500]
+
+
+def with_page(ctx: Context, base: str) -> str:
+    """The system prompt plus what Manoj is looking at (side chat, page.py), if sent."""
+    note = ctx.extra.get("page_note")
+    return f"{base}\n\n{note}" if note else base
 
 
 def with_request(turns: list[dict[str, Any]], request: str,

@@ -77,6 +77,7 @@ def brain_source(postgres):
             admin.execute(sql.SQL("DROP DATABASE {} WITH (FORCE)").format(sql.Identifier(name)))
 
 
+@pytest.mark.slow  # > 40 s (timed 2026-11-22); CI only, not gates
 def test_copy_preserves_data_definitions_roles_and_future_migration_boundaries(
     postgres, brain_source, tmp_path, setup, monkeypatch
 ):

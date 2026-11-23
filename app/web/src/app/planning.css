@@ -615,20 +615,20 @@
   flex-direction: column;
 }
 .planning-hour-labels span {
-  height: 56px;
+  height: var(--hour-h, 56px);
   font-size: 9px;
   color: #9dafc8;
   padding-top: 3px;
   font-variant-numeric: tabular-nums;
 }
 .planning-day-column {
-  height: 1344px;
+  height: calc(var(--hour-h, 56px) * 24);
   position: relative;
   border-left: 1px solid #a7c0df24;
   min-width: 0;
 }
 .planning-time-slot {
-  height: 28px;
+  height: calc(var(--hour-h, 56px) / 2);
   width: 100%;
   display: block;
   border-bottom: 1px solid #9ab4db10;
@@ -644,7 +644,7 @@
   position: absolute;
   left: 3px;
   right: 3px;
-  min-height: 30px;
+  min-height: 20px; /* [proposal] a 15-minute block never collapses below a row */
   border: 1px solid #90b6ef47;
   border-left: 3px solid #81aaf0;
   border-radius: 6px;
@@ -931,4 +931,37 @@
 }
 .planning-time-item {
   z-index: 2;
+}
+
+/* Phase C (2026-11-22): block content by height [proposal], tasks by type [derived]. */
+.planning-time-item[data-mode="one-line"] .planning-time-content > span,
+.planning-time-item[data-mode="compact"] .planning-time-content > span,
+.planning-time-item[data-mode="compact"] .planning-time-content small {
+  display: none;
+}
+.planning-time-item[data-mode="one-line"]:hover .planning-time-content > span {
+  display: inline;
+}
+.planning-time-item[data-mode="compact"] .planning-time-content {
+  padding-block: 1px;
+}
+/* A task is a commitment to do, not to be somewhere: no fill, the left rule only, a
+   checkbox; done = filled box + strike-through + reduced opacity (three cues). */
+.calendar-surface .planning-time-item[data-type="task"],
+.planning-time-item[data-type="task"] {
+  background: transparent;
+  box-shadow: none;
+}
+.planning-time-item[data-type="task"] .planning-time-content strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.planning-time-item.done {
+  opacity: 0.6;
+}
+/* More than three overlaps cascade; the one under the pointer comes to the front. */
+.planning-time-item.cascade:hover,
+.planning-time-item.cascade:focus-within {
+  z-index: 5;
 }

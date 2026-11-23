@@ -9,3 +9,4 @@ export * from "./dialog";
 export * from "./separator";
 export * from "./badge";
 export * from "./popover";
+export * from "./list-row";

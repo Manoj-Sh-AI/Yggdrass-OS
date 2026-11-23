@@ -30,6 +30,22 @@ import { planningTabsKeyDown } from "@/lib/planning-accessibility";
 import { LinkedNoteContext } from "./linked-note-context";
 import { AvailabilityForm, CalendarDateForm } from "./calendar-date-form";
 import { temporalWrite } from "@/lib/temporal-api";
+import {
+  blockHeight,
+  blockMode,
+  hourHeight,
+  minuteTop,
+  placement,
+  scrollToNow,
+} from "@/features/calendar/grid";
+import { NowLine, useNow } from "@/features/calendar/now-line";
+import { MiniMonth } from "@/features/calendar/mini-month";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/primitives";
+import { useRegisterPageContext } from "@/features/side-chat/page-context";
 
 type Item = {
   id: string;
@@ -84,6 +100,11 @@ export function CalendarPage() {
           ].sort((a, b) => Date.parse(a.starts_at) - Date.parse(b.starts_at)),
     [data],
   );
+  // Mini month: one dot per day with any commitment (presence, never a count).
+  const busyDays = useMemo(
+    () => new Set(items.map((i) => dateInZone(i.starts_at, timezone))),
+    [items, timezone],
+  );
   const conflictIds = conflicts(
     items.filter((i) => !i.task?.done && i.task?.state !== "skipped"),
   );
@@ -103,6 +124,31 @@ export function CalendarPage() {
           ? data?.summaries.at(-1)?.day || day
           : visibleDays.at(-1)!) && item.ends_before > visibleDays[0],
   );
+  // Phase E: the side chat sees the period in view and its items (ids, titles, times).
+  useRegisterPageContext("calendar", () => ({
+    surface: `calendar-${view}`,
+    focus: {
+      kind: "view",
+      id: `${view}:${visibleDays[0]}`,
+      label:
+        view === "week"
+          ? `Week of ${visibleDays[0]}`
+          : view === "month"
+            ? `Month of ${day.slice(0, 7)}`
+            : `Day ${day}`,
+      origin: "ambient",
+    },
+    visible: items
+      .filter((i) => visibleDays.includes(dateInZone(i.starts_at, timezone)))
+      .map((i) => ({
+        kind: i.kind === "event" ? ("event" as const) : ("task" as const),
+        id: i.id,
+        label: i.title,
+        origin: "ambient" as const,
+        fields: { starts: i.starts_at, ends: i.ends_at },
+      })),
+    capabilities: ["event.read", "block.move"],
+  }));
   const closeEditor = () => {
     setNewEvent(false);
     setEditing(null);
@@ -231,6 +277,22 @@ export function CalendarPage() {
               }}
             />
           </label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <button className="button" aria-label="Month picker">
+                <Icon name="CalendarRange" size={15} />
+                Month
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 p-2">
+              <MiniMonth
+                day={day}
+                today={today}
+                busy={busyDays}
+                onPick={setDay}
+              />
+            </PopoverContent>
+          </Popover>
           <button
             className="button"
             aria-pressed={showAvailability}
@@ -721,9 +783,34 @@ function TimeGrid({
   const lanes = calendarLanes(items);
   const scrollRef = useRef<HTMLDivElement>(null);
   const dayKey = days.join("|");
+  // Phase C: 13 visible hours fill the grid (--hour-h, 44-72px), measured from its height.
+  const [hourPx, setHourPx] = useState(56);
   useEffect(() => {
-    if (scrollRef.current) scrollRef.current.scrollTop = 7 * 56;
-  }, [dayKey]);
+    const box = scrollRef.current;
+    if (!box) return;
+    const measure = () => setHourPx(hourHeight(box.clientHeight));
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(box);
+    return () => observer.disconnect();
+  }, []);
+  const now = useNow();
+  const todayKey = dateInZone(now, timezone);
+  const nowMinute = minuteOfDay(now.toISOString(), timezone);
+  const showsToday = days.includes(todayKey);
+  const hadToday = useRef<boolean | null>(null);
+  // Scroll to now (a third from the top) on mount and when returning to this week;
+  // other week changes keep the reader's scroll position.
+  useEffect(() => {
+    const box = scrollRef.current;
+    if (!box) return;
+    if (hadToday.current === null || (showsToday && !hadToday.current))
+      box.scrollTop = showsToday
+        ? scrollToNow(nowMinute, hourPx, box.clientHeight)
+        : minuteTop(7 * 60, hourPx);
+    hadToday.current = showsToday;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dayKey, hourPx]);
   const [hover, setHover] = useState(""),
     [resize, setResize] = useState<{
       item: Item;
@@ -863,7 +950,7 @@ function TimeGrid({
         Math.min(
           Date.parse(resize.item.starts_at) + 7 * 86400000,
           resize.end +
-            Math.round((((event.clientY - resize.y) / 56) * 60) / 15) *
+            Math.round((((event.clientY - resize.y) / hourPx) * 60) / 15) *
               15 *
               60000,
         ),
@@ -909,6 +996,7 @@ function TimeGrid({
       <div
         className={`planning-time-scroll ${days.length === 1 ? "single-day" : ""}`}
         ref={scrollRef}
+        style={{ "--hour-h": `${hourPx}px` } as React.CSSProperties}
       >
         <div
           className="planning-time-head"
@@ -968,6 +1056,9 @@ function TimeGrid({
               key={day}
               data-calendar-day={day}
             >
+              {day === todayKey ? (
+                <NowLine minute={nowMinute} hourPx={hourPx} />
+              ) : null}
               {availability
                 .filter((item) => onLocalDay(item, day, timezone))
                 .map((item) => {
@@ -985,8 +1076,8 @@ function TimeGrid({
                       key={item.id}
                       className="calendar-availability-window"
                       style={{
-                        top: (start * 56) / 60,
-                        height: Math.max(28, ((end - start) * 56) / 60),
+                        top: minuteTop(start, hourPx),
+                        height: blockHeight(end - start, hourPx),
                       }}
                       onClick={() => openAvailability(item)}
                       aria-label={`Available: ${item.title}, ${wallTime(item.starts_at, timezone)} to ${wallTime(item.ends_at, timezone)}`}
@@ -1032,15 +1123,22 @@ function TimeGrid({
                   })
                     .formatToParts(new Date(item.starts_at))
                     .find((p) => p.type === "timeZoneName")?.value;
+                  const height = blockHeight(ends - starts, hourPx);
+                  const place = placement(
+                    lanes.get(item.id) || { lane: 0, lanes: 1 },
+                  );
+                  const isTask = item.kind !== "event";
                   return (
                     <div
                       key={item.id}
-                      className={`planning-time-item ${item.kind} ${conflictIds.has(item.id) ? "conflict" : ""} ${item.task?.done ? "done" : ""}`}
+                      data-mode={blockMode(height)}
+                      data-type={isTask ? "task" : "event"}
+                      className={`planning-time-item ${item.kind} ${conflictIds.has(item.id) ? "conflict" : ""} ${item.task?.done ? "done" : ""} ${place.cascade ? "cascade" : ""}`}
                       style={{
-                        top: (starts * 56) / 60,
-                        height: Math.max(30, ((ends - starts) * 56) / 60),
-                        left: `calc(${((lanes.get(item.id)?.lane || 0) * 100) / (lanes.get(item.id)?.lanes || 1)}% + 3px)`,
-                        width: `calc(${100 / (lanes.get(item.id)?.lanes || 1)}% - 6px)`,
+                        top: minuteTop(starts, hourPx),
+                        height,
+                        left: place.left,
+                        width: place.width,
                         right: "auto",
                       }}
                       draggable={!!item.block && !item.task?.done}
@@ -1057,7 +1155,12 @@ function TimeGrid({
                         onClick={() => open(item)}
                       >
                         <strong>
-                          {item.task?.done ? "✓ " : ""}
+                          {isTask ? (
+                            <Icon
+                              name={item.task?.done ? "SquareCheck" : "Square"}
+                              size={12}
+                            />
+                          ) : null}
                           {item.title}
                         </strong>
                         <span>

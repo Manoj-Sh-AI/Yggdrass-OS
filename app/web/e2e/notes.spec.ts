@@ -15,8 +15,8 @@ async function auth(page: Page) {
   await page.goto("/notes");
   await expect(page.locator(".bn-editor")).toBeVisible({ timeout: 60000 });
   await page
-    .locator(".note-tree-item")
-    .filter({ hasText: /^Sample/ })
+    .getByLabel("Notes navigation")
+    .getByRole("button", { name: /^Sample/ })
     .first()
     .click();
   await expect(page.getByLabel("Title", { exact: true })).toHaveValue("Sample");
@@ -105,8 +105,8 @@ test("a delayed note-open response cannot replace a newer blank draft", async ({
     await route.continue();
   });
   await page
-    .locator(".note-tree-item")
-    .filter({ hasText: /^Sample/ })
+    .getByLabel("Notes navigation")
+    .getByRole("button", { name: /^Sample/ })
     .first()
     .click();
   await expect.poll(() => requested).toBe(true);

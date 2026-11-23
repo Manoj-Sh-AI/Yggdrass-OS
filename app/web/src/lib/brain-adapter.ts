@@ -129,3 +129,14 @@ export const brainAdapter: BrainAdapter = {
       }),
     }),
 };
+
+/**
+ * The name a group header shows for an area id. The Brain sends ids such as
+ * "03-health" or a bare code such as "01"; a bare code is shown as "Area 01" until the
+ * Brain supplies area names (Phase D: the header carries the area once, rows never).
+ */
+export function areaLabel(id: string): string {
+  const name = id.replace(/^\d+-/, "").replaceAll("-", " ").trim();
+  if (!name || /^\d+$/.test(name)) return `Area ${id}`;
+  return name.charAt(0).toUpperCase() + name.slice(1);
+}

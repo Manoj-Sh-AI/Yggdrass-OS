@@ -12,6 +12,7 @@ from yggdress_app.backup import database_backup, fingerprints
 from yggdress_app.cloud_move import admin_url, check
 
 
+@pytest.mark.slow  # > 40 s (timed 2026-11-22); CI only, not gates
 def test_fingerprints_and_backups_can_be_limited_to_the_apps_schemas(postgres, tmp_path):
     with psycopg.connect(postgres["admin"], autocommit=True) as db:
         db.execute("CREATE SCHEMA IF NOT EXISTS host_owned")
@@ -91,6 +92,7 @@ def test_the_check_refuses_the_ipv6_only_host_and_reads_facts_only(postgres, tmp
     assert facts["app_schemas_exposed"] == []
 
 
+@pytest.mark.slow  # > 40 s (timed 2026-11-22); CI only, not gates
 def test_install_recreates_owners_data_and_isolated_grants_in_a_hosted_database(postgres, tmp_path):
     """The cutover's core, between two throwaway databases: each schema is restored by
     its own owner, the runtime role keeps exactly its grants, nothing crosses schemas."""

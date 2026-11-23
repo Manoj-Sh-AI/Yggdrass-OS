@@ -1,4 +1,10 @@
 "use client";
+import {
+  analyserFor,
+  type OrbState,
+  rms,
+  VoiceOrb,
+} from "@/features/voice/orb";
 import { useEffect, useRef, useState } from "react";
 import { ApiError, applicationApi } from "@/lib/api";
 import { startRingtone, unlockOnFirstGesture } from "@/lib/ringtone";
@@ -33,6 +39,15 @@ export function IncomingCall() {
   const current = useRef<Call | null>(null);
   const room = useRef<import("livekit-client").Room | null>(null);
   const audio = useRef<HTMLMediaElement[]>([]);
+  // Voice orb (Phase F): one analyser on the mic, one on Yggdras's voice.
+  const audioContext = useRef<AudioContext | null>(null);
+  const [mic, setMic] = useState<AnalyserNode | null>(null);
+  const [voice, setVoice] = useState<AnalyserNode | null>(null);
+  const [speaking, setSpeaking] = useState(false);
+  const analyse = (stream: MediaStream) => {
+    audioContext.current ??= new AudioContext();
+    return analyserFor(audioContext.current, stream);
+  };
   const keys = useRef(new Map<string, string>());
   // Stops the ringtone the moment Answer or Decline is pressed, before the server replies.
   const silence = useRef<() => void>(() => {});
@@ -57,6 +72,11 @@ export function IncomingCall() {
       element.remove();
     }
     audio.current = [];
+    setMic(null);
+    setVoice(null);
+    setSpeaking(false);
+    await audioContext.current?.close().catch(() => {});
+    audioContext.current = null;
   }
   async function refresh() {
     const result = await applicationApi<{
@@ -138,11 +158,16 @@ export function IncomingCall() {
           const element = track.attach();
           audio.current.push(element);
           document.body.appendChild(element);
+          setVoice(analyse(new MediaStream([track.mediaStreamTrack])));
         }
       });
       setStatus("Connecting…");
       await connected.connect(access.url, access.token);
       await connected.localParticipant.setMicrophoneEnabled(true);
+      const local = connected.localParticipant.getTrackPublication(
+        Track.Source.Microphone,
+      )?.track?.mediaStreamTrack;
+      if (local) setMic(analyse(new MediaStream([local])));
       check();
     } catch (failure) {
       setRinging(null);
@@ -159,6 +184,27 @@ export function IncomingCall() {
       setBusy(false);
     }
   }
+  // Speaking when Yggdras's voice is audible; it is only a state switch, so 10 checks
+  // a second are enough (the orb itself animates at its own rate).
+  useEffect(() => {
+    if (!voice) return;
+    const bytes = new Uint8Array(voice.fftSize);
+    const timer = setInterval(() => {
+      voice.getByteTimeDomainData(bytes);
+      setSpeaking(rms(bytes) > 0.02);
+    }, 100);
+    return () => clearInterval(timer);
+  }, [voice]);
+  const orbState: OrbState =
+    !active || active.simulated
+      ? "idle"
+      : speaking
+        ? "speaking"
+        : status === "Connecting…" || status === "Waiting for Yggdras…"
+          ? "thinking"
+          : muted
+            ? "idle"
+            : "listening";
   useEffect(() => {
     let mounted = true;
     const source = new EventSource("/api/backend/calls/events");
@@ -270,7 +316,9 @@ export function IncomingCall() {
                 silence.current();
                 void command(`/${ringing!.id}/decline`)
                   .then(refresh)
-                  .catch(() => setError("This invitation is no longer active."));
+                  .catch(() =>
+                    setError("This invitation is no longer active."),
+                  );
               }}
             >
               <Icon name="PhoneOff" size={24} />
@@ -292,9 +340,12 @@ export function IncomingCall() {
       </Modal>
       {active?.state === "answered" && (
         <div className="ygg-in-call call-bar" role="status">
-          <span className="call-avatar small" aria-hidden="true">
-            <Icon name="Sprout" size={18} />
-          </span>
+          <VoiceOrb
+            size={36}
+            showLabel={false}
+            state={orbState}
+            analyser={orbState === "speaking" ? voice : mic}
+          />
           <span className="call-bar-text">
             <strong>{active.reason || "Yggdras"}</strong>
             <small>{status}</small>

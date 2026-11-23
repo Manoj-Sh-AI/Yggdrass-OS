@@ -53,6 +53,14 @@ input::placeholder, textarea::placeholder { color: var(--muted); }
 .sidebar>.brand, .sidebar>.sidebar-bottom { flex-shrink: 0; }
 .avatar { background: linear-gradient(140deg,#d2d4c6,#9fae9f); color: #35403b; border-color: #dce2cf44; box-shadow: none; text-shadow: none; }
 .workspace { margin-left: calc(var(--sidebar) + 20px); padding: 0 26px 15px 30px; }
+/* Side chat (Phase E): at >= 1280px the open panel pushes the page instead of covering
+   it; --side-chat-push is its width (0 when closed), set by side-chat.tsx. */
+@media (min-width: 80rem) {
+  .app-frame .workspace {
+    padding-right: calc(26px + var(--side-chat-push, 0px));
+    transition: padding-right var(--duration-medium) var(--ease-practical);
+  }
+}
 .topbar { height: 68px; }
 .search-container { width: 420px; max-width: 58%; height: 40px; background: #252f30ab; border-color: #eef2e538; }
 .search-container input, .search-container>svg, .search-container kbd { color: var(--text); }

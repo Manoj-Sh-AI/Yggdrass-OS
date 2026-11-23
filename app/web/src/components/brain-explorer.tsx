@@ -1,4 +1,7 @@
 "use client";
+import { EyeOff } from "lucide-react";
+import { ListRow } from "@/components/primitives";
+import { useRegisterPageContext } from "@/features/side-chat/page-context";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { BrainNote } from "@/lib/brain-adapter";
 import { recoveryBundle } from "@/lib/development-drafts";
@@ -9,18 +12,6 @@ import { NoteEditor, preloadNoteEditor } from "./note-editor-loader";
 import { NoteLinkedWork } from "./note-linked-work";
 import { Empty, Icon, Modal, Panel, relativeTime } from "./ui";
 
-function Match({ text, query }: { text: string; query: string }) {
-  const index = text.toLowerCase().indexOf(query.toLowerCase());
-  return !query || index < 0 ? (
-    <>{text}</>
-  ) : (
-    <>
-      {text.slice(0, index)}
-      <mark>{text.slice(index, index + query.length)}</mark>
-      {text.slice(index + query.length)}
-    </>
-  );
-}
 export function BrainExplorer({
   initialNoteId,
   initialCreate = false,
@@ -143,46 +134,59 @@ export function BrainExplorer({
       ) as BrainNote[],
     [state.notes, search, shelf, liveNotes, searchResultIds],
   );
+  // Phase E: what the side chat may see. Ids and titles only; a sensitive note is an
+  // id with a placeholder label (page-context.tsx safeRef), never its text.
+  useRegisterPageContext("notes", () => ({
+    surface: note ? "note-detail" : "notes",
+    focus: note
+      ? {
+          kind: "doc",
+          id: note.id,
+          label: note.title || "Untitled",
+          url: `/notes?note=${encodeURIComponent(note.id)}`,
+          origin: "ambient",
+          sensitivity: note.sensitive ? "restricted" : "normal",
+        }
+      : undefined,
+    visible: visible.map((n) => ({
+      kind: "doc" as const,
+      id: n.id,
+      label: n.title || "Untitled",
+      origin: "ambient" as const,
+      sensitivity: n.sensitive ? ("restricted" as const) : ("normal" as const),
+    })),
+    capabilities: ["note.read", "note.search"],
+  }));
   const related = state.notes.filter((n) => note?.links.includes(n.id)),
     backlinks = state.notes.filter((n) => note?.backlinks.includes(n.id));
-  const noteLink = (n: BrainNote) => (
-    <button
-      key={n.id}
-      className={`note-tree-item ${note?.id === n.id ? "selected" : ""}`}
-      aria-current={note?.id === n.id ? "page" : undefined}
-      onClick={() => void openNote(n.id)}
-    >
-      <Icon name="FileText" size={14} />
-      <span>
-        <Match text={n.title} query={search} />
-        {liveNotes && (
-          <>
-            <small>{n.sensitive ? "Sensitive note" : n.description}</small>
-            <small>{[n.area, ...n.also].join(" · ")}</small>
-          </>
-        )}
-        {!n.sensitive &&
-          search &&
-          n.content.toLowerCase().includes(search.toLowerCase()) && (
-            <small>
-              <Match
-                text={n.content.slice(
-                  Math.max(
-                    0,
-                    n.content.toLowerCase().indexOf(search.toLowerCase()) - 20,
-                  ),
-                  Math.max(
-                    0,
-                    n.content.toLowerCase().indexOf(search.toLowerCase()) - 20,
-                  ) + 95,
-                )}
-                query={search}
-              />
-            </small>
-          )}
-      </span>
-    </button>
-  );
+  const noteLink = (n: BrainNote) => {
+    // Phase D: title only. State is an icon in the status slot; a search shows one
+    // muted line of the match (never for a sensitive note), nothing else.
+    const at = search
+      ? n.content.toLowerCase().indexOf(search.toLowerCase())
+      : -1;
+    const snippet =
+      !n.sensitive && at >= 0
+        ? n.content.slice(Math.max(0, at - 20), Math.max(0, at - 20) + 95)
+        : undefined;
+    return (
+      <ListRow
+        key={n.id}
+        title={n.title || "Untitled"}
+        active={note?.id === n.id}
+        onSelect={() => void openNote(n.id)}
+        status={
+          n.sensitive ? (
+            <span role="img" aria-label="Sensitive note">
+              <EyeOff className="size-3.5" />
+            </span>
+          ) : undefined
+        }
+      >
+        {snippet}
+      </ListRow>
+    );
+  };
   return (
     <div className="notes-application standard-page">
       <div className="notes-page-heading">
@@ -333,10 +337,6 @@ export function BrainExplorer({
                     >
                       <summary>
                         <Icon name="ChevronRight" size={12} />
-                        <Icon
-                          name={s.isArea ? "FolderKanban" : "Folder"}
-                          size={14}
-                        />
                         <span>{s.name}</span>
                         <small>
                           {state.notes.filter((n) => n.shelfId === s.id).length}

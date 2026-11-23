@@ -29,6 +29,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from .log import Op, RunNotFound, apply, run_uuid
 from .orchestrator import Conductor
+from .page import parse as parse_page
 from .policy import PolicySettings
 from .state import RunState
 
@@ -230,7 +231,10 @@ def conductor_router(conductor: Conductor, session) -> APIRouter:
             return Response(status_code=204)
         conversation = body.conversationId or state.get("conversationId")
         conversation = valid_id(conversation) if conversation else None
-        run = await asyncio.to_thread(conductor.start, start_text, conversation, body.model, images)
+        page = parse_page((body.model_extra or {}).get("pageContext"))
+        run = await asyncio.to_thread(
+            conductor.start, start_text, conversation, body.model, images, page
+        )
 
         async def stream(controller: RunController):
             controller.state["conversationId"] = run.conversation_id

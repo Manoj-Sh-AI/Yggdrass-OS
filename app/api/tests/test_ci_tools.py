@@ -141,3 +141,25 @@ def test_unknown_port_is_reported_with_its_line():
 def test_listed_ports_pass():
     ports = load("check_ports")
     assert ports.unknown_ports({"a.ts": "http://localhost:3000/x"}, {"3000"}) == []
+
+
+# ---- per-worker scratch databases (items 17, 61) --------------------------------------
+def scratch():
+    spec = importlib.util.spec_from_file_location("scratch_db", TOOLS.parent / "scratch_db.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_two_workers_get_different_ports_folders_and_databases():
+    db = scratch()
+    a, b = "refactor-a", "refactor-b"
+    assert db.port_for(a) != db.port_for(b)
+    assert db.folder_for(a) != db.folder_for(b)
+    assert db.url_for(a) != db.url_for(b) and "yggdress_test_refactor_a" in db.url_for(a)
+    assert db.port_for(a) == db.port_for("Refactor A")  # stable per name
+
+
+def test_scratch_urls_always_name_a_test_database():
+    db = scratch()
+    assert db.url_for("../../etc").rsplit("/", 1)[1].startswith("yggdress_test_")

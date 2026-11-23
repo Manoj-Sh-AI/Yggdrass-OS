@@ -33,6 +33,7 @@ def test_private_preview_password_can_be_preserved_without_changing_auth(monkeyp
         preview_password()
 
 
+@pytest.mark.slow  # > 40 s (timed 2026-11-22); CI only, not gates
 def test_data_restore_preserves_connections_and_journal_without_reemitting(
     signed_in, postgres, tmp_path
 ):

@@ -16,6 +16,7 @@ from yggdress_app.backup import (
 )
 
 
+@pytest.mark.slow  # > 40 s (timed 2026-11-22); CI only, not gates
 def test_full_database_restore_matches_schema_rows_sequences_and_large_objects(postgres, tmp_path):
     import shutil
 

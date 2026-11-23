@@ -25,6 +25,8 @@ type Props = {
   conversationId: string | null;
   model: string;
   onConversation?: (id: string) => void;
+  /** Extra request fields computed at send time (the side chat's page context). */
+  extraBody?: () => Record<string, unknown>;
   children: ReactNode;
 };
 
@@ -55,6 +57,7 @@ function Runtime({
   initial,
   model,
   onConversation,
+  extraBody,
   children,
 }: Omit<Props, "conversationId"> & { initial: ThreadState }) {
   const latest = useRef<ThreadState>(initial);
@@ -78,7 +81,11 @@ function Runtime({
     canResume: Boolean(conversation && liveRun(initial)),
     headers: async () => ({ "X-Yggdress-CSRF": await csrfToken() }),
     body: () =>
-      Promise.resolve({ conversationId: latest.current.conversationId, model }),
+      Promise.resolve({
+        conversationId: latest.current.conversationId,
+        model,
+        ...(extraBody?.() ?? {}),
+      }),
     converter: (state, metadata) => {
       latest.current = state;
       if (state.conversationId && state.conversationId !== conversation)

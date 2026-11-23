@@ -11,7 +11,7 @@ import {
   useAuiState,
 } from "@assistant-ui/react";
 import { ArrowUp, Plus, RotateCcw, Square, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { Popover, PopoverContent, PopoverItem, PopoverTrigger } from "@/components/primitives";
 import { ModelPicker } from "./model-picker";
 import {
@@ -52,9 +52,10 @@ type Props = {
   model: string;
   onModel: (model: string) => void;
   placeholder: string;
+  contextChip?: ReactNode;
 };
 
-export function Composer({ blockedReason, lastError, lastRequest, model, onModel, placeholder }: Props) {
+export function Composer({ blockedReason, lastError, lastRequest, model, onModel, placeholder, contextChip }: Props) {
   const aui = useAui();
   const text = useAuiState((s) => s.composer.text);
   const empty = useAuiState((s) => s.composer.isEmpty);
@@ -106,6 +107,7 @@ export function Composer({ blockedReason, lastError, lastRequest, model, onModel
         style={{ boxShadow: "var(--panel-highlight)" }}
       >
         <div className="flex flex-wrap gap-2 empty:hidden">
+          {contextChip}
           <ComposerPrimitive.Attachments>
             {({ attachment }) => (
               <AttachmentPrimitive.Root className="flex items-center gap-2 rounded-md bg-surface-3 py-1 pr-1 pl-2 text-xs text-text-2">
