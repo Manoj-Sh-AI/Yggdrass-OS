@@ -42,7 +42,9 @@ def setup(postgres):
         db.execute(
             "TRUNCATE app.conductor_events,app.conductor_runs,app.conductor_policy RESTART IDENTITY CASCADE"
         )
-        db.execute("TRUNCATE app.links,app.events,app.event_cursors RESTART IDENTITY CASCADE")
+        db.execute(
+            "TRUNCATE app.links,app.events,app.event_cursors,app.judgements RESTART IDENTITY CASCADE"
+        )
         db.execute(
             "TRUNCATE app.agent_write_intents,app.agent_proposals,app.agent_steps,app.agent_runs,app.agent_note_events RESTART IDENTITY CASCADE"
         )

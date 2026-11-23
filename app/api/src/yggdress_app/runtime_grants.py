@@ -52,6 +52,8 @@ def grant_runtime(db, role):
         # Connected data (044): the stream is written by triggers only; readers keep cursors.
         "SELECT ON app.events,app.event_exclusions",
         "SELECT,INSERT,UPDATE ON app.event_cursors",
+        # Connected data (045): source tables mirror by trigger; the conductor inserts its own.
+        "SELECT,INSERT ON app.judgements",
         "SELECT,INSERT,DELETE ON app.routine_important_blocks",
         "SELECT,INSERT,UPDATE ON app.scheduled_jobs,app.scheduled_job_attempts,app.routine_escalations",
         "SELECT,INSERT,UPDATE ON app.daily_routine_settings,app.routine_checkins,app.routine_predictions,app.routine_pool,app.routine_editions,app.routine_hypotheses",
