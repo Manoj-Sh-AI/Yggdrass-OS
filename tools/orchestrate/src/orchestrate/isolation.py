@@ -123,15 +123,23 @@ def ensure_worktree(config: Config, name: str, branch: str, base: str) -> Path:
 
 def scratch_db(config: Config, name: str, action: str = "up") -> str:
     script = config.repo / "tools" / "scratch_db.py"
-    done = subprocess.run(
-        [sys.executable, str(script), action, name],
-        capture_output=True,
-        text=True,
-        timeout=180,
-        check=False,
-    )
+    # stderr goes to a file, never a pipe: `pg_ctl start` hands its stderr to the server it
+    # starts, so a captured pipe never closes and the call hangs (seen in the first live run).
+    config.root.mkdir(parents=True, exist_ok=True)
+    log = config.root / f"scratch-{name}-{action}.log"
+    with log.open("w", encoding="utf-8") as err:
+        done = subprocess.run(
+            [sys.executable, str(script), action, name],
+            stdout=subprocess.PIPE,
+            stderr=err,
+            stdin=subprocess.DEVNULL,
+            text=True,
+            timeout=180,
+            check=False,
+        )
     if done.returncode != 0:
-        raise RuntimeError(f"scratch_db {action} {name} failed: {done.stderr.strip()[:500]}")
+        detail = log.read_text(encoding="utf-8", errors="replace").strip()[-500:]
+        raise RuntimeError(f"scratch_db {action} {name} failed: {detail}")
     return done.stdout.strip()
 
 
