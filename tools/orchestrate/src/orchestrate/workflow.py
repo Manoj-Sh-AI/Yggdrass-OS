@@ -191,6 +191,9 @@ class Orchestration:
                 "prepare_task",
                 {"run": self.run_id, "task_id": task_id, "branch": t["branch"], "base": start},
                 start_to_close_timeout=timedelta(minutes=5), retry_policy=FREE,
+                # Setup sends no heartbeat, so a stop cannot interrupt it: wait for it to end,
+                # so the finish step takes down a database that really exists.
+                cancellation_type=workflow.ActivityCancellationType.WAIT_CANCELLATION_COMPLETED,
             )  # fmt: skip
             t.update(worktree=prepared["worktree"], scratch_url=prepared["scratch_url"],
                      scratch_name=prepared["scratch_name"], started_at=workflow.now().timestamp())  # fmt: skip
@@ -277,8 +280,9 @@ class Orchestration:
         report = {"run": self.run_id, "phase": phase, "stopped": self.stopped, "limits": limits,
                   "plan_problems": self.plan_problems, "tasks": tasks, "totals": totals}  # fmt: skip
         keep = {"failed", "failed_after_retries", "error"}
-        down = [self.tasks[i]["scratch_name"] for i in self.order
-                if self.tasks[i].get("scratch_name") and self.tasks[i]["state"] not in keep]  # fmt: skip
+        # Every task that reached setup (it has a branch), even if stopped mid-setup.
+        down = [f"{self.run_id}-{i}" for i in self.order
+                if self.tasks[i].get("branch") and self.tasks[i]["state"] not in keep]  # fmt: skip
         await workflow.execute_activity(
             "finish_run", {"run": self.run_id, "report": report, "scratch_down": down},
             start_to_close_timeout=timedelta(minutes=5), retry_policy=FREE,

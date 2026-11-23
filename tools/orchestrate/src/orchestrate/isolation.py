@@ -8,6 +8,7 @@ import re
 import signal
 import subprocess
 import sys
+import threading
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -94,13 +95,29 @@ def slug(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")[:40]
 
 
+_GIT_LOCK = threading.Lock()
+
+
+def branch_exists(repo: Path, branch: str) -> bool:
+    done = subprocess.run(["git", "rev-parse", "--verify", "--quiet", f"refs/heads/{branch}"],
+                          cwd=repo, capture_output=True, check=False)  # fmt: skip
+    return done.returncode == 0
+
+
 def ensure_worktree(config: Config, name: str, branch: str, base: str) -> Path:
-    """Create the worktree once; on a retry, reuse it as it is."""
+    """Create the worktree once; on a retry, reuse what an earlier attempt left.
+    Serialized, and --no-track, because parallel `worktree add` fought over .git/config's lock
+    (seen in the first live run, 2026-11-23)."""
     path = config.worktrees / name
-    if (path / ".git").exists():
-        return path
-    config.worktrees.mkdir(parents=True, exist_ok=True)
-    _git("worktree", "add", str(path), "-b", branch, base, cwd=config.repo)
+    with _GIT_LOCK:
+        if (path / ".git").exists():
+            return path
+        config.worktrees.mkdir(parents=True, exist_ok=True)
+        _git("worktree", "prune", cwd=config.repo)  # forget a half-made worktree from a failure
+        if branch_exists(config.repo, branch):
+            _git("worktree", "add", str(path), branch, cwd=config.repo)
+        else:
+            _git("worktree", "add", "--no-track", str(path), "-b", branch, base, cwd=config.repo)
     return path
 
 
