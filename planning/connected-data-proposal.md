@@ -198,7 +198,7 @@ change, so it comes last.
 |---|---|---|---|---|---|
 | 1 | `link_verbs`, `links` (expand + backfill + dual write) | 3: links | low, additive | M | [x] built 2026-11-23: migration 042, tests, rehearsal 48 = 48 |
 | 2 | `note_refs.sensitivity` + `api.*` views + agents role | 5: answering, safely | low | S | [x] built 2026-11-23: migration 043, views, backfill 3 restricted / 8 normal / 1 unknown in rehearsal; separate agents DB role not created (see PR) |
-| 3 | `events` outbox + cursors | 5, and 6 later | low | M | [ ] |
+| 3 | `events` outbox + cursors | 5, and 6 later | low | M | [x] built 2026-11-23: migration 044 (capture trigger on every app table, 11 listed exclusions with reasons), events.py cursor reader |
 | 4 | `judgements` (expand + backfill) | 5: the hard eval | low | S | [ ] |
 | 5 | retire the four link tables (contract) | n/a | medium, destructive | S | [ ] |
 | 6 | one run log (phone onto the conductor) | 5 | medium | L | [ ] |
