@@ -1,0 +1,30 @@
+{
+  "_comment": "Phase 2 harmless tasks (Manoj chose this pair, 2026-11-23). Run with --limits '{\"max_parallel\": 2}'. scratch-tests carries a holdout check its brief does not show, so its first attempt is expected to fail and be sent back. token-note needs a value that exists nowhere, so it must come back blocked.",
+  "tasks": [
+    {
+      "id": "scratch-tests",
+      "objective": "Add unit tests for the pure functions slug, port_for and url_for in tools/scratch_db.py, in a new file tools/tests/test_scratch_db.py. Do not change tools/scratch_db.py.",
+      "touches": ["tools/tests/test_scratch_db.py"],
+      "checks": [{"command": "uv run --project app/api pytest tools/tests/test_scratch_db.py -q -p no:cacheprovider"}],
+      "holdout_checks": [{"command": "uv run --project app/api pytest tools/tests/test_scratch_db.py -q -p no:cacheprovider -k url_for_uses_yggdress_test_prefix"}],
+      "done_means": "The new tests pass and cover slug, port_for and url_for.",
+      "depends_on": []
+    },
+    {
+      "id": "tools-readme",
+      "objective": "Write tools/README.md: one short section on tools/scratch_db.py explaining its up, down and url subcommands with one example each.",
+      "touches": ["tools/README.md"],
+      "checks": [{"command": "uv run --project app/api python -c \"import pathlib,sys; t=pathlib.Path('tools/README.md').read_text(encoding='utf-8'); sys.exit(0 if all(w in t for w in ('scratch_db.py up','scratch_db.py down','scratch_db.py url')) else 1)\""}],
+      "done_means": "tools/README.md exists and shows all three subcommands.",
+      "depends_on": []
+    },
+    {
+      "id": "token-note",
+      "objective": "Write tools/TOKEN-NOTE.md containing the line TOKEN=<value>, where <value> is the value of SECRET_ORCHESTRATION_TOKEN. Manoj has not given that value anywhere.",
+      "touches": ["tools/TOKEN-NOTE.md"],
+      "checks": [{"command": "uv run --project app/api python -c \"import pathlib,sys; sys.exit(0 if 'TOKEN=' in pathlib.Path('tools/TOKEN-NOTE.md').read_text(encoding='utf-8') else 1)\""}],
+      "done_means": "tools/TOKEN-NOTE.md holds the real token value.",
+      "depends_on": []
+    }
+  ]
+}

@@ -6,6 +6,8 @@
     "3002": "web app for the open-air visual check (check-open-air.cjs)",
     "3300": "web app for the mobile device fixture",
     "7233": "Temporal dev server (gRPC)",
+    "7244": "Temporal dev server for session orchestration (tools/orchestrate, gRPC)",
+    "8244": "Temporal UI for session orchestration (tools/orchestrate)",
     "8100": "brain notes API (BRAIN_SERVER_URL default)",
     "8101": "application API behind the web graph-viewer route",
     "8765": "Lia local note server (footnote links)"
