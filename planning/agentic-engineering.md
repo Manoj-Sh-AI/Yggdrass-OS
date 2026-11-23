@@ -941,11 +941,13 @@ Ordered. Each item is independently verifiable by an agent and auditable by a hu
 17. [~] Create a scratch-database provisioning script and export `GATE_SCRATCH_DB_URL`; confirm no gate inherits the real `DATABASE_URL` or brain-API credentials. **Verify:** a gate run against a deliberately wrong `GATE_SCRATCH_DB_URL` skips rather than blocks.
     - **Audit 2026-11-22 (updated):** gates strip DATABASE_URL/brain/Anthropic vars and run tests on the throwaway cluster; no separate GATE_SCRATCH_DB_URL script
     - **Audit 2026-11-23:** tools/scratch_db.py gives each worker its own cluster + database; draft gate (planning/claude-drafts/hooks/gate.py) maps GATE_SCRATCH_DB_URL and skips when it is unreachable (tested in test_claude_drafts.py). Owner installs the gate.
+    - **Installed 2026-11-23 (owner commit 0ce49ee):** gate installed. Stays [~] until it runs on a PR or on main.
 18. [x] Add the non-empty-selection assertion and the test-only-change tripwire to T2. **Verify:** a branch that edits only a test file is refused at `TaskCompleted` with the file named.
     - **Audit 2026-11-22 (updated):** verified: editing only a test file -> T2 exit 2 naming app/api/tests/test_conductor_state.py
 19. [~] Mark known-flaky tests `@pytest.mark.flaky` and exclude them from every gate with `-m "not flaky and not slow"`. Add `PYTHONHASHSEED=0`, `-p no:randomly`, `--timeout=60`, `--color=no` to every gate invocation. **Verify:** ten consecutive gate runs on an unchanged tree all pass.
     - **Audit 2026-11-22 (updated):** PYTHONHASHSEED=0 and -m 'not flaky and not slow' in gates; markers not registered; pytest-timeout not installed
     - **Audit 2026-11-23:** `slow`/`flaky` markers registered; pytest-timeout installed; draft gate adds --timeout=60 and -p no:randomly. Ten consecutive gate runs not done.
+    - **Installed 2026-11-23 (owner commit 0ce49ee):** gate with --timeout installed. Stays [~] until it runs on a PR or on main.
 20. [x] Prime `.testmondata` and add it to `.gitignore`. Add a rule that changes under `api/alembic/`, `pyproject.toml`, `conftest.py` or `.env*` force the full tier. **Verify:** `git check-ignore .testmondata` succeeds.
     - **Audit 2026-11-22 (updated):** .testmondata ignored (git check-ignore ok); testmon not installed; full-tier triggers in gate.py
     - **Audit 2026-11-23:** pytest-testmon 2.2.0 installed, .testmondata primed by a full run (712 KB) and git-ignored; full-tier triggers in gate.py. testmon needs the cache plugin, which the gates disable, so gates keep explicit selection.
@@ -954,18 +956,23 @@ Ordered. Each item is independently verifiable by an agent and auditable by a hu
 21. [~] Create `.github/workflows/pr.yml` with the `changes` job, per-stack jobs, `concurrency: pr-<number>` + `cancel-in-progress: true`, and the `ci-gate` aggregator with `if: always()`. Pin `dorny/paths-filter` to a full commit SHA. **Verify:** a mobile-only PR shows `ci-gate` green with backend jobs skipped.
     - **Audit 2026-11-22 (updated):** planning/ci/workflows/pr.yml drafted (YAML-valid, SHA-pinned, adds app/api suite); agents cannot write .github -> owner installs
     - **Audit 2026-11-23:** pr.yml draft now also runs the tools/ci checks and six pytest-split shards. Owner installs (bash tools/install-owner-drafts.sh).
+    - **Installed 2026-11-23 (owner commit 0ce49ee):** installed. Stays [~] until it runs on a PR or on main.
 22. [~] Create `.github/workflows/ci-integrity.yml` implementing GitHub's checklist: workflow/test-config changes require a hand-applied label; new `|| true` / `continue-on-error` blocked; new skip/xfail/`.only` markers blocked; net test deletion over 50 lines blocked; code-changed-with-no-test-change warns; **only-tests-changed warns**; generated-file drift regenerate-and-diff; lockfile discipline. **Verify:** a PR adding `|| true` to a workflow fails.
     - **Audit 2026-11-22 (updated):** planning/ci/workflows/ci-integrity.yml drafted; owner installs
+    - **Installed 2026-11-23 (owner commit 0ce49ee):** installed. Stays [~] until it runs on a PR or on main.
 23. [~] Add diff-only secret scanning to the integrity job. **Verify the gitleaks release URL and version before use — the version in the research notes is unverified.**
     - **Audit 2026-11-22 (updated):** diff-only gitleaks v8.30.1 (verified release) in the integrity draft; owner installs
+    - **Installed 2026-11-23 (owner commit 0ce49ee):** installed. Stays [~] until it runs on a PR or on main.
 24. [~] Create `.github/workflows/main.yml` with an `on: push: branches: [main]` trigger and `cancel-in-progress: false`. **Verify:** a merge to `main` produces exactly one non-cancellable run.
     - **Audit 2026-11-22 (updated):** planning/ci/workflows/main.yml drafted (push main, non-cancelling); owner installs
+    - **Installed 2026-11-23 (owner commit 0ce49ee):** installed. Stays [~] until it runs on a PR or on main.
 25. [~] Run `pytest --durations=25` and record where the 18 minutes go. Mark the slow tests `@pytest.mark.slow`. **Verify:** PR-tier wall clock under 5 minutes.
     - **Audit 2026-11-22:** durations not measured in CI; full API suite is ~15-23 min locally
     - **Audit 2026-11-23:** Measured 2026-11-22: full API suite 480 passed / 5 failed / 1 error in 53 min on a loaded laptop (builds and preview running). Slowest 203 s, 71 s, 69 s, 51 s, 48 s, 43 s, now marked `slow`. 5 of the 6 failures pass alone (load/timeouts); test_preview_restore fails on its own since the daily-routines branch f2fc976 (pre-existing). The timed run also found and fixed a real hang: Conductor.shutdown() waited 30 min on an open approval. PR-tier under 5 min needs CI to verify.
 26. [~] Add `pytest --store-durations`, commit `.test_durations`, and shard with `--splits 6 --group ${{ matrix.group }}`, `fail-fast: true`. Add a nightly job that regenerates durations and opens a PR. **Verify:** six shards each finish under the job `timeout-minutes`.
     - **Audit 2026-11-22:** no sharding
     - **Audit 2026-11-23:** pytest-split 0.11.0 + app/api/.test_durations committed; pr.yml shards 1-6 with fail-fast; nightly planning/ci/workflows/durations.yml opens a PR. Owner installs.
+    - **Installed 2026-11-23 (owner commit 0ce49ee):** installed. Stays [~] until it runs on a PR or on main.
 27. [x] Create the ruleset on `main` per the table: linear history, require a PR, 0 required approvals, squash-only merge method, require status checks (**strict**, check = `ci-gate` only), bypass = repository admin only. **Verify:** a direct push to `main` is refused.
     - **Audit 2026-11-22 (updated):** ruleset 27852848 on main (PR, squash, linear, strict ci-gate, no force-push/deletion, admin bypass); gh api rules/branches/main lists all five
 28. [ ] Create a **push** ruleset restricting file paths `.github/**`, `.claude/**`, `railway.json`, `railway.toml`, `api/alembic/env.py`, and the Temporal schema directory, with you as the only bypass actor. **Verify:** a commit touching `.github/**` from a non-bypass context is refused.
@@ -975,9 +982,11 @@ Ordered. Each item is independently verifiable by an agent and auditable by a hu
 30. [~] Add the Alembic single-head check to CI. **Verify:** create two revisions off the same parent on a scratch branch; CI fails naming the head count.
     - **Audit 2026-11-22:** project has no Alembic (numbered SQL migrations in app/api/migrations); no duplicate-number check
     - **Audit 2026-11-23:** Adapted (no Alembic): tools/ci/check_migrations.py fails on two migrations sharing a number (tested). In the migrations.yml draft.
+    - **Installed 2026-11-23 (owner commit 0ce49ee):** installed. Stays [~] until it runs on a PR or on main.
 31. [~] Create `.github/workflows/migrations.yml`: single head, forward against the base schema with seeded data, `downgrade -1` then `upgrade head`, base-branch contract tests against the new schema, and a destructive-DDL tripwire requiring a hand-applied label. **Verify:** a migration adding a `NOT NULL` column to a seeded table fails.
     - **Audit 2026-11-22:** no migrations workflow
     - **Audit 2026-11-23:** migrations.yml draft: static checks + destructive-DDL tripwire (label destructive-migration-approved; NOT NULL without DEFAULT fails, tested) + base-branch tests against the PR's migrations (expand-contract). No downgrade exists (forward-only, checksummed); seeded-data step not built.
+    - **Installed 2026-11-23 (owner commit 0ce49ee):** installed. Stays [~] until it runs on a PR or on main.
 32. [x] Decide and record the expand-contract rule in `AGENTS.md`. **Verify:** the rule is present and the destructive-DDL tripwire cites it in its failure message.
     - **Audit 2026-11-22 (updated):** AGENTS.md 'Migrations: expand-contract'; T2 refuses edits to committed migrations and duplicate numbers
 33. [ ] Enable Railway **Wait for CI**; confirm `main.yml` has the `push` trigger and is outside any cancelling concurrency group. **Verify:** a red `main.yml` leaves production on the previous commit.
@@ -986,6 +995,7 @@ Ordered. Each item is independently verifiable by an agent and auditable by a hu
     - **Audit 2026-11-22 (updated):** /health returns commit (RAILWAY_GIT_COMMIT_SHA) and 503 without DB (test in test_conductor_contract.py); Railway healthcheck path is owner (railway.json protected)
 35. [~] Create `.github/workflows/deploy-watchdog.yml`. **Verify:** manually revert production to an older deployment and confirm the watchdog fails within 30 minutes.
     - **Audit 2026-11-22 (updated):** watchdog job in planning/ci/workflows/main.yml (needs PRODUCTION_HEALTH_URL variable); owner installs
+    - **Installed 2026-11-23 (owner commit 0ce49ee):** installed (needs PRODUCTION_HEALTH_URL). Stays [~] until it runs on a PR or on main.
 36. [x] Gate side effects (email, payments, webhooks, push notifications) on `RAILWAY_ENVIRONMENT_NAME`. **Verify:** a non-production environment cannot send an email.
     - **Audit 2026-11-22 (updated):** side_effects.py: push only in production/laptop; FcmPusher refuses elsewhere (tests/test_side_effects.py)
 37. [ ] Rehearse a Railway rollback once, on purpose, and record how far back retention goes. **Verify:** a written note in the repo with the date and the retention depth observed.
@@ -1005,6 +1015,7 @@ Ordered. Each item is independently verifiable by an agent and auditable by a hu
 43. [~] Add a `PreToolUse` hook that rewrites verbose test and log commands to grep-and-head before Claude sees the output. **Verify:** a failing test run reaches the transcript as tens of lines, not thousands.
     - **Audit 2026-11-22:** no output-trimming hook
     - **Audit 2026-11-23:** planning/claude-drafts/hooks/trim_output.py: tails verbose test/build commands to 80 lines, keeps the exit status (pipefail), grants no permission (updatedInput only, per the hooks docs); tested. Owner installs.
+    - **Installed 2026-11-23 (owner commit 0ce49ee):** installed (loads in the next session). Stays [~] until it runs on a PR or on main.
 44. [ ] Install code-intelligence/LSP plugins for TypeScript and Python. **Verify:** a "go to definition" style lookup replaces a grep-then-read sequence in one session.
     - **Audit 2026-11-22:** no LSP plugins
 45. [ ] Set a Console workspace spend limit as the hard ceiling. **Verify:** the limit is visible in the Console.
@@ -1014,6 +1025,7 @@ Ordered. Each item is independently verifiable by an agent and auditable by a hu
 47. [~] Switch the review workflow to `claude_code_oauth_token` (generated with `claude setup-token`) and trigger it on `opened`/`ready_for_review`/`reopened` only. **Verify:** a PR with five pushes triggers one review.
     - **Audit 2026-11-22:** no review workflow
     - **Audit 2026-11-23:** planning/ci/workflows/review.yml: claude_code_oauth_token, triggers opened/ready_for_review/reopened only, action pinned to the v1.0.286 SHA. Owner installs and adds the secret.
+    - **Installed 2026-11-23 (owner commit 0ce49ee):** installed (needs CLAUDE_CODE_OAUTH_TOKEN). Stays [~] until it runs on a PR or on main.
 48. [~] Set `CLAUDE_CODE_GOAL_CHECKIN_MINUTES=0` and `crossSessionInbound: "hold"`. **Verify:** `/usage` shows no idle-drain rows.
     - **Audit 2026-11-22 (updated):** CLAUDE_CODE_GOAL_CHECKIN_MINUTES=0, crossSessionInbound hold set; /usage not checked
 
@@ -1021,15 +1033,19 @@ Ordered. Each item is independently verifiable by an agent and auditable by a hu
 49. [~] Create `.github/workflows/review.yml` from the official `code-review` plugin example, with `--comment`, the `--allowedTools` line kept, `--max-turns 20`, and the `--append-system-prompt` checklist. **Verify:** a PR receives inline findings, not just a run log.
     - **Audit 2026-11-22:** no review.yml (needs owner decision on the Claude GitHub App)
     - **Audit 2026-11-23:** review.yml follows the official code-review plugin example (docs read 2026-11-22), keeps --allowedTools, adds --max-turns 20 and an --append-system-prompt pointing at the base REVIEW.md.
+    - **Installed 2026-11-23 (owner commit 0ce49ee):** installed. Stays [~] until it runs on a PR or on main.
 50. [~] Create `REVIEW.md` on `main`. Confirm the reviewer reads it from the base branch only. **Verify:** a PR that edits `REVIEW.md` does not change its own review guidance.
     - **Audit 2026-11-22 (updated):** REVIEW.md on this branch (reviewer workflow needs the GitHub App decision)
     - **Audit 2026-11-23:** review.yml checks out the BASE commit, so a PR editing REVIEW.md cannot change its own guidance. Needs review.yml installed and REVIEW.md on main.
+    - **Installed 2026-11-23 (owner commit 0ce49ee):** installed. Stays [~] until it runs on a PR or on main.
 51. [~] Add the Tier 1/2/3 labeller and the diff-size job (>400 lines, >10 files, >5 top-level dirs). **Verify:** a 600-line PR gets `tier3` and is blocked without the hand-applied label.
     - **Audit 2026-11-22:** no tier labeller / diff-size job
     - **Audit 2026-11-23:** tools/ci/pr_tier.py (tested: 600-line PR -> tier3; risky paths -> tier3; docs-only -> tier1) + tier.yml labeller, red until a human applies tier3-reviewed. Owner installs.
+    - **Installed 2026-11-23 (owner commit 0ce49ee):** installed (needs labels). Stays [~] until it runs on a PR or on main.
 52. [~] Make Tier 3 "merge by hand", not "label present", because the Claude GitHub App probably can set labels. **Verify:** no workflow auto-merges a Tier 3 PR.
     - **Audit 2026-11-22:** no tier policy
     - **Audit 2026-11-23:** tier.yml never arms auto-merge; Tier 3 = merge by hand. No workflow in planning/ci contains --auto.
+    - **Installed 2026-11-23 (owner commit 0ce49ee):** installed. Stays [~] until it runs on a PR or on main.
 53. [~] Rename all ADRs to `YYYYMMDD-slug.md` and add the CI check rejecting numeric-prefixed ADRs and duplicate slugs. **Verify:** adding `docs/adr/0043-foo.md` fails CI.
     - **Audit 2026-11-22:** rationale/decisions mixes numeric (0001-project-setup.md) and plain slugs; no CI check
     - **Audit 2026-11-23:** Safer default taken: existing records keep their names (the register cites D13, D44 and so on; renaming would break those references). tools/ci/check_decisions.py rejects any NEW record not named YYYYMMDD-slug.md and duplicate slugs (tested: 0043-foo.md fails). The legacy list is frozen in the script.
@@ -1041,6 +1057,7 @@ Ordered. Each item is independently verifiable by an agent and auditable by a hu
 56. [~] Add a diff-scoped mutation-testing job in CI with the published thresholds (80% new code, 90% auth and data integrity, no decline on modified code). **Verify:** the job reports a score and fails below threshold. **Confirm the `mutmut`/Stryker invocations against their own docs first.**
     - **Audit 2026-11-22:** no mutation testing
     - **Audit 2026-11-23:** planning/ci/workflows/mutation.yml: mutmut 3.8.0 (Linux; needs fork) on changed modules, report-only until the first run shows the stats file shape (the docs do not state its keys). Thresholds then added.
+    - **Installed 2026-11-23 (owner commit 0ce49ee):** installed. Stays [~] until it runs on a PR or on main.
 
 **Stage 6 — Parallelism**
 57. [~] Create `.worktreeinclude` listing `.env`, `.env.local`, `api/.env`. Add `.claude/worktrees/` to `.gitignore`. **Verify:** `claude --worktree probe` produces a worktree containing `.env`.
@@ -1048,9 +1065,11 @@ Ordered. Each item is independently verifiable by an agent and auditable by a hu
 58. [~] Commit a project-scoped `Explore` subagent with `model: haiku` and `tools: Read, Grep, Glob`. **Verify:** `/usage` attributes Explore work to Haiku, not Opus.
     - **Audit 2026-11-22:** no project Explore subagent
     - **Audit 2026-11-23:** planning/claude-drafts/agents/Explore.md (model: haiku; tools Read, Grep, Glob; the docs confirm a project Explore overrides the built-in). Owner installs (.claude is protected).
+    - **Installed 2026-11-23 (owner commit 0ce49ee):** installed. Stays [~] until it runs on a PR or on main.
 59. [~] Commit a `refactorer` subagent with `isolation: worktree`. **Verify:** it cannot write into the main checkout.
     - **Audit 2026-11-22:** no refactorer subagent
     - **Audit 2026-11-23:** planning/claude-drafts/agents/refactorer.md (isolation: worktree, model: sonnet). Owner installs.
+    - **Installed 2026-11-23 (owner commit 0ce49ee):** installed; the refactorer agent appeared in this session's agent list. Stays [~] until it runs on a PR or on main.
 60. [x] Add the brief template to `AGENTS.md`, including the stop condition verbatim: "If you can't reach something you need, say exactly what's missing in your first message and stop. Don't substitute, mock, or guess."
     - **Audit 2026-11-22 (updated):** AGENTS.md 'Briefs for parallel agents' with the stop line verbatim
 61. [x] Create a per-worker scratch-database provisioning script keyed on the worktree name. **Verify:** two concurrent worktrees run migrations without colliding.
