@@ -364,6 +364,8 @@ def test_migrations_are_application_only_and_runtime_cannot_create_tables(postgr
             "conductor_runs",
             "conductor_events",
             "conductor_policy",
+            "links",
+            "link_verbs",
             "routine_important_blocks",
             "scheduled_jobs",
             "scheduled_job_attempts",

@@ -194,16 +194,16 @@ change, so it comes last.
 
 ## Order of work (each step proven before the next)
 
-| Step | What | Rung it serves | Risk | Size |
-|---|---|---|---|---|
-| 1 | `link_verbs`, `links` (expand + backfill + dual write) | 3: links | low, additive | M |
-| 2 | `note_refs.sensitivity` + `api.*` views + agents role | 5: answering, safely | low | S |
-| 3 | `events` outbox + cursors | 5, and 6 later | low | M |
-| 4 | `judgements` (expand + backfill) | 5: the hard eval | low | S |
-| 5 | retire the four link tables (contract) | n/a | medium, destructive | S |
-| 6 | one run log (phone onto the conductor) | 5 | medium | L |
-| 7 | `candidate_links` + significance scoring | **6: discovery, gated on the hard eval** | n/a | L |
-| 8 | frameworks / situations | 7-8 | n/a | n/a |
+| Step | What | Rung it serves | Risk | Size | Status |
+|---|---|---|---|---|---|
+| 1 | `link_verbs`, `links` (expand + backfill + dual write) | 3: links | low, additive | M | [x] built 2026-11-23: migration 042, tests, rehearsal 48 = 48 |
+| 2 | `note_refs.sensitivity` + `api.*` views + agents role | 5: answering, safely | low | S | [ ] |
+| 3 | `events` outbox + cursors | 5, and 6 later | low | M | [ ] |
+| 4 | `judgements` (expand + backfill) | 5: the hard eval | low | S | [ ] |
+| 5 | retire the four link tables (contract) | n/a | medium, destructive | S | [ ] |
+| 6 | one run log (phone onto the conductor) | 5 | medium | L | [ ] |
+| 7 | `candidate_links` + significance scoring | **6: discovery, gated on the hard eval** | n/a | L | [ ] |
+| 8 | frameworks / situations | 7-8 | n/a | n/a | [ ] |
 
 Each migration ships through `migrate_hosted plan` then `apply` **before** its PR merges
 (production never migrates by itself). Destructive steps (5, end of 6) need the label
