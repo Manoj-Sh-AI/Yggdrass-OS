@@ -253,6 +253,14 @@ def schema_fingerprint(binary, env, snapshot=None, schemas=None):
     return hashlib.sha256("\n".join(lines).encode()).hexdigest()
 
 
+def server_options(port: int) -> str:
+    """TCP on localhost only. On POSIX the local socket is turned off: Debian/Ubuntu builds
+    put it in /var/run/postgresql, which an ordinary user (a CI runner, WSL2) cannot
+    write, so the scratch server would fail to start; every connection here is TCP."""
+    options = f"-h 127.0.0.1 -p {port}"
+    return options if os.name == "nt" else options + " -c unix_socket_directories=''"
+
+
 @contextmanager
 def fresh_cluster(binary_dir, parent):
     """No source connection can be a restore destination: create and own a new cluster."""
@@ -272,7 +280,7 @@ def fresh_cluster(binary_dir, parent):
     )
     tool(
         binary("pg_ctl"),
-        ["-D", data, "-l", parent / "restore.log", "-o", f"-h 127.0.0.1 -p {port}", "-w", "start"],
+        ["-D", data, "-l", parent / "restore.log", "-o", server_options(port), "-w", "start"],
         capture=False,
     )
     target = f"host=127.0.0.1 port={port} user=backup_verify dbname=postgres"

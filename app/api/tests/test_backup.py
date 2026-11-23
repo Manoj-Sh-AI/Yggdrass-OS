@@ -183,3 +183,14 @@ def test_initdb_error_excerpt_shows_only_error_lines_with_private_paths_hidden(m
     assert 'could not create directory "<restore-cluster>": Permission denied' in message
     assert "initdb: hint: check the folder" in message
     assert "someone" not in message and "chatter" not in message
+
+
+def test_scratch_server_listens_on_localhost_tcp_and_no_local_socket_on_posix(monkeypatch):
+    """Ubuntu's packaged PostgreSQL puts its socket in /var/run/postgresql, which a CI
+    runner or WSL2 user cannot write; the scratch server must not need it."""
+    from yggdress_app import backup
+
+    monkeypatch.setattr(backup.os, "name", "posix")
+    assert backup.server_options(5433) == "-h 127.0.0.1 -p 5433 -c unix_socket_directories=''"
+    monkeypatch.setattr(backup.os, "name", "nt")
+    assert backup.server_options(5433) == "-h 127.0.0.1 -p 5433"
