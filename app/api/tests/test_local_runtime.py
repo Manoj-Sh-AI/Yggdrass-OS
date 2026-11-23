@@ -119,3 +119,18 @@ def test_stopping_a_child_also_stops_what_it_started(tmp_path):
     assert not alive(grandchild)
     stop_tree(None)  # nothing to stop is fine
     quietly(lambda: 1 / 0)  # a failing shutdown step never raises
+
+
+def test_descendants_walks_the_whole_tree_from_proc(tmp_path):
+    """POSIX stop_tree stops grandchildren too: the tree comes from /proc (here a fake one,
+    with a command name containing spaces and ')' to prove the parsing)."""
+    from yggdress_app.local_runtime import descendants
+
+    for pid, ppid, name in [(10, 1, "launcher"), (11, 10, "python (real)"), (12, 11, "web) x"),
+                            (13, 1, "unrelated"), (14, 12, "worker")]:  # fmt: skip
+        (tmp_path / str(pid)).mkdir()
+        (tmp_path / str(pid) / "stat").write_text(f"{pid} ({name}) S {ppid} 0 0", encoding="utf-8")
+    (tmp_path / "self").mkdir()  # non-numeric entries are ignored
+    assert sorted(descendants(10, tmp_path)) == [11, 12, 14]
+    assert descendants(13, tmp_path) == []
+    assert descendants(10, tmp_path / "missing") == []

@@ -36,7 +36,7 @@ jobs:
           # own messages name the patterns), are not scanned.
           added=$(git diff "$BASE"...HEAD -- . ':(exclude)*.md' ':(exclude).github/workflows/ci-integrity.yml' \
             ':(exclude)planning/ci/workflows/ci-integrity.yml' | sed -n '/^+++/d; /^+/p')
-          if grep -Eq '^(\.github/|\.claude/|tools/ci/|app/api/pyproject.toml|app/web/vitest.config|app/mobile/package.json)' <<< "$files"; then
+          if grep -Eq '^(\.github/|\.claude/|tools/ci/|\.gitleaksignore$|app/api/pyproject.toml|app/web/vitest.config|app/mobile/package.json)' <<< "$files"; then
             if ! grep -q ',ci-change-approved,' <<< ",$LABELS,"; then
               echo "::error::CI/test configuration changed; needs the hand-applied label ci-change-approved."; fail=1
             fi

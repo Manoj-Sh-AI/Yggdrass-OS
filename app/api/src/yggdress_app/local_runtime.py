@@ -12,6 +12,7 @@ import json
 import os
 import secrets
 import shutil
+import signal
 import socket
 import subprocess
 import sys
@@ -404,6 +405,24 @@ def start_brain_if_needed(config, home):
         )
 
 
+def descendants(pid: int, proc: Path = Path("/proc")) -> list[int]:
+    """Every process below `pid`, from /proc (Linux, WSL2); [] where /proc is absent."""
+    children: dict[int, list[int]] = {}
+    for stat in proc.glob("[0-9]*/stat"):
+        try:
+            # The command name in (...) may contain spaces; fields after it are fixed.
+            ppid = int(stat.read_text().rsplit(")", 1)[1].split()[1])
+        except (OSError, IndexError, ValueError):
+            continue
+        children.setdefault(ppid, []).append(int(stat.parent.name))
+    found, todo = [], [pid]
+    while todo:
+        for child in children.get(todo.pop(), []):
+            found.append(child)
+            todo.append(child)
+    return found
+
+
 def stop_tree(process):
     """Stop a child and everything it started. On Windows a .venv python.exe is a launcher
     that starts the real interpreter as its own child, so terminate() alone left it running."""
@@ -420,7 +439,14 @@ def stop_tree(process):
                 creationflags=subprocess.CREATE_NO_WINDOW,
             )
         else:
+            # POSIX: terminate() reaches only the child; what it started would keep
+            # running (found by CI on Linux, and it would bite under WSL2). Collect the
+            # descendants first, while the parent links still exist.
+            family = descendants(process.pid)
             process.terminate()
+            for pid in family:
+                with contextlib.suppress(OSError):
+                    os.kill(pid, signal.SIGTERM)
         process.wait(timeout=15)
     except Exception:  # noqa: BLE001 -- the remaining shutdown steps must still run
         with contextlib.suppress(Exception):
