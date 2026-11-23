@@ -4,8 +4,13 @@
 --    copies the real value from brain.notes (admin step: this migration's role cannot read
 --    the brain schema), and the app keeps it current each time it observes a note.
 -- 2. The api schema: read-only views that apply the sensitivity rule once. Agents, briefings
---    and MCP-facing code read these, not the tables. (The schema itself is created by
---    Database.migrate or, on a hosted database, by migrate_hosted as admin.)
+--    and MCP-facing code read these, not the tables. Created here only if missing: a hosted
+--    owner has no database-wide CREATE, so migrate_hosted creates it as admin first and
+--    this block then does nothing (even IF NOT EXISTS would need that privilege).
+DO $$
+BEGIN
+ IF to_regnamespace('api') IS NULL THEN CREATE SCHEMA api; END IF;
+END $$;
 
 ALTER TABLE app.note_refs ADD COLUMN IF NOT EXISTS sensitivity text NOT NULL DEFAULT 'unknown';
 DO $$

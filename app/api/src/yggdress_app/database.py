@@ -39,13 +39,6 @@ class Database:
                 is None
             ):
                 db.execute("CREATE SCHEMA app")
-            # Read-only views for agents (043). A hosted owner lacks database CREATE;
-            # migrate_hosted creates this schema as admin before migrating.
-            if (
-                db.execute("SELECT to_regnamespace('api') AS namespace").fetchone()["namespace"]
-                is None
-            ):
-                db.execute("CREATE SCHEMA api")
             db.execute(
                 "CREATE TABLE IF NOT EXISTS app.schema_migrations (version text PRIMARY KEY, checksum text NOT NULL, applied_at timestamptz NOT NULL DEFAULT now())"
             )
