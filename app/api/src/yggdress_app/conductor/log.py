@@ -160,6 +160,28 @@ class Bus:
                 self._runs.pop(run_id, None)
 
 
+def record_judgements(db, run_id: str, before: RunState, after: RunState) -> None:
+    """Every approval card Manoj answers is a judgement (migration 045), written in the
+    same transaction as the run change that records the answer. A card that timed out
+    (decided_by is not 'user') is not his verdict and is not recorded."""
+    earlier = {t.id: t.state for t in before.tools}
+    for tool in after.tools:
+        if (
+            tool.state == "approval-responded"
+            and tool.decided_by == "user"
+            and tool.approval is not None
+            and earlier.get(tool.id) != "approval-responded"
+        ):
+            key = f"{run_id}:{tool.id}"
+            db.execute(
+                "INSERT INTO app.judgements(subject_kind,subject_key,verdict,reason,"
+                "source_table,source_id) VALUES ('conductor_tool',%s,%s,%s,'conductor_runs',%s) "
+                "ON CONFLICT (source_table, source_id) DO NOTHING",
+                (key, "approved" if tool.approval.approved else "rejected",
+                 tool.approval.reason or None, key),
+            )  # fmt: skip
+
+
 class RunLog:
     def __init__(self, database, bus: Bus | None = None):
         self.database = database
@@ -222,6 +244,7 @@ class RunLog:
                    WHERE id=%s""",
                 (Jsonb(state), seq, after.status, after.mode, owner, owner, run_id),
             )
+            record_judgements(db, run_id, before, after)
         self.bus.publish(run_id, seq)
         if after.status in TERMINAL:
             self.bus.close(run_id)
