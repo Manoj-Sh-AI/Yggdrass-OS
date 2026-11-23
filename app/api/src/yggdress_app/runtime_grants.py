@@ -45,6 +45,10 @@ def grant_runtime(db, role):
         "SELECT,INSERT,UPDATE ON app.conductor_policy",
         # Connected data (042): read only; writes arrive through the mirror triggers.
         "SELECT ON app.links,app.link_verbs",
+        # Connected data (043): agents read the api views; the app keeps sensitivity current.
+        "UPDATE(sensitivity) ON app.note_refs",
+        "USAGE ON SCHEMA api",
+        "SELECT ON ALL TABLES IN SCHEMA api",
         "SELECT,INSERT,DELETE ON app.routine_important_blocks",
         "SELECT,INSERT,UPDATE ON app.scheduled_jobs,app.scheduled_job_attempts,app.routine_escalations",
         "SELECT,INSERT,UPDATE ON app.daily_routine_settings,app.routine_checkins,app.routine_predictions,app.routine_pool,app.routine_editions,app.routine_hypotheses",

@@ -10,6 +10,7 @@ from psycopg import sql
 from psycopg.types.json import Jsonb
 from pydantic import Field, model_validator
 
+from .mobile_policy import sensitive
 from .notes_proxy import NotesError, note_view, slug_path
 from .planning import LOCK, command_result, refresh_reminders
 from .planning_models import Command, Model, TaskInput, TimeInput
@@ -89,12 +90,15 @@ class FromNoteCommand(Model):
 
 
 def observe_note(db, slug, note):
+    # The bridge carries the note's sensitivity (043), by the app's one rule; anything the
+    # rule cannot read counts as restricted.
+    sensitivity = "restricted" if sensitive(note) else "normal"
     return db.execute(
-        "INSERT INTO app.note_refs(external_id,observed_title,observed_revision) "
-        "VALUES (%s,%s,%s) ON CONFLICT(source,external_id) DO UPDATE SET "
+        "INSERT INTO app.note_refs(external_id,observed_title,observed_revision,sensitivity) "
+        "VALUES (%s,%s,%s,%s) ON CONFLICT(source,external_id) DO UPDATE SET "
         "observed_title=EXCLUDED.observed_title, observed_revision=EXCLUDED.observed_revision, "
-        "last_verified_at=now() RETURNING *",
-        (slug, note["title"], note["version"]),
+        "sensitivity=EXCLUDED.sensitivity, last_verified_at=now() RETURNING *",
+        (slug, note["title"], note["version"], sensitivity),
     ).fetchone()
 
 
