@@ -1,7 +1,6 @@
 # Session orchestration: design (Phase 1)
 
-Status: **design for review. No code.** Phase 2 starts only after Manoj approves this
-file and the decisions in §13.
+Status: **approved 2026-11-23** (D1–D8 as recommended; rationale/decisions/20261123-session-orchestration.md).
 
 One orchestrator splits a job, starts headless Claude Code worker sessions, checks what
 comes back by running the checks itself, and sends unfinished work back until it passes

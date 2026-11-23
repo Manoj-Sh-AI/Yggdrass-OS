@@ -1,6 +1,6 @@
 # Spec: Session orchestration, Phase 2 (smallest working version)
 
-Status: **draft. Manoj approves or edits before any code.** The criteria below are
+Status: **approved by Manoj 2026-11-23.** The criteria below are
 transcribed from Manoj's Phase 2 brief (2026-11-23). Nothing has been added beyond what
 the approved design (`planning/session-orchestration.md`) requires.
 
