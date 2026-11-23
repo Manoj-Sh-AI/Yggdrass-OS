@@ -2,6 +2,7 @@ import hashlib
 from pathlib import Path
 
 import psycopg
+from psycopg import sql
 from psycopg.rows import dict_row
 
 
@@ -17,13 +18,19 @@ class Database:
             options="-c search_path=app,pg_catalog -c statement_timeout=10000 -c timezone=UTC",
         )
 
-    def migrate(self):
-        """Explicit CLI/test operation, never an automatic application startup migration."""
+    @staticmethod
+    def migration_folder() -> Path:
         packaged = Path(__file__).resolve().parent / "migrations"
-        folder = (
-            packaged if packaged.is_dir() else Path(__file__).resolve().parents[2] / "migrations"
-        )
+        return packaged if packaged.is_dir() else Path(__file__).resolve().parents[2] / "migrations"
+
+    def migrate(self, role: str | None = None):
+        """Explicit CLI/test operation, never an automatic application startup migration.
+        `role`: run as that role (SET ROLE), so new tables belong to the schema's owner
+        when an admin login applies them (migrate_hosted.py)."""
+        folder = self.migration_folder()
         with self.connect() as db:
+            if role:
+                db.execute(sql.SQL("SET ROLE {}").format(sql.Identifier(role)))
             db.execute("SELECT pg_advisory_xact_lock(719218401)")
             # Even IF NOT EXISTS requires database-wide CREATE. A shared-database
             # migrator owns the existing app schema without that broader grant.
