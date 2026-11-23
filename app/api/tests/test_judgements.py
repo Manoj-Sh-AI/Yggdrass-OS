@@ -154,3 +154,18 @@ def test_the_agent_view_has_no_free_text(setup, postgres):
             "SELECT column_name FROM information_schema.columns "
             "WHERE table_schema='api' AND table_name='judgements'").fetchall()}  # fmt: skip
     assert "reason" not in columns and {"verdict", "source_table"} <= columns
+
+
+def test_the_read_only_counts_report_matches_old_and_new(setup, postgres):
+    from yggdress_app import migrate_hosted
+
+    with admin(postgres) as db:
+        plant_pre_045_rows(db)
+        db.execute(MIGRATION.read_text(encoding="utf-8"))
+    report = migrate_hosted.counts(postgres["admin"])
+    # other tests may leave source rows behind: every source must still match exactly
+    for table, minimum in EXPECTED.items():
+        row = report["judgements"][table]
+        assert row["eligible"] == row["judgements"] >= minimum, table
+    assert all(v["old"] == v["links"] for v in report["links"].values())
+    assert set(report["note_refs_by_sensitivity"]) <= {"normal", "restricted", "unknown"}

@@ -7,6 +7,7 @@ laptop. The admin connection is read only from the private file cloud_move uses
 
     python -m yggdress_app.migrate_hosted plan     # read-only: what is missing, which roles
     python -m yggdress_app.migrate_hosted apply    # backup, migrate, grant, verify
+    python -m yggdress_app.migrate_hosted counts   # read-only: backfill counts vs sources
 
 `apply`, in order, stopping at the first problem:
   1. refuse if a pending migration is destructive (expand-contract, AGENTS.md)
@@ -172,6 +173,57 @@ def backfill_sensitivity(url: str, notes_table: str = "brain.notes") -> dict:
     }
 
 
+LINK_TABLES = ("task_note_links", "event_note_links", "availability_note_links",
+               "date_item_note_links")  # fmt: skip
+JUDGEMENT_SOURCES = {
+    "yggdras_feedback": "SELECT count(*) FROM app.yggdras_feedback",
+    "workflow_reviews": "SELECT count(*) FROM app.workflow_reviews WHERE state IN ('accepted','dismissed')",
+    "call_reviews": "SELECT count(*) FROM app.call_reviews WHERE state IN ('accepted','dismissed')",
+    "agent_proposals": "SELECT count(*) FROM app.agent_proposals WHERE state IN ('accepted','dismissed')",
+    "conductor_runs": "SELECT count(*) FROM app.conductor_runs r, "
+    "jsonb_array_elements(coalesce(r.state->'tools','[]'::jsonb)) t "
+    "WHERE t->>'state'='approval-responded' AND t->>'decided_by'='user' AND t->'approval' IS NOT NULL",
+}  # fmt: skip
+
+
+def counts(url: str) -> dict:
+    """Read-only: the numbers that show each connected-data backfill matches its sources.
+    Only counts and table names; no row content."""
+
+    def exists(db, name):
+        return db.execute("SELECT to_regclass(%s)", (name,)).fetchone()[0] is not None
+
+    with psycopg.connect(url, connect_timeout=15) as db:
+        db.read_only = True
+        out: dict = {"links": None, "note_refs_by_sensitivity": None, "events": None,
+                     "judgements": None}  # fmt: skip
+        if exists(db, "app.links"):
+            old = {
+                t: db.execute(f"SELECT count(*) FROM app.{t}").fetchone()[0] for t in LINK_TABLES
+            }
+            mirrored = dict(db.execute(
+                "SELECT legacy_table, count(*) FROM app.links WHERE status='active' "
+                "AND legacy_table IS NOT NULL GROUP BY 1").fetchall())  # fmt: skip
+            out["links"] = {t: {"old": old[t], "links": mirrored.get(t, 0)} for t in LINK_TABLES}
+        has_sensitivity = db.execute(
+            "SELECT 1 FROM information_schema.columns WHERE table_schema='app' "
+            "AND table_name='note_refs' AND column_name='sensitivity'"
+        ).fetchone()
+        if has_sensitivity:
+            out["note_refs_by_sensitivity"] = dict(db.execute(
+                "SELECT sensitivity, count(*) FROM app.note_refs GROUP BY 1 ORDER BY 1").fetchall())  # fmt: skip
+        if exists(db, "app.events"):
+            out["events"] = db.execute("SELECT count(*) FROM app.events").fetchone()[0]
+        if exists(db, "app.judgements"):
+            copied = dict(db.execute(
+                "SELECT source_table, count(*) FROM app.judgements GROUP BY 1").fetchall())  # fmt: skip
+            out["judgements"] = {
+                t: {"eligible": db.execute(q).fetchone()[0], "judgements": copied.get(t, 0)}
+                for t, q in JUDGEMENT_SOURCES.items()
+            }
+    return out
+
+
 def pg_binaries() -> Path:
     found = shutil.which("pg_dump")
     folder = Path(found).parent if found else Path("C:/Program Files/PostgreSQL/18/bin")
@@ -222,7 +274,7 @@ def main(argv=None) -> int:
     from .local_runtime import default_home
 
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("action", choices=["plan", "apply"])
+    parser.add_argument("action", choices=["plan", "apply", "counts"])
     parser.add_argument("--target", choices=sorted(TARGETS), default="railway")
     parser.add_argument("--home", type=Path, default=default_home())
     parser.add_argument("--runtime-role")
@@ -232,6 +284,8 @@ def main(argv=None) -> int:
     try:
         if args.action == "plan":
             out = plan(url, args.runtime_role)
+        elif args.action == "counts":
+            out = counts(url)
         else:
             out = apply(url, args.home / "backups", args.runtime_role,
                         allow_destructive=args.allow_destructive)  # fmt: skip
