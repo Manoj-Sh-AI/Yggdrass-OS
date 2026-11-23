@@ -294,6 +294,7 @@ def test_brain_outage_does_not_block_application(signed_in):
     )
 
 
+@pytest.mark.schema_pinned
 def test_migrations_are_application_only_and_runtime_cannot_create_tables(postgres):
     Database(postgres["admin"]).migrate()
     with Database(postgres["admin"]).connect() as db:
