@@ -1,0 +1,245 @@
+{
+  "$defs": {
+    "Interpretation": {
+      "additionalProperties": false,
+      "properties": {
+        "commitment_identity": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Commitment Identity",
+          "type": "string"
+        },
+        "meaning": {
+          "enum": [
+            "deadline",
+            "appointment",
+            "availability",
+            "review",
+            "preference",
+            "recurrence",
+            "historical",
+            "cancellation"
+          ],
+          "title": "Meaning",
+          "type": "string"
+        },
+        "precision": {
+          "enum": [
+            "date",
+            "datetime",
+            "interval",
+            "month",
+            "year",
+            "relative",
+            "unspecified"
+          ],
+          "title": "Precision",
+          "type": "string"
+        },
+        "disposition": {
+          "enum": [
+            "clear",
+            "uncertain"
+          ],
+          "title": "Disposition",
+          "type": "string"
+        },
+        "action": {
+          "default": "upsert",
+          "enum": [
+            "upsert",
+            "retract",
+            "context"
+          ],
+          "title": "Action",
+          "type": "string"
+        },
+        "entity_type": {
+          "anyOf": [
+            {
+              "enum": [
+                "task",
+                "event",
+                "date_item",
+                "availability"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entity Type"
+        },
+        "data": {
+          "additionalProperties": true,
+          "title": "Data",
+          "type": "object"
+        },
+        "anchor": {
+          "default": "",
+          "maxLength": 1000,
+          "title": "Anchor",
+          "type": "string"
+        },
+        "original_phrase": {
+          "default": "",
+          "maxLength": 2000,
+          "title": "Original Phrase",
+          "type": "string"
+        },
+        "explanation": {
+          "default": "",
+          "maxLength": 2000,
+          "title": "Explanation",
+          "type": "string"
+        },
+        "target_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Target Id"
+        },
+        "target_version": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Target Version"
+        }
+      },
+      "required": [
+        "commitment_identity",
+        "meaning",
+        "precision",
+        "disposition"
+      ],
+      "title": "Interpretation",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "handoff_id": {
+      "format": "uuid",
+      "title": "Handoff Id",
+      "type": "string"
+    },
+    "change_id": {
+      "format": "uuid",
+      "title": "Change Id",
+      "type": "string"
+    },
+    "producer": {
+      "maxLength": 100,
+      "minLength": 1,
+      "title": "Producer",
+      "type": "string"
+    },
+    "namespace": {
+      "maxLength": 100,
+      "minLength": 1,
+      "title": "Namespace",
+      "type": "string"
+    },
+    "external_identity": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "External Identity",
+      "type": "string"
+    },
+    "sequence": {
+      "minimum": 0,
+      "title": "Sequence",
+      "type": "integer"
+    },
+    "previous_revision": {
+      "anyOf": [
+        {
+          "maxLength": 200,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Previous Revision"
+    },
+    "revision": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Revision",
+      "type": "string"
+    },
+    "slug": {
+      "pattern": "^[a-zA-Z0-9_-]{1,200}$",
+      "title": "Slug",
+      "type": "string"
+    },
+    "lifecycle": {
+      "default": "active",
+      "enum": [
+        "active",
+        "archived",
+        "missing"
+      ],
+      "title": "Lifecycle",
+      "type": "string"
+    },
+    "producer_version": {
+      "maxLength": 100,
+      "minLength": 1,
+      "title": "Producer Version",
+      "type": "string"
+    },
+    "causation_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Causation Id"
+    },
+    "interpretations": {
+      "items": {
+        "$ref": "#/$defs/Interpretation"
+      },
+      "maxItems": 100,
+      "title": "Interpretations",
+      "type": "array"
+    }
+  },
+  "required": [
+    "handoff_id",
+    "change_id",
+    "producer",
+    "namespace",
+    "external_identity",
+    "sequence",
+    "revision",
+    "slug",
+    "producer_version"
+  ],
+  "title": "SourceChange",
+  "type": "object"
+}

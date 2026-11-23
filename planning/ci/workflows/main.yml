@@ -1,0 +1,74 @@
+# Push to main (item 24): never cancelled, so Railway "Wait for CI" always sees a result.
+# Also the deploy watchdog (item 35): production must report a commit that passed here.
+name: Main
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "*/30 * * * *"
+
+concurrency:
+  group: main-${{ github.sha }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  api:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: yggdress_test
+        ports: ['5432:5432']
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      YGGDRESS_TEST_ADMIN_URL: postgresql://postgres:postgres@localhost:5432/yggdress_test
+      PYTHONHASHSEED: "0"
+      YGGDRAS_FAKE_MODEL: "1"
+    defaults:
+      run:
+        working-directory: app/api
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+      - run: uv sync --locked
+      - name: PostgreSQL tools on PATH (initdb, pg_dump, pg_restore for the backup tests)
+        run: echo "/usr/lib/postgresql/$(ls /usr/lib/postgresql | sort -V | tail -1)/bin" >> "$GITHUB_PATH"
+      - run: uv run pytest -q -p no:cacheprovider --color=no
+
+  web:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: app/web
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - run: npm ci && npx tsc --noEmit && npx vitest run
+
+  deploy-watchdog:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Production runs a commit on main
+        env:
+          HEALTH_URL: ${{ vars.PRODUCTION_HEALTH_URL }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -uo pipefail
+          [ -n "$HEALTH_URL" ] || { echo "::warning::Set repository variable PRODUCTION_HEALTH_URL"; exit 0; }
+          commit=$(curl -fsS "$HEALTH_URL" | python3 -c 'import json,sys;print(json.load(sys.stdin).get("commit",""))')
+          [ -n "$commit" ] || { echo "::error::/health reports no commit"; exit 1; }
+          gh api "repos/${{ github.repository }}/compare/main...$commit" --jq .status | grep -Eq '^(identical|behind)$' \
+            || { echo "::error::Production runs $commit, which is not on main"; exit 1; }

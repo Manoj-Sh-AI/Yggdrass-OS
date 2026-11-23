@@ -1,0 +1,67 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "operation": {
+      "enum": [
+        "task.create",
+        "task.update",
+        "task.execute",
+        "task.cancel",
+        "event.create",
+        "event.update",
+        "event.remove",
+        "date_item.create",
+        "date_item.update",
+        "date_item.remove",
+        "availability.create",
+        "availability.update",
+        "availability.remove"
+      ],
+      "title": "Operation",
+      "type": "string"
+    },
+    "id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Id"
+    },
+    "version": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Version"
+    },
+    "data": {
+      "additionalProperties": true,
+      "title": "Data",
+      "type": "object"
+    },
+    "explanation": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Explanation",
+      "type": "string"
+    }
+  },
+  "required": [
+    "operation",
+    "explanation"
+  ],
+  "title": "Proposal",
+  "type": "object"
+}

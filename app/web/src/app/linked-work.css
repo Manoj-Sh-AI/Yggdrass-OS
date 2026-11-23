@@ -1,0 +1,78 @@
+.linked-work .settings-footnote {
+  line-height: 1.6;
+}
+.note-context .linked-work .settings-footnote {
+  font-size: 11px;
+}
+.note-context .linked-work h3 {
+  font-size: 13px;
+  color: var(--text);
+}
+.linked-work-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.linked-work-list li {
+  position: relative;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--legacy-border);
+  overflow-wrap: anywhere;
+}
+.linked-work-list :is(a, .text-link) {
+  display: inline-block;
+  text-align: left;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+}
+.linked-work-list small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+  margin-top: 3px;
+}
+.linked-work-list .linked-work-unlink {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.linked-work-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 15px 0;
+}
+.linked-work-actions .button {
+  min-height: 38px;
+}
+.linked-work details summary,
+.linked-work-disclosure summary {
+  cursor: pointer;
+  padding: 12px 0;
+  font-size: 13px;
+  color: var(--text);
+}
+.linked-work details .form-stack {
+  margin: 10px 0;
+}
+.linked-work :is(input, select) {
+  width: 100%;
+  min-width: 0;
+}
+.linked-work-disclosure {
+  border-top: 1px solid var(--legacy-border);
+  margin: 14px 0;
+}
+.linked-work-disclosure p {
+  line-height: 1.6;
+}
+@media (max-width: 760px) {
+  .linked-work-list :is(a, .text-link) {
+    min-height: 30px;
+  }
+  .linked-work-list .linked-work-unlink {
+    min-height: 36px;
+  }
+}

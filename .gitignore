@@ -5,6 +5,7 @@
 
 # Personal data: never committed
 local-data/*
+.local-data/
 !local-data/.gitkeep
 
 # Python
@@ -23,3 +24,8 @@ build/
 Thumbs.db
 .vscode/
 .idea/
+
+# Agent gates (planning/agentic-engineering.md)
+.claude/state/
+.claude/worktrees/
+.testmondata

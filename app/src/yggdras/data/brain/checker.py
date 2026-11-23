@@ -293,12 +293,17 @@ class Checker:
 
     # ---------------------------------------------------------------- the check
 
-    def check(self, changes: dict[str, str | None]) -> Verdict:
+    def check(self, changes: dict[str, str | None], restored=frozenset()) -> Verdict:
+        """*restored*: notes brought back from the archive as they were. They are judged as
+        unchanged notes (the new-note rules don't apply to them); the rest of the change, and
+        the whole library, is checked as usual."""
         verdict = Verdict()
         touched: dict[str, tuple[str | None, str]] = {}
         for rel, text in changes.items():
             path = self.root / rel
             before = path.read_text(encoding="utf-8") if path.is_file() else None
+            if rel in restored and before is None:
+                before = text
             if text is None:
                 if before is None:
                     verdict.hard.append(Issue("path", rel, "no such note to take out"))

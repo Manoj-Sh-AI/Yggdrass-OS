@@ -1,0 +1,71 @@
+# CI integrity (Stage 3, item 22-23): the changes an agent could make to pass CI
+# without fixing anything. Workflow/test-config changes need the hand-applied label
+# `ci-change-approved`; the rest fail outright or warn.
+name: CI integrity
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+concurrency:
+  group: integrity-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Diff checks
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+        run: |
+          set -uo pipefail
+          fail=0
+          files=$(git diff --name-only "$BASE"...HEAD)
+          # sed/awk always exit 0, so nothing here needs an error-hiding fallback, and the
+          # tests use here-strings: under pipefail `echo | grep -q` can report a match as a
+          # miss when grep exits early (seen as "Broken pipe" on PR #46).
+          # Code and config only: docs that describe these rules, and this workflow (whose
+          # own messages name the patterns), are not scanned.
+          added=$(git diff "$BASE"...HEAD -- . ':(exclude)*.md' ':(exclude).github/workflows/ci-integrity.yml' \
+            ':(exclude)planning/ci/workflows/ci-integrity.yml' | sed -n '/^+++/d; /^+/p')
+          if grep -Eq '^(\.github/|\.claude/|tools/ci/|\.gitleaksignore$|app/api/pyproject.toml|app/web/vitest.config|app/mobile/package.json)' <<< "$files"; then
+            if ! grep -q ',ci-change-approved,' <<< ",$LABELS,"; then
+              echo "::error::CI/test configuration changed; needs the hand-applied label ci-change-approved."; fail=1
+            fi
+          fi
+          if grep -Eq '\|\| *true|continue-on-error: *true' <<< "$added"; then
+            echo "::error::A new '|| true' or continue-on-error hides failures."; fail=1
+          fi
+          # Unconditional only: skip/xfail markers, .only, and test.skip("title"). A
+          # conditional skipif / test.skip(condition) is allowed.
+          if grep -Eq "pytest\.mark\.(skip|xfail)\b|\b(it|describe|test)\.only\(|\b(it|describe|test)\.skip\(\s*['\"\`]" <<< "$added"; then
+            echo "::error::A new skip/xfail/.only marker."; fail=1
+          fi
+          deleted=$(git diff --numstat "$BASE"...HEAD -- '*test*' | awk '{d+=$2-$1} END {print d+0}')
+          if [ "$deleted" -gt 50 ]; then echo "::error::Net test deletion of $deleted lines."; fail=1; fi
+          code=$(awk '/^app\/.*\.(py|ts|tsx)$/ && !/(^|\/)tests?\//' <<< "$files")
+          tests=$(awk '/(^|\/)tests?\//' <<< "$files")
+          [ -n "$code" ] && [ -z "$tests" ] && echo "::warning::Code changed with no test change."
+          [ -z "$code" ] && [ -n "$tests" ] && echo "::warning::Only tests changed."
+          for lock in app/web/package-lock.json app/mobile/package-lock.json app/api/uv.lock; do
+            manifest=$(dirname "$lock")/$( [ "${lock##*.}" = lock ] && echo pyproject.toml || echo package.json )
+            if grep -qx "$lock" <<< "$files" && ! grep -qx "$manifest" <<< "$files"; then
+              echo "::warning::$lock changed without $manifest."
+            fi
+          done
+          exit $fail
+      - name: Secret scan (diff only; gitleaks v8.30.1, verified 2026-11-22)
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          curl -sSL -o gitleaks.tgz https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+          tar -xzf gitleaks.tgz gitleaks
+          ./gitleaks git --log-opts="$BASE..HEAD" --redact --verbose --exit-code 1 .

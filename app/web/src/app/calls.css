@@ -1,0 +1,22 @@
+/* Calls in the open-air look: a phone-style incoming screen and a floating in-call bar. */
+.call-incoming { display: grid; justify-items: center; gap: 12px; padding: 18px 0 6px; }
+.call-avatar { display: grid; place-items: center; width: 92px; height: 92px; border-radius: 50%; color: #29342c; background: #dce2cf; box-shadow: 0 0 0 10px #dce2cf1f, 0 0 0 22px #dce2cf0d; animation: call-pulse 1.8s ease-in-out infinite; }
+.call-avatar.small { width: 34px; height: 34px; box-shadow: none; animation: none; flex-shrink: 0; }
+.call-incoming-label { margin: 6px 0 0; color: var(--muted); font-size: 13px; letter-spacing: 1.4px; text-transform: uppercase; }
+.call-ring-actions { display: flex; justify-content: space-around; gap: 30px; padding: 22px 6px 6px; }
+.call-action { display: grid; justify-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
+.call-round { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; border: 1px solid #eef2e538; background: #ffffff10; color: var(--text); cursor: pointer; transition-property: background-color, scale; transition-duration: 140ms; }
+.call-round.small { width: 40px; height: 40px; }
+.call-round:hover { background: #ffffff1c; }
+.call-round:disabled { opacity: 0.5; cursor: default; }
+.call-answer { background: #6fbf8e; border-color: #8fd3a9; color: #10261a; }
+.call-answer:hover { background: #7fcb9c; }
+.call-decline { background: #d9665b; border-color: #e88a80; color: #fff; }
+.call-decline:hover { background: #e2756a; }
+.call-bar { gap: 12px; padding: 8px 10px 8px 10px; border-radius: 999px; background: rgba(32, 34, 35, 0.92); border: 1px solid var(--glass-border); box-shadow: 0 14px 42px #10202455; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); color: var(--text); }
+.call-bar-text { display: grid; min-width: 0; max-width: 260px; line-height: 1.3; }
+.call-bar-text strong { font-weight: 500; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.call-bar-text small { color: var(--muted); font-size: 11px; }
+@keyframes call-pulse { 50% { box-shadow: 0 0 0 14px #dce2cf26, 0 0 0 30px #dce2cf0a; } }
+@media (prefers-reduced-motion: reduce) { .call-avatar { animation: none; } }
+:root[data-motion="reduced"] .call-avatar { animation: none; }

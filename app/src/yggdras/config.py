@@ -67,3 +67,22 @@ def load_env_file(path=None) -> None:
         key = key.strip()
         if sep and key and not key.startswith("#") and key not in os.environ:
             os.environ[key] = value.strip().strip('"').strip("'")
+
+
+def brain_source() -> str:
+    """Where Lia reads and writes (D44): "markdown" (the files, today's default) or "rows"
+    (the local PostgreSQL in BRAIN_DATABASE_URL). Switched only after the parity gate."""
+    value = os.environ.get("YGGDRAS_BRAIN_SOURCE", "markdown").strip().lower()
+    if value not in ("markdown", "rows"):
+        raise ValueError("YGGDRAS_BRAIN_SOURCE must be 'markdown' or 'rows'")
+    return value
+
+
+def brain_view():
+    """The graph viewer built from the rows (local-data/brain-view), served at /graph."""
+    return local_data() / "brain-view"
+
+
+def brain_raw():
+    """Raw uploads under the rows path stay files (D44): local-data/brain-raw/raw/<name>."""
+    return local_data() / "brain-raw"

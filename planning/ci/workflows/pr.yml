@@ -1,0 +1,144 @@
+# PR checks (planning/agentic-engineering.md, Stage 3). Install: see planning/ci/README.md.
+# `ci-gate` is the ONLY required status check: green when every job that should run
+# passed and the rest skipped. Actions pinned to full commit SHAs (verified 2026-11-22).
+name: PR
+
+on:
+  pull_request:
+
+concurrency:
+  # An agent pushing five times in two minutes pays for one run, not five.
+  group: pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      api: ${{ steps.filter.outputs.api }}
+      web: ${{ steps.filter.outputs.web }}
+      mobile: ${{ steps.filter.outputs.mobile }}
+      core: ${{ steps.filter.outputs.core }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        id: filter
+        with:
+          filters: |
+            api: ['app/api/**', '.github/workflows/**']
+            web: ['app/web/**', '.github/workflows/**']
+            mobile: ['app/mobile/**', '.github/workflows/**']
+            core: ['app/src/**', 'app/tests/**', 'app/pyproject.toml', 'app/uv.lock', '.github/workflows/**']
+
+  checks:
+    # Repo-wide checks scripted in tools/ci and tested in app/api/tests/test_ci_tools.py.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - run: python3 tools/ci/check_decisions.py "${{ github.event.pull_request.base.sha }}"
+      - run: python3 tools/ci/check_ports.py
+
+  api:
+    # Item 26: six shards balanced by the committed app/api/.test_durations (pytest-split).
+    # Keep the job name stable: a skipped matrix leg still reports.
+    needs: changes
+    if: needs.changes.outputs.api == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: true
+      matrix:
+        group: [1, 2, 3, 4, 5, 6]
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: yggdress_test
+        ports: ['5432:5432']
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      YGGDRESS_TEST_ADMIN_URL: postgresql://postgres:postgres@localhost:5432/yggdress_test
+      PYTHONHASHSEED: "0"
+      YGGDRAS_FAKE_MODEL: "1"
+    defaults:
+      run:
+        working-directory: app/api
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+      - run: uv sync --locked
+      - if: matrix.group == 1
+        run: uv run ruff check . && uv run ruff format --check .
+      - run: >-
+          uv run pytest -q -p no:cacheprovider -p no:randomly --color=no --timeout=180 -m "not slow"
+          --splits 6 --group ${{ matrix.group }} --durations-path .test_durations --durations=25
+
+  web:
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: app/web
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: CI=1 node scripts/lint-tokens.mjs
+      - run: npx vitest run
+
+  mobile:
+    needs: changes
+    if: needs.changes.outputs.mobile == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: app/mobile
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npx jest --runInBand
+
+  core:
+    needs: changes
+    if: needs.changes.outputs.core == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run pytest -q
+
+  ci-gate:
+    needs: [changes, checks, api, web, mobile, core]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Every job passed or was skipped
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          echo "$RESULTS"
+          if echo "$RESULTS" | grep -Eq '"result": "(failure|cancelled)"'; then
+            echo "A required job failed or was cancelled."; exit 1
+          fi

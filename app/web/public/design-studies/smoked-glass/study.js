@@ -1,0 +1,13 @@
+const status = document.getElementById('status');
+let timer;
+function notify(message){status.textContent=message;status.classList.add('show');clearTimeout(timer);timer=setTimeout(()=>status.classList.remove('show'),3000)}
+document.querySelectorAll('[data-preview]').forEach(button=>button.addEventListener('click',()=>{document.getElementById('detail-title').textContent=button.dataset.preview;document.getElementById('detail-dialog').showModal()}));
+document.querySelectorAll('.close').forEach(button=>button.addEventListener('click',()=>button.closest('dialog').close()));
+document.getElementById('capture-open').addEventListener('click',()=>document.getElementById('capture-dialog').showModal());
+document.getElementById('capture-form').addEventListener('submit',event=>{event.preventDefault();const input=document.getElementById('capture-title');notify('Kept in this study: '+input.value.trim());document.getElementById('capture-dialog').close();input.value=''});
+document.querySelectorAll('.focus input').forEach(input=>input.addEventListener('change',()=>{const count=document.querySelectorAll('.focus input:checked').length;document.querySelector('.focus-count').textContent=count+' / 3'}));
+document.querySelectorAll('[data-scene]').forEach(button=>button.addEventListener('click',()=>{document.body.dataset.scene=button.dataset.scene;document.querySelectorAll('[data-scene]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)))}));
+document.getElementById('contrast').addEventListener('click',event=>{const on=document.body.classList.toggle('reduced');event.currentTarget.setAttribute('aria-pressed',String(on))});
+document.getElementById('search-field').addEventListener('input',event=>{const query=event.target.value.trim().toLowerCase();document.querySelectorAll('.agenda-row').forEach(row=>{row.hidden=!!query&&!row.textContent.toLowerCase().includes(query)})});
+let progress=0;document.getElementById('routine-start').addEventListener('click',event=>{progress=progress===100?0:progress+50;const bar=document.querySelector('.routine-progress');bar.setAttribute('aria-valuenow',String(progress));bar.querySelector('i').style.width=progress+'%';event.currentTarget.firstChild.textContent=progress===0?'Begin ':progress===50?'Complete ':'Reset ';document.getElementById('routine-status').textContent=progress===100?'A chapter. A new perspective.':progress===50?'A little space to learn.':'A little progress adds up.'});
+document.addEventListener('keydown',event=>{if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==='k'){event.preventDefault();document.getElementById('search-field').focus()}if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==='n'){event.preventDefault();document.getElementById('capture-dialog').showModal()}});

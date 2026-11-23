@@ -1,0 +1,72 @@
+{
+  "run_id": "00000000-0000-4000-8000-000000000001",
+  "conversation_id": "00000000-0000-4000-8000-000000000002",
+  "status": "waiting",
+  "mode": "executing",
+  "plan": {
+    "title": "Invented picnic",
+    "steps": [
+      {
+        "id": "s1",
+        "title": "Find free Saturday slots",
+        "status": "completed",
+        "depends_on": [],
+        "check": "slots listed",
+        "verdict": "passed",
+        "reason": "",
+        "attempts": 1,
+        "model": "claude-haiku-5-5",
+        "result": "10:00-14:00"
+      },
+      {
+        "id": "s2",
+        "title": "Create the picnic task",
+        "status": "in_progress",
+        "depends_on": [
+          "s1"
+        ],
+        "check": "task exists",
+        "verdict": null,
+        "reason": "",
+        "attempts": 1,
+        "model": "",
+        "result": ""
+      }
+    ]
+  },
+  "tools": [
+    {
+      "id": "0-toolu_1",
+      "name": "change_task",
+      "state": "approval-requested",
+      "step_id": "s2",
+      "input": {
+        "operation": "task.create"
+      },
+      "output": null,
+      "error": "",
+      "stakes": "low-irreversible",
+      "decided_by": "user",
+      "intent": "task.create: invented",
+      "approval": {
+        "approved": true,
+        "reason": ""
+      }
+    }
+  ],
+  "reasoning": "Thinking about the invented picnic.",
+  "text": "Here is the plan.",
+  "model": "claude-sonnet-5-5",
+  "usage": [
+    {
+      "role": "router",
+      "model": "claude-haiku-5-5",
+      "input_tokens": 10,
+      "output_tokens": 5,
+      "cost_usd": 4e-06
+    }
+  ],
+  "error": "",
+  "branch_of": null,
+  "user_message": null
+}

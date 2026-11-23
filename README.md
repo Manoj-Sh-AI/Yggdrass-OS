@@ -4,11 +4,11 @@ Second Brain.
 
 A personal "second brain" that organizes projects, work, learning and job search through focused phone notifications. Built as a training ground for agentic software engineering: spec first, then agent-built, verified, versioned.
 
-The build plan is [`planning/locked-plan-v1.md`](planning/locked-plan-v1.md). It sets the phases, their exit tests and the decision register.
+The current application delivery record is [`planning/phase-1-application-foundation.md`](planning/phase-1-application-foundation.md). The earlier [`planning/locked-plan-v1.md`](planning/locked-plan-v1.md) remains the historical plan for the existing Brain tooling; the revised Phase 1 authorization governs current application work.
 
 ## Status
 
-Project setup only. Nothing is built yet. Next up is **phase 1a**: brain nodes written by hand, an index and a gateway skill. The brain itself lives in a separate private repo, never in this one (D3).
+The repository includes existing Python Brain tooling/Lia connector and the Phase 1 application foundation: Next.js UI, separate FastAPI service, application-only PostgreSQL persistence and single-owner password authentication. Brain responses in this UI are labeled synthetic mocks; real integration awaits Claude. Claude exclusively owns migration of Brain storage to PostgreSQL and retirement of Git-based Brain storage. No private Brain data belongs in this public repository.
 
 ## Repository map
 
@@ -27,9 +27,11 @@ Project setup only. Nothing is built yet. Next up is **phase 1a**: brain nodes w
 
 ## Architecture in one line
 
-Interface layer (notifications, chat) → Processing layer (agents, orchestrator) → Data layer (markdown brain as the source of truth, with a derived Graphify map built from its links; SQLite and a Supabase outbox come later). Details live in `planning/`.
+Web / future desktop and mobile → shared application API → separate application PostgreSQL schema. Brain operations pass only through Claude's approved Lia interface; Claude owns Brain storage, migration and memory behavior. See [current Phase 1 contract](requirements/spec-phase-1-application-foundation.md). Older locked-plan implementation details and the existing Lia connector below describe the historical checkout; they do not authorize application-owned Brain changes.
 
 ## Quick start
+
+Configure the separate [application service](app/api/README.md), then run the [frontend](app/web/README.md). Sign-in requires a privately chosen personal password; tasks and routine execution persist in application PostgreSQL. The 24 generated landscapes follow season, time and optional weather. No public deployment is enabled by default and no real Brain connection is configured.
 
 ```bash
 cd app

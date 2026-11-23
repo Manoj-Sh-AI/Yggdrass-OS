@@ -1,0 +1,49 @@
+# Nightly: regenerate app/api/.test_durations so the six PR shards stay balanced, and open a
+# PR with it (item 26). Tier 1 by tools/ci/pr_tier.py (.test_durations is mechanical).
+name: Test durations
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  durations:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: yggdress_test
+        ports: ['5432:5432']
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      YGGDRESS_TEST_ADMIN_URL: postgresql://postgres:postgres@localhost:5432/yggdress_test
+      PYTHONHASHSEED: "0"
+      YGGDRAS_FAKE_MODEL: "1"
+      GH_TOKEN: ${{ github.token }}
+    defaults:
+      run:
+        working-directory: app/api
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+      - run: uv sync --locked
+      - name: PostgreSQL tools on PATH (initdb, pg_dump, pg_restore for the backup tests)
+        run: echo "/usr/lib/postgresql/$(ls /usr/lib/postgresql | sort -V | tail -1)/bin" >> "$GITHUB_PATH"
+      - run: uv run pytest -q -p no:cacheprovider --color=no --timeout=180 --store-durations --durations-path .test_durations
+      - name: Open a PR when the durations moved
+        run: |
+          git diff --quiet -- .test_durations && { echo "No change."; exit 0; }
+          branch="bot/$(date -u +%Y%m%d)-test-durations"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch" && git add .test_durations && git commit -m "Refresh test durations"
+          git push origin "$branch"
+          gh pr create --base main --head "$branch" --title "Refresh test durations" --body "Nightly regeneration for pytest-split shards."

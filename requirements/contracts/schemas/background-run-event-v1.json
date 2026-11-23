@@ -1,0 +1,80 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "event_key": {
+      "format": "uuid",
+      "title": "Event Key",
+      "type": "string"
+    },
+    "provider": {
+      "maxLength": 100,
+      "minLength": 1,
+      "title": "Provider",
+      "type": "string"
+    },
+    "external_run_id": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "External Run Id",
+      "type": "string"
+    },
+    "sequence": {
+      "minimum": 0,
+      "title": "Sequence",
+      "type": "integer"
+    },
+    "label": {
+      "maxLength": 180,
+      "minLength": 1,
+      "title": "Label",
+      "type": "string"
+    },
+    "state": {
+      "enum": [
+        "queued",
+        "running",
+        "succeeded",
+        "failed",
+        "cancelled"
+      ],
+      "title": "State",
+      "type": "string"
+    },
+    "task_id": {
+      "anyOf": [
+        {
+          "format": "uuid",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Task Id"
+    },
+    "task_version": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Task Version"
+    }
+  },
+  "required": [
+    "event_key",
+    "provider",
+    "external_run_id",
+    "sequence",
+    "label",
+    "state"
+  ],
+  "title": "RunEvent",
+  "type": "object"
+}

@@ -1,0 +1,19 @@
+{
+  "_comment": "Every local dev port, in one place (planning/agentic-engineering.md item 55). Agents never invent a port: tools/ci/check_ports.py fails on a localhost port not listed here. Ports that only appear in tests as invented values are under test_only.",
+  "ports": {
+    "3000": "web app (laptop, local preview)",
+    "3100": "web app under Playwright e2e and browser_check.py",
+    "3002": "web app for the open-air visual check (check-open-air.cjs)",
+    "3300": "web app for the mobile device fixture",
+    "7233": "Temporal dev server (gRPC)",
+    "8100": "brain notes API (BRAIN_SERVER_URL default)",
+    "8101": "application API behind the web graph-viewer route",
+    "8765": "Lia local note server (footnote links)"
+  },
+  "test_only": {
+    "8080": "invented API port in test_hosted.py",
+    "8912": "invented API port in mobile-proxy.test.ts",
+    "9999": "invented API port in graph-route.test.ts",
+    "4321": "invented unlisted port in test_ci_tools.py (proves the check fails)"
+  }
+}

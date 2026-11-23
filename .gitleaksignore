@@ -1,0 +1,8 @@
+# Reviewed gitleaks false positives (planning/agentic-engineering.md item 23).
+# One exact fingerprint per line; changing this file needs the hand-applied label
+# ci-change-approved (ci-integrity.yml). Reviewed 2026-11-23:
+# - test_mobile.py 93/108: random idempotency keys in a test request, not credentials
+# - parity.py 36: a git SHA-256 of an evaluation file, not a credential
+9834b378d2cb287468cc41f39e73a7e450fe15a4:app/api/tests/test_mobile.py:generic-api-key:93
+9834b378d2cb287468cc41f39e73a7e450fe15a4:app/api/tests/test_mobile.py:generic-api-key:108
+d8eac7ce56e4e5fb7bc75185e51eaf71b33ee149:evals/experiments/rows-parity/parity.py:generic-api-key:36
