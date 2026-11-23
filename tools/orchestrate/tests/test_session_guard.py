@@ -59,6 +59,19 @@ def test_scrub_keeps_only_the_allow_list():
     assert removed == ["BRAIN_TOKEN", "DATABASE_URL", "SUPABASE_KEY"]
 
 
+def test_key_comes_from_env_or_key_file(tmp_path):
+    from orchestrate.isolation import load_key
+
+    assert load_key({"ANTHROPIC_API_KEY": "k"})
+    assert not load_key({})
+    assert not load_key({"ORCH_KEY_FILE": str(tmp_path / "missing")})
+    (tmp_path / "empty").write_text("  \n")
+    assert not load_key({"ORCH_KEY_FILE": str(tmp_path / "empty")})
+    (tmp_path / "key").write_text("﻿test-value\n", encoding="utf-8")
+    env = {"ORCH_KEY_FILE": str(tmp_path / "key")}
+    assert load_key(env) and env["ANTHROPIC_API_KEY"] == "test-value"
+
+
 def test_brief_ends_with_the_stop_line_and_send_back_tails_output():
     task = Task("a", "Do x", ["docs/a.md"], [Check("uv run pytest -q")], "x exists")
     text = worker_brief(task, "claude/x")

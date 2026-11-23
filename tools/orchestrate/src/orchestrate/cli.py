@@ -60,7 +60,7 @@ def cmd_server(config: isolation.Config) -> int:
 
 
 async def cmd_host(config: isolation.Config) -> int:
-    if not os.environ.get("ANTHROPIC_API_KEY"):
+    if not isolation.load_key():
         print("ANTHROPIC_API_KEY is not set. D6: workers use an API key, never a claude.ai login.")
         return 2
     removed = isolation.scrub_environment()
@@ -169,7 +169,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "host":
         return asyncio.run(cmd_host(config))
     if args.command == "probe":
-        if not os.environ.get("ANTHROPIC_API_KEY"):
+        if not isolation.load_key():
             print("ANTHROPIC_API_KEY is not set (D6).")
             return 2
         isolation.scrub_environment()

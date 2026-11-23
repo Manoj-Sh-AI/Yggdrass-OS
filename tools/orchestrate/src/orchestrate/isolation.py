@@ -59,6 +59,21 @@ def scrub_environment(environ: dict[str, str] | os._Environ = os.environ) -> lis
     return sorted(removed)
 
 
+def load_key(environ: dict[str, str] | os._Environ = os.environ) -> bool:
+    """Use ANTHROPIC_API_KEY if set; otherwise read it from the file named by ORCH_KEY_FILE,
+    so the key never has to pass through a chat or a command line. Never printed."""
+    if environ.get("ANTHROPIC_API_KEY"):
+        return True
+    path = environ.get("ORCH_KEY_FILE")
+    if not path or not Path(path).is_file():
+        return False
+    key = Path(path).read_text(encoding="utf-8-sig").strip()
+    if not key:
+        return False
+    environ["ANTHROPIC_API_KEY"] = key
+    return True
+
+
 def worker_env(scratch_url: str) -> dict[str, str]:
     return {
         "DATABASE_URL": scratch_url,
