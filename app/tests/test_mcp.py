@@ -50,7 +50,7 @@ def service_with(brain, replies, tmp_path):
     return LiaService(root, skills, lambda model: client, traces=tmp_path / "traces"), client
 
 
-MODEL_TOOLS = {"ask_lia", "open_note", "tell_lia", "ingest_file", "restore_note"}
+MODEL_TOOLS = {"ask_lia", "open_note", "yggdras_command", "tell_lia", "ingest_file", "restore_note"}
 APP_TOOLS = {"confirm_change", "cancel_change", "undo_change"}
 
 
@@ -61,7 +61,7 @@ def test_the_model_reads_and_asks_lia_to_write_but_only_the_app_confirms(brain, 
     assert "<lia_reply>" in tools["ask_lia"].description
     assert "third person" in tools["ask_lia"].description
     assert "never answer from your own knowledge" in tools["ask_lia"].description
-    for name in ("ask_lia", "open_note"):
+    for name in ("ask_lia", "open_note", "yggdras_command"):  # the model only reads here
         assert tools[name].annotations.read_only_hint
     assert not tools["tell_lia"].annotations.read_only_hint
     assert "can't confirm or undo" in tools["tell_lia"].description

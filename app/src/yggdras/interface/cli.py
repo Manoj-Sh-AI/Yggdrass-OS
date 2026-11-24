@@ -6,6 +6,8 @@
     yggdras confirm <preview id> | cancel <preview id> | undo <commit> | pending
     yggdras restore <archived note: slug or name>
     yggdras mcp [--brain REPO] [--flat ROOT] [--model M] [--skills DIR]
+    yggdras <brain|notes|links|changes|task|goal|project|block|event|date-item|availability> …
+                                       agent commands: see `yggdras <group> --help`
 
 ask prints Lia's answer, its citations, the cost and the latency. tell passes a change
 request to Lia (D36): adding is written at once, changing or removing becomes a preview that
@@ -86,6 +88,11 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("mcp", help="run Lia as an MCP server (stdio)", add_help=False)
     if argv is None:
         argv = sys.argv[1:]
+    from yggdras.interface import commands
+
+    if argv[:1] and argv[0] in commands.GROUPS:  # the agent commands (cli-build-spec.md)
+        config.load_env_file()
+        return commands.main(argv)
     if argv[:1] == ["mcp"]:
         from yggdras.interface.mcp_server import main as mcp_main
 
