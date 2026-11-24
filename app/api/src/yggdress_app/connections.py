@@ -207,6 +207,35 @@ def change_link(db, command, verified_note):
     return result
 
 
+def apply_connection(database, command: ConnectionCommand, verify):
+    """One connection write under the planning lock, with its receipt and command id. Shared by
+    the router and the agent CLI. `verify(slug)` returns the note being linked (read before the
+    lock is taken)."""
+    fingerprint = hashlib.sha256(
+        ("connections:" + command.model_dump_json(exclude={"key"})).encode()
+    ).hexdigest()
+    # Replays do not depend on Brain availability; don't hold database locks over HTTP.
+    with database.connect() as db:
+        replay = receipt(db, command.key, fingerprint)
+        if replay is not None:
+            return replay
+    verified = None
+    if command.operation.endswith(".link_note"):
+        verified = verify(command.note_slug)
+    with database.connect() as db:
+        db.execute("SELECT pg_advisory_xact_lock(%s)", (LOCK,))
+        replay = receipt(db, command.key, fingerprint)
+        if replay is not None:
+            return replay
+        db.execute("SELECT set_config('yggdress.command_id',%s,true)", (str(command.key),))
+        result = jsonable_encoder(change_link(db, command, verified))
+        db.execute(
+            "INSERT INTO app.planning_commands(id,fingerprint,result) VALUES (%s,%s,%s)",
+            (command.key, fingerprint, Jsonb(result)),
+        )
+        return result
+
+
 def limited(rows, limit):
     return rows[:limit], len(rows) > limit
 
@@ -292,29 +321,7 @@ def connections_router(database, notes, session):
 
     @router.post("/commands")
     def mutate(command: ConnectionCommand):
-        fingerprint = hashlib.sha256(
-            ("connections:" + command.model_dump_json(exclude={"key"})).encode()
-        ).hexdigest()
-        # Replays do not depend on Brain availability; don't hold database locks over HTTP.
-        with database.connect() as db:
-            replay = receipt(db, command.key, fingerprint)
-            if replay is not None:
-                return replay
-        verified = None
-        if command.operation.endswith(".link_note"):
-            verified = verified_note(notes, command.note_slug)
-        with database.connect() as db:
-            db.execute("SELECT pg_advisory_xact_lock(%s)", (LOCK,))
-            replay = receipt(db, command.key, fingerprint)
-            if replay is not None:
-                return replay
-            db.execute("SELECT set_config('yggdress.command_id',%s,true)", (str(command.key),))
-            result = jsonable_encoder(change_link(db, command, verified))
-            db.execute(
-                "INSERT INTO app.planning_commands(id,fingerprint,result) VALUES (%s,%s,%s)",
-                (command.key, fingerprint, Jsonb(result)),
-            )
-            return result
+        return apply_connection(database, command, lambda slug: verified_note(notes, slug))
 
     @router.get("/notes/{slug}")
     def for_note(slug: str, limit: int = Query(default=40, ge=1, le=100)):

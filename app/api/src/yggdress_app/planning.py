@@ -759,29 +759,35 @@ def planning_router(database, session):
 
     @router.post("/commands")
     def mutate(command: Command):
-        fingerprint = hashlib.sha256(command.model_dump_json(exclude={"key"}).encode()).hexdigest()
-        with database.connect() as db:
-            db.execute("SELECT pg_advisory_xact_lock(%s)", (LOCK,))
-            receipt = db.execute(
-                "SELECT * FROM app.planning_commands WHERE id=%s", (command.key,)
-            ).fetchone()
-            if receipt:
-                if receipt["fingerprint"] != fingerprint:
-                    raise HTTPException(
-                        409, "This request key was already used for a different change."
-                    )
-                return receipt["result"]
-            try:
-                db.execute("SELECT set_config('yggdress.command_id',%s,true)", (str(command.key),))
-                result = jsonable_encoder(command_result(db, command))
-            except ValidationError as error:
-                messages = "; ".join(e["msg"] for e in error.errors())
-                raise HTTPException(422, messages) from None
-            refresh_reminders(db)
-            db.execute(
-                "INSERT INTO app.planning_commands(id,fingerprint,result) VALUES (%s,%s,%s)",
-                (command.key, fingerprint, Jsonb(result)),
-            )
-            return result
+        return apply_command(database, command)
 
     return router
+
+
+def apply_command(database, command: Command):
+    """One planning write under the planning lock, with its receipt and command id. Shared by
+    the router and the agent CLI (yggdress_app.commands.planning)."""
+    fingerprint = hashlib.sha256(command.model_dump_json(exclude={"key"}).encode()).hexdigest()
+    with database.connect() as db:
+        db.execute("SELECT pg_advisory_xact_lock(%s)", (LOCK,))
+        receipt = db.execute(
+            "SELECT * FROM app.planning_commands WHERE id=%s", (command.key,)
+        ).fetchone()
+        if receipt:
+            if receipt["fingerprint"] != fingerprint:
+                raise HTTPException(
+                    409, "This request key was already used for a different change."
+                )
+            return receipt["result"]
+        try:
+            db.execute("SELECT set_config('yggdress.command_id',%s,true)", (str(command.key),))
+            result = jsonable_encoder(command_result(db, command))
+        except ValidationError as error:
+            messages = "; ".join(e["msg"] for e in error.errors())
+            raise HTTPException(422, messages) from None
+        refresh_reminders(db)
+        db.execute(
+            "INSERT INTO app.planning_commands(id,fingerprint,result) VALUES (%s,%s,%s)",
+            (command.key, fingerprint, Jsonb(result)),
+        )
+        return result
