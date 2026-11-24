@@ -96,29 +96,33 @@ def temporal_router(database, session):
 
     @router.post("/commands")
     def mutate(command: TimeCommand):
-        fingerprint = hashlib.sha256(
-            ("time:" + command.model_dump_json(exclude={"key"})).encode()
-        ).hexdigest()
-        with database.connect() as db:
-            db.execute("SELECT pg_advisory_xact_lock(%s)", (LOCK,))
-            receipt = db.execute(
-                "SELECT * FROM app.planning_commands WHERE id=%s", (command.key,)
-            ).fetchone()
-            if receipt:
-                if receipt["fingerprint"] != fingerprint:
-                    raise HTTPException(409, "This retry key belongs to a different change.")
-                return receipt["result"]
-            db.execute("SELECT set_config('yggdress.command_id',%s,true)", (str(command.key),))
-            try:
-                result = jsonable_encoder(temporal_result(db, command))
-            except ValidationError as error:
-                raise HTTPException(
-                    422, "; ".join(item["msg"] for item in error.errors())
-                ) from None
-            db.execute(
-                "INSERT INTO app.planning_commands(id,fingerprint,result) VALUES (%s,%s,%s)",
-                (command.key, fingerprint, Jsonb(result)),
-            )
-            return result
+        return apply_time_command(database, command)
 
     return router
+
+
+def apply_time_command(database, command: TimeCommand):
+    """One date-item/availability command under the planning lock, with its receipt and
+    command id. The router and the CLI (`yggdras date-item|availability …`) both call this."""
+    fingerprint = hashlib.sha256(
+        ("time:" + command.model_dump_json(exclude={"key"})).encode()
+    ).hexdigest()
+    with database.connect() as db:
+        db.execute("SELECT pg_advisory_xact_lock(%s)", (LOCK,))
+        receipt = db.execute(
+            "SELECT * FROM app.planning_commands WHERE id=%s", (command.key,)
+        ).fetchone()
+        if receipt:
+            if receipt["fingerprint"] != fingerprint:
+                raise HTTPException(409, "This retry key belongs to a different change.")
+            return receipt["result"]
+        db.execute("SELECT set_config('yggdress.command_id',%s,true)", (str(command.key),))
+        try:
+            result = jsonable_encoder(temporal_result(db, command))
+        except ValidationError as error:
+            raise HTTPException(422, "; ".join(item["msg"] for item in error.errors())) from None
+        db.execute(
+            "INSERT INTO app.planning_commands(id,fingerprint,result) VALUES (%s,%s,%s)",
+            (command.key, fingerprint, Jsonb(result)),
+        )
+        return result
