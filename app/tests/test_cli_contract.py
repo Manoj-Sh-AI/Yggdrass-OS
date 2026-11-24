@@ -3,6 +3,7 @@
 import ast
 import io
 import json
+import re
 import subprocess
 from pathlib import Path
 
@@ -17,6 +18,33 @@ def code_without_docstring(path: Path) -> str:
     tree = ast.parse(path.read_text(encoding="utf-8"))
     tree.body = tree.body[1:]  # the module docstring differs on purpose
     return ast.unparse(tree)
+
+
+RAW_BRAIN = re.compile(
+    r"brain\.(notes|note_bodies|relationships|note_areas|areas|aliases|verbs)\b"
+    r"|brain_db\.api|brain_db import api|/api/(note|tree|search|version)|brain_api"
+)
+
+
+def test_brain_command_modules_read_only_the_api_views():
+    """The spec's rule, checked in code: brain commands never name a brain table, the
+    brain_db.api readers or the brain HTTP API (they read api.brain_* views; writes go
+    through BrainWrites)."""
+    folder = Path(commands.__file__).parent
+    for name in commands.BRAIN_MODULES:
+        path = folder / f"{name}.py"
+        if path.exists():
+            found = RAW_BRAIN.search(path.read_text(encoding="utf-8"))
+            assert found is None, f"{path.name} names {found.group(0)!r}"
+
+
+def test_the_raw_brain_rule_catches_what_it_should():
+    for bad in ("SELECT * FROM brain.notes", "from yggdras.data.brain_db import api",
+                "GET /api/note/x", "brain_db.api.search(conn, q)"):  # fmt: skip
+        assert RAW_BRAIN.search(bad), bad
+    for good in ("SELECT * FROM api.brain_notes", "api.brain_note_access(%s)",
+                 "from yggdras.data.brain_db.writes import BrainWrites"):  # fmt: skip
+        assert not RAW_BRAIN.search(good), good
 
 
 def test_the_two_contract_copies_agree():
