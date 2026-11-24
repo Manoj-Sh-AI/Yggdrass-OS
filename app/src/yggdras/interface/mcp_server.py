@@ -278,6 +278,36 @@ class LiaService:
         return text
 
 
+COMMAND_DESCRIPTION = (
+    "Read the brain and the app with one yggdras agent command (the same code as the CLI). "
+    'argv is the command as a list, e.g. ["brain", "note", "pottery-course"], '
+    '["brain", "search", "kiln"], ["notes", "find", "garden"], ["brain", "--help"]. '
+    "Reads only: brain tree/note/version/search, notes find/refs/linked, links list. To change "
+    "notes, use tell_lia. Returns 'exit N' then the output. Exit 3 not found, 4 not allowed."
+)
+# The model may read through this tool, never write: its only write path is tell_lia, which the
+# app confirms (D33, D36). The terminal CLI keeps the approved write verbs.
+MCP_READS = {
+    ("brain", "tree"), ("brain", "note"), ("brain", "version"), ("brain", "search"),
+    ("notes", "find"), ("notes", "refs"), ("notes", "linked"), ("links", "list"),
+}  # fmt: skip
+
+
+def command_text(argv: list[str]) -> str:
+    """The MCP tool's body: one implementation, `commands.run`, reads only."""
+    from yggdras.interface import commands
+
+    if not argv or argv[0] not in commands.GROUPS:
+        groups = ", ".join(commands.GROUPS)
+        return f"exit 2\nerror\tusage\tthe first word must be one of: {groups}\n"
+    words = [a for a in argv if not a.startswith("-")]
+    asks_help = "--help" in argv or "-h" in argv
+    if not asks_help and tuple(words[:2]) not in MCP_READS:
+        return "exit 4\nerror\tnot_allowed\tthis tool only reads; use tell_lia to change notes\n"
+    code, out, err = commands.run_captured(argv)
+    return f"exit {code}\n{out}{err}"
+
+
 def build_server(service: LiaService):
     from mcp.server.mcpserver import MCPServer
     from mcp.types import ToolAnnotations
@@ -294,6 +324,10 @@ def build_server(service: LiaService):
     @server.tool(name="open_note", description=OPEN_DESCRIPTION, annotations=read_only)
     def open_note(slug: str) -> str:
         return service.open_note(slug)
+
+    @server.tool(name="yggdras_command", description=COMMAND_DESCRIPTION, annotations=read_only)
+    def yggdras_command(argv: list[str]) -> str:
+        return command_text(argv)
 
     def result(card) -> CallToolResult:
         text = f"{VERBATIM}\n<lia_reply>\n{card.text}\n\n{card_footer(card)}\n</lia_reply>"
