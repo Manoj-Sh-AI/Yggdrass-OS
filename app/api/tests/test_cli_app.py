@@ -148,7 +148,11 @@ def test_notes_linked(world):
     assert any("invented-public" in line for line in lines)
     assert any("Sensitive note" in line and "restricted" in line for line in lines)
     assert fails("not_found", "notes", "linked", "--note", uuid4()) == 3
-    assert fails("not_found", "notes", "linked", "--thing", f"task:{uuid4()}") == 3
+    assert commands.run_captured(["notes", "linked", "--thing", f"task:{uuid4()}"]) == (
+        0,
+        "",
+        "",
+    )  # empty list
     assert fails("not_allowed", "notes", "linked", "--note", world["secret"]) == 4
     assert fails("usage", "notes", "linked") == 2
 
@@ -161,7 +165,11 @@ def test_links_list(world):
     verb = out.split("\t")[4]
     code, out, _ = cli("links", "list", "--kind", "note", "--id", world["public"], "--verb", verb)
     assert code == 0 and out
-    assert fails("not_found", "links", "list", "--kind", "task", "--id", uuid4()) == 3
+    assert commands.run_captured(["links", "list", "--kind", "task", "--id", str(uuid4())]) == (
+        0,
+        "",
+        "",
+    )
     assert fails("not_found", "links", "list", "--kind", "note", "--id", uuid4()) == 3
     assert fails("not_allowed", "links", "list", "--kind", "note", "--id", world["secret"]) == 4
 

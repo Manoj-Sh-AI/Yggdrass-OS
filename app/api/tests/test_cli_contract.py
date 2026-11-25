@@ -1,11 +1,41 @@
 """The app side of the agent-command base (planning/cli-build-spec.md)."""
 
 import json
+import re
+from pathlib import Path
 
 import pytest
 
 from yggdress_app import commands
 from yggdress_app.commands.contract import CliError
+
+# The spec's read rule for the app side, checked in code (a Phase C run broke it and every
+# behavioural check still passed): app commands read only the api.* views, never the brain over
+# HTTP, and never decide sensitivity in Python. Writes go through the routers' apply_* functions.
+RAW_APP = re.compile(
+    r"notes_proxy|NotesProxy|verified_note|mobile_policy|\bsensitive\(|urlopen|httpx|requests\."
+    r"|\b(FROM|JOIN|UPDATE|INTO)\s+app\.",
+    re.IGNORECASE,
+)
+
+
+def test_app_command_modules_read_only_the_api_views():
+    folder = Path(commands.__file__).parent
+    for name in commands.MODULES:
+        path = folder / f"{name}.py"
+        if path.exists():
+            found = RAW_APP.search(path.read_text(encoding="utf-8"))
+            assert found is None, f"{path.name} uses {found.group(0)!r}"
+
+
+def test_the_raw_app_rule_catches_what_it_should():
+    for bad in ("from ..notes_proxy import NotesProxy", "verified_note(client, slug)",
+                "from ..mobile_policy import sensitive", "SELECT * FROM app.note_refs",
+                "JOIN app.tasks t ON"):  # fmt: skip
+        assert RAW_APP.search(bad), bad
+    for good in ("SELECT * FROM api.note_refs", "events.read(db, consumer, limit)",
+                 "apply_command(database(), command)"):  # fmt: skip
+        assert not RAW_APP.search(good), good
 
 
 def test_usage_errors_are_one_line_and_exit_2():

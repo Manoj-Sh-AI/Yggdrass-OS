@@ -79,7 +79,14 @@ def common() -> argparse.ArgumentParser:
 def _cell(value: Any) -> str:
     if value is None:
         return "-"
-    text = value if isinstance(value, str) else json.dumps(value, default=str)
+    # Only lists and dicts are JSON in a cell; a UUID, date or number prints plain (a UUID
+    # through json.dumps came out quoted: found when cross-testing the two Phase C runs).
+    if isinstance(value, bool):
+        text = "true" if value else "false"
+    elif isinstance(value, (dict, list, tuple)):
+        text = json.dumps(value, default=str)
+    else:
+        text = str(value)
     return text.replace("\t", " ").replace("\r", " ").replace("\n", "\\n")
 
 

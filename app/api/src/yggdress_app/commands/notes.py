@@ -105,8 +105,8 @@ def linked(args) -> Out:
         "WHERE thing_kind=%s AND thing_id=%s ORDER BY note_ref_id, verb",
         (kind, identifier),
     )
-    if not rows:
-        raise CliError("not_found", f"no linked notes for {kind}:{identifier}")
+    # A list with nothing in it is empty with exit 0, like `brain search`; exit 3 is kept for
+    # "that one thing does not exist", so an agent can tell the two apart.
     return _out(rows, ("note_ref_id", "slug", "title", "sensitivity", "verb", "link_id"))
 
 
@@ -120,8 +120,6 @@ def links(args) -> Out:
         " AND (%s::text IS NULL OR verb=%s) ORDER BY verb, id",
         (args.kind, identifier, args.kind, identifier, args.link_verb, args.link_verb),
     )
-    if not rows and args.kind != "note":
-        raise CliError("not_found", f"no links for {args.kind}:{identifier}")
     fields = ("id", "from_kind", "from_id", "from_label", "verb", "to_kind", "to_id", "to_label")
     return _out(rows, fields)
 

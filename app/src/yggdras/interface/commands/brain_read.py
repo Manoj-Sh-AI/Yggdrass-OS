@@ -28,7 +28,7 @@ def _check_access(conn, slug: str) -> None:
     if verdict is None:
         raise CliError("not_found", f"no live note {slug!r}")
     if verdict != "normal":
-        raise CliError("not_allowed", f"note {slug!r} is restricted")
+        raise CliError("not_allowed", "this note is restricted")  # never echo its slug
 
 
 def tree(args) -> Out:
@@ -100,19 +100,21 @@ def version(args) -> Out:
 
 def search(args) -> Out:
     """Full-text search (web-search syntax, 'simple' config), best match first. One line per
-    hit: slug, title, type, area, version."""
+    hit: slug, title, type, area, version. Empty text lists every visible note by slug, as
+    the brain's own search does."""
     q = args.q.strip()
-    if not q:
-        raise CliError("usage", "the search text is empty")
+    cols = "s.slug, s.title, s.type, s.area_code, s.version"
     with closing(_connect()) as conn:
-        rows = _rows(
-            conn,
-            "SELECT s.slug, s.title, s.type, s.area_code, s.version "
-            "FROM api.brain_search s, websearch_to_tsquery('simple', %s) AS query "
-            "WHERE s.document @@ query "
-            'ORDER BY ts_rank(s.document, query) DESC, s.slug COLLATE "C"',
-            (q,),
-        )
+        if not q:
+            rows = _rows(conn, f'SELECT {cols} FROM api.brain_search s ORDER BY s.slug COLLATE "C"')
+        else:
+            rows = _rows(
+                conn,
+                f"SELECT {cols} FROM api.brain_search s, "
+                "websearch_to_tsquery('simple', %s) AS query WHERE s.document @@ query "
+                'ORDER BY ts_rank(s.document, query) DESC, s.slug COLLATE "C"',
+                (q,),
+            )
     keys = ("slug", "title", "type", "area", "version")
     return Out([dict(zip(keys, r, strict=True)) for r in rows], [tuple(r) for r in rows])
 

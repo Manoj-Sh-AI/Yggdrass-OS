@@ -166,8 +166,20 @@ def test_search_never_finds_the_restricted_note(brain):
         assert code == 0 and "ada-lin" not in out and "Ada" not in out, q
 
 
-def test_search_empty_text_is_a_usage_error(brain):
-    assert run("search", "  ")[0] == 2
+def test_search_empty_text_lists_every_visible_note_like_the_existing_search(brain):
+    code, out, err = run("search", "  ")
+    slugs = [line.split("\t")[0] for line in out.splitlines()]
+    assert code == 0 and err == "" and slugs == sorted(slugs) and "pottery-course" in slugs
+    assert "ada-lin" not in out
+
+
+def test_search_keeps_web_search_syntax(brain):
+    """The existing search is websearch_to_tsquery: phrases and -not work (a Phase C run had
+    silently changed this; now a test holds it)."""
+    assert run("search", '"runs on Saturdays"')[1].startswith("pottery-course\t")
+    assert run("search", '"Saturdays runs on"')[1] == ""
+    hits = run("search", "clay -handbook")[1]
+    assert "clay-handbook" not in hits
 
 
 # ---------------------------------------------------------------- leak test
