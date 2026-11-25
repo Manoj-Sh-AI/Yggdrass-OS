@@ -111,3 +111,49 @@ def test_without_temporal_a_thread_sweeps_the_calls_and_survives_a_failure(capsy
 
     sweep_calls(Calls(), every=0, rounds=3)
     assert Calls.ticks == 3 and "call sweep failed: RuntimeError" in capsys.readouterr().out
+
+
+def test_the_hosted_api_socket_answers_on_ipv4_loopback_and_ipv6():
+    """Chat, delivery and the voice worker call the API on 127.0.0.1 inside the container,
+    while Railway's private network reaches it over IPv6. uvicorn's own "::" bind is
+    IPv6-only, so the hosted API needs a dual-stack socket (chat never answered on Railway)."""
+    import threading
+    import time
+    import urllib.request
+
+    import uvicorn
+
+    from yggdress_app.local_runtime import dual_stack_socket, port
+
+    async def app(scope, receive, send):
+        await send({"type": "http.response.start", "status": 200, "headers": []})
+        await send({"type": "http.response.body", "body": b"ok"})
+
+    number = port()
+    server = uvicorn.Server(uvicorn.Config(app, host="::", port=number, log_level="error"))
+    thread = threading.Thread(
+        target=server.run, kwargs={"sockets": [dual_stack_socket(number)]}, daemon=True
+    )
+    thread.start()
+    try:
+        for _ in range(200):
+            if server.started:
+                break
+            time.sleep(0.05)
+        for host in ("127.0.0.1", "[::1]"):
+            with urllib.request.urlopen(f"http://{host}:{number}/", timeout=5) as reply:
+                assert reply.read() == b"ok", host
+    finally:
+        server.should_exit = True
+        thread.join(5)
+
+
+def test_serve_gives_the_hosted_api_the_dual_stack_socket():
+    """Guards the wiring, not just the helper: a plain host="::" start regresses chat."""
+    import inspect
+
+    from yggdress_app import local_runtime
+
+    source = inspect.getsource(local_runtime.serve)
+    assert "dual_stack_socket(api_port)" in source
+    assert 'kwargs={"sockets": sockets}' in source

@@ -86,6 +86,15 @@ def port():
         return listener.getsockname()[1]
 
 
+def dual_stack_socket(port_number):
+    """A listening socket that answers on IPv6 ("::") and IPv4 (127.0.0.1) alike."""
+    listener = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+    listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    listener.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
+    listener.bind(("::", port_number))
+    return listener
+
+
 def pg_binary(config, name):
     return Path(config["postgres_bin"]) / (name + (".exe" if os.name == "nt" else ""))
 
@@ -656,13 +665,16 @@ def serve(home, hosted=False):
             # Temporal changes execution plumbing; the HTTP service stays the same.
             uvicorn.Config(
                 application,
-                # "::" also answers on Railway's IPv6 private network (and on IPv4).
                 host="::" if hosted else "127.0.0.1",
                 port=api_port,
                 log_level="error",
             )
         )
-        api_thread = Thread(target=api.run, daemon=True)
+        # Hosted: one socket for Railway's IPv6 private network AND the in-container
+        # 127.0.0.1 callers (chat worker, voice worker). uvicorn's own "::" bind is
+        # IPv6-only (asyncio sets IPV6_V6ONLY), which silently broke every loopback call.
+        sockets = [dual_stack_socket(api_port)] if hosted else None
+        api_thread = Thread(target=api.run, kwargs={"sockets": sockets}, daemon=True)
         api_thread.start()
         environment = web_environment(config, api_port)
         frontend = None
