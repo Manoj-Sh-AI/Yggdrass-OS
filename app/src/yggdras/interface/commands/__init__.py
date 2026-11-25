@@ -20,6 +20,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from yggdras.data.brain_db.db import DatabaseError
+
 from .contract import CliError, Exit, common, render, render_error
 
 BRAIN_MODULES = ("brain_read", "brain_write")
@@ -89,6 +91,9 @@ def run(argv: list[str], stdout=None, stderr=None) -> int:
     except CliError as error:
         stderr.write(render_error(error, as_json))
         return error.code
+    except DatabaseError as error:  # its message never holds the URL (db.py), so show it
+        stderr.write(render_error(CliError("failed", str(error)), as_json))
+        return int(Exit.FAILED)
     except Exception as error:  # noqa: BLE001 -- the contract: one line, exit 1, no secrets
         stderr.write(render_error(CliError("failed", type(error).__name__), as_json))
         return int(Exit.FAILED)

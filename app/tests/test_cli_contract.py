@@ -63,6 +63,15 @@ def test_exit_codes_and_status_mapping():
     assert contract.CliError("stale", "m").code == 5
 
 
+def test_scalars_print_plain_in_a_cell():
+    from datetime import date
+    from uuid import UUID
+
+    u = UUID("5c5ed251-825b-4096-a87e-873924fb6f87")
+    line = contract.render(contract.Out(None, [(u, date(2030, 1, 2), 3, True, ["a"])]), False)
+    assert line == f'{u}\t2030-01-02\t3\ttrue\t["a"]\n'
+
+
 def test_output_is_tab_lines_or_json():
     out = contract.Out({"a": 1}, [("ok", "x\ty", None, 3)])
     assert contract.render(out, False) == "ok\tx y\t-\t3\n"
@@ -80,6 +89,16 @@ def test_usage_errors_are_one_line_and_exit_2():
         code, out, err = commands.run_captured(argv)
         assert code == 2 and out == "" and err.startswith("error\tusage\t"), argv
         assert err.count("\n") == 1
+
+
+def test_a_missing_database_says_which_variable_and_never_the_url(monkeypatch):
+    from yggdras import config
+
+    monkeypatch.delenv("BRAIN_DATABASE_URL", raising=False)
+    monkeypatch.setattr(config, "load_env_file", lambda *a, **k: None)
+    code, out, err = commands.run_captured(["brain", "tree"])
+    assert (code, out) == (1, "")
+    assert err == "error\tfailed\tBRAIN_DATABASE_URL is not set (put it in the .env file)\n"
 
 
 def test_help_goes_to_the_callers_stream():
