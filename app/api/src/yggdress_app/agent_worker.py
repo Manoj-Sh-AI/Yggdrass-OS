@@ -2,6 +2,7 @@
 
 import base64
 import json
+import logging
 from datetime import UTC, datetime
 from threading import Event, Thread
 from uuid import uuid5
@@ -63,11 +64,17 @@ class AgentWorker:
             thread.join(timeout=3)
 
     def loop(self, lane):
+        last = None
         while not self.stopped.is_set():
             try:
                 worked = self.tick(lane)
-            except Exception:  # noqa: BLE001 -- never log credential-bearing transport errors
-                # No raw provider/database errors or credentials in console logs.
+                last = None
+            except Exception as exc:  # noqa: BLE001 -- never log credential-bearing transport errors
+                # Only the error's type, once per change: never its text, which can carry
+                # provider or database details. A silent loop hid a broken chat for days.
+                if type(exc).__name__ != last:
+                    last = type(exc).__name__
+                    logging.getLogger(__name__).error("Agent %s lane failed (%s)", lane, last)
                 worked = False
             self.stopped.wait(0.25 if worked else 2)
 
