@@ -8,6 +8,10 @@ import { Calendar, EventEditor } from "../src/calendar";
 import { api } from "../src/api";
 
 jest.mock("../src/api", () => ({ api: { plan: jest.fn(), time: jest.fn() } }));
+const openNewEvent = () => {
+  fireEvent.press(screen.getByLabelText("Create"));
+  fireEvent.press(screen.getByLabelText("New event"));
+};
 jest.mock("../src/workspace", () => ({
   useWorkspace: () => ({ timezone: "Europe/Berlin" }),
   usePlanning: () => ({
@@ -27,7 +31,8 @@ jest.mock("../src/workspace", () => ({
 test("all-day dates save with an exclusive end and no invented clock time", async () => {
   (api.time as jest.Mock).mockResolvedValue({});
   render(<Calendar active />);
-  fireEvent.press(screen.getByText("Add item"));
+  openNewEvent();
+  fireEvent.press(screen.getByText("All day"));
   fireEvent.changeText(screen.getByLabelText("Title"), "Invented trip");
   fireEvent.changeText(
     screen.getByLabelText("Date (YYYY-MM-DD)"),
@@ -56,8 +61,7 @@ test("all-day dates save with an exclusive end and no invented clock time", asyn
 test("a timed appointment carries an explicit instant and named timezone", async () => {
   (api.plan as jest.Mock).mockResolvedValue({});
   render(<Calendar active />);
-  fireEvent.press(screen.getByText("Add item"));
-  fireEvent.press(screen.getByText("Appointment"));
+  openNewEvent(); // a new item is a timed appointment by default, as in Google Calendar
   fireEvent.changeText(screen.getByLabelText("Title"), "Invented appointment");
   fireEvent.changeText(
     screen.getByLabelText("Date (YYYY-MM-DD)"),

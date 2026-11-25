@@ -36,17 +36,20 @@ export function TaskEditor({
   task,
   onClose,
   onSaved,
+  initialDue = "",
 }: {
   task: Task | null;
   onClose: () => void;
   onSaved: () => void;
+  /** A new task created from a calendar day starts due on that day. */
+  initialDue?: string;
 }) {
   const { timezone } = useWorkspace();
   const [title, setTitle] = useState(task?.title || "");
   const [goal, setGoal] = useState(task?.objective || "");
   const [description, setDescription] = useState(task?.description || "");
   const zone = task?.timezone || timezone;
-  const [due, setDue] = useState(task?.due_date || "");
+  const [due, setDue] = useState(task?.due_date || initialDue);
   const [deadlineDay, setDeadlineDay] = useState(
     task?.deadline_at ? dayKey(new Date(task.deadline_at), zone) : "",
   );

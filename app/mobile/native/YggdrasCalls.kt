@@ -21,14 +21,17 @@ import expo.modules.notifications.service.ExpoFirebaseMessagingService
 import java.time.Instant
 import java.util.UUID
 
-// Channel sounds cannot change after creation, so the custom ringtone needs a new id.
-private const val CHANNEL = "yggdras-calls-v2"
+// Channel sounds cannot change after creation, so each ringtone change needs a new id.
+// v3: the phone's own ringtone (the owner can pick any sound for this channel in Android
+// settings); v2's custom chime is retired.
+private const val CHANNEL = "yggdras-calls-v3"
 private const val ROUTINE_CHANNEL = "yggdras-routines"
-private val RETIRED_CHANNELS = listOf("yggdras-calls")
+private val RETIRED_CHANNELS = listOf("yggdras-calls", "yggdras-calls-v2")
 private const val CLOSED = "app.yggdras.mobile.CALL_CLOSED"
 private const val RING = 45000L
 private fun notificationId(id: String) = id.hashCode()
-private fun ringtoneUri(context: Context) = Uri.parse("android.resource://${context.packageName}/raw/yggdras_ring")
+@Suppress("UNUSED_PARAMETER")
+private fun ringtoneUri(context: Context): Uri = android.provider.Settings.System.DEFAULT_RINGTONE_URI
 private val ringAttributes = AudioAttributes.Builder()
   .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
   .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build()
@@ -40,7 +43,7 @@ internal fun ensureCallChannel(context: Context) {
   for (old in RETIRED_CHANNELS) manager.deleteNotificationChannel(old)
   if (manager.getNotificationChannel(CHANNEL) != null) return
   val channel = NotificationChannel(CHANNEL, "Calls from Yggdras", NotificationManager.IMPORTANCE_HIGH)
-  channel.description = "Rings with the Yggdras chime for scheduled check-ins."
+  channel.description = "Rings with your phone ringtone for scheduled check-ins."
   channel.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
   channel.setSound(ringtoneUri(context), ringAttributes)
   channel.enableVibration(true)
@@ -63,7 +66,7 @@ private fun notificationActive(context: Context, id: String) =
   context.getSystemService(NotificationManager::class.java).activeNotifications.any { it.id == notificationId(id) }
 
 /**
- * Plays the same chime while the app is open and no push notification is sounding
+ * Plays the phone ringtone while the app is open and no push notification is sounding
  * (for example before Firebase is configured). Silent when the phone is on silent,
  * vibrate or Do Not Disturb; follows the ring volume the person set.
  */
