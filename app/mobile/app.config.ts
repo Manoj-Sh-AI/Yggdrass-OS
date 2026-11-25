@@ -13,7 +13,7 @@ const config: ExpoConfig = {
   name: "Yggdras",
   slug: "yggdras",
   scheme: "yggdras",
-  version: "0.3.4",
+  version: "0.3.5",
   runtimeVersion: { policy: "fingerprint" },
   updates: {
     url: `${serverOrigin}/api/mobile-updates/manifest`,
@@ -28,7 +28,7 @@ const config: ExpoConfig = {
   userInterfaceStyle: "dark",
   android: {
     package: "app.yggdras.mobile",
-    versionCode: 4,
+    versionCode: 5,
     adaptiveIcon: {
       foregroundImage: "./assets/brand/adaptive-foreground.png",
       backgroundColor: "#FFFFFF",
