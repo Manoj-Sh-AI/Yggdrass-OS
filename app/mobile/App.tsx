@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -19,6 +20,7 @@ import { Chat } from "./src/chat";
 import { Embedded } from "./src/embedded";
 import { Scenery } from "./src/scenery";
 import { Settings } from "./src/settings";
+import { routinePush } from "./src/routine-push";
 import { Tasks, Today } from "./src/tasks";
 import {
   Button,
@@ -108,6 +110,13 @@ function Application() {
     setVisited((all) => (all.includes(value) ? all : [...all, value]));
     setTab(value);
   }
+  useEffect(() => {
+    if (!ready) return;
+    return routinePush.listen(
+      () => open("today"),
+      (message) => Alert.alert("Reminder response", message),
+    );
+  }, [ready]);
   async function login() {
     setBusy(true);
     setError("");

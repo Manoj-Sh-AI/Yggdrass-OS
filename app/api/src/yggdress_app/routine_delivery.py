@@ -1,4 +1,4 @@
-"""Browser push outbox and device-scoped responses for daily routines."""
+"""Browser and Android push outboxes for daily routines."""
 
 import base64
 import hashlib
@@ -75,9 +75,33 @@ class Ack(Model):
     action: Literal["started", "not_yet"]
 
 
+class AndroidDevice(Model):
+    push_token: str = Field(min_length=10, max_length=4096)
+
+
+class AndroidAck(Model):
+    delivery_id: UUID
+    action: Literal["started", "not_yet"]
+
+
+class AndroidTest(Model):
+    device_id: UUID
+
+
+def firebase_ready():
+    from . import voice
+    from .side_effects import side_effects_allowed
+
+    return (
+        not voice.missing(voice.FIREBASE_VARS)
+        and os.path.isfile(os.environ.get("FIREBASE_SERVICE_ACCOUNT_FILE", ""))
+        and side_effects_allowed()
+    )
+
+
 def queue_notice(db, *, key: str, escalation_id: UUID | None = None, kind="pre_task"):
-    """Called inside the scheduler transaction. Enqueue once per enrolled browser."""
-    return db.execute(
+    """Enqueue once per enrolled destination in the scheduler transaction."""
+    browser_count = db.execute(
         """
         INSERT INTO app.web_push_deliveries(id,subscription,dedupe_key,kind,escalation_id,expires_at)
         SELECT gen_random_uuid(),s.id,%s,%s,%s,now()+interval '4 minutes'
@@ -86,6 +110,23 @@ def queue_notice(db, *, key: str, escalation_id: UUID | None = None, kind="pre_t
         """,
         (key, kind, escalation_id),
     ).rowcount
+    # Incoming calls have their own FCM outbox and native call screen.
+    if kind == "incoming_call":
+        return browser_count
+    android_count = db.execute(
+        """
+        INSERT INTO app.android_routine_deliveries
+            (id,device,dedupe_key,kind,escalation_id,expires_at,action_expires_at)
+        SELECT gen_random_uuid(),d.id,%s,%s,%s,
+               now()+interval '4 minutes',now()+interval '20 minutes'
+        FROM app.routine_android_devices d
+        JOIN app.sessions s ON s.token_hash=d.session_hash
+        WHERE s.expires_at>now() AND s.password_fingerprint=d.password_fingerprint
+        ON CONFLICT(device,dedupe_key) DO NOTHING
+        """,
+        (key, kind, escalation_id),
+    ).rowcount
+    return browser_count + android_count
 
 
 def signature(nonce, key):
@@ -187,9 +228,210 @@ def drain_notices(database, fingerprint, *, sender=None, limit=12):
     return count
 
 
-def delivery_router(database, session, fingerprint, ack, *, calls=None):
+def drain_android_notices(database, fingerprint, *, sender=None, limit=12):
+    """Send generic FCM data messages; an ambiguous send is never replayed."""
+    from . import voice
+    from .side_effects import side_effects_allowed
+
+    if sender is None:
+        if (
+            voice.missing(voice.FIREBASE_VARS)
+            or not os.path.isfile(os.environ.get("FIREBASE_SERVICE_ACCOUNT_FILE", ""))
+            or not side_effects_allowed()
+        ):
+            return 0
+        sender = voice.FcmPusher().send_routine
+    count = 0
+    for _ in range(limit):
+        with database.connect() as db:
+            db.execute(
+                "UPDATE app.android_routine_deliveries SET status='expired' "
+                "WHERE status='pending' AND expires_at<=now()"
+            )
+            db.execute(
+                "UPDATE app.android_routine_deliveries SET status='failed' "
+                "WHERE status='sending' AND expires_at<=now()"
+            )
+            row = db.execute(
+                """
+                SELECT n.*,d.push_token FROM app.android_routine_deliveries n
+                JOIN app.routine_android_devices d ON d.id=n.device
+                JOIN app.sessions s ON s.token_hash=d.session_hash
+                WHERE n.status='pending' AND n.expires_at>now()
+                  AND s.expires_at>now() AND s.password_fingerprint=%s
+                  AND d.password_fingerprint=%s
+                ORDER BY n.expires_at,n.id LIMIT 1 FOR UPDATE OF n SKIP LOCKED
+                """,
+                (fingerprint, fingerprint),
+            ).fetchone()
+            if row:
+                db.execute(
+                    "UPDATE app.android_routine_deliveries SET status='sending' WHERE id=%s",
+                    (row["id"],),
+                )
+        if not row:
+            break
+        state = "failed"
+        ttl = max(0, int((row["expires_at"] - datetime.now(UTC)).total_seconds()))
+        if ttl:
+            try:
+                sender(
+                    row["push_token"],
+                    {
+                        "deliveryId": str(row["id"]),
+                        "kind": row["kind"],
+                        "expiresAt": row["expires_at"].isoformat(),
+                    },
+                    ttl,
+                )
+                state = "accepted"
+            except voice.PushDeviceExpired:
+                with database.connect() as db:
+                    db.execute(
+                        "DELETE FROM app.routine_android_devices WHERE id=%s", (row["device"],)
+                    )
+            except Exception:  # noqa: BLE001 -- provider errors may contain token data
+                state = "failed"
+        with database.connect() as db:
+            db.execute(
+                "UPDATE app.android_routine_deliveries SET status=%s WHERE id=%s",
+                (state, row["id"]),
+            )
+        count += 1
+    return count
+
+
+def delivery_router(database, session, fingerprint, ack, *, calls=None, android_sender=None):
     router = APIRouter(prefix="/v1/routine-delivery")
     authenticated = Depends(session)
+
+    @router.get("/android/status")
+    def android_status(auth=authenticated):
+        with database.connect() as db:
+            enrolled = db.execute(
+                """SELECT 1 FROM app.routine_android_devices d JOIN app.sessions s
+                   ON s.token_hash=d.session_hash WHERE s.csrf=%s""",
+                (auth["csrf"],),
+            ).fetchone()
+        return {
+            "configured": firebase_ready() or android_sender is not None,
+            "registered": bool(enrolled),
+        }
+
+    @router.post("/android/devices")
+    def register_android(body: AndroidDevice, auth=authenticated):
+        with database.connect() as db:
+            db.execute(
+                "SELECT pg_advisory_xact_lock(hashtextextended(%s,4318))",
+                (body.push_token,),
+            )
+            current_session = db.execute(
+                """SELECT token_hash FROM app.sessions WHERE csrf=%s AND expires_at>now()
+                   AND password_fingerprint=%s""",
+                (auth["csrf"], fingerprint),
+            ).fetchone()
+            if not current_session:
+                raise HTTPException(401, "Sign in again before enabling reminders.")
+            prior = db.execute(
+                """SELECT id,session_hash,password_fingerprint FROM app.routine_android_devices
+                   WHERE push_token=%s FOR UPDATE""",
+                (body.push_token,),
+            ).fetchone()
+            if prior and (
+                prior["session_hash"] != current_session["token_hash"]
+                or prior["password_fingerprint"] != fingerprint
+            ):
+                db.execute(
+                    "DELETE FROM app.android_routine_deliveries WHERE device=%s",
+                    (prior["id"],),
+                )
+            registered = db.execute(
+                """
+                INSERT INTO app.routine_android_devices
+                    (id,push_token,session_hash,password_fingerprint)
+                SELECT %s,%s,token_hash,password_fingerprint FROM app.sessions
+                WHERE csrf=%s AND expires_at>now() AND password_fingerprint=%s
+                ON CONFLICT(push_token) DO UPDATE SET
+                    session_hash=EXCLUDED.session_hash,
+                    password_fingerprint=EXCLUDED.password_fingerprint,
+                    last_seen_at=now() RETURNING id
+                """,
+                (uuid4(), body.push_token, auth["csrf"], fingerprint),
+            ).fetchone()
+        return {"id": registered["id"]}
+
+    @router.delete("/android/devices/{identifier}")
+    def unregister_android(identifier: UUID, auth=authenticated):
+        with database.connect() as db:
+            db.execute(
+                """DELETE FROM app.routine_android_devices d USING app.sessions s
+                   WHERE d.id=%s AND d.session_hash=s.token_hash AND s.csrf=%s""",
+                (identifier, auth["csrf"]),
+            )
+        return {"registered": False}
+
+    @router.post("/android/test")
+    def test_android(body: AndroidTest, auth=authenticated):
+        if not firebase_ready() and android_sender is None:
+            raise HTTPException(503, "Firebase delivery is awaiting server credentials.")
+        identifier = uuid4()
+        with database.connect() as db:
+            created = db.execute(
+                """
+                INSERT INTO app.android_routine_deliveries
+                    (id,device,dedupe_key,kind,expires_at,action_expires_at)
+                SELECT %s,d.id,%s,'test',now()+interval '4 minutes',now()+interval '4 minutes'
+                FROM app.routine_android_devices d
+                JOIN app.sessions s ON s.token_hash=d.session_hash
+                WHERE d.id=%s AND s.csrf=%s AND s.expires_at>now()
+                  AND s.password_fingerprint=%s AND d.password_fingerprint=%s
+                RETURNING id
+                """,
+                (
+                    identifier,
+                    "test:" + str(identifier),
+                    body.device_id,
+                    auth["csrf"],
+                    fingerprint,
+                    fingerprint,
+                ),
+            ).fetchone()
+        if not created:
+            raise HTTPException(410, "Enable reminders on this phone before testing.")
+        drain_android_notices(database, fingerprint, sender=android_sender, limit=30)
+        with database.connect() as db:
+            status = db.execute(
+                "SELECT status FROM app.android_routine_deliveries WHERE id=%s", (identifier,)
+            ).fetchone()
+        if not status or status["status"] != "accepted":
+            raise HTTPException(503, "The test notification was not accepted. Try again.")
+        return {"sent": True}
+
+    @router.post("/android/respond")
+    def android_respond(body: AndroidAck, auth=authenticated):
+        with database.connect() as db:
+            row = db.execute(
+                """
+                SELECT n.escalation_id FROM app.android_routine_deliveries n
+                JOIN app.routine_android_devices d ON d.id=n.device
+                JOIN app.sessions s ON s.token_hash=d.session_hash
+                WHERE n.id=%s AND n.status='accepted' AND n.action_expires_at>now()
+                  AND n.kind='pre_task' AND n.escalation_id IS NOT NULL
+                  AND s.csrf=%s AND s.expires_at>now()
+                  AND s.password_fingerprint=%s AND d.password_fingerprint=%s
+                FOR UPDATE OF n
+                """,
+                (body.delivery_id, auth["csrf"], fingerprint, fingerprint),
+            ).fetchone()
+            if not row:
+                raise HTTPException(410, "This reminder has expired or was already answered.")
+            ack(db, row["escalation_id"], body.action)
+            db.execute(
+                "UPDATE app.android_routine_deliveries SET action_expires_at=now() WHERE id=%s",
+                (body.delivery_id,),
+            )
+        return {"recorded": True}
+
     if calls is not None:
         from .routine_voice import internal_router
 

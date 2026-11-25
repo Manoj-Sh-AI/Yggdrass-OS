@@ -49,6 +49,7 @@ def grant_runtime(db, role):
         "SELECT,INSERT ON app.journal_entries",
         "SELECT,INSERT,UPDATE ON app.daily_reviews,app.daily_lessons,app.daily_briefs,app.daily_inputs,app.daily_filing_runs,app.daily_filing_actions",
         "SELECT,INSERT,UPDATE,DELETE ON app.web_push_subscriptions,app.web_push_tokens,app.web_push_deliveries",
+        "SELECT,INSERT,UPDATE,DELETE ON app.routine_android_devices,app.android_routine_deliveries",
         "SELECT,INSERT,UPDATE ON app.routine_voice_bindings",
         "USAGE,SELECT ON ALL SEQUENCES IN SCHEMA app",
     ]

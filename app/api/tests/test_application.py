@@ -384,6 +384,8 @@ def test_migrations_are_application_only_and_runtime_cannot_create_tables(postgr
             "web_push_subscriptions",
             "web_push_deliveries",
             "web_push_tokens",
+            "routine_android_devices",
+            "android_routine_deliveries",
             "routine_voice_bindings",
         }
     with (

@@ -126,6 +126,38 @@ class FcmPusher:
                 "Install the application voice dependencies before enabling push."
             ) from None
 
+    def send_routine(
+        self, token: str, data: dict, ttl: int
+    ) -> None:  # pragma: no cover - needs Firebase
+        """Deliver only an opaque routine id and kind, without private task content."""
+        try:
+            import firebase_admin
+            from firebase_admin import credentials, messaging
+
+            try:
+                app = firebase_admin.get_app("yggdras-calls")
+            except ValueError:
+                app = firebase_admin.initialize_app(
+                    credentials.Certificate(os.environ["FIREBASE_SERVICE_ACCOUNT_FILE"]),
+                    {"projectId": os.environ["FIREBASE_PROJECT_ID"]},
+                    name="yggdras-calls",
+                )
+            try:
+                messaging.send(
+                    messaging.Message(
+                        token=token,
+                        data={"type": "yggdras_routine", **data},
+                        android=messaging.AndroidConfig(
+                            priority="high", ttl=timedelta(seconds=min(ttl, 240))
+                        ),
+                    ),
+                    app=app,
+                )
+            except messaging.UnregisteredError:
+                raise PushDeviceExpired("This device push token expired.") from None
+        except ImportError:
+            raise PushNotConfigured("Install Firebase support before enabling reminders.") from None
+
 
 class IosVoipPusher:
     """iPhone: PushKit VoIP push to CallKit. Deferred (Manoj, 2026-11-16); fill in later."""

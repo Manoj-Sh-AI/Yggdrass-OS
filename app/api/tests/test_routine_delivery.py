@@ -15,6 +15,7 @@ from yggdress_app.call_service import CallService
 from yggdress_app.database import Database
 from yggdress_app.routine_delivery import (
     delivery_router,
+    drain_android_notices,
     drain_notices,
     queue_notice,
     ring_reminder,
@@ -36,6 +37,7 @@ def channel(postgres, monkeypatch):
             (session_hash, csrf, fingerprint),
         )
     actions = []
+    android_payloads = []
     app = FastAPI()
     calls = CallService(database, mode="simulated")
     calls.auth_fingerprint = fingerprint
@@ -46,6 +48,9 @@ def channel(postgres, monkeypatch):
             fingerprint,
             lambda db, eid, action: actions.append((eid, action)),
             calls=calls,
+            android_sender=lambda token, payload, ttl: android_payloads.append(
+                (token, payload, ttl)
+            ),
         )
     )
     client = TestClient(app)
@@ -71,6 +76,7 @@ def channel(postgres, monkeypatch):
         calls=calls,
         csrf=csrf,
         session=session_hash,
+        android_payloads=android_payloads,
     )
     with database.connect() as db:
         db.execute("DELETE FROM app.sessions WHERE token_hash=%s", (session_hash,))
@@ -150,6 +156,85 @@ def test_dead_subscription_and_expiry(channel):
     )
     send(channel, "morning", code=410)
     assert not c.get(BASE + "/status").json()["subscribed"]
+
+
+def test_android_reminder_is_independent_of_calls_and_response_is_one_use(channel):
+    c = channel.client
+    token = "fixture-fcm-token-" + secrets.token_urlsafe(16)
+    registration = c.post(BASE + "/android/devices", json={"push_token": token})
+    assert registration.status_code == 200
+    assert c.get(BASE + "/android/status").json()["registered"]
+    with channel.database.connect() as db:
+        assert not db.execute("SELECT 1 FROM app.devices WHERE push_token=%s", (token,)).fetchone()
+        escalation = uuid4()
+        assert queue_notice(db, key="android-first", escalation_id=escalation) == 1
+        assert queue_notice(db, key="android-first", escalation_id=escalation) == 0
+    sent = []
+    assert (
+        drain_android_notices(
+            channel.database,
+            channel.fingerprint,
+            sender=lambda destination, payload, ttl: sent.append((destination, payload, ttl)),
+        )
+        == 1
+    )
+    assert len(sent) == 1
+    destination, payload, ttl = sent[0]
+    assert destination == token and 0 < ttl <= 240
+    assert set(payload) == {"deliveryId", "kind", "expiresAt"}
+    response = {"delivery_id": payload["deliveryId"], "action": "started"}
+    assert c.post(BASE + "/android/respond", json=response).status_code == 200
+    assert c.post(BASE + "/android/respond", json=response).status_code == 410
+    assert channel.actions == [(escalation, "started")]
+    assert c.delete(BASE + "/android/devices/" + registration.json()["id"]).status_code == 200
+    assert not c.get(BASE + "/android/status").json()["registered"]
+
+
+def test_android_push_failure_is_not_replayed_and_session_revocation_blocks_actions(channel):
+    c = channel.client
+    c.post(BASE + "/android/devices", json={"push_token": "fixture-fcm-failure-token"})
+    with channel.database.connect() as db:
+        queue_notice(db, key="android-failure", escalation_id=uuid4())
+
+    def fail(*_args):
+        raise RuntimeError("provider unavailable")
+
+    assert drain_android_notices(channel.database, channel.fingerprint, sender=fail) == 1
+    assert drain_android_notices(channel.database, channel.fingerprint, sender=fail) == 0
+    with channel.database.connect() as db:
+        assert (
+            db.execute(
+                "SELECT status FROM app.android_routine_deliveries WHERE dedupe_key='android-failure'"
+            ).fetchone()["status"]
+            == "failed"
+        )
+        queue_notice(db, key="android-revoked", escalation_id=uuid4())
+    delivered = []
+    drain_android_notices(
+        channel.database,
+        channel.fingerprint,
+        sender=lambda _token, payload, _ttl: delivered.append(payload),
+    )
+    with channel.database.connect() as db:
+        db.execute("DELETE FROM app.sessions WHERE token_hash=%s", (channel.session,))
+    assert (
+        c.post(
+            BASE + "/android/respond",
+            json={"delivery_id": delivered[0]["deliveryId"], "action": "not_yet"},
+        ).status_code
+        == 410
+    )
+
+
+def test_android_test_push_only_targets_the_signed_in_phone(channel):
+    c = channel.client
+    first = c.post(BASE + "/android/devices", json={"push_token": "fixture-fcm-test-token"}).json()
+    response = c.post(BASE + "/android/test", json={"device_id": first["id"]})
+    assert response.status_code == 200 and response.json() == {"sent": True}
+    assert len(channel.android_payloads) == 1
+    assert channel.android_payloads[0][1]["kind"] == "test"
+    assert set(channel.android_payloads[0][1]) == {"deliveryId", "kind", "expiresAt"}
+    assert c.post(BASE + "/android/test", json={"device_id": str(uuid4())}).status_code == 410
 
 
 def test_answered_voice_call_scoped_expiring_actions_and_lia(channel, monkeypatch):

@@ -2,6 +2,8 @@
 private files the existing runtime reads. Invented values only; nothing is started."""
 
 import json
+import os
+import stat
 from pathlib import Path
 
 import pytest
@@ -157,3 +159,58 @@ def test_serve_gives_the_hosted_api_the_dual_stack_socket():
     source = inspect.getsource(local_runtime.serve)
     assert "dual_stack_socket(api_port)" in source
     assert 'kwargs={"sockets": sockets}' in source
+
+
+# ---- Firebase service account from a Railway variable --------------------------------------
+INVENTED_ACCOUNT = {
+    "type": "service_account",
+    "project_id": "invented-project",
+    "private_key": "-----BEGIN PRIVATE KEY-----\ninvented\n-----END PRIVATE KEY-----\n",
+    "client_email": "invented@invented-project.iam.gserviceaccount.com",
+}
+
+
+def test_the_service_account_variable_becomes_a_private_file_and_its_path(tmp_path):
+    env = {hosted.FIREBASE_JSON: json.dumps(INVENTED_ACCOUNT)}
+    target = hosted.firebase_account(env, tmp_path)
+    assert target == tmp_path / "secrets" / "firebase-service-account.json"
+    assert json.loads(target.read_text(encoding="utf-8")) == INVENTED_ACCOUNT
+    assert env["FIREBASE_SERVICE_ACCOUNT_FILE"] == str(target)
+    assert not target.with_name(target.name + ".partial").exists()
+    if os.name != "nt":  # POSIX permissions (the container is Linux)
+        assert stat.S_IMODE(target.stat().st_mode) == 0o600
+        assert stat.S_IMODE(target.parent.stat().st_mode) == 0o700
+    # rewritten on every start, so a redeploy without a volume still has it
+    env2 = {hosted.FIREBASE_JSON: json.dumps({**INVENTED_ACCOUNT, "project_id": "second"})}
+    hosted.firebase_account(env2, tmp_path)
+    assert json.loads(target.read_text(encoding="utf-8"))["project_id"] == "second"
+
+
+def test_no_variable_means_no_file_and_no_change(tmp_path):
+    env = {"FIREBASE_SERVICE_ACCOUNT_FILE": "/keep/this.json"}
+    assert hosted.firebase_account(env, tmp_path) is None
+    assert env == {"FIREBASE_SERVICE_ACCOUNT_FILE": "/keep/this.json"}
+    assert not (tmp_path / "secrets").exists()
+
+
+@pytest.mark.parametrize(
+    "value",
+    ["{not json", json.dumps({"type": "authorized_user", "private_key": "x"}), json.dumps([1])],
+)
+def test_a_bad_value_is_named_never_echoed_and_nothing_is_written(tmp_path, value):
+    secret_bit = "invented-secret-marker"
+    env = {hosted.FIREBASE_JSON: value.replace("x", secret_bit)}
+    with pytest.raises(SystemExit) as caught:
+        hosted.firebase_account(env, tmp_path)
+    assert hosted.FIREBASE_JSON in str(caught.value)
+    assert secret_bit not in str(caught.value) and "{" not in str(caught.value)
+    assert not (tmp_path / "secrets" / "firebase-service-account.json").exists()
+    assert "FIREBASE_SERVICE_ACCOUNT_FILE" not in env
+
+
+def test_the_brain_env_receives_the_written_path(tmp_path):
+    env = {**VARIABLES, hosted.FIREBASE_JSON: json.dumps(INVENTED_ACCOUNT)}
+    target = hosted.firebase_account(env, tmp_path)
+    text = hosted.brain_env(env, tmp_path)
+    assert f"FIREBASE_SERVICE_ACCOUNT_FILE='{target}'" in text
+    assert hosted.FIREBASE_JSON not in text and "PRIVATE KEY" not in text

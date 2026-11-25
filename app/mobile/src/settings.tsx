@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, Text, View } from "react-native";
 import { PlanningLibrary } from "./planning-library";
 import { api, session } from "./api";
@@ -6,6 +6,7 @@ import { dayKey } from "./dates";
 import { Button, ErrorText, Field, Page, Panel, styles } from "./ui";
 import { usePlanning, useWorkspace } from "./workspace";
 import { AppUpdates } from "./updates";
+import { routinePush } from "./routine-push";
 
 export function Settings({
   active,
@@ -18,6 +19,27 @@ export function Settings({
   const [zone, setZone] = useState(timezone);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [remindersEnabled, setRemindersEnabled] = useState(false);
+  const [testMessage, setTestMessage] = useState("");
+  const [reminderStatus, setReminderStatus] = useState<{
+    configured: boolean;
+    registered: boolean;
+  } | null>(null);
+  useEffect(() => {
+    if (!active) return;
+    let current = true;
+    void Promise.all([routinePush.enabled(), routinePush.status()])
+      .then(([enabled, status]) => {
+        if (current) {
+          setRemindersEnabled(enabled);
+          setReminderStatus(status);
+        }
+      })
+      .catch(() => {
+        if (current) setReminderStatus(null);
+      });
+    return () => { current = false; };
+  }, [active]);
   const { snapshot, changed } = usePlanning(
     dayKey(new Date(), timezone).slice(0, 7),
     active,
@@ -59,6 +81,33 @@ export function Settings({
       setBusy(false);
     }
   }
+  async function toggleReminders() {
+    setBusy(true);
+    setError("");
+    try {
+      if (remindersEnabled) await routinePush.disable();
+      else await routinePush.enable();
+      setRemindersEnabled(!remindersEnabled);
+      setReminderStatus(await routinePush.status());
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not change reminders.");
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function testReminder() {
+    setBusy(true);
+    setError("");
+    setTestMessage("");
+    try {
+      await routinePush.test();
+      setTestMessage("Test reminder sent. Check this phone’s notifications.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "The test reminder did not send.");
+    } finally {
+      setBusy(false);
+    }
+  }
   return (
     <Page
       title="Settings"
@@ -95,9 +144,32 @@ export function Settings({
       <Panel>
         <Text style={styles.text}>Calls and notifications</Text>
         <Text style={styles.subtitle}>
-          Live calling and Android push need your LiveKit and Firebase setup. No
-          background ringing or voice connection is claimed before that setup is
-          verified.
+          Daily reminders use Android notifications and are separate from incoming calls.
+          They show no private note or task details on your lock screen.
+        </Text>
+        <Text style={styles.subtitle}>
+          {reminderStatus?.configured
+            ? remindersEnabled && reminderStatus.registered
+              ? "Daily reminders are enabled on this phone."
+              : "Daily reminders are available when you enable them."
+            : "The server is waiting for Firebase delivery credentials."}
+        </Text>
+        <Button
+          title={remindersEnabled ? "Turn off daily reminders" : "Enable daily reminders"}
+          disabled={busy || (!remindersEnabled && !reminderStatus?.configured)}
+          onPress={() => void toggleReminders()}
+        />
+        {remindersEnabled && reminderStatus?.registered && (
+          <Button
+            title="Send a test reminder"
+            disabled={busy || !reminderStatus.configured}
+            onPress={() => void testReminder()}
+          />
+        )}
+        {!!testMessage && <Text style={styles.subtitle}>{testMessage}</Text>}
+        <Text style={styles.subtitle}>
+          Incoming voice calls need LiveKit and separate call enrollment. Daily
+          reminders do not start an audio call.
         </Text>
         <Text style={styles.subtitle}>
           iPhone calls are deferred. Notification permission will be requested
