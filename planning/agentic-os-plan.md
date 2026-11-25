@@ -21,7 +21,7 @@ about and configure the environment *before* automating. So:
 
 1. land what exists;
 2. **foundations**: fix answering, and add the checks that are missing;
-3. make the brain's source real;
+3. the hosted brain: backups, evidence, migrations;
 4. make the gate a wall;
 5. measure;
 6. add capability that the measurements earn;
@@ -56,13 +56,15 @@ reviewed by Manoj; **A→M** = agent drafts, Manoj runs or approves.
 ### Phase 1 — Land what exists (no new features)
 | Step | Owner | Done when |
 |---|---|---|
-| Close #43, #44 and #45: their work is already on `main` (#43, #44) or far behind it (#45) | M | closed |
-| Apply app migrations 042–045 to the hosted database: `migrate_hosted plan`, then `apply` | M | `plan` reports nothing pending |
-| Review the Tier 3 PRs and label them `tier3-reviewed`. Merge in order: #52, #53–#56, #60, #61, #64; then #58 (decision 8). Docs #57, #59 and #65 any time | M | `ci-gate` green on `main` after each merge |
-| Set the repo variable `PRODUCTION_HEALTH_URL`, so the deploy watchdog stops skipping | M | the `deploy-watchdog` step passes on the next `main` run |
+| Close #43, #44 and #45: their work is already on `main` (#43, #44) or superseded (#45) | M | **done 2026-11-25** |
+| App migrations 042–045 on the hosted database | M | **done**: `migrate_hosted plan` reported nothing pending on 2026-11-25 |
+| Review the Tier 3 PRs and label them `tier3-reviewed`. Merge in order: #52, #53–#56, #60, #61, #64; then #58 (decision 8) and #66. Docs #57, #59 and #65 any time. Before #66: `migrate_hosted apply` for 046 | M | `ci-gate` green on `main` after each merge |
+| Set the repo variable `PRODUCTION_HEALTH_URL` to the backend's public `/health` (not in the repo; Railway → backend → Settings → Networking) | M | the `deploy-watchdog` step passes on the next `main` run |
 
-The brain never runs on the hosted database (D13). Brain migration 0005 is applied in Phase 3,
-locally.
+**Correction (2026-11-25).** An earlier version said the brain never runs on the hosted
+database. It does: both schemas moved to the cloud (Supabase on 2026-11-20, then Railway;
+D13 and principle 5 amended in `rationale/decisions/supabase-database.md`). Rows have been the
+brain since 2026-11-12 (D44); the markdown is a frozen rollback copy.
 
 ### Phase 2 — Foundations: answering, and the checks that are missing
 These are the prerequisite the talks name, not polish. Each step has its own done-check.
@@ -77,14 +79,15 @@ These are the prerequisite the talks name, not polish. Each step has its own don
 | Commit the deny rules; wire a hook that runs the full suite | M | the rules are in the repo; the Stop hook reads a fresh verdict |
 | Then resume the librarian checklist (`planning/librarian-plan.md`, 2026-10-31) | A→M | its own pass bars, written first |
 
-### Phase 3 — Make the brain's source real
+### Phase 3 — The hosted brain: backups, evidence, migrations
+Rows are already the brain in production (D44, 2026-11-12), on Railway Postgres. What is open:
+
 | Step | Owner | Done when |
 |---|---|---|
-| A full database dump held off this PC (`planning/brain-backup.md`) | M | the dump exists off the PC; its date is recorded |
-| Rehearse a restore into a scratch database | A→M | the restored row counts match the source |
-| Apply brain migration 0005 to the local brain (`python -m yggdras.data.brain_db.migrate up`) | M | `status` shows version 5 |
-| Run the pre-registered parity gate (`evals/experiments/rows-parity/prereg.md`; paid, up to $15) | M | every bar holds, and the results are committed |
-| Switch `YGGDRAS_BRAIN_SOURCE` to `rows` | M | only after the two rows above; Lia answers from rows |
+| Confirm the verified dumps exist and are current (the app keeps nightly dumps on the laptop, `supabase-database.md`) | M | the latest dump's date is recorded |
+| Rehearse a restore of the hosted brain into a scratch database | A→M | the restored row counts match the source |
+| A tool to apply brain migrations to the hosted brain: `migrate_hosted` covers the app schema only, so N1's 0005 (#60) has no way there yet | A→M | the tool's `plan` and `apply` work on a scratch copy; then 0005 is applied before #60 merges |
+| The parity gate: rows were switched on without committed results. Decide whether to run it now as evidence, or record why it is not needed **[decide]** | M | a committed result or a decision record |
 
 ### Phase 4 — Turn the gate into a wall (decision 1, amended 2026-11-25, and decision 2)
 | Step | Owner | Done when |
