@@ -332,7 +332,7 @@ class RoutineScheduler:
 
     def tick(self):
         from .daily_routine_api import sweep_blocks
-        from .routine_delivery import drain_notices
+        from .routine_delivery import drain_android_notices, drain_notices
 
         with self.database.connect() as db:
             if not self.enabled(db):
@@ -353,6 +353,7 @@ class RoutineScheduler:
                 with self.database.connect() as db:
                     finish(db, job, self.now(), type(exc).__name__, retry=True)
         drain_notices(self.database, self.calls.auth_fingerprint)
+        drain_android_notices(self.database, self.calls.auth_fingerprint)
 
     def run_job(self, job):
         now = self.now()

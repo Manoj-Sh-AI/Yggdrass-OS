@@ -68,7 +68,11 @@ state and expiry; never note content.
        ../api/.venv/Scripts/python.exe scripts/android-tools.py build
        ../api/.venv/Scripts/python.exe scripts/android-tools.py adb install -r android/app/build/outputs/apk/release/app-release.apk
 
-6. On the phone: More → Calls → **Enable incoming calls** (allow notifications), then
+6. On the phone: Settings → **Enable daily reminders** and **Send a test reminder**.
+   This is separate from Calls. The server must report Firebase delivery as ready,
+   and the test should visibly arrive on this phone before scheduling reminders.
+   The test contains no private note or task text.
+7. For incoming voice calls: More → Calls → **Enable incoming calls** (allow notifications), then
    **Android call display settings** → allow full-screen notifications (Android 14+).
    Also set the app's battery use to *Unrestricted* so a high-priority push wakes it.
 
@@ -76,8 +80,10 @@ The phone rings only while its sign-in is valid; More → Calls shows until when
 
 ## Boundaries
 
-LiveKit/Firebase accounts are not configured. Real media, background push and
-locked-phone ringing are **not certified** by the silent simulations. The laptop
+The Android Firebase client file alone does not authorize server sends. A valid
+server service account, a current phone build, phone notification permission and
+an actual test delivery are required. LiveKit voice and locked-phone ringing are
+**not certified** by silent simulations. The laptop
 must stay awake for local APIs and workers. Process-loss recovery ends the old
 call before a fresh call; ordinary transient reconnect uses the SDK.
 

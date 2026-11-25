@@ -35,7 +35,8 @@ async function proxy(
   const mobile = path === "mobile/auth/login";
   const routines =
     /^application\/daily-routines(\/(settings|trigger|important|ack|journal|review|lessons|energy|pool|feedback|hypotheses|predictions(\/[a-fA-F0-9-]{36})?|filing(\/[a-fA-F0-9-]{36})?))?$/.test(path) ||
-    /^routine-delivery\/(status|subscribe|unsubscribe|respond)$/.test(path);
+    /^routine-delivery\/(status|subscribe|unsubscribe|respond)$/.test(path) ||
+    /^routine-delivery\/android\/(status|respond|test|devices(\/[a-fA-F0-9-]{36})?)$/.test(path);
   // The browser tab that finishes an app sign-in lands here; the API answers with a page.
   const signInReturn =
     path === "connectors/callback" && request.method === "GET";

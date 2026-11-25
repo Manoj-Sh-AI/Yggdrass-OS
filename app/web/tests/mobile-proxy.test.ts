@@ -13,6 +13,40 @@ afterEach(() => {
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
 });
+describe("Android routine reminder routes", () => {
+  it("forwards each reminder route to the application API", async () => {
+    const fetchMock = vi.fn(async () => new Response("{}", { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const device = "0b6e7a8c-1f2d-4e3a-9b8c-7d6e5f4a3b2c";
+    for (const path of [
+      ["routine-delivery", "android", "status"],
+      ["routine-delivery", "android", "devices", device],
+    ]) {
+      const req = new NextRequest(`${origin}/api/backend/${path.join("/")}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const response = await GET(req, { params: Promise.resolve({ path }) });
+      expect(response.status).toBe(200);
+    }
+    const urls = fetchMock.mock.calls.map((c) => (c as unknown as [string])[0]);
+    expect(urls).toEqual([
+      "http://127.0.0.1:8912/v1/routine-delivery/android/status",
+      `http://127.0.0.1:8912/v1/routine-delivery/android/devices/${device}`,
+    ]);
+  });
+  it("still refuses an Android path that is not on the list", async () => {
+    const fetchMock = vi.fn(async () => new Response("{}", { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const path = ["routine-delivery", "android", "everything"];
+    const req = new NextRequest(`${origin}/api/backend/${path.join("/")}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const response = await GET(req, { params: Promise.resolve({ path }) });
+    expect(response.status).toBe(404);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
 describe("mobile application proxy", () => {
   it("forwards a device bearer to the application API, never the Brain service", async () => {
     const fetchMock = vi.fn(

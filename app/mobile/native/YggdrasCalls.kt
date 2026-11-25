@@ -23,6 +23,7 @@ import java.util.UUID
 
 // Channel sounds cannot change after creation, so the custom ringtone needs a new id.
 private const val CHANNEL = "yggdras-calls-v2"
+private const val ROUTINE_CHANNEL = "yggdras-routines"
 private val RETIRED_CHANNELS = listOf("yggdras-calls")
 private const val CLOSED = "app.yggdras.mobile.CALL_CLOSED"
 private const val RING = 45000L
@@ -120,6 +121,10 @@ object YggdrasLockScreen {
 
 class YggdrasMessagingService : ExpoFirebaseMessagingService() {
   override fun onMessageReceived(message: RemoteMessage) {
+    if (message.data["type"] == "yggdras_routine") {
+      showRoutine(message)
+      return
+    }
     if (message.data["type"] != "yggdras_call") { super.onMessageReceived(message); return }
     val id = message.data["callId"] ?: return
     try { UUID.fromString(id) } catch (_: IllegalArgumentException) { return }
@@ -155,6 +160,56 @@ class YggdrasMessagingService : ExpoFirebaseMessagingService() {
     // Insistent: the chime loops until answered, declined, expired or answered elsewhere.
     notification.flags = notification.flags or Notification.FLAG_INSISTENT
     manager.notify(notificationId(id), notification)
+  }
+
+  private fun showRoutine(message: RemoteMessage) {
+    val id = message.data["deliveryId"] ?: return
+    try { UUID.fromString(id) } catch (_: IllegalArgumentException) { return }
+    val kind = message.data["kind"] ?: return
+    if (kind.length > 40 || !kind.matches(Regex("[a-z_]+"))) return
+    val expires = try { Instant.parse(message.data["expiresAt"]).toEpochMilli() } catch (_: Exception) { return }
+    val remaining = (expires - System.currentTimeMillis()).coerceAtMost(240000L)
+    if (remaining <= 0) return
+    if (Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) return
+    val seen = getSharedPreferences("yggdras-routine-delivery", MODE_PRIVATE)
+    if (seen.getLong(id, 0) >= expires) return
+    val edit = seen.edit()
+    for ((key, value) in seen.all) if (value is Long && value < System.currentTimeMillis()) edit.remove(key)
+    edit.putLong(id, expires).apply()
+    val manager = getSystemService(NotificationManager::class.java)
+    if (Build.VERSION.SDK_INT >= 26 && manager.getNotificationChannel(ROUTINE_CHANNEL) == null) {
+      val channel = NotificationChannel(ROUTINE_CHANNEL, "Daily reminders", NotificationManager.IMPORTANCE_DEFAULT)
+      channel.description = "Quiet reminders for your daily routine."
+      channel.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
+      manager.createNotificationChannel(channel)
+    }
+    fun destination(action: String): PendingIntent {
+      val uri = Uri.parse("yggdras://routine/$id?action=$action")
+      val intent = Intent(Intent.ACTION_VIEW, uri, this, MainActivity::class.java)
+        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+      return PendingIntent.getActivity(this, (id + action).hashCode(), intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+    }
+    val title = when (kind) {
+      "pre_task" -> "Time to start a task"
+      "morning" -> "Your morning brief is ready"
+      "evening" -> "Time for an evening review"
+      "test" -> "Yggdras test reminder"
+      else -> "A Yggdras reminder is ready"
+    }
+    val builder = NotificationCompat.Builder(this, ROUTINE_CHANNEL)
+      .setSmallIcon(android.R.drawable.ic_popup_reminder)
+      .setContentTitle(title)
+      .setContentText("Open Yggdras to see the details.")
+      .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+      .setCategory(NotificationCompat.CATEGORY_REMINDER)
+      .setContentIntent(destination("open"))
+      .setAutoCancel(true)
+      .setTimeoutAfter(remaining)
+    if (kind == "pre_task") {
+      builder.addAction(0, "Started", destination("started"))
+      builder.addAction(0, "Not yet", destination("not_yet"))
+    }
+    manager.notify(notificationId(id), builder.build())
   }
 }
 
