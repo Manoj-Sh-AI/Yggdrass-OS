@@ -64,7 +64,9 @@ def test_sdk_adapter_runs_a_scripted_existing_role_and_summarizes_in_app(postgre
             chunks = [chunk.delta.content or "" async for chunk in stream if chunk.delta]
             return "".join(chunks)
 
-    assert asyncio.run(run()) == "The invented meeting is ready."
+    # The hold phrase is spoken first, so the line is never silent while the role works.
+    spoken = asyncio.run(run())
+    assert spoken.startswith("One moment.") and spoken.endswith("The invented meeting is ready.")
     assert len(history) == 2
     summary = runtime.summarize(history)
     assert summary == "Discussed an invented meeting. No changes were applied."
@@ -153,3 +155,56 @@ def test_a_spoken_yes_applies_the_change_waiting_on_the_call_and_no_drops_it(pos
     assert states == ["accepted", "dismissed"]
     assert "Applied: Add Invented accepted event" in summary and "Declined:" in summary
     assert json.dumps(runtime.pending(call)) == "[]"
+
+
+def test_a_call_opens_with_an_instant_fixed_greeting_not_a_model_turn():
+    """Generating the greeting ran the full Yggdras role; on the hosted server the caller
+    heard silence for over a minute. The opening is fixed text spoken at once."""
+    import inspect
+
+    from yggdress_app import voice_worker
+
+    session = inspect.getsource(voice_worker.voice_session)
+    assert "audio.say(OPENING)" in session
+    assert "generate_reply" not in session
+    assert voice_worker.OPENING.strip()
+
+
+def test_a_slow_turn_says_one_moment_before_the_full_role_runs():
+    pytest.importorskip("livekit.agents")
+    from yggdress_app.livekit_adapter import HOLD, answer_turn
+
+    order = []
+
+    class Runtime:
+        class database:
+            @staticmethod
+            def connect():
+                class Db:
+                    def __enter__(self):
+                        return self
+
+                    def __exit__(self, *_):
+                        return False
+
+                    def execute(self, *_):
+                        class Row:
+                            def fetchone(self):
+                                return {"?column?": 1}
+
+                        return Row()
+
+                return Db()
+
+        def turn(self, *_):
+            order.append("turn")
+            return "Done."
+
+    class Owner:
+        answerer = None
+        runtime = Runtime()
+        identifier = uuid4()
+        history = ()
+
+    assert answer_turn(Owner(), "What is on today?", order.append) == "Done."
+    assert order == [HOLD, "turn"]

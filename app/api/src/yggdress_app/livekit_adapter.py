@@ -16,6 +16,9 @@ from livekit.agents.types import APIConnectOptions
 # Yggdras hand-offs and Lia can take well over a minute (prep took 72 s on the laptop).
 TURN_TIMEOUT = 180
 TROUBLE = "Sorry, sir, I ran into a problem with that. Could you try again?"
+# Spoken at once when a turn needs the full Yggdras role, so the line never goes silent
+# while it works (that can take tens of seconds). Free: no model call.
+HOLD = "One moment."
 
 
 class CallLLM(llm.LLM):
@@ -93,6 +96,7 @@ def answer_turn(owner, text, send=lambda piece: None):
                 "SELECT 1 FROM app.calls WHERE id=%s AND state='answered'", (owner.identifier,)
             ).fetchone():
                 return None
+        send(HOLD)
         return owner.runtime.turn(owner.identifier, text, owner.history)
     except Exception as exc:  # noqa: BLE001 -- never break a live call; no private details logged
         logging.getLogger("yggdras.voice").error("voice turn failed: %s", type(exc).__name__)
