@@ -86,13 +86,14 @@ These are the prerequisite the talks name, not polish. Each step has its own don
 | Run the pre-registered parity gate (`evals/experiments/rows-parity/prereg.md`; paid, up to $15) | M | every bar holds, and the results are committed |
 | Switch `YGGDRAS_BRAIN_SOURCE` to `rows` | M | only after the two rows above; Lia answers from rows |
 
-### Phase 4 — Turn the gate into a wall (decisions 1 and 2)
+### Phase 4 — Turn the gate into a wall (decision 1, amended 2026-11-25, and decision 2)
 | Step | Owner | Done when |
 |---|---|---|
-| N4: an agents-only database role. It can read only `api.*` and has **no write grant** on the brain. The CLI and MCP connect as it when an agent runs them | A→M | a test: the role cannot `SELECT` from `brain.*` or `app.*`, and cannot write to `brain.*` |
-| Lia answering Manoj keeps full access (decision 1). `brain ask` and `brain open` stay owner paths, outside the agent role | A | a decision record; a test that the agent role cannot reach them |
-| Terminal CLI brain writes ask for confirmation in an interactive terminal (TTY). **The TTY check is a convenience, not the protection:** an agent can open a pseudo-terminal. N4 is the protection | A | tests: no TTY means refused; under the agent role, a write is refused by the database |
-| Move the conductor's notes tools onto the views (they read the brain over HTTP and mask in Python today) | A | the raw-access test covers `conductor/catalog.py` |
+| **Only Lia reads the brain.** Every other agent (conductor workers, task and calendar agents, orchestration workers) has **no brain grant at all** and asks Lia, who decides what is relevant to hand over | A→M | a test: the agent role cannot `SELECT` from `brain.*`; Lia's role can |
+| N4: the agents' database role reads only `api.*` app views and has **no write grant** on the brain | A→M | a test: the role cannot write to `brain.*` |
+| Move the conductor's notes tools behind Lia (they read the brain over HTTP and mask in Python today) | A | the conductor's catalog has no brain reader of its own |
+| No agent edits or deletes a note without Manoj's approval (`tell_lia` plus confirm). Terminal CLI brain writes ask for confirmation in an interactive terminal (TTY); **the TTY check is a convenience, not the protection.** An agent can open a pseudo-terminal, and the role's missing write grant is the protection | A | tests: no TTY means refused; under the agent role, a write is refused by the database |
+| No agent sends private information to an outside service (email, connectors, web). **How this is enforced is not designed yet** | A→M | an approved spec, then its tests |
 
 ### Phase 5 — Measure (Phase D)
 | Step | Owner | Done when |
@@ -130,9 +131,10 @@ step 7 (`candidate_links`), with significance scored cheap-first.
 
 ## 4. Manoj's decisions (2026-11-25)
 
-1. **The gate is for agents only, and it is enforced by N4.** Lia answering Manoj keeps full
-   access. A sensitive note in an agent's transcript cannot be taken back, so this boundary is
-   a database grant, not a code test.
+1. **Only Lia has direct access to the brain** (amended 2026-11-25; first ruling: "gate for
+   agents only"). Other agents ask Lia. Agents may use what Lia gives them, but they cannot edit
+   or delete notes without approval, and they cannot send private information to outside
+   services. N4 enforces the access part.
 2. **Terminal CLI brain writes:** confirmation in an interactive terminal, as a convenience.
    N4 is the protection: the agent role has no write grant. Build both, and never treat the
    terminal check as the guard.

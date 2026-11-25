@@ -11,8 +11,10 @@ Cloudflare's Code Mode.
 
 ## Decision
 
-1. **The gate is for agents only, enforced by a database role (N4).** Lia answering Manoj
-   keeps full access.
+1. **Only Lia has direct access to the brain** (amended the same day). Other agents ask Lia.
+   No agent edits or deletes a note without approval, and none sends private information to an
+   outside service. A database role (N4) enforces the access part; how the outside-service rule
+   is enforced is not designed yet.
 2. **Terminal CLI brain writes:** an interactive-terminal confirmation as a convenience. N4
    (no write grant for the agent role) is the protection.
 3. **No Claude GitHub App for now**; revisit when Tier 1 or 2 changes merge unread.
@@ -29,6 +31,7 @@ answering fix as Phase 2, ahead of everything that decisions 5–8 touch.
 ## Alternatives considered
 
 - **Gate for every reader.** This would hide Manoj's own sensitive notes from Lia answering him.
+- **Gate for agents only, each agent reading the views itself** (the first ruling). Replaced: one reader (Lia) is simpler to guard than many.
 - **The terminal check as the guard.** Refused: an agent can open a pseudo-terminal.
 - **Install the App now (talk 1's advice).** Deferred while Manoj still reads every diff;
   cross-testing found more than a reviewer would have.
