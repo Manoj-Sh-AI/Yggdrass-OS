@@ -239,18 +239,38 @@ def restore_portable(binary_dir, dump, env, dbname, args=()):
     return applied.returncode, applied.stderr
 
 
+DOLLAR_QUOTE = re.compile(r"\$[A-Za-z_]*\$")
+
+
 def schema_fingerprint(binary, env, snapshot=None, schemas=None):
     args = ["--schema-only", "--no-owner", "--no-privileges", "--no-password"]
     if snapshot:
         args.append("--snapshot=" + snapshot)
     args += [f"--schema={name}" for name in schemas or ()]
     text = portable(tool(binary, args, env)).decode("utf-8")
+    return hashlib.sha256(schema_statements(text).encode()).hexdigest()
+
+
+def schema_statements(text):
+    """The schema as a set of statements, in a stable order. pg_dump's object order follows
+    internal ids, which a restore renumbers: the same schema came back with four tables in
+    a different place, and an order-sensitive check refused every hosted backup."""
     lines = [
         line.rstrip()
         for line in text.splitlines()
         if line.strip() and not line.startswith(("--", "\\restrict", "\\unrestrict"))
     ]
-    return hashlib.sha256("\n".join(lines).encode()).hexdigest()
+    statements, current, quote = [], [], None
+    for line in lines:
+        current.append(line)
+        for tag in DOLLAR_QUOTE.findall(line):  # a function body ends only at its own tag
+            quote = None if quote == tag else quote or tag
+        if line.endswith(";") and quote is None:
+            statements.append("\n".join(current))
+            current = []
+    if current:
+        statements.append("\n".join(current))
+    return "\n".join(sorted(statements))
 
 
 def server_options(port: int) -> str:
