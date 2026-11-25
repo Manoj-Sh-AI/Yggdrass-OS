@@ -8,6 +8,10 @@ the brain project's `.env`. Nothing is written into the repository or logged.
 
     python -m yggdress_app.hosted
 
+Firebase: paste the service-account file's contents into the Railway variable
+FIREBASE_SERVICE_ACCOUNT_JSON (with FIREBASE_PROJECT_ID). It is written to
+`$YGGDRAS_HOME/secrets/` on every start, so it survives redeploys without a volume.
+
 Test beside the laptop first: leave YGGDRAS_CALLS_MODE unset (calls disabled) and set
 YGGDRAS_BACKGROUND=off (no agent worker), so nothing runs twice. Switch both on at cutover.
 """
@@ -115,8 +119,42 @@ def execution(env=os.environ) -> dict:
     return {"execution_backend": "threads"}
 
 
+FIREBASE_JSON = "FIREBASE_SERVICE_ACCOUNT_JSON"
+
+
+def firebase_account(env=os.environ, folder: Path | None = None) -> Path | None:
+    """Railway variables hold text, not files, but Firebase wants a service-account file.
+    When FIREBASE_SERVICE_ACCOUNT_JSON holds the file's contents, write it to a private file
+    in the runtime home on every start, and point FIREBASE_SERVICE_ACCOUNT_FILE at it. Its
+    contents are never printed: a bad value is named, not echoed."""
+    raw = env.get(FIREBASE_JSON, "").strip()
+    if not raw:
+        return None
+    try:
+        account = json.loads(raw)
+    except json.JSONDecodeError:
+        raise SystemExit(f"{FIREBASE_JSON} is not valid JSON (paste the whole file).") from None
+    if not (
+        isinstance(account, dict)
+        and account.get("type") == "service_account"
+        and account.get("private_key")
+        and account.get("client_email")
+    ):
+        raise SystemExit(f"{FIREBASE_JSON} is not a Firebase service-account file.")
+    secrets_dir = (folder or home()) / "secrets"
+    secrets_dir.mkdir(parents=True, exist_ok=True)
+    os.chmod(secrets_dir, 0o700)
+    target = secrets_dir / "firebase-service-account.json"
+    partial = target.with_name(target.name + ".partial")
+    partial.write_text(raw, encoding="utf-8")
+    os.chmod(partial, 0o600)
+    partial.replace(target)
+    env["FIREBASE_SERVICE_ACCOUNT_FILE"] = str(target)
+    return target
+
+
 def bootstrap(env=os.environ, folder: Path | None = None) -> Path:
-    """Write the two private settings files. Returns the runtime home."""
+    """Write the private settings files. Returns the runtime home."""
     from .local_runtime import atomic_json
 
     folder = folder or home()
@@ -125,6 +163,7 @@ def bootstrap(env=os.environ, folder: Path | None = None) -> Path:
         raise SystemExit("Set these Railway variables first: " + ", ".join(gaps))
     folder.mkdir(parents=True, exist_ok=True)
     (folder / "local-data").mkdir(exist_ok=True)
+    firebase_account(env, folder)  # before the brain .env, which passes the file's path on
     target = REPO / ".env"
     partial = target.with_name(".env.partial")
     partial.write_text(brain_env(env, folder), encoding="utf-8")
