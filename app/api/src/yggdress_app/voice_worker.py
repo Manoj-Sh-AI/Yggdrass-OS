@@ -9,6 +9,7 @@ from uuid import UUID
 
 # Male British voice (Cartesia "Classy British Man" via LiveKit Inference); YGGDRAS_VOICE_ID overrides.
 VOICE = "a0e99841-438c-4a64-b679-ae501e7d6091"
+OPENING = "Hello, sir, Yggdras here. What can I do for you?"
 
 
 def configured(home):
@@ -262,9 +263,11 @@ async def voice_session(ctx):
             stage = "speak summary"
             audio.say(opening)  # plays in the background; setup must not wait on playout
         else:
-            await audio.generate_reply(
-                user_input="Open this call with a brief, calm greeting and the current scheduled-item context if available. Ask one useful question. Do not propose or make changes unless I ask."
-            )
+            # A fixed greeting, spoken at once. Generating it ran the full Yggdras role (several
+            # model calls) and on the hosted server Manoj heard nothing for over a minute.
+            history.append({"role": "assistant", "content": OPENING})
+            stage = "speak greeting"
+            audio.say(OPENING)
     except Exception as exc:  # noqa: BLE001 -- credentials and transcripts must never enter logs
         # Only the step and the error type: never its message, which may hold private data.
         logging.getLogger("yggdras.voice").error(
