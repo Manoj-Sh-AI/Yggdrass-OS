@@ -1,3 +1,4 @@
+import re
 import secrets
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
@@ -294,6 +295,10 @@ def test_brain_outage_does_not_block_application(signed_in):
     )
 
 
+MIGRATIONS = Path(__file__).parents[1] / "migrations"
+LISTED_THROUGH = "046"  # the newest migration whose tables the list below includes
+
+
 def test_migrations_are_application_only_and_runtime_cannot_create_tables(postgres):
     Database(postgres["admin"]).migrate()
     with Database(postgres["admin"]).connect() as db:
@@ -301,7 +306,7 @@ def test_migrations_are_application_only_and_runtime_cannot_create_tables(postgr
             r["tablename"]
             for r in db.execute("SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname='app'")
         }
-        assert tables == {
+        listed = {
             "schema_migrations",
             "sessions",
             "login_guard",
@@ -388,6 +393,19 @@ def test_migrations_are_application_only_and_runtime_cannot_create_tables(postgr
             "android_routine_deliveries",
             "routine_voice_bindings",
         }
+        # Expand-contract: CI's contract job runs this (base) test against a PR's newer
+        # migrations. A table the list predates is fine only if a migration newer than
+        # the list declares it; anything else still fails, as does a missing table.
+        newer = {
+            name
+            for path in MIGRATIONS.glob("*.sql")
+            if path.name[:3] > LISTED_THROUGH
+            for name in re.findall(
+                r"CREATE TABLE (?:IF NOT EXISTS )?app\.(\w+)", path.read_text(encoding="utf-8")
+            )
+        }
+        assert listed <= tables
+        assert tables - listed <= newer, tables - listed - newer
     with (
         pytest.raises(psycopg.errors.InsufficientPrivilege),
         Database(postgres["runtime"]).connect() as db,
