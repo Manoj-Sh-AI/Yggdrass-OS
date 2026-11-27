@@ -12,6 +12,8 @@ import { NoteEditor, preloadNoteEditor } from "./note-editor-loader";
 import { NoteLinkedWork } from "./note-linked-work";
 import { Empty, Icon, Modal, Panel, relativeTime } from "./ui";
 
+const PHONE = "(max-width: 720px)";
+
 export function BrainExplorer({
   initialNoteId,
   initialCreate = false,
@@ -20,6 +22,7 @@ export function BrainExplorer({
     state,
     shelves,
     noteId,
+    setNoteId,
     openNote,
     ready,
     brainMode,
@@ -45,6 +48,19 @@ export function BrainExplorer({
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   const created = useRef(false);
+  // Phone (Notion's mobile layout): the list and the page are two screens. A note opens
+  // only when tapped, never by itself, and the page has a slim bar: back, area, menu.
+  const [phone, setPhone] = useState(
+    () => typeof window !== "undefined" && window.matchMedia(PHONE).matches,
+  );
+  const [menu, setMenu] = useState(false);
+  useEffect(() => {
+    const query = window.matchMedia(PHONE);
+    const change = () => setPhone(query.matches);
+    change();
+    query.addEventListener("change", change);
+    return () => query.removeEventListener("change", change);
+  }, []);
   const note = state.notes.find((n) => n.id === noteId);
   const [revealed, setRevealed] = useState<string | null>(null);
   const contextVisible = context && (!note?.sensitive || revealed === note.id);
@@ -89,7 +105,13 @@ export function BrainExplorer({
       }
       return;
     }
-    if (ready && brainMode !== "unavailable" && !note && state.notes[0]) {
+    if (
+      ready &&
+      brainMode !== "unavailable" &&
+      !note &&
+      state.notes[0] &&
+      !phone
+    ) {
       let selected: string | null = null;
       try {
         selected = localStorage.getItem("yggdress.notes.active.v1");
@@ -111,6 +133,7 @@ export function BrainExplorer({
     initialNoteId,
     initialCreate,
     createNote,
+    phone,
   ]);
   useEffect(() => {
     if (note)
@@ -187,65 +210,127 @@ export function BrainExplorer({
       </ListRow>
     );
   };
+  const reading = phone && !!note;
   return (
-    <div className="notes-application standard-page">
-      <div className="notes-page-heading">
-        <div>
-          <h1>
-            Notes<span>{state.notes.length}</span>
-          </h1>
-        </div>
-        <div className="notes-layout-actions">
-          {liveNotes && (
-            <button
-              className="button small-button"
-              disabled={!canUndo || undoBusy}
-              onClick={() => void undo()}
-            >
-              {undoBusy ? "Undoing…" : "Undo last saved change"}
-            </button>
-          )}
+    <div
+      className={`notes-application standard-page ${phone ? "notes-phone" : ""} ${reading ? "notes-phone-page" : "notes-phone-list"}`}
+    >
+      {reading && (
+        <div className="notes-phone-bar">
           <button
-            className={`icon-button ${navigation ? "is-active" : ""}`}
-            aria-label="Toggle notes navigation"
-            aria-expanded={navigation}
-            onClick={() => setNavigation((n) => !n)}
-          >
-            <Icon name="PanelLeft" size={18} />
-          </button>
-          <button
-            className={`icon-button ${context ? "is-active" : ""}`}
-            aria-label="Toggle note context"
-            aria-expanded={context}
-            onClick={() => setContext((c) => !c)}
-          >
-            <Icon name="PanelRight" size={18} />
-          </button>
-          <button
-            className="button primary small-button"
-            disabled={brainMode === "unavailable"}
+            className="notes-phone-back"
             onClick={() => {
-              if (liveNotes) {
-                void createNote({
-                  kind: "note",
-                  title: "",
-                  content: "",
-                  area: "cross",
-                  tags: [],
-                  date: "",
-                });
-                return;
-              }
-              setCreating(true);
-              setTitle("");
-              setError("");
+              setMenu(false);
+              setContext(false);
+              setNoteId(null);
             }}
           >
-            <Icon name="Plus" size={15} />
-            New note
+            <Icon name="ChevronLeft" size={18} />
+            Notes
           </button>
+          <span className="notes-phone-crumb">
+            {note.shelfId.replace(/^\d+-/, "").replaceAll("-", " ")}
+          </span>
+          <button
+            className="icon-button"
+            aria-label="Note menu"
+            aria-expanded={menu}
+            onClick={() => setMenu((m) => !m)}
+          >
+            <Icon name="Ellipsis" size={18} />
+          </button>
+          {menu && (
+            <div className="notes-phone-menu" role="menu">
+              <button
+                role="menuitem"
+                onClick={() => {
+                  setMenu(false);
+                  setContext((c) => !c);
+                }}
+              >
+                <Icon name="Orbit" size={15} />
+                {context ? "Hide what's around this note" : "Around this note"}
+              </button>
+              {liveNotes && (
+                <button
+                  role="menuitem"
+                  disabled={!canUndo || undoBusy}
+                  onClick={() => {
+                    setMenu(false);
+                    void undo();
+                  }}
+                >
+                  <Icon name="Undo2" size={15} />
+                  {undoBusy ? "Undoing…" : "Undo last saved change"}
+                </button>
+              )}
+            </div>
+          )}
         </div>
-      </div>
+      )}
+      {!reading && (
+        <div className="notes-page-heading">
+          <div>
+            <h1>
+              Notes<span>{state.notes.length}</span>
+            </h1>
+          </div>
+          <div className="notes-layout-actions">
+            {liveNotes && !phone && (
+              <button
+                className="button small-button"
+                disabled={!canUndo || undoBusy}
+                onClick={() => void undo()}
+              >
+                {undoBusy ? "Undoing…" : "Undo last saved change"}
+              </button>
+            )}
+            {!phone && (
+              <>
+                <button
+                  className={`icon-button ${navigation ? "is-active" : ""}`}
+                  aria-label="Toggle notes navigation"
+                  aria-expanded={navigation}
+                  onClick={() => setNavigation((n) => !n)}
+                >
+                  <Icon name="PanelLeft" size={18} />
+                </button>
+                <button
+                  className={`icon-button ${context ? "is-active" : ""}`}
+                  aria-label="Toggle note context"
+                  aria-expanded={context}
+                  onClick={() => setContext((c) => !c)}
+                >
+                  <Icon name="PanelRight" size={18} />
+                </button>
+              </>
+            )}
+            <button
+              className="button primary small-button"
+              disabled={brainMode === "unavailable"}
+              onClick={() => {
+                if (liveNotes) {
+                  void createNote({
+                    kind: "note",
+                    title: "",
+                    content: "",
+                    area: "cross",
+                    tags: [],
+                    date: "",
+                  });
+                  return;
+                }
+                setCreating(true);
+                setTitle("");
+                setError("");
+              }}
+            >
+              <Icon name="Plus" size={15} />
+              New note
+            </button>
+          </div>
+        </div>
+      )}
       {markdownBlocked && (
         <div className="editor-error" role="alert">
           Writes are not live yet — the brain is still on markdown.
@@ -277,9 +362,9 @@ export function BrainExplorer({
         </Panel>
       ) : (
         <div
-          className={`notes-workbench ${navigation ? "" : "navigation-collapsed"} ${contextVisible ? "" : "context-collapsed"}`}
+          className={`notes-workbench ${(phone ? !note : navigation) ? "" : "navigation-collapsed"} ${contextVisible ? "" : "context-collapsed"}`}
         >
-          {navigation && (
+          {(phone ? !note : navigation) && (
             <aside
               className="notes-navigation panel"
               aria-label="Notes navigation"
@@ -402,50 +487,52 @@ export function BrainExplorer({
               )}
             </aside>
           )}
-          <div className="notes-writing-panel panel">
-            {note ? (
-              note.sensitive && revealed !== note.id ? (
+          {!(phone && !note) && (
+            <div className="notes-writing-panel panel">
+              {note ? (
+                note.sensitive && revealed !== note.id ? (
+                  <Empty
+                    title="Sensitive note"
+                    detail="The contents stay hidden until you choose to read them."
+                    action={
+                      <button
+                        className="button primary"
+                        onClick={() => setRevealed(note.id)}
+                      >
+                        Show
+                      </button>
+                    }
+                  />
+                ) : (
+                  <NoteEditor key={note.id} note={note} />
+                )
+              ) : (
                 <Empty
-                  title="Sensitive note"
-                  detail="The contents stay hidden until you choose to read them."
+                  title="Room for your next thought"
+                  detail="Choose a note from the left or start with something new."
                   action={
                     <button
-                      className="button primary"
-                      onClick={() => setRevealed(note.id)}
+                      className="button"
+                      onClick={() =>
+                        liveNotes
+                          ? void createNote({
+                              kind: "note",
+                              title: "",
+                              content: "",
+                              area: "cross",
+                              tags: [],
+                              date: "",
+                            })
+                          : setCreating(true)
+                      }
                     >
-                      Show
+                      {liveNotes ? "Add note" : "Create a synthetic note"}
                     </button>
                   }
                 />
-              ) : (
-                <NoteEditor key={note.id} note={note} />
-              )
-            ) : (
-              <Empty
-                title="Room for your next thought"
-                detail="Choose a note from the left or start with something new."
-                action={
-                  <button
-                    className="button"
-                    onClick={() =>
-                      liveNotes
-                        ? void createNote({
-                            kind: "note",
-                            title: "",
-                            content: "",
-                            area: "cross",
-                            tags: [],
-                            date: "",
-                          })
-                        : setCreating(true)
-                    }
-                  >
-                    {liveNotes ? "Add note" : "Create a synthetic note"}
-                  </button>
-                }
-              />
-            )}
-          </div>
+              )}
+            </div>
+          )}
           {contextVisible && (
             <aside className="note-context panel" aria-label="Note context">
               <div className="note-context-heading">
