@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AppState, Text, View } from "react-native";
+import { AppState, View } from "react-native";
 import { WebView } from "react-native-webview";
 import { session, sessionExpired } from "./api";
 import { Button, ErrorText, Loading, styles } from "./ui";
@@ -40,22 +40,23 @@ export function Embedded({
   );
   return (
     <View style={styles.screen}>
-      <View style={{ padding: 16, gap: 8 }}>
-        <Text accessibilityRole="header" style={styles.title}>
-          {view === "notes" ? "Notes" : "Graph"}
-        </Text>
-        <ErrorText message={error} />
-        {error && (
-          <Button
-            title="Retry"
-            onPress={() => {
-              setError("");
-              ref.current?.reload();
-            }}
-          />
-        )}
-        {loading && <Loading />}
-      </View>
+      {/* The page draws its own heading (Notes: a title on the list, a slim bar on a
+          page), so this band only appears for loading and errors. */}
+      {(!!error || loading) && (
+        <View style={{ padding: 16, gap: 8 }}>
+          <ErrorText message={error} />
+          {error && (
+            <Button
+              title="Retry"
+              onPress={() => {
+                setError("");
+                ref.current?.reload();
+              }}
+            />
+          )}
+          {loading && <Loading />}
+        </View>
+      )}
       <WebView
         ref={ref}
         source={source}
