@@ -8,6 +8,7 @@ failure inside a turn is spoken as a short apology: the call itself never breaks
 
 import asyncio
 import logging
+import os
 from uuid import uuid4
 
 from livekit.agents import llm
@@ -100,4 +101,7 @@ def answer_turn(owner, text, send=lambda piece: None):
         return owner.runtime.turn(owner.identifier, text, owner.history)
     except Exception as exc:  # noqa: BLE001 -- never break a live call; no private details logged
         logging.getLogger("yggdras.voice").error("voice turn failed: %s", type(exc).__name__)
+        if os.environ.get("YGGDRAS_VOICE_DEBUG") == "1" and type(exc).__name__ == "AgentError":
+            # AgentError texts are the app's own fixed messages, never model or user text.
+            logging.getLogger("yggdras.voice").error("debug turn error: %s", str(exc)[:200])
         return TROUBLE

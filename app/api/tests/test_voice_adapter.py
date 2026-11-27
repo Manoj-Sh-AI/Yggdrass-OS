@@ -208,3 +208,25 @@ def test_a_slow_turn_says_one_moment_before_the_full_role_runs():
 
     assert answer_turn(Owner(), "What is on today?", order.append) == "Done."
     assert order == [HOLD, "turn"]
+
+
+def test_debug_watch_registers_session_events_without_text():
+    """YGGDRAS_VOICE_DEBUG=1 logs what a silent call did: events, states, errors."""
+    from yggdress_app import voice_worker
+
+    class Session:
+        def __init__(self):
+            self.handlers = {}
+
+        def on(self, name, handler):
+            self.handlers[name] = handler
+
+    session = Session()
+    voice_worker.watch_session(session)
+    assert {
+        "agent_state_changed",
+        "speech_created",
+        "error",
+        "metrics_collected",
+        "close",
+    } <= set(session.handlers)
