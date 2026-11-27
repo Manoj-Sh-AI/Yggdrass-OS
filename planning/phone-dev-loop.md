@@ -112,3 +112,10 @@ version code, same key).
   opens at the newest message (inverted list), readable Resend on own bubbles.
   Trap: the dev build asks for "display over other apps" on first start (Android
   Settings opens); not needed, return with the monkey launch.
+- 2026-11-27 23:35: batch #77 merged and deployed; Notes page verified on the phone (no
+  Save button, block toolbar only while editing). Trap: the app keeps the Notes WebView
+  alive, so after a web deploy force-stop and reopen the app before judging the page.
+  Local batch 2 (`claude/20261127-phone-batch-2`, not pushed): page bar shows the area's
+  name. Ideas next: render `[[slug]]` links in notes as tappable note titles.
+  The app lists phone-local unsaved drafts with the notes (84 shown, 82 on the server).
+  Before Manoj leaves the laptop: install a release APK (the dev build needs Metro).
