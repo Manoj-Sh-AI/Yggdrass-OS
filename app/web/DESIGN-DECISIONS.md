@@ -263,3 +263,20 @@ model's explanation labelled as its note; "This cannot be undone" on irreversibl
   (`scripts/shoot-chat-components.cjs`: desktop + phone, light + dark, and it fails on a
   page error or horizontal scroll). It returns 404 in production unless
   YGGDRAS_GALLERY=1.
+
+## Notes on a phone (2026-11-26)
+
+### Two screens, Notion's mobile placement [cited]
+- Manoj: "the placement of all the components are off; look into how Notion handles
+  their design placement for mobile." Notion's phone app shows a list, then a page with
+  a slim top bar (back, location, a ⋯ menu); page actions live in that menu.
+- At ≤720px the list and the page are separate screens. A note opens only when tapped
+  (the page no longer opens the first note by itself). The page bar holds **‹ Notes**,
+  the note's area, and ⋯ with "Around this note" and "Undo last saved change".
+- On a phone the doubled page heading, the panel toggles and the editor's own Undo and
+  breadcrumb are not rendered: the bar replaces them.
+
+### Values [derived]
+- Only existing tokens: `--surface-0` for the bar, `--surface-3` for the menu (the
+  ladder's "overlay, popover, menu" step), `--radius-xl`/`--radius-md`, `--text-sm`/
+  `--text-base`, and `--spacing` multiples (44px tap targets = `--spacing` × 11).

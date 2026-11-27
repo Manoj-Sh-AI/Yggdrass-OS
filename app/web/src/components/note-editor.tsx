@@ -459,7 +459,7 @@ function DocumentEditor({
         </button>
         {liveNotes && (
           <button
-            className="button small-button"
+            className="button small-button editor-undo"
             disabled={!canUndo || undoBusy || status === "saving"}
             onClick={() => void undo()}
           >
