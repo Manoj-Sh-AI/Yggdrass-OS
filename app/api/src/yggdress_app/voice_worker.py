@@ -87,6 +87,56 @@ def reminder_answerer(database, runtime, agent_config, call_id):
     )  # fmt: skip
 
 
+def watch_session(audio):
+    """YGGDRAS_VOICE_DEBUG=1 only: what the call session does, step by step, so a silent
+    call can be diagnosed from the host's logs. Event kinds, states, errors and timings;
+    never transcripts or spoken text."""
+    log = logging.getLogger("yggdras.voice")
+
+    def describe(error):
+        return f"{type(error).__name__} recoverable={getattr(error, 'recoverable', None)} {str(error)[:200]}"
+
+    audio.on(
+        "agent_state_changed",
+        lambda e: log.error("debug agent state %s -> %s", e.old_state, e.new_state),
+    )
+    audio.on(
+        "user_state_changed",
+        lambda e: log.error("debug user state %s -> %s", e.old_state, e.new_state),
+    )
+    audio.on(
+        "speech_created",
+        lambda e: log.error("debug speech created source=%s", getattr(e, "source", "?")),
+    )
+    audio.on(
+        "user_input_transcribed",
+        lambda e: log.error("debug transcript final=%s", getattr(e, "is_final", "?")),
+    )
+    audio.on(
+        "error",
+        lambda e: log.error(
+            "debug session error from %s: %s",
+            type(getattr(e, "source", None)).__name__,
+            describe(e.error),
+        ),
+    )
+    audio.on("close", lambda e: log.error("debug session closed: %s", getattr(e, "reason", "?")))
+
+    def metrics(event):
+        m = event.metrics
+        log.error(
+            "debug metrics %s %s",
+            type(m).__name__,
+            {
+                k: getattr(m, k)
+                for k in ("ttfb", "duration", "audio_duration", "characters_count", "error")
+                if hasattr(m, k)
+            },
+        )
+
+    audio.on("metrics_collected", metrics)
+
+
 async def voice_session(ctx):
     try:
         metadata = json.loads(ctx.job.metadata)
@@ -177,6 +227,9 @@ async def voice_session(ctx):
             voice=os.environ.get("YGGDRAS_VOICE_ID", VOICE),
         ),
     )
+
+    if os.environ.get("YGGDRAS_VOICE_DEBUG") == "1":
+        watch_session(audio)
 
     @audio.on("error")
     def on_audio_error(event):
