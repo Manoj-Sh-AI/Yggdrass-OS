@@ -50,6 +50,26 @@ password, which Claude never types: Manoj runs them, or Claude uses the APK/dev 
 - **Migrations**: `uv run python -m yggdress_app.migrate_hosted plan|apply --home "C:\Users\shman\AppData\Local\Yggdras"`
   (pass `--home`: this app redirects %LOCALAPPDATA%).
 
+## Development build (seconds per JS change)
+
+Built once in the `fix-loopback` worktree, from the already prebuilt `android/` project:
+1. In `android/app/build.gradle`, debug `signingConfig signingConfigs.release`: the dev
+   build then installs **over** the release app (same key, same package), keeping the
+   sign-in and the WebView's local drafts. Never uninstall to switch builds.
+2. Loopback HTTP: the app is HTTPS-only, so Metro (`http://127.0.0.1:8081`) is refused
+   ("CLEARTEXT communication … not permitted"). Either prebuild with `YGGDRAS_DEV_USB=1`
+   or put the loopback `domain-config` in
+   `android/app/src/main/res/xml/yggdras_network_security.xml` (127.0.0.1, localhost).
+3. `python <scratchpad>/build_debug.py <worktree>/app/mobile` runs `gradlew assembleDebug`
+   with android-tools' environment (~10 min first time, incremental after).
+4. `adb install -r android/app/build/outputs/apk/debug/app-debug.apk`,
+   `adb reverse tcp:8081 tcp:8081`.
+5. Metro in a terminal tab, from the worktree whose JS should run:
+   `npx expo start --dev-client --port 8081`.
+6. Open: `adb shell am start -a android.intent.action.VIEW -d "yggdras://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081" app.yggdras.mobile`.
+Back to a release build at the end: `adb install -r` the release APK (higher or equal
+version code, same key).
+
 ## Facts learned the hard way
 
 - The hosted API must listen dual-stack: uvicorn's `::` is IPv6-only, and every
@@ -86,3 +106,9 @@ password, which Claude never types: Manoj runs them, or Claude uses the APK/dev 
   band (#75). Calls have sound (Manoj heard Yggdras). Railway CLI + SSH set up.
 - 2026-11-27: switched to the local loop. Branch `claude/20261127-chat-markdown`
   (local): chat messenger layout + Markdown replies, not pushed yet.
+- 2026-11-27 23:20: dev build running on the phone (debug, release-signed, loopback HTTP,
+  code-signing removed in `src/debug/AndroidManifest.xml` only; Metro needs no key then).
+  Chat verified on the phone: Markdown replies, bubbles, one-row composer, compact list,
+  opens at the newest message (inverted list), readable Resend on own bubbles.
+  Trap: the dev build asks for "display over other apps" on first start (Android
+  Settings opens); not needed, return with the monkey launch.

@@ -284,15 +284,27 @@ export function Chat({ active }: { active: boolean }) {
         )}
         {!conversation && (
           <>
-            <Field
-              label="Search conversations"
+            <TextInput
+              accessibilityLabel="Search conversations"
+              placeholder="Search conversations"
+              placeholderTextColor={colors.faint}
               value={query}
               onChangeText={setQuery}
+              style={styles.input}
             />
-            <Button
-              title={archived ? "Show active chats" : "Show archived chats"}
+            <Pressable
+              accessibilityRole="button"
               onPress={() => setArchived((value) => !value)}
-            />
+              style={{
+                alignSelf: "flex-start",
+                minHeight: 44,
+                justifyContent: "center",
+              }}
+            >
+              <Text style={[styles.subtitle, { color: colors.accent }]}>
+                {archived ? "Show active chats" : "Show archived chats"}
+              </Text>
+            </Pressable>
           </>
         )}
         <ErrorText message={error} />
@@ -309,15 +321,30 @@ export function Chat({ active }: { active: boolean }) {
             </Text>
           }
           renderItem={({ item }) => (
-            <Panel>
-              <Text style={styles.text}>{item.title}</Text>
-              <Text style={styles.subtitle}>{item.agent_id}</Text>
-              <Button
-                title="Open chat"
-                accessibilityLabel={`Open ${item.title}`}
-                onPress={() => void open(item.id)}
-              />
-            </Panel>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Open ${item.title}`}
+              onPress={() => void open(item.id)}
+              style={({ pressed }) => ({
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+                borderRadius: 18,
+                borderWidth: 1,
+                borderColor: colors.glassBorder,
+                backgroundColor: colors.glass,
+                opacity: pressed ? 0.7 : 1,
+              })}
+            >
+              <Text
+                numberOfLines={1}
+                style={[styles.text, { fontWeight: "500" }]}
+              >
+                {item.title}
+              </Text>
+              <Text style={[styles.subtitle, { fontSize: 12 }]}>
+                {item.agent_id}
+              </Text>
+            </Pressable>
           )}
           ListFooterComponent={
             cursor ? (
@@ -331,7 +358,9 @@ export function Chat({ active }: { active: boolean }) {
       ) : (
         <>
           <FlatList
-            data={history?.messages || []}
+            // Inverted: a chat opens at its newest message, like a messenger.
+            inverted
+            data={[...(history?.messages || [])].reverse()}
             keyExtractor={(m) => m.id}
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={{
@@ -339,7 +368,7 @@ export function Chat({ active }: { active: boolean }) {
               paddingBottom: 12,
               gap: 12,
             }}
-            ListHeaderComponent={
+            ListFooterComponent={
               history?.next_before ? (
                 <Button
                   title="Earlier messages"
@@ -418,8 +447,9 @@ export function Chat({ active }: { active: boolean }) {
                             : "Response in progress…"}
                       </Text>
                       {["queued", "streaming"].includes(request.state) && (
-                        <Button
+                        <BubbleAction
                           title="Stop response"
+                          onLight={mine}
                           disabled={busy}
                           onPress={() =>
                             void perform(async () => {
@@ -436,8 +466,9 @@ export function Chat({ active }: { active: boolean }) {
                       )}
                       {available &&
                         ["failed", "held"].includes(request.state) && (
-                          <Button
+                          <BubbleAction
                             title="Resend"
+                            onLight={mine}
                             disabled={busy}
                             onPress={() =>
                               void perform(async () => {
@@ -755,5 +786,40 @@ export function Chat({ active }: { active: boolean }) {
         <ErrorText message={error} />
       </Sheet>
     </View>
+  );
+}
+
+/** A small action inside a chat bubble, readable on the light (own) bubble too. */
+function BubbleAction({
+  title,
+  onPress,
+  disabled,
+  onLight,
+}: {
+  title: string;
+  onPress: () => void;
+  disabled?: boolean;
+  onLight: boolean;
+}) {
+  const color = onLight ? colors.ink : colors.text;
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      disabled={disabled}
+      onPress={onPress}
+      style={({ pressed }) => ({
+        alignSelf: "flex-start",
+        minHeight: 44,
+        justifyContent: "center",
+        paddingHorizontal: 15,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: color,
+        opacity: disabled ? 0.5 : pressed ? 0.7 : 1,
+      })}
+    >
+      <Text style={[styles.buttonText, { color }]}>{title}</Text>
+    </Pressable>
   );
 }
