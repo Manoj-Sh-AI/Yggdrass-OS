@@ -28,6 +28,7 @@ const notes = [
 ];
 const undo = vi.fn();
 let selected: string | null = null;
+let preselected: string | null = null;
 let setSelected: (id: string | null) => void = () => {};
 vi.mock("@/components/notes-brain-provider", () => ({
   useNotesApp: () => ({
@@ -79,7 +80,7 @@ function phoneScreen(matches: boolean) {
 async function renderExplorer() {
   const { BrainExplorer } = await import("@/components/brain-explorer");
   function Harness() {
-    const [id, setId] = useState<string | null>(null);
+    const [id, setId] = useState<string | null>(preselected);
     selected = id;
     setSelected = setId;
     return <BrainExplorer />;
@@ -100,6 +101,14 @@ describe("Notes on a phone", () => {
     expect(screen.getByText("Invented swimming plan")).toBeTruthy();
     expect(screen.queryByLabelText("Note editor")).toBeNull();
     expect(screen.queryByText("Undo last saved change")).toBeNull();
+  });
+
+  it("keeps a note the app selected on load (a recovered draft) in the list", async () => {
+    preselected = "invented-a";
+    await renderExplorer();
+    preselected = null;
+    expect(screen.queryByLabelText("Note editor")).toBeNull();
+    expect(screen.getByText("Invented swimming plan")).toBeTruthy();
   });
 
   it("opens a tapped note as its own page, and back returns to the list", async () => {
