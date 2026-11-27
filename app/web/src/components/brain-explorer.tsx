@@ -61,6 +61,24 @@ export function BrainExplorer({
     query.addEventListener("change", change);
     return () => query.removeEventListener("change", change);
   }, []);
+  // On a phone the page opens only when tapped. Loading can still select a note (a
+  // recovered unsaved draft is reopened by the provider): it stays in the list instead.
+  const tapped = useRef(false);
+  useEffect(() => {
+    if (
+      phone &&
+      ready &&
+      noteId &&
+      !tapped.current &&
+      !initialNoteId &&
+      !initialCreate
+    )
+      setNoteId(null);
+  }, [phone, ready, noteId, initialNoteId, initialCreate, setNoteId]);
+  const open = (id: string) => {
+    tapped.current = true;
+    return openNote(id);
+  };
   const note = state.notes.find((n) => n.id === noteId);
   const [revealed, setRevealed] = useState<string | null>(null);
   const contextVisible = context && (!note?.sensitive || revealed === note.id);
@@ -197,7 +215,7 @@ export function BrainExplorer({
         key={n.id}
         title={n.title || "Untitled"}
         active={note?.id === n.id}
-        onSelect={() => void openNote(n.id)}
+        onSelect={() => void open(n.id)}
         status={
           n.sensitive ? (
             <span role="img" aria-label="Sensitive note">
@@ -310,6 +328,7 @@ export function BrainExplorer({
               disabled={brainMode === "unavailable"}
               onClick={() => {
                 if (liveNotes) {
+                  tapped.current = true;
                   void createNote({
                     kind: "note",
                     title: "",
@@ -513,8 +532,9 @@ export function BrainExplorer({
                   action={
                     <button
                       className="button"
-                      onClick={() =>
-                        liveNotes
+                      onClick={() => {
+                        tapped.current = true;
+                        return liveNotes
                           ? void createNote({
                               kind: "note",
                               title: "",
@@ -523,8 +543,8 @@ export function BrainExplorer({
                               tags: [],
                               date: "",
                             })
-                          : setCreating(true)
-                      }
+                          : setCreating(true);
+                      }}
                     >
                       {liveNotes ? "Add note" : "Create a synthetic note"}
                     </button>
@@ -550,13 +570,9 @@ export function BrainExplorer({
               <ContextLinks
                 title="Connected notes"
                 notes={related}
-                open={openNote}
+                open={open}
               />
-              <ContextLinks
-                title="Backlinks"
-                notes={backlinks}
-                open={openNote}
-              />
+              <ContextLinks title="Backlinks" notes={backlinks} open={open} />
               <div className="context-section">
                 <h3>Note details</h3>
                 <dl>
