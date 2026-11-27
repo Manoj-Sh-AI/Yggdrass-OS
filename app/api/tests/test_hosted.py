@@ -214,3 +214,18 @@ def test_the_brain_env_receives_the_written_path(tmp_path):
     text = hosted.brain_env(env, tmp_path)
     assert f"FIREBASE_SERVICE_ACCOUNT_FILE='{target}'" in text
     assert hosted.FIREBASE_JSON not in text and "PRIVATE KEY" not in text
+
+
+def test_the_voice_worker_receives_its_own_settings_through_the_clean_environment():
+    """clean_environment drops YGGDRAS_* variables; the voice worker's debug switch and
+    idle-process count must still reach it (both were silently ignored on Railway)."""
+    import inspect
+
+    from yggdress_app import local_runtime
+
+    env = {"YGGDRAS_VOICE_DEBUG": "1", "YGGDRAS_VOICE_IDLE_PROCESSES": "0", "YGGDRAS_OTHER": "x"}
+    assert local_runtime.voice_settings(env) == {
+        "YGGDRAS_VOICE_DEBUG": "1",
+        "YGGDRAS_VOICE_IDLE_PROCESSES": "0",
+    }
+    assert "**voice_settings()" in inspect.getsource(local_runtime.serve)

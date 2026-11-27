@@ -336,6 +336,15 @@ def manager_lock(home):
         stream.close()
 
 
+VOICE_SETTINGS = ("YGGDRAS_VOICE_DEBUG", "YGGDRAS_VOICE_IDLE_PROCESSES")
+
+
+def voice_settings(env=os.environ):
+    """The voice worker's own settings, passed on although clean_environment drops them
+    (hosted sets YGGDRAS_VOICE_IDLE_PROCESSES=0; the debug switch logs a call's steps)."""
+    return {k: env[k] for k in VOICE_SETTINGS if env.get(k)}
+
+
 def clean_environment():
     return {
         k: v
@@ -690,6 +699,9 @@ def serve(home, hosted=False):
                             **clean_environment(),
                             "YGGDRAS_ROUTINE_INTERNAL_API": f"http://127.0.0.1:{api_port}",
                             "YGGDRAS_REMINDER_LLM": os.environ.get("YGGDRAS_REMINDER_LLM", ""),
+                            # clean_environment() drops every YGGDRAS_* setting; the voice
+                            # worker's own two must still reach it.
+                            **voice_settings(),
                             "PYTHONPATH": str(Path(__file__).resolve().parents[1]),
                         },
                         stdin=subprocess.DEVNULL,
