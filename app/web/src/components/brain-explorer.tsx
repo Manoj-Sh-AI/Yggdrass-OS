@@ -10,6 +10,7 @@ import { searchNotes } from "@/lib/repository";
 import { useNotesApp } from "./notes-brain-provider";
 import { NoteEditor, preloadNoteEditor } from "./note-editor-loader";
 import { NoteLinkedWork } from "./note-linked-work";
+import { OPEN_NOTE_EVENT } from "./wikilinks";
 import { Empty, Icon, Modal, Panel, relativeTime } from "./ui";
 
 const PHONE = "(max-width: 720px)";
@@ -79,6 +80,18 @@ export function BrainExplorer({
     tapped.current = true;
     return openNote(id);
   };
+  // A [[slug]] chip in a note opens that note (components/wikilinks.ts).
+  useEffect(() => {
+    const follow = (event: Event) => {
+      const slug = (event as CustomEvent<{ slug: string }>).detail?.slug;
+      if (slug) {
+        tapped.current = true;
+        void openNote(slug);
+      }
+    };
+    window.addEventListener(OPEN_NOTE_EVENT, follow);
+    return () => window.removeEventListener(OPEN_NOTE_EVENT, follow);
+  }, [openNote]);
   const note = state.notes.find((n) => n.id === noteId);
   const [revealed, setRevealed] = useState<string | null>(null);
   const contextVisible = context && (!note?.sensitive || revealed === note.id);

@@ -119,3 +119,16 @@ version code, same key).
   name. Ideas next: render `[[slug]]` links in notes as tappable note titles.
   The app lists phone-local unsaved drafts with the notes (84 shown, 82 on the server).
   Before Manoj leaves the laptop: install a release APK (the dev build needs Metro).
+- 2026-11-28: [[slug]] links render as tappable note-title chips (ProseMirror decoration,
+  stored text unchanged; `app/web/src/components/wikilinks.ts`, `@tiptap/pm` 3.33.0 now
+  declared). Committed locally on `claude/20261127-phone-batch-2`; not on the phone yet
+  (web change: needs the batch merge + deploy), no unit test for findWikilinks yet.
+- Manoj's decisions (2026-11-28): note Delete = PERMANENT (amends D36/D44); folders =
+  fully free (amends A1, A17, D31); deleting a folder moves its notes to Inbox.
+  Findings: every brain write already rebuilds Lia's map_cache in the transaction
+  (store.py:577) and re-renders the graph (store.py:509): deterministic, no LLM. Lia's
+  map reads brain.areas (render.py:93); shelf numbering and the graph read the code list
+  (store.py:38, structural.py:33) and must read brain.areas for new folders. New folders
+  = new brain.areas rows numbered from 20 (no clash with shelves 10-15); no migration
+  needed; note delete cascades (all FKs ON DELETE CASCADE / SET NULL; parent_slug needs
+  handling). NEXT: write the plan + decision record, get Manoj's OK, then build.

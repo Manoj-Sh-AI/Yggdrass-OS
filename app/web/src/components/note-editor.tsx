@@ -20,6 +20,7 @@ import { NoteSaveSession, type NoteSnapshot } from "@/lib/note-save-session";
 import { useNotesApp } from "./notes-brain-provider";
 import { BRAIN_DRAFT_PREFIX, type LiveNote } from "@/lib/notes-api";
 import { Icon, Modal } from "./ui";
+import { wikilinkExtension } from "./wikilinks";
 
 function download(name: string, value: string, type = "application/json") {
   const url = URL.createObjectURL(new Blob([value], { type }));
@@ -142,7 +143,10 @@ function DocumentEditor({
     canUndo,
     undoBusy,
     undo,
+    state,
   } = useNotesApp();
+  const titles = useRef(new Map<string, string>());
+  titles.current = new Map(state.notes.map((n) => [n.id, n.title || n.id]));
   const prefix = liveNotes ? BRAIN_DRAFT_PREFIX : DRAFT_PREFIX;
   const newNote = liveNotes && (note as LiveNote).newNote;
   const [recovery] = useState(() => {
@@ -174,6 +178,8 @@ function DocumentEditor({
   const editor = useCreateBlockNote(
     {
       initialContent: initial?.blocks.length ? initial.blocks : undefined,
+      // [[slug]] shows as a tappable note title; the stored text is unchanged.
+      extensions: [wikilinkExtension((slug) => titles.current.get(slug))],
       domAttributes: {
         editor: {
           "aria-label": "Content",
