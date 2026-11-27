@@ -1,5 +1,15 @@
 import { useEffect, useRef, useState } from "react";
-import { Alert, AppState, FlatList, Share, Text, View } from "react-native";
+import {
+  Alert,
+  AppState,
+  FlatList,
+  Pressable,
+  Share,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import { Markdown } from "./markdown";
 import * as DocumentPicker from "expo-document-picker";
 import { File } from "expo-file-system";
 import { randomUUID } from "expo-crypto";
@@ -37,6 +47,7 @@ export function Chat({ active }: { active: boolean }) {
   const [loading, setLoading] = useState(false);
   const [reviewing, setReviewing] = useState(false);
   const [actions, setActions] = useState(false);
+  const [menuFor, setMenuFor] = useState<Message | null>(null);
   const [rename, setRename] = useState(false);
   const [title, setTitle] = useState("");
   const [route, setRoute] = useState(false);
@@ -223,37 +234,78 @@ export function Chat({ active }: { active: boolean }) {
   };
   return (
     <View style={styles.screen}>
-      <View style={styles.content}>
-        <View style={[styles.row, { justifyContent: "space-between" }]}>
-          <Text accessibilityRole="header" style={[styles.title, { flex: 1 }]}>
-            {conversation?.title || "Chat"}
-          </Text>
-          <Button
-            title={conversation ? "All chats" : "New chat"}
-            onPress={conversation ? back : () => void perform(create)}
-          />
-        </View>
+      <View
+        style={[
+          styles.content,
+          conversation ? { paddingTop: 8, paddingBottom: 4, gap: 8 } : null,
+        ]}
+      >
+        {conversation ? (
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="All chats"
+              onPress={back}
+              style={{ minWidth: 44, minHeight: 44, justifyContent: "center" }}
+            >
+              <Text style={{ fontSize: 29, color: colors.text }}>‹</Text>
+            </Pressable>
+            <Text
+              accessibilityRole="header"
+              numberOfLines={1}
+              style={[styles.text, { flex: 1, fontWeight: "600" }]}
+            >
+              {conversation.title || "Chat"}
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Conversation actions"
+              onPress={() => setActions(true)}
+              style={{
+                minWidth: 44,
+                minHeight: 44,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Text style={{ fontSize: 20, color: colors.text }}>⋯</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <View style={[styles.row, { justifyContent: "space-between" }]}>
+            <Text
+              accessibilityRole="header"
+              style={[styles.title, { flex: 1 }]}
+            >
+              Chat
+            </Text>
+            <Button title="New chat" onPress={() => void perform(create)} />
+          </View>
+        )}
         {!conversation && (
           <>
-            <Field
-              label="Search conversations"
+            <TextInput
+              accessibilityLabel="Search conversations"
+              placeholder="Search conversations"
+              placeholderTextColor={colors.faint}
               value={query}
               onChangeText={setQuery}
+              style={styles.input}
             />
-            <Button
-              title={archived ? "Show active chats" : "Show archived chats"}
+            <Pressable
+              accessibilityRole="button"
               onPress={() => setArchived((value) => !value)}
-            />
+              style={{
+                alignSelf: "flex-start",
+                minHeight: 44,
+                justifyContent: "center",
+              }}
+            >
+              <Text style={[styles.subtitle, { color: colors.accent }]}>
+                {archived ? "Show active chats" : "Show archived chats"}
+              </Text>
+            </Pressable>
           </>
-        )}
-        {conversation && (
-          <View style={styles.row}>
-            <Button title="Agent & model" onPress={() => setRoute(true)} />
-            <Button
-              title="Conversation actions"
-              onPress={() => setActions(true)}
-            />
-          </View>
         )}
         <ErrorText message={error} />
         {loading && <Loading />}
@@ -269,15 +321,30 @@ export function Chat({ active }: { active: boolean }) {
             </Text>
           }
           renderItem={({ item }) => (
-            <Panel>
-              <Text style={styles.text}>{item.title}</Text>
-              <Text style={styles.subtitle}>{item.agent_id}</Text>
-              <Button
-                title="Open chat"
-                accessibilityLabel={`Open ${item.title}`}
-                onPress={() => void open(item.id)}
-              />
-            </Panel>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Open ${item.title}`}
+              onPress={() => void open(item.id)}
+              style={({ pressed }) => ({
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+                borderRadius: 18,
+                borderWidth: 1,
+                borderColor: colors.glassBorder,
+                backgroundColor: colors.glass,
+                opacity: pressed ? 0.7 : 1,
+              })}
+            >
+              <Text
+                numberOfLines={1}
+                style={[styles.text, { fontWeight: "500" }]}
+              >
+                {item.title}
+              </Text>
+              <Text style={[styles.subtitle, { fontSize: 12 }]}>
+                {item.agent_id}
+              </Text>
+            </Pressable>
           )}
           ListFooterComponent={
             cursor ? (
@@ -291,7 +358,9 @@ export function Chat({ active }: { active: boolean }) {
       ) : (
         <>
           <FlatList
-            data={history?.messages || []}
+            // Inverted: a chat opens at its newest message, like a messenger.
+            inverted
+            data={[...(history?.messages || [])].reverse()}
             keyExtractor={(m) => m.id}
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={{
@@ -299,7 +368,7 @@ export function Chat({ active }: { active: boolean }) {
               paddingBottom: 12,
               gap: 12,
             }}
-            ListHeaderComponent={
+            ListFooterComponent={
               history?.next_before ? (
                 <Button
                   title="Earlier messages"
@@ -313,32 +382,64 @@ export function Chat({ active }: { active: boolean }) {
                   r.user_message_id === item.id &&
                   !["completed", "cancelled"].includes(r.state),
               );
+              const mine = item.role === "user";
               return (
-                <Panel>
-                  <Text
-                    style={[
-                      styles.label,
-                      {
-                        color:
-                          item.role === "user" ? colors.accent : colors.muted,
-                      },
-                    ]}
-                  >
-                    {item.role === "user" ? "You" : conversation.agent_id}
-                  </Text>
-                  <Text selectable style={styles.text}>
-                    {item.deleted_at ? "Message deleted" : item.content}
-                  </Text>
+                <Pressable
+                  accessibilityRole="text"
+                  accessibilityHint={
+                    mine && !item.deleted_at
+                      ? "Long press for message actions"
+                      : undefined
+                  }
+                  delayLongPress={350}
+                  onLongPress={
+                    mine && !item.deleted_at
+                      ? () => setMenuFor(item)
+                      : undefined
+                  }
+                  style={{
+                    alignSelf: mine ? "flex-end" : "flex-start",
+                    maxWidth: mine ? "85%" : "100%",
+                    gap: 6,
+                    padding: 12,
+                    borderRadius: 18,
+                    borderWidth: mine ? 0 : 1,
+                    borderColor: colors.glassBorder,
+                    backgroundColor: mine ? colors.accent : colors.glass,
+                  }}
+                >
+                  {!mine && (
+                    <Text style={[styles.label, { marginBottom: 0 }]}>
+                      {conversation.agent_id}
+                    </Text>
+                  )}
+                  {item.deleted_at ? (
+                    <Text style={styles.subtitle}>Message deleted</Text>
+                  ) : mine ? (
+                    <Text
+                      selectable
+                      style={[styles.text, { color: colors.ink }]}
+                    >
+                      {item.content}
+                    </Text>
+                  ) : (
+                    <Markdown source={item.content} />
+                  )}
                   {history?.attachments
                     .filter((a) => a.message_id === item.id)
                     .map((a) => (
-                      <Text key={a.id} style={styles.subtitle}>
+                      <Text
+                        key={a.id}
+                        style={[styles.subtitle, mine && { color: colors.ink }]}
+                      >
                         Attachment · {a.name}
                       </Text>
                     ))}
                   {request && (
                     <>
-                      <Text style={styles.subtitle}>
+                      <Text
+                        style={[styles.subtitle, mine && { color: colors.ink }]}
+                      >
                         {request.state === "held"
                           ? "Saved. Not sent to an agent."
                           : request.state === "failed"
@@ -346,8 +447,9 @@ export function Chat({ active }: { active: boolean }) {
                             : "Response in progress…"}
                       </Text>
                       {["queued", "streaming"].includes(request.state) && (
-                        <Button
+                        <BubbleAction
                           title="Stop response"
+                          onLight={mine}
                           disabled={busy}
                           onPress={() =>
                             void perform(async () => {
@@ -362,23 +464,11 @@ export function Chat({ active }: { active: boolean }) {
                           }
                         />
                       )}
-                    </>
-                  )}
-                  {item.role === "user" && !item.deleted_at && (
-                    <View style={styles.row}>
-                      <Button
-                        title="Edit message"
-                        disabled={busy}
-                        onPress={() => {
-                          setEditing(item);
-                          setEditText(item.content);
-                        }}
-                      />
                       {available &&
-                        (!request ||
-                          ["failed", "held"].includes(request.state)) && (
-                          <Button
+                        ["failed", "held"].includes(request.state) && (
+                          <BubbleAction
                             title="Resend"
+                            onLight={mine}
                             disabled={busy}
                             onPress={() =>
                               void perform(async () => {
@@ -393,44 +483,17 @@ export function Chat({ active }: { active: boolean }) {
                             }
                           />
                         )}
-                      <Button
-                        title="Delete message"
-                        disabled={busy}
-                        onPress={() =>
-                          Alert.alert(
-                            "Delete this message?",
-                            "Its attachment data will also be removed.",
-                            [
-                              { text: "Keep", style: "cancel" },
-                              {
-                                text: "Delete",
-                                style: "destructive",
-                                onPress: () =>
-                                  void perform(async () => {
-                                    await api.chat(
-                                      "message.delete",
-                                      {},
-                                      item.id,
-                                      item.version,
-                                    );
-                                    await reload();
-                                  }),
-                              },
-                            ],
-                          )
-                        }
-                      />
-                    </View>
+                    </>
                   )}
-                </Panel>
+                </Pressable>
               );
             }}
           />
           <View
             style={{
-              margin: 12,
+              margin: 8,
               marginTop: 4,
-              padding: 14,
+              padding: 8,
               gap: 8,
               borderRadius: 18,
               borderColor: colors.glassBorder,
@@ -458,18 +521,35 @@ export function Chat({ active }: { active: boolean }) {
                 />
               </View>
             ))}
-            <Field
-              label="Message"
-              value={draft}
-              onChangeText={setDraft}
-              multiline
-              maxLength={50000}
-            />
-            <View style={styles.row}>
-              <Button
-                title="Attach file or image"
+            <View
+              style={{ flexDirection: "row", alignItems: "flex-end", gap: 8 }}
+            >
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Attach file or image"
                 disabled={busy || files.length >= 5 || conversation.archived}
                 onPress={() => void perform(attach)}
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  borderColor: colors.buttonBorder,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Text style={{ fontSize: 20, color: colors.text }}>+</Text>
+              </Pressable>
+              <TextInput
+                accessibilityLabel="Message"
+                placeholder="Message"
+                placeholderTextColor={colors.faint}
+                value={draft}
+                onChangeText={setDraft}
+                multiline
+                maxLength={50000}
+                style={[styles.input, { flex: 1, maxHeight: 120 }]}
               />
               <Button
                 title={busy ? "Saving…" : available ? "Send" : "Save message"}
@@ -484,6 +564,48 @@ export function Chat({ active }: { active: boolean }) {
             </View>
           </View>
         </>
+      )}
+      {menuFor && (
+        <Sheet visible title="Message" onClose={() => setMenuFor(null)}>
+          <Button
+            title="Edit message"
+            disabled={busy}
+            onPress={() => {
+              setEditing(menuFor);
+              setEditText(menuFor.content);
+              setMenuFor(null);
+            }}
+          />
+          <Button
+            title="Delete message"
+            disabled={busy}
+            onPress={() => {
+              const item = menuFor;
+              setMenuFor(null);
+              Alert.alert(
+                "Delete this message?",
+                "Its attachment data will also be removed.",
+                [
+                  { text: "Keep", style: "cancel" },
+                  {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: () =>
+                      void perform(async () => {
+                        await api.chat(
+                          "message.delete",
+                          {},
+                          item.id,
+                          item.version,
+                        );
+                        await reload();
+                      }),
+                  },
+                ],
+              );
+            }}
+          />
+        </Sheet>
       )}
       {conversation && (
         <Sheet
@@ -664,5 +786,40 @@ export function Chat({ active }: { active: boolean }) {
         <ErrorText message={error} />
       </Sheet>
     </View>
+  );
+}
+
+/** A small action inside a chat bubble, readable on the light (own) bubble too. */
+function BubbleAction({
+  title,
+  onPress,
+  disabled,
+  onLight,
+}: {
+  title: string;
+  onPress: () => void;
+  disabled?: boolean;
+  onLight: boolean;
+}) {
+  const color = onLight ? colors.ink : colors.text;
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      disabled={disabled}
+      onPress={onPress}
+      style={({ pressed }) => ({
+        alignSelf: "flex-start",
+        minHeight: 44,
+        justifyContent: "center",
+        paddingHorizontal: 15,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: color,
+        opacity: disabled ? 0.5 : pressed ? 0.7 : 1,
+      })}
+    >
+      <Text style={[styles.buttonText, { color }]}>{title}</Text>
+    </Pressable>
   );
 }
