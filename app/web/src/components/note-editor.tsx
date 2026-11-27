@@ -442,7 +442,7 @@ function DocumentEditor({
           </button>
         )}
         <button
-          className="button small-button"
+          className="button small-button editor-save"
           disabled={status === "saving" || !!recovery.error}
           onClick={() => void flush()}
         >

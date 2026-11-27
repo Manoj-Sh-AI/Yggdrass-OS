@@ -794,3 +794,21 @@
     width: auto;
   }
 }
+
+/* Notes page on a phone, Notion-style: it saves by itself (0.9 s after typing), so no
+   Save button; the block toolbar shows only while editing, pinned to the bottom. */
+@media (max-width: 720px) {
+  .notes-phone-page .note-editor .editor-save {
+    display: none;
+  }
+  .notes-phone-page .note-editor .editor-format-tools {
+    display: none;
+  }
+  .notes-phone-page .note-editor:focus-within .editor-format-tools {
+    display: flex;
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    background: var(--surface-1);
+  }
+}
