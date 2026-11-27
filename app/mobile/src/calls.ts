@@ -25,7 +25,7 @@ export const ringer = {
       throw new Error("iPhone calling is deferred.");
     if (!Constants.expoConfig?.extra?.firebaseConfigured)
       throw new Error("Firebase is not configured in this Android build yet.");
-    // The native side owns the call channel (custom chime, Do Not Disturb respected).
+    // The native side owns the call channel (phone ringtone, Do Not Disturb respected).
     NativeModules.YggdrasCalls?.ensureCallChannel();
     if (!(await Notifications.requestPermissionsAsync()).granted)
       throw new Error(
@@ -95,7 +95,7 @@ export const ringer = {
       const value=await Notifications.getDevicePushTokenAsync();await rememberToken(String(value.data));
     }
   },
-  /** Ring with the Yggdras chime while the app is open (skipped if a push is already ringing). */
+  /** Ring with the phone ringtone while the app is open (skipped if a push is already ringing). */
   ringInApp(callId: string, expiresAt: string) {
     const at = Date.parse(expiresAt);
     if (Platform.OS === "android" && Number.isFinite(at))
