@@ -247,7 +247,8 @@ export function BrainExplorer({
             Notes
           </button>
           <span className="notes-phone-crumb">
-            {note.shelfId.replace(/^\d+-/, "").replaceAll("-", " ")}
+            {shelves.find((s) => s.id === note.shelfId)?.name ||
+              note.shelfId.replace(/^\d+-/, "").replaceAll("-", " ")}
           </span>
           <button
             className="icon-button"

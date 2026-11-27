@@ -117,7 +117,7 @@ describe("Notes on a phone", () => {
       fireEvent.click(screen.getByText("Invented swimming plan"));
     });
     expect(screen.getByLabelText("Note editor")).toBeTruthy();
-    expect(screen.getByText("health")).toBeTruthy(); // the area in the slim bar
+    expect(screen.getByText("Health")).toBeTruthy(); // the area's name in the slim bar
     expect(screen.queryByRole("heading", { name: /Notes/ })).toBeNull();
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: /Notes/ }));
