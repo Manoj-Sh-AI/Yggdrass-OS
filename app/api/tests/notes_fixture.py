@@ -46,6 +46,14 @@ class SyntheticBrain:
             return copy.deepcopy(note)
         if self.markdown:
             raise NotesError(409, MARKDOWN, "brain_markdown")
+        if path.endswith("/delete"):
+            slug = path.removeprefix("note/").removesuffix("/delete")
+            if slug not in self.notes:
+                raise NotesError(404, "No such note")
+            if payload.get("preview", True):
+                return {"preview": True, "title": self.notes[slug]["title"], "linked_from": []}
+            del self.notes[slug]
+            return {"done": True, "deleted": slug, "undo": None}
         if path.startswith("undo/"):
             identifier = path.removeprefix("undo/")
             if identifier not in self.history:

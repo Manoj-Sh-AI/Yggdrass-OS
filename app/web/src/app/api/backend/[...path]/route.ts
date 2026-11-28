@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 const allowed =
-  /^(auth\/(login|logout|session)|application\/(tasks(\/[a-zA-Z0-9-]+)?|routine(\/actions)?|planning(\/commands)?)|notes\/(search|create|undo|items\/[a-zA-Z0-9_-]+(\/preview)?|previews\/[a-zA-Z0-9_-]+\/(confirm|cancel))|brain\/(tree|notes(\/[a-zA-Z0-9_-]+(\/delete-(preview|confirm))?)?))$/;
+  /^(auth\/(login|logout|session)|application\/(tasks(\/[a-zA-Z0-9-]+)?|routine(\/actions)?|planning(\/commands)?)|notes\/(search|create|undo|items\/[a-zA-Z0-9_-]+(\/(preview|delete|delete-preview))?|previews\/[a-zA-Z0-9_-]+\/(confirm|cancel))|brain\/(tree|notes(\/[a-zA-Z0-9_-]+(\/delete-(preview|confirm))?)?))$/;
 async function proxy(
   request: NextRequest,
   { params }: { params: Promise<{ path: string[] }> },
@@ -34,9 +34,13 @@ async function proxy(
     /^calls(\/(capabilities|preferences|devices|schedule|reviews|simulation|events)|\/devices\/[a-fA-F0-9-]{36}|\/[a-fA-F0-9-]{36}\/(answer|decline|media|end)|\/reviews\/[a-fA-F0-9-]{36})?$/;
   const mobile = path === "mobile/auth/login";
   const routines =
-    /^application\/daily-routines(\/(settings|trigger|important|ack|journal|review|lessons|energy|pool|feedback|hypotheses|predictions(\/[a-fA-F0-9-]{36})?|filing(\/[a-fA-F0-9-]{36})?))?$/.test(path) ||
+    /^application\/daily-routines(\/(settings|trigger|important|ack|journal|review|lessons|energy|pool|feedback|hypotheses|predictions(\/[a-fA-F0-9-]{36})?|filing(\/[a-fA-F0-9-]{36})?))?$/.test(
+      path,
+    ) ||
     /^routine-delivery\/(status|subscribe|unsubscribe|respond)$/.test(path) ||
-    /^routine-delivery\/android\/(status|respond|test|devices(\/[a-fA-F0-9-]{36})?)$/.test(path);
+    /^routine-delivery\/android\/(status|respond|test|devices(\/[a-fA-F0-9-]{36})?)$/.test(
+      path,
+    );
   // The browser tab that finishes an app sign-in lands here; the API answers with a page.
   const signInReturn =
     path === "connectors/callback" && request.method === "GET";
@@ -121,8 +125,8 @@ async function proxy(
                 : slow
                   ? 45000
                   : path === "application/agents/reviews/resolve"
-                  ? 30000
-                  : 12000,
+                    ? 30000
+                    : 12000,
             ),
         headers: {
           "Content-Type": upload

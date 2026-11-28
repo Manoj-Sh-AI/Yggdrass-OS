@@ -812,3 +812,24 @@
     background: var(--surface-1);
   }
 }
+
+/* [[slug]] links in a note: a tappable note title, and the raw text again while typing
+   in the note (the stored note keeps [[slug]]; components/wikilinks.ts). */
+.note-editor .ProseMirror:not(:focus) .wikilink-raw {
+  display: none;
+}
+.note-editor .ProseMirror:focus .wikilink-chip {
+  display: none;
+}
+.wikilink-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: calc(var(--spacing) * 7);
+  padding: 0 calc(var(--spacing) * 2);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--accent);
+  color: var(--accent-foreground);
+  font: inherit;
+  cursor: pointer;
+}

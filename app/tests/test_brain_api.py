@@ -318,3 +318,47 @@ def test_an_api_write_regenerates_the_one_viewer_page(env, tmp_path):
     assert post(api, f"undo/{out['undo_id']}")[0] == 200
     page = (tmp_path / "brain-view" / "graph.html").read_text(encoding="utf-8")
     assert '"slug": "slip-casting"' not in page
+
+
+# ---------------------------------------------------------------- deleting a note
+
+
+def test_delete_previews_then_erases_the_note_and_unlinks_it_everywhere(env):
+    """Manoj, 2026-11-28: delete is permanent. Links to the note in other notes go: a link
+    line is dropped, a mention becomes plain text. Lia's maps no longer name it."""
+    api, store, _ = env
+    before = dump(store)
+    status, view = post(api, "note/ada-lin/delete", {"preview": True})
+    assert status == 200 and view["title"] == "Ada Lin" and "cannot be undone" in view["permanent"]
+    linked = {n["slug"] for n in view["linked_from"]}
+    assert {"pottery-course", "wheel-throwing"} <= linked
+    assert dump(store) == before  # a preview writes nothing
+
+    status, out = post(api, "note/ada-lin/delete", {"preview": False})
+    assert status == 200 and out["done"] and out["deleted"] == "ada-lin"
+    for table in ("notes", "note_bodies", "aliases"):
+        assert q(store, f"SELECT count(*) FROM brain.{table} WHERE slug = 'ada-lin'") == [(0,)]
+    assert q(store, "SELECT count(*) FROM brain.relationships "
+                    "WHERE from_slug = 'ada-lin' OR to_slug = 'ada-lin'") == [(0,)]  # fmt: skip
+    for slug in linked:
+        assert "[[ada-lin" not in body(store, slug)
+    pottery = body(store, "pottery-course")
+    assert "Taught by Ada Lin at the studio" in pottery  # a mention became plain text
+    assert "created_by [[ada-lin]]" not in pottery and "created_by Ada Lin" not in pottery
+    maps = " ".join(t for (t,) in q(store, "SELECT rendered_text FROM brain.map_cache"))
+    assert "ada-lin" not in maps
+    removed = q(store, "SELECT old_text, new_text FROM brain.changes "
+                       "WHERE slug_text = 'ada-lin' AND kind = 'remove'")  # fmt: skip
+    assert removed == [("Ada Lin", None)]  # only the title: no copy of the text
+    assert out["undo"] is None  # no undo id is ever issued for a delete
+    status, _ = post(api, f"undo/{out['change_id']}")
+    assert status == 404
+
+
+def test_delete_refuses_a_stale_version_and_an_unknown_note(env):
+    api, store, _ = env
+    status, _ = post(api, "note/no-such-note/delete", {"preview": True})
+    assert status == 404
+    status, err = post(api, "note/ada-lin/delete", {"preview": False, "version": 999})
+    assert status == 409
+    assert q(store, "SELECT count(*) FROM brain.notes WHERE slug = 'ada-lin'") == [(1,)]

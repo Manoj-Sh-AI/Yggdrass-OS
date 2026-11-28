@@ -210,6 +210,27 @@ class BrainWrites:
         return {"done": True, "change_id": out["undo_id"], "undo": None,
                 "message": "Removed for good; it cannot be undone."}  # fmt: skip
 
+    def delete(self, slug: str, body: dict) -> dict:
+        """Delete a whole note, for good (Manoj, 2026-11-28). Previews first: the title and
+        the notes whose links to it will become plain text."""
+        self._open()
+        self._note(slug, body)
+        snap = self.store._snap
+        linked = [{"slug": s, "title": snap.notes[s].name or s}
+                  for s in self.store.linking_notes(slug)]  # fmt: skip
+        title = snap.notes[slug].name or slug
+        if body.get("preview", True):
+            return {"preview": True, "delete": slug, "title": title, "linked_from": linked,
+                    "permanent": "This deletes the note for good: no copy is kept, and it "
+                                 "cannot be undone. Links to it in other notes become plain "
+                                 "text."}  # fmt: skip
+        out = self.store.delete_note(slug, body.get("version"), "api")
+        if out.status != "written":
+            raise ApiError(409, out.message)
+        return {"done": True, "deleted": slug, "change_id": out.sha, "undo": None,
+                "unlinked_from": linked,
+                "message": "Deleted for good; it cannot be undone."}  # fmt: skip
+
     def unlink(self, slug: str, body: dict) -> dict:
         self._open()
         path, text = self._note(slug, body)

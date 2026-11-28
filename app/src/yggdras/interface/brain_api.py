@@ -14,6 +14,7 @@ pages and the graph still do, so Lia's footnotes keep working). The password is 
     POST /api/note/<slug>/remove-fact       remove a fact         {line, preview}
     POST /api/note/<slug>/link              add a link            {target_slug, verb, preview}
     POST /api/note/<slug>/unlink            remove a link         {target_slug, verb, preview}
+    POST /api/note/<slug>/delete            delete the note       {preview} (permanent)
     POST /api/undo/<undo_id>                undo an add, a replace or a link, once
 
 Any write body may carry "version" (from a read): a stale one is refused.
@@ -30,7 +31,9 @@ from collections.abc import Callable
 from yggdras.data.brain_db.writes import ApiError, BrainWrites
 
 USER_VAR, PASSWORD_VAR = "BRAIN_API_USER", "BRAIN_API_PASSWORD"
-WRITE = re.compile(r"^note/(?P<slug>[^/]+)/(?P<op>replace-fact|remove-fact|add-fact|link|unlink)$")
+WRITE = re.compile(
+    r"^note/(?P<slug>[^/]+)/(?P<op>replace-fact|remove-fact|add-fact|link|unlink|delete)$"
+)
 
 
 class ApiConfigError(RuntimeError):

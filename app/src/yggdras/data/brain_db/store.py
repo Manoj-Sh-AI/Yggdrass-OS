@@ -201,6 +201,29 @@ def sections(lines: list[str]) -> list[str]:
     return out
 
 
+def _link_pattern(slug: str) -> re.Pattern:
+    return re.compile(r"\[\[" + re.escape(slug) + r"(?:\|([^\]\n]+))?\]\]")
+
+
+def _mentions(body: str, slug: str) -> bool:
+    return bool(_link_pattern(slug).search(body))
+
+
+def without_mentions(body: str, slug: str, title: str) -> str:
+    """*body* with nothing pointing at *slug*: a link line under `## Links` naming it is
+    dropped; elsewhere [[slug]] / [[slug|label]] becomes plain text (the label, else the
+    title). Everything else is kept byte for byte."""
+    pattern = _link_pattern(slug)
+    out, section = [], ""
+    for line in body.split("\n"):
+        if line.startswith("## "):
+            section = line.strip()
+        if section == "## Links" and line.lstrip().startswith("- ") and pattern.search(line):
+            continue
+        out.append(pattern.sub(lambda m: m.group(1) or title, line))
+    return "\n".join(out)
+
+
 def line_rows(old: str | None, new: str, moved: list[str], hint: str | None) -> list[dict]:
     """The `changes` rows for one note going from *old* to *new* (bodies without History).
     *moved*: the History lines this change made (a replaced or removed fact). A removed fact
@@ -578,6 +601,50 @@ class RowStore:
             finally:
                 shutil.rmtree(folder, ignore_errors=True)
         return rid
+
+    # -------------------------------------------------- deleting a note (Manoj, 2026-11-28)
+
+    def linking_notes(self, slug: str) -> list[str]:
+        """The live notes whose text names *slug* ([[slug]] or [[slug|label]])."""
+        snap = self._snap
+        return sorted(s for s, body in snap.bodies.items()
+                      if s != slug and _mentions(body, slug))  # fmt: skip
+
+    def delete_note(self, slug: str, version: int | None, actor: str) -> Outcome:
+        """Erase a note for good, in one transaction (Manoj decided delete is permanent,
+        2026-11-28): its row goes, with its body, links, aliases and dates (ON DELETE
+        CASCADE). In the notes that name it, a link line under `## Links` is dropped and
+        any other [[slug]] becomes plain text (its title), so nothing points at a gone
+        note. History records only that the note (by title) was removed: no copy of its
+        text, and `remove` can't be undone. Lia's maps rebuild in the same transaction;
+        the graph re-renders after it."""
+        self.refresh()
+        snap = self._snap
+        if slug not in snap.paths:
+            return Outcome("blocked", f"no live note '{slug}'")
+        if version is not None and snap.versions[slug] != version:
+            return Outcome("blocked", f"'{slug}' changed since it was read: reload and review")
+        title = snap.notes[slug].name or slug
+        edits, expect = Edits(), {slug: snap.versions[slug]}
+        edits.delete.add(slug)
+        edits.rows.append((slug, [dict(kind="remove", section="note", old=title, new=None,
+                                       pos=None, tag=None)]))  # fmt: skip
+        for other in self.linking_notes(slug):
+            body = snap.bodies[other]
+            new = without_mentions(body, slug, title)
+            if new != body:
+                edits.bodies[other] = (snap.paths[other], new)
+                expect[other] = snap.versions[other]
+                edits.rows.append((other, line_rows(body, new, [], None)))
+        try:
+            rid = self._transact(edits, expect, actor)
+        except Stale as exc:
+            self.refresh()
+            return Outcome("blocked", f"{exc}: reload and review; nothing was deleted")
+        self.refresh()
+        out = Outcome("written", f"deleted {slug}", sha=rid)
+        out.viewer_error = self.render_viewers()
+        return out
 
     # -------------------------------------------------- undo
 

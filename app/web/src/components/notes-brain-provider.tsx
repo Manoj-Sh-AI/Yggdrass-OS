@@ -342,6 +342,40 @@ export function NotesBrainProvider({
     createNote,
     replaceNote,
     registerNoteGuard,
+    // Deleting is permanent (Manoj, 2026-11-28): the editor's dialog previews, then deletes.
+    previewDelete: async (note) => {
+      const view = await notesApi.deletePreview(note.id);
+      const linked = view.linked_from.map((n) => n.title).join(", ");
+      return {
+        token: note.id,
+        noteId: note.id,
+        version: note.version,
+        title: view.title,
+        content: linked
+          ? `${view.permanent} Linked from: ${linked}.`
+          : view.permanent,
+      };
+    },
+    confirmDelete: async (preview) => {
+      try {
+        const out = await notesApi.delete(
+          preview.noteId,
+          Number(preview.version),
+        );
+        setCanUndo(out.canUndo);
+      } catch (e) {
+        throw report(e);
+      }
+      try {
+        localStorage.removeItem(BRAIN_DRAFT_PREFIX + preview.noteId);
+      } catch {
+        /* No local draft storage: nothing to clear. */
+      }
+      setNotes((old) => old.filter((n) => n.id !== preview.noteId));
+      setNoteId(null);
+      // Notes that linked to it changed too (their links became plain text).
+      await searchBrain(latestQuery.current);
+    },
   };
   return (
     <Context.Provider value={value}>
