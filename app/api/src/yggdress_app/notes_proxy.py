@@ -497,6 +497,24 @@ class NotesProxy:
                 error.extra.update(completed=1, canUndo=bool(state["undo"]))
                 raise
 
+    def delete_preview(self, owner, slug):
+        """What deleting *slug* would do: its title and the notes that link to it."""
+        with self.lock:
+            return self.http.call("POST", slug_path(slug) + "/delete", {"preview": True})
+
+    def delete(self, owner, slug, version):
+        """Delete a note for good (Manoj, 2026-11-28). Session state about it is dropped."""
+        with self.lock:
+            out = self.http.call(
+                "POST", slug_path(slug) + "/delete", {"preview": False, "version": version}
+            )
+            state = self.state(owner)
+            state["created"].pop(slug, None)
+            state["fetched"] = {k: v for k, v in state["fetched"].items() if v.get("slug") != slug}
+            if state.get("undo_slug") == slug:
+                state["undo"], state["undo_slug"] = None, None
+            return {**out, "canUndo": bool(state["undo"])}
+
     def undo(self, owner):
         with self.lock:
             state = self.state(owner)
@@ -518,6 +536,10 @@ class Strict(BaseModel):
 class PreviewInput(Strict):
     fetchToken: str = Field(min_length=1, max_length=200)
     body: str = Field(max_length=100000)
+
+
+class DeleteInput(Strict):
+    version: int = Field(ge=1)
 
 
 class CreateInput(Strict):
@@ -636,6 +658,18 @@ def notes_router(proxy, session, on_saved=None, observer=None):
         except NotesError as error:
             failed(intent, error)
             raise
+
+    @router.post("/items/{slug}/delete-preview")
+    def delete_preview(slug: str, auth=authenticated):
+        return proxy.delete_preview(auth["csrf"], slug)
+
+    @router.post("/items/{slug}/delete")
+    def delete(slug: str, body: DeleteInput, auth=authenticated):
+        from .mobile_policy import mobile_restricted, require_mobile_safe
+
+        if mobile_restricted(auth):
+            require_mobile_safe(proxy.get(auth["csrf"], slug)["note"], auth)
+        return proxy.delete(auth["csrf"], slug, body.version)
 
     @router.post("/undo")
     def undo(auth=authenticated):

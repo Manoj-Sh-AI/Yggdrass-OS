@@ -472,7 +472,7 @@ function DocumentEditor({
             Undo last saved change
           </button>
         )}
-        {!liveNotes && (
+        {!newNote && (
           <button
             className="editor-tool danger-tool"
             aria-label="Preview permanent deletion"
@@ -726,7 +726,11 @@ function DocumentEditor({
                 setDeleting(true);
                 try {
                   await confirmDelete(preview);
-                  toast("Synthetic note and its local draft deleted.");
+                  toast(
+                    liveNotes
+                      ? "Note deleted for good."
+                      : "Synthetic note and its local draft deleted.",
+                  );
                 } catch (e) {
                   setActionError(
                     e instanceof Error ? e.message : "Deletion unavailable.",

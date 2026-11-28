@@ -50,6 +50,18 @@ export const notesApi = {
     post<NoteResult>("create", { slug: note.slug, text: newNoteBody(note) }),
   undo: () =>
     post<{ message: string; canUndo: boolean; reviewWarning?: string }>("undo"),
+  /** Deleting is permanent (Manoj, 2026-11-28): preview, then delete. */
+  deletePreview: (slug: string) =>
+    post<{
+      title: string;
+      permanent: string;
+      linked_from: { slug: string; title: string }[];
+    }>(`items/${encodeURIComponent(slug)}/delete-preview`),
+  delete: (slug: string, version: number) =>
+    post<{ deleted: string; canUndo: boolean }>(
+      `items/${encodeURIComponent(slug)}/delete`,
+      { version },
+    ),
 };
 export function blankNote(): LiveNote {
   const slug = `note-${crypto.randomUUID()}`;

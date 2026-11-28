@@ -320,3 +320,16 @@ def test_notes_router_requires_application_session_and_keeps_tokens_private(subj
     token = response.json()["token"]
     api.dependency_overrides[authenticated] = lambda: {"csrf": "two"}
     assert client.post(f"/v1/notes/previews/{token}/confirm").status_code == 409
+
+
+def test_delete_previews_then_removes_and_forgets_the_session_undo(subject):
+    """Manoj, 2026-11-28: deleting a note is permanent; the preview writes nothing."""
+    proxy, fake = subject
+    proxy.create("one", BODY.replace("slug: sample", "slug: created"), "created")
+    assert proxy.state("one")["undo"] == "created"
+    view = proxy.delete_preview("one", "created")
+    assert view["preview"] and "created" in fake.notes
+    out = proxy.delete("one", "created", 1)
+    assert out["deleted"] == "created" and "created" not in fake.notes
+    assert out["canUndo"] is False and proxy.state("one")["undo"] is None
+    assert fake.calls[-1] == ("POST", "note/created/delete", {"preview": False, "version": 1})
