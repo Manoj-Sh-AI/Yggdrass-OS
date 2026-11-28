@@ -5,7 +5,7 @@ import { useRegisterPageContext } from "@/features/side-chat/page-context";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { BrainNote } from "@/lib/brain-adapter";
 import { recoveryBundle } from "@/lib/development-drafts";
-import { BRAIN_DRAFT_PREFIX } from "@/lib/notes-api";
+import { BRAIN_DRAFT_PREFIX, type FolderPreview } from "@/lib/notes-api";
 import { searchNotes } from "@/lib/repository";
 import { useNotesApp } from "./notes-brain-provider";
 import { NoteEditor, preloadNoteEditor } from "./note-editor-loader";
@@ -37,6 +37,9 @@ export function BrainExplorer({
     undo,
     searchBrain,
     searchResultIds,
+    addFolder,
+    previewFolderDelete,
+    deleteFolder,
   } = useNotesApp();
   const [query, setQuery] = useState(""),
     [search, setSearch] = useState(""),
@@ -48,6 +51,12 @@ export function BrainExplorer({
     [destination, setDestination] = useState("14-inbox"),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
+  // Free folders (Manoj, 2026-11-28): add one by name; remove one of his own after a
+  // preview of the notes that move to Cross.
+  const [folderOpen, setFolderOpen] = useState(false),
+    [folderName, setFolderName] = useState(""),
+    [folderBusy, setFolderBusy] = useState(false),
+    [removing, setRemoving] = useState<FolderPreview | null>(null);
   const created = useRef(false);
   // Phone (Notion's mobile layout): the list and the page are two screens. A note opens
   // only when tapped, never by itself, and the page has a slim bar: back, area, menu.
@@ -427,6 +436,18 @@ export function BrainExplorer({
               <div className="notes-tree-heading">
                 SHELVES & AREAS<span>{shelves.length}</span>
               </div>
+              {addFolder && (
+                <button
+                  className="all-notes-link"
+                  onClick={() => {
+                    setFolderName("");
+                    setFolderOpen(true);
+                  }}
+                >
+                  <Icon name="Folder" size={15} />
+                  New folder
+                </button>
+              )}
               <div className="notes-shelf-tree">
                 {search ? (
                   <div
@@ -468,6 +489,44 @@ export function BrainExplorer({
                           <p className="empty-shelf">
                             A little space for a new thought.
                           </p>
+                        )}
+                        {liveNotes && (
+                          <div className="shelf-actions">
+                            <button
+                              className="button small-button"
+                              onClick={() => {
+                                tapped.current = true;
+                                void createNote({
+                                  kind: "note",
+                                  title: "",
+                                  content: "",
+                                  area: s.id,
+                                  tags: [],
+                                  date: "",
+                                });
+                              }}
+                            >
+                              <Icon name="Plus" size={13} />
+                              New note here
+                            </button>
+                            {s.own && previewFolderDelete && (
+                              <button
+                                className="button small-button"
+                                onClick={async () => {
+                                  try {
+                                    setRemoving(
+                                      await previewFolderDelete(s.id),
+                                    );
+                                  } catch {
+                                    setRemoving(null);
+                                  }
+                                }}
+                              >
+                                <Icon name="Trash2" size={13} />
+                                Remove folder
+                              </button>
+                            )}
+                          </div>
                         )}
                       </div>
                     </details>
@@ -620,6 +679,83 @@ export function BrainExplorer({
         </div>
       )}
       <Modal
+        open={folderOpen}
+        onOpenChange={(v) => {
+          if (!folderBusy) setFolderOpen(v);
+        }}
+        title="New folder"
+        description="An empty folder in your Brain. Lia's maps list it at once."
+      >
+        <form
+          className="form-stack"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            if (!addFolder) return;
+            setFolderBusy(true);
+            try {
+              if (await addFolder(folderName)) setFolderOpen(false);
+            } finally {
+              setFolderBusy(false);
+            }
+          }}
+        >
+          <label>
+            Name
+            <input
+              autoFocus
+              required
+              maxLength={40}
+              value={folderName}
+              onChange={(e) => setFolderName(e.target.value)}
+              placeholder="Swimming"
+            />
+          </label>
+          <button
+            className="button primary"
+            disabled={folderBusy || !folderName.trim()}
+          >
+            {folderBusy ? "Adding…" : "Add folder"}
+          </button>
+        </form>
+      </Modal>
+      <Modal
+        open={removing !== null}
+        onOpenChange={(v) => {
+          if (!folderBusy && !v) setRemoving(null);
+        }}
+        title={`Remove ${removing ? removing.delete.replace(/^\d+-/, "").replaceAll("-", " ") : "folder"}?`}
+        description="The folder goes. Its notes move to Cross; no note is deleted."
+      >
+        {removing && (
+          <div className="form-stack">
+            <p className="settings-footnote">
+              {removingCount(removing) === 0
+                ? "It holds no notes."
+                : `${removingCount(removing)} note${removingCount(removing) === 1 ? "" : "s"} move to Cross${
+                    removing.moves.length
+                      ? `: ${removing.moves.map((n) => n.title).join(", ")}`
+                      : ""
+                  }${removing.hidden ? ` (and ${removing.hidden} not shown on this device)` : ""}.`}
+            </p>
+            <button
+              className="button primary"
+              disabled={folderBusy}
+              onClick={async () => {
+                if (!deleteFolder) return;
+                setFolderBusy(true);
+                try {
+                  if (await deleteFolder(removing.delete)) setRemoving(null);
+                } finally {
+                  setFolderBusy(false);
+                }
+              }}
+            >
+              {folderBusy ? "Removing…" : "Remove folder"}
+            </button>
+          </div>
+        )}
+      </Modal>
+      <Modal
         open={creating}
         onOpenChange={(v) => {
           if (!busy) setCreating(v);
@@ -722,4 +858,7 @@ function ContextLinks({
       )}
     </div>
   );
+}
+function removingCount(view: FolderPreview) {
+  return view.moves.length + (view.hidden || 0);
 }

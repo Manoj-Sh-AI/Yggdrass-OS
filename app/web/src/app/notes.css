@@ -831,3 +831,11 @@
   font: inherit;
   cursor: pointer;
 }
+/* Free folders (2026-11-28): a new note into this folder; remove one of your own. */
+.shelf-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--spacing) * 2);
+  padding: calc(var(--spacing) * 1) calc(var(--spacing) * 3)
+    calc(var(--spacing) * 2);
+}

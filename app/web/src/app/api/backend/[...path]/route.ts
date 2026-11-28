@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 const allowed =
-  /^(auth\/(login|logout|session)|application\/(tasks(\/[a-zA-Z0-9-]+)?|routine(\/actions)?|planning(\/commands)?)|notes\/(search|create|undo|items\/[a-zA-Z0-9_-]+(\/(preview|delete|delete-preview))?|previews\/[a-zA-Z0-9_-]+\/(confirm|cancel))|brain\/(tree|notes(\/[a-zA-Z0-9_-]+(\/delete-(preview|confirm))?)?))$/;
+  /^(auth\/(login|logout|session)|application\/(tasks(\/[a-zA-Z0-9-]+)?|routine(\/actions)?|planning(\/commands)?)|notes\/(search|create|undo|folders(\/[0-9]{2}-[a-z0-9-]+\/(delete|delete-preview))?|items\/[a-zA-Z0-9_-]+(\/(preview|delete|delete-preview))?|previews\/[a-zA-Z0-9_-]+\/(confirm|cancel))|brain\/(tree|notes(\/[a-zA-Z0-9_-]+(\/delete-(preview|confirm))?)?))$/;
 async function proxy(
   request: NextRequest,
   { params }: { params: Promise<{ path: string[] }> },

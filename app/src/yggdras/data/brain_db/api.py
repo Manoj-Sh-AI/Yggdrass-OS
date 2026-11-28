@@ -8,6 +8,7 @@ RowStore.write_note with the version the reader was given; a stale one is refuse
 from __future__ import annotations
 
 from yggdras.data.brain_db import render
+from yggdras.data.graph.structural import FIRST_USER_AREA
 
 LIVE = "n.archived_at IS NULL"
 
@@ -16,6 +17,22 @@ def _rows(conn, sql: str, args=()) -> list[tuple]:
     with conn.cursor() as cur:
         cur.execute(sql, args)
         return cur.fetchall()
+
+
+def folders(conn) -> list[dict]:
+    """Every folder (area) in map order, empty ones too, with its live note count. `own`
+    marks the user's folders (numbered from 20): only those can be removed."""
+    rows = _rows(
+        conn,
+        "SELECT a.area_code, a.name, count(n.slug) FROM brain.areas a "
+        f"LEFT JOIN brain.notes n ON n.area_code = a.area_code AND {LIVE} "
+        'GROUP BY a.area_code, a.name, a.sort_order ORDER BY a.sort_order, a.area_code COLLATE "C"',
+    )
+    return [
+        dict(code=code, value=render.area_value(code, name), name=name, notes=count,
+             own=int(code) >= FIRST_USER_AREA)
+        for code, name, count in rows
+    ]  # fmt: skip
 
 
 def note_tree(conn) -> list[dict]:

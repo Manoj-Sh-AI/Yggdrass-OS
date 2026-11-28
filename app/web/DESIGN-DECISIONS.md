@@ -280,3 +280,14 @@ model's explanation labelled as its note; "This cannot be undone" on irreversibl
 - Only existing tokens: `--surface-0` for the bar, `--surface-3` for the menu (the
   ladder's "overlay, popover, menu" step), `--radius-xl`/`--radius-md`, `--text-sm`/
   `--text-base`, and `--spacing` multiples (44px tap targets = `--spacing` × 11).
+
+## Notes: folders in the list (2026-11-28)
+
+- "New folder" sits under the "Shelves & areas" heading, styled as the "All notes" row, so
+  adding a folder lives where folders are listed (Notion keeps "Add a page" at the foot of
+  its sidebar section). [proposal]
+- Each open folder ends with "New note here" (and "Remove folder" for your own folders):
+  actions sit inside the thing they act on, no long-press needed on a phone. [proposal]
+- Removing a folder opens a dialog naming the notes that move to Cross; on a phone, notes
+  it may not show are counted, not named. [derived from the mobile sensitivity policy]
+- `.shelf-actions` uses only `--spacing` multiples. [cited: token layer]

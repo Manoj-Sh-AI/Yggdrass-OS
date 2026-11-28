@@ -51,6 +51,24 @@ NOT_MAPPED = ("00-manual", "14-inbox")
 # Allowed values of a note's `area` and `also` (A18): the life-area folders, plus "cross".
 AREAS = tuple(s for s in SHELVES if "01" <= s[:2] <= "08")
 CROSS = "cross"
+# Folders Manoj adds in the app (2026-11-28, "fully free folders"): areas numbered from 20,
+# kept as brain.areas rows. The row store sets them from the database before every check,
+# so the rules below accept them; markdown brains have none.
+FIRST_USER_AREA = 20
+_user_areas: tuple[str, ...] = ()
+
+
+def set_user_areas(values) -> None:
+    """The user's folders as frontmatter values (`20-swimming`), from brain.areas."""
+    global _user_areas
+    _user_areas = tuple(sorted(values))
+
+
+def areas() -> tuple[str, ...]:
+    """Every area a note may name: the life areas 01-08, then the user's folders."""
+    return (*AREAS, *_user_areas)
+
+
 CONTENT_TYPES = (
     "person",
     "place",
@@ -242,7 +260,7 @@ def rule_problems(node: Node) -> list[str]:
     problems = []
     if node.type not in (*CONTENT_TYPES, HUB, JOURNAL):
         problems.append(f"unknown type '{node.type}'")
-    allowed = (*AREAS, CROSS)
+    allowed = (*areas(), CROSS)
     if not node.area:
         problems.append("missing area")
     elif node.area not in allowed:

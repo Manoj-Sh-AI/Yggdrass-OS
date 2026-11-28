@@ -161,7 +161,7 @@ class Checker:
         if new and type_ and type_ not in (*st.CONTENT_TYPES, st.HUB, st.JOURNAL):
             say("frontmatter", f"unknown type '{type_}'")
         area = str(fm.get("area") or "")
-        if new and not self.flat and area and area not in (*st.AREAS, st.CROSS):
+        if new and not self.flat and area and area not in (*st.areas(), st.CROSS):
             say("frontmatter", f"unknown area '{area}'")
         if new and not self.flat and type_ and area:
             shelf, folder = shelf_for(type_, area), PurePosixPath(rel).parts[0]

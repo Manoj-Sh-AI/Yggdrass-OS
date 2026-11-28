@@ -353,3 +353,34 @@ def test_writes_wait_longer_than_reads(monkeypatch):
             http.call(method, "note/sample", None if method == "GET" else {})
     assert seen == [("GET", notes_proxy.READ_TIMEOUT), ("POST", notes_proxy.WRITE_TIMEOUT)]
     assert notes_proxy.WRITE_TIMEOUT < 60  # the web route gives notes 60 s
+
+
+def test_folders_list_add_and_remove_with_a_preview_that_names_only_allowed_notes(subject):
+    """Manoj, 2026-11-28: free folders. A phone sees how many hidden notes move, not which."""
+    proxy, fake = subject
+    api = FastAPI()
+    user = {"csrf": "one"}
+    api.include_router(notes_router(proxy, lambda: user))
+
+    @api.exception_handler(NotesError)
+    async def notes_error(_request, error):
+        return JSONResponse({"detail": error.message}, status_code=error.status)
+
+    client = TestClient(api)
+    assert client.post("/v1/notes/folders", json={"name": "Swim"}).json()["folder"] == "20-swim"
+    folders = client.get("/v1/notes/folders").json()["folders"]
+    assert [f["value"] for f in folders] == ["cross", "20-swim"]
+    assert client.post("/v1/notes/folders", json={"name": ""}).status_code == 422
+
+    view = client.post("/v1/notes/folders/20-swim/delete-preview").json()
+    assert view["preview"] and len(view["moves"]) == 2 and "hidden" not in view
+    assert client.post("/v1/notes/folders/BAD/delete").status_code == 404
+
+    user["csrf"] = "mobile:v1:phone"
+    proxy.state("mobile:v1:phone")["mobile_allowed"] = {"sample"}
+    view = client.post("/v1/notes/folders/20-swim/delete-preview").json()
+    assert view["moves"] == [{"slug": "sample", "title": "Sample"}] and view["hidden"] == 1
+    out = client.post("/v1/notes/folders/20-swim/delete").json()
+    assert out["done"] and out["hidden"] == 1 and "moved" not in out
+    assert [f["value"] for f in fake.folders] == ["cross"]
+    assert fake.calls[-1] == ("POST", "folder/20-swim/delete", {"preview": False})

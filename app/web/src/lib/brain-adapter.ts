@@ -19,6 +19,8 @@ export type BrainShelf = {
   name: string;
   isArea: boolean;
   noteIds: string[];
+  /** One of Manoj's own folders (numbered from 20): it can be removed. */
+  own?: boolean;
 };
 export type BrainEnvelope = {
   mode: "mock" | "lia";

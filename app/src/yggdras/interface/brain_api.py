@@ -15,6 +15,9 @@ pages and the graph still do, so Lia's footnotes keep working). The password is 
     POST /api/note/<slug>/link              add a link            {target_slug, verb, preview}
     POST /api/note/<slug>/unlink            remove a link         {target_slug, verb, preview}
     POST /api/note/<slug>/delete            delete the note       {preview} (permanent)
+    GET  /api/folders                       every folder (area), empty ones too
+    POST /api/folder                        add a folder          {name}
+    POST /api/folder/<value>/delete         remove a folder       {preview} (notes move to cross)
     POST /api/undo/<undo_id>                undo an add, a replace or a link, once
 
 Any write body may carry "version" (from a read): a stale one is refused.
@@ -34,6 +37,8 @@ USER_VAR, PASSWORD_VAR = "BRAIN_API_USER", "BRAIN_API_PASSWORD"
 WRITE = re.compile(
     r"^note/(?P<slug>[^/]+)/(?P<op>replace-fact|remove-fact|add-fact|link|unlink|delete)$"
 )
+
+FOLDER_DELETE = re.compile(r"^folder/(?P<value>[0-9]{2}-[a-z0-9-]+)/delete$")
 
 
 class ApiConfigError(RuntimeError):
@@ -63,6 +68,8 @@ class BrainApi:
         return hmac.compare_digest(header[len("Basic ") :].strip(), self._expected)
 
     def get(self, route: str, query: dict | None = None) -> tuple[int, object]:
+        if route == "folders":
+            return 200, self.read("folders")
         if route == "search":
             return 200, self.read("search", ((query or {}).get("q") or [""])[0])
         name, _, slug = route.partition("/")
@@ -79,6 +86,11 @@ class BrainApi:
         try:
             if route == "note":
                 return 200, self.writes.add_note(body)
+            if route == "folder":
+                return 200, self.writes.add_folder(body)
+            m = FOLDER_DELETE.match(route)
+            if m:
+                return 200, self.writes.delete_folder(m["value"], body)
             if route.startswith("undo/"):
                 return 200, self.writes.undo(route[len("undo/") :])
             m = WRITE.match(route)

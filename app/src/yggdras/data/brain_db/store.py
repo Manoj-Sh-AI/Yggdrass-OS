@@ -125,7 +125,19 @@ def state(conn) -> tuple:
     return (last, tuple(maps))
 
 
+USER_AREAS_SQL = "SELECT area_code, name FROM brain.areas WHERE area_code >= %s ORDER BY 1"
+FOLDER_NAME = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+
+
+def user_areas(conn) -> list[tuple[str, str]]:
+    """The user's folders (code, name), and tell the note rules about them."""
+    rows = _rows(conn, USER_AREAS_SQL, (f"{st.FIRST_USER_AREA:02d}",))
+    st.set_user_areas(render.area_value(code, name) for code, name in rows)
+    return rows
+
+
 def snapshot(conn) -> Snapshot:
+    user_areas(conn)
     history: dict[str, list[str]] = {}
     blocks: dict[str, tuple[str, int | None]] = {}
     for slug, old, tag, section, pos in _rows(conn, HISTORY_SQL):
@@ -207,6 +219,63 @@ def _link_pattern(slug: str) -> re.Pattern:
 
 def _mentions(body: str, slug: str) -> bool:
     return bool(_link_pattern(slug).search(body))
+
+
+def _folder_row(cur, kind: str, value: str, actor: str, now, rid: str) -> None:
+    """History of a folder: one `changes` row, tied to no note."""
+    cur.execute(
+        "INSERT INTO brain.changes (slug, slug_text, kind, old_text, new_text, actor, "
+        "created_at, request_id, section) VALUES (NULL, %s, %s, %s, %s, %s, %s, %s, 'folder')",
+        (f"folder {value}", kind, value if kind == "remove" else None,
+         value if kind == "add" else None, actor, now, rid),
+    )  # fmt: skip
+
+
+_AREA_LINE = re.compile(r"""^area:\s*["']?(?P<v>[^"'\s]+)["']?\s*$""")
+_ALSO_INLINE = re.compile(r"^also:\s*\[(?P<items>.*)\]\s*$")
+_ALSO_ITEM = re.compile(r"""^\s+-\s*["']?(?P<v>[^"'\s]+)["']?\s*$""")
+
+
+def without_area(body: str, value: str) -> str:
+    """*body* with the folder *value* gone from its frontmatter: `area: value` becomes
+    `area: cross`; *value* leaves `also` (inline or block list). Nothing else changes."""
+    lines = body.split("\n")
+    if not lines or lines[0].strip() != "---":
+        return body
+    out, in_also, done = [lines[0]], False, False
+    for line in lines[1:]:
+        if done:
+            out.append(line)
+            continue
+        if line.strip() == "---":
+            done = True
+            out.append(line)
+            continue
+        m = _AREA_LINE.match(line)
+        if m and m["v"] == value:
+            out.append("area: cross")
+            in_also = False
+            continue
+        m = _ALSO_INLINE.match(line)
+        if m:
+            items = [i.strip() for i in m["items"].split(",") if i.strip()]
+            kept = [i for i in items if i.strip("\"'") != value]
+            out.append(line if kept == items else f"also: [{', '.join(kept)}]")
+            in_also = False
+            continue
+        if line.startswith("also:"):
+            in_also = True
+            out.append(line)
+            continue
+        if in_also:
+            m = _ALSO_ITEM.match(line)
+            if m:
+                if m["v"] != value:
+                    out.append(line)
+                continue
+            in_also = False
+        out.append(line)
+    return "\n".join(out)
 
 
 def without_mentions(body: str, slug: str, title: str) -> str:
@@ -555,7 +624,7 @@ class RowStore:
             p.unlink(missing_ok=True)
 
     def _transact(self, edits: Edits, expect: dict[str, int], actor: str,
-                  undo_of: str | None = None) -> str:  # fmt: skip
+                  undo_of: str | None = None, then=None) -> str:  # fmt: skip
         """Save *edits* in one transaction: version check, bodies, derived rows, `changes`,
         map_cache. Returns the request id."""
         rid = uuid.uuid4().hex[:12]
@@ -597,6 +666,8 @@ class RowStore:
                         )  # fmt: skip
                 for slug in sorted(edits.delete):  # after its rows went in: they keep slug_text
                     cur.execute("DELETE FROM brain.notes WHERE slug = %s", (slug,))
+                if then is not None:  # e.g. a folder's row, once no note names it
+                    then(cur, rid, now)
                 render.build_cache(conn, now=now, commit=False)
             finally:
                 shutil.rmtree(folder, ignore_errors=True)
@@ -644,6 +715,74 @@ class RowStore:
         self.refresh()
         out = Outcome("written", f"deleted {slug}", sha=rid)
         out.viewer_error = self.render_viewers()
+        return out
+
+    # -------------------------------------------------- folders (Manoj, 2026-11-28)
+
+    def add_folder(self, name: str, actor: str) -> Outcome:
+        """A new, empty folder: a brain.areas row numbered from 20. Lia's maps list it at
+        once (rebuilt in the same transaction); the graph shows it when a note is in it."""
+        name = st.normalize(name)
+        if not FOLDER_NAME.match(name) or len(name) > 40:
+            return Outcome("blocked", "a folder name needs letters or digits (at most 40)")
+        now = dt.datetime.now(dt.UTC)
+        rid = uuid.uuid4().hex[:12]
+        with self.connect() as conn, conn.transaction(), conn.cursor() as cur:
+            cur.execute("SELECT pg_advisory_xact_lock(%s)", (LOCK_KEY,))
+            cur.execute("SELECT area_code, name FROM brain.areas")
+            have = dict(cur.fetchall())
+            if name in have.values() or name == st.CROSS:
+                return Outcome("blocked", f"a folder '{name}' exists already")
+            free = [c for c in range(st.FIRST_USER_AREA, 100) if f"{c:02d}" not in have]
+            if not free:
+                return Outcome("blocked", "there is no free folder number left (20-99)")
+            code = f"{free[0]:02d}"
+            cur.execute(
+                "INSERT INTO brain.areas (area_code, name, sort_order) VALUES (%s, %s, %s)",
+                (code, name, free[0]),
+            )
+            value = render.area_value(code, name)
+            _folder_row(cur, "add", value, actor, now, rid)
+            render.build_cache(conn, now=now, commit=False)
+        self.refresh()
+        return Outcome("written", value, sha=rid)
+
+    def folder_notes(self, value: str) -> list[str]:
+        """The live notes that name the folder *value*, as their area or in `also`."""
+        if self._snap is None:
+            self.refresh()
+        return sorted(s for s, body in self._snap.bodies.items()
+                      if without_area(body, value) != body)  # fmt: skip
+
+    def delete_folder(self, value: str, actor: str) -> Outcome:
+        """Remove one of the user's folders (Manoj, 2026-11-28): its notes move to `cross`
+        (their `area:` line is rewritten; a mention in `also` is dropped), then its row
+        goes, in one transaction. The life areas 01-08 and cross can't be removed."""
+        self.refresh()
+        if value not in st.areas() or value in st.AREAS:
+            return Outcome("blocked", f"'{value}' is not one of your folders")
+        snap = self._snap
+        edits, expect = Edits(), {}
+        for slug in self.folder_notes(value):
+            body = snap.bodies[slug]
+            new = without_area(body, value)
+            edits.bodies[slug] = (snap.paths[slug], new)
+            expect[slug] = snap.versions[slug]
+            edits.rows.append((slug, line_rows(body, new, [], None)))
+
+        def drop(cur, rid, now):
+            cur.execute("DELETE FROM brain.areas WHERE area_code = %s", (value[:2],))
+            _folder_row(cur, "remove", value, actor, now, rid)
+
+        try:
+            rid = self._transact(edits, expect, actor, then=drop)
+        except Stale as exc:
+            self.refresh()
+            return Outcome("blocked", f"{exc}: reload and review; nothing was changed")
+        self.refresh()
+        out = Outcome("written", f"removed folder {value}", sha=rid)
+        if edits.bodies:
+            out.viewer_error = self.render_viewers()
         return out
 
     # -------------------------------------------------- undo

@@ -25,8 +25,19 @@ Date: 2026-11-28. Decided by Manoj (in-session answers), recorded by Claude.
 
 - Done (branch `claude/20261127-phone-batch-2`): permanent note delete end to end (brain,
   proxy, web), with tests.
-- Not done: free folders. The shelf numbering and the graph read the fixed list in code
-  (`store.py` `SHELF_FOLDERS`, `structural.py` `SHELVES`), and an empty folder needs a place
-  to exist: a `brain.folders` table, i.e. a brain-schema migration on the hosted brain.
-  There is no hosted brain migration tool yet (Phase 3 of the OS plan); applying one needs
-  Manoj's go-ahead.
+- Done (branch `claude/20261128-free-folders`): free folders, as **areas**. In the app a
+  folder is what the Notes list shows under "Shelves & areas": a note's `area`. So a new
+  folder is a new `brain.areas` row numbered from 20 (`20-swimming`), and no schema
+  migration is needed (`brain.areas` already takes any two-digit code and name; folder
+  history is a `brain.changes` row with section `folder` and no slug).
+  - The area rules (`structural.areas()`, the checker, the loader, placement) accept the
+    user's folders; the row store reads them from `brain.areas` with every snapshot, so the
+    check inside each write's lock sees the current list.
+  - A note in a user folder sits on shelf `10-ideas` when its type has no shelf of its own
+    (shelf_no is display and sort only; the folder is the area). [derived]
+  - Removing a folder: only the user's own (20-99). The life areas 01-08 and cross can't
+    be removed: they are the taxonomy Lia's manual describes. Its notes move to **cross**,
+    the catch-all area, in the same transaction (`area:` rewritten; dropped from `also`).
+    "Inbox" was read as cross: the `14-inbox` shelf is left out of the graph and Lia's
+    maps, so notes moved there would vanish from answering. [derived; Manoj to confirm]
+  - Not built: renaming a folder, moving a note between folders.

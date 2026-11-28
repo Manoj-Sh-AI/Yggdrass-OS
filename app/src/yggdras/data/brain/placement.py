@@ -31,7 +31,11 @@ def shelf_for(type: str, area: str) -> str | None:
     if type in BY_TYPE:
         return BY_TYPE[type]
     if type == st.HUB or type in ACTIVITY_TYPES:
-        return area if area in st.AREAS else None
+        if area in st.AREAS:
+            return area
+        # A user folder has no shelf of its own: its notes sit on 10-ideas (shelf_no is
+        # display and sort only; the folder is the note's area).
+        return "10-ideas" if type in ACTIVITY_TYPES and area in st.areas() else None
     return None
 
 
