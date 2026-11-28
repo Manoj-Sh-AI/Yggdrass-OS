@@ -5,6 +5,7 @@ import time
 from contextlib import contextmanager
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from threading import Lock, Thread
+from urllib.error import URLError
 
 import pytest
 from fastapi import FastAPI, HTTPException
@@ -12,6 +13,7 @@ from fastapi.responses import JSONResponse
 from fastapi.testclient import TestClient
 from notes_fixture import BODY, SyntheticBrain
 
+from yggdress_app import notes_proxy
 from yggdress_app.notes_proxy import (
     MARKDOWN,
     STALE,
@@ -333,3 +335,21 @@ def test_delete_previews_then_removes_and_forgets_the_session_undo(subject):
     assert out["deleted"] == "created" and "created" not in fake.notes
     assert out["canUndo"] is False and proxy.state("one")["undo"] is None
     assert fake.calls[-1] == ("POST", "note/created/delete", {"preview": False, "version": 1})
+
+
+def test_writes_wait_longer_than_reads(monkeypatch):
+    """A write re-renders the graph before the Brain replies; 6 s cut saved notes off."""
+    seen = []
+
+    class Opener:
+        def open(self, request, timeout):
+            seen.append((request.get_method(), timeout))
+            raise URLError("stop")
+
+    monkeypatch.setattr(notes_proxy, "build_opener", lambda *_: Opener())
+    http = BrainNotesHTTP("http://localhost:8100", "user", "password")
+    for method in ("GET", "POST"):
+        with pytest.raises(NotesError):
+            http.call(method, "note/sample", None if method == "GET" else {})
+    assert seen == [("GET", notes_proxy.READ_TIMEOUT), ("POST", notes_proxy.WRITE_TIMEOUT)]
+    assert notes_proxy.WRITE_TIMEOUT < 60  # the web route gives notes 60 s

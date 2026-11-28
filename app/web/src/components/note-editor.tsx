@@ -16,7 +16,11 @@ import "@blocknote/ariakit/style.css";
 import type { BrainNote, DeletePreview } from "@/lib/brain-adapter";
 import { documentFrom, markdownWarnings } from "@/lib/note-document";
 import { DRAFT_PREFIX, draftRepository } from "@/lib/development-drafts";
-import { NoteSaveSession, type NoteSnapshot } from "@/lib/note-save-session";
+import {
+  NoteSaveSession,
+  newNoteGap,
+  type NoteSnapshot,
+} from "@/lib/note-save-session";
 import { useNotesApp } from "./notes-brain-provider";
 import { BRAIN_DRAFT_PREFIX, type LiveNote } from "@/lib/notes-api";
 import { Icon, Modal } from "./ui";
@@ -212,6 +216,16 @@ function DocumentEditor({
   const flush = useCallback(async () => {
     if (timer.current) clearTimeout(timer.current);
     if (recovery.error) return false;
+    const missing =
+      liveNotes && session.note.version === "new"
+        ? newNoteGap(session.snapshot)
+        : "";
+    if (missing) {
+      session.state = "failed";
+      session.error = missing;
+      render((n) => n + 1);
+      return false;
+    }
     if (liveNotes && session.note.version === "new" && !session.dirty)
       session.update(session.snapshot);
     let ok = await session.flush();
@@ -521,7 +535,11 @@ function DocumentEditor({
         <input
           className="note-summary-input"
           aria-label="Summary"
-          placeholder="A little context, if you need it…"
+          placeholder={
+            liveNotes
+              ? "One line: what this note is about"
+              : "A little context, if you need it…"
+          }
           value={snapshot.description}
           readOnly={!canEdit || (liveNotes && !newNote)}
           maxLength={1000}
