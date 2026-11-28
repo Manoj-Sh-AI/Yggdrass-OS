@@ -795,12 +795,10 @@
   }
 }
 
-/* Notes page on a phone, Notion-style: it saves by itself (0.9 s after typing), so no
-   Save button; the block toolbar shows only while editing, pinned to the bottom. */
+/* Notes page on a phone, Notion-style: the block toolbar shows only while editing,
+   pinned to the bottom. Save stays visible: live Brain notes save only through it
+   (the 0.9 s autosave is for the demo notes; #77 hid it by mistake). */
 @media (max-width: 720px) {
-  .notes-phone-page .note-editor .editor-save {
-    display: none;
-  }
   .notes-phone-page .note-editor .editor-format-tools {
     display: none;
   }

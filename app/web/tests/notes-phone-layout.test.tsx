@@ -151,3 +151,11 @@ describe("Notes on a desktop", () => {
     expect(screen.queryByLabelText("Note menu")).toBeNull();
   });
 });
+
+describe("Saving on a phone", () => {
+  it("never hides Save: live Brain notes have no autosave", async () => {
+    const { readFileSync } = await import("node:fs");
+    const css = readFileSync("src/app/notes.css", "utf8");
+    expect(css).not.toMatch(/\.editor-save\s*\{\s*display:\s*none/);
+  });
+});
