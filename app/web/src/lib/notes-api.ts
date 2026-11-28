@@ -87,7 +87,7 @@ export const notesApi = {
       { version },
     ),
 };
-export function blankNote(area = "cross"): LiveNote {
+export function blankNote(area = "cross", shelfId = area): LiveNote {
   const slug = `note-${crypto.randomUUID()}`;
   return {
     id: slug,
@@ -100,7 +100,7 @@ export function blankNote(area = "cross"): LiveNote {
     tags: [],
     links: [],
     backlinks: [],
-    shelfId: area,
+    shelfId,
     updated: "",
     source: "lia",
     version: "new",
