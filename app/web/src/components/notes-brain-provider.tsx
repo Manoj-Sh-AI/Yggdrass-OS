@@ -19,6 +19,8 @@ import {
   BRAIN_DRAFT_PREFIX,
   linkText,
   notesApi,
+  type BrainFolder,
+  type FolderPreview,
   type LiveNote,
   type NoteResult,
   type SavePreview,
@@ -36,6 +38,10 @@ type NotesContext = Omit<App, "brainMode"> & {
   undo: () => Promise<void>;
   searchBrain: (q: string) => Promise<void>;
   searchResultIds: string[] | null;
+  /** Free folders (Manoj, 2026-11-28); only with live Brain notes. */
+  addFolder?: (name: string) => Promise<boolean>;
+  previewFolderDelete?: (id: string) => Promise<FolderPreview>;
+  deleteFolder?: (id: string) => Promise<boolean>;
 };
 const Context = createContext<NotesContext | null>(null);
 const nothing = async () => {};
@@ -72,7 +78,8 @@ export function NotesBrainProvider({
     [canUndo, setCanUndo] = useState(false),
     [undoBusy, setUndoBusy] = useState(false),
     [preview, setPreview] = useState<SavePreview | null>(null),
-    [confirmBusy, setConfirmBusy] = useState(false);
+    [confirmBusy, setConfirmBusy] = useState(false),
+    [folders, setFolders] = useState<BrainFolder[]>([]);
   const guard = useRef<(() => Promise<boolean>) | null>(null);
   const pending = useRef<{
     resolve: (n: BrainNote) => void;
@@ -215,10 +222,10 @@ export function NotesBrainProvider({
     },
     [accept, report, notes],
   );
-  const createNote = useCallback(async () => {
+  const createNote = useCallback(async (input?: { area?: string }) => {
     ++selectionSequence.current;
     if (guard.current && !(await guard.current())) return false;
-    const note = blankNote();
+    const note = blankNote(input?.area || "cross");
     setNotes((old) => [note, ...old]);
     setNoteId(note.id);
     return true;
@@ -301,15 +308,19 @@ export function NotesBrainProvider({
       setUndoBusy(false);
     }
   };
+  const loadFolders = useCallback(async () => {
+    try {
+      setFolders(await notesApi.folders());
+    } catch {
+      setFolders([]); // the list still shows every area that holds a note
+    }
+  }, []);
+  useEffect(() => {
+    void loadFolders();
+  }, [loadFolders]);
   const shelves = useMemo(
-    () =>
-      [...new Set(notes.map((n) => n.shelfId))].sort().map((id) => ({
-        id,
-        name: areaLabel(id),
-        isArea: true,
-        noteIds: notes.filter((n) => n.shelfId === id).map((n) => n.id),
-      })),
-    [notes],
+    () => folderShelves(folders, notes),
+    [folders, notes],
   );
   const registerNoteGuard = useCallback(
     (value: (() => Promise<boolean>) | null) => {
@@ -342,6 +353,33 @@ export function NotesBrainProvider({
     createNote,
     replaceNote,
     registerNoteGuard,
+    addFolder: async (name) => {
+      try {
+        const out = await notesApi.addFolder(name);
+        await loadFolders();
+        app.toast(`Folder ${areaLabel(out.folder)} added`);
+        return true;
+      } catch (e) {
+        report(e);
+        return false;
+      }
+    },
+    previewFolderDelete: (id) => notesApi.folderPreview(id),
+    deleteFolder: async (id) => {
+      try {
+        const out = await notesApi.deleteFolder(id);
+        await loadFolders();
+        await searchBrain("");
+        const moved = out.moves.length + (out.hidden || 0);
+        app.toast(
+          `Folder removed. ${moved} note${moved === 1 ? "" : "s"} moved to Cross.`,
+        );
+        return true;
+      } catch (e) {
+        report(e);
+        return false;
+      }
+    },
     // Deleting is permanent (Manoj, 2026-11-28): the editor's dialog previews, then deletes.
     previewDelete: async (note) => {
       const view = await notesApi.deletePreview(note.id);
@@ -433,4 +471,22 @@ export function NotesBrainProvider({
       </Modal>
     </Context.Provider>
   );
+}
+export function folderShelves(
+  folders: BrainFolder[],
+  notes: { id: string; shelfId: string }[],
+) {
+  const ids = [
+    ...folders.map((f) => f.value),
+    ...[...new Set(notes.map((n) => n.shelfId))]
+      .filter((id) => !folders.some((f) => f.value === id))
+      .sort(),
+  ];
+  return ids.map((id) => ({
+    id,
+    name: areaLabel(id),
+    isArea: true,
+    own: folders.some((f) => f.value === id && f.own),
+    noteIds: notes.filter((n) => n.shelfId === id).map((n) => n.id),
+  }));
 }

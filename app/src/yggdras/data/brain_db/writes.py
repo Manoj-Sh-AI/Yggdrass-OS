@@ -231,6 +231,33 @@ class BrainWrites:
                 "unlinked_from": linked,
                 "message": "Deleted for good; it cannot be undone."}  # fmt: skip
 
+    # -------------------------------------------------- folders (Manoj, 2026-11-28)
+
+    def add_folder(self, body: dict) -> dict:
+        """A new, empty folder. Written at once; remove it to take it back."""
+        self._open()
+        out = self.store.add_folder(str(body.get("name") or ""), "api")
+        if out.status != "written":
+            raise ApiError(409 if "exists" in out.message else 422, out.message)
+        return {"done": True, "folder": out.message, "change_id": out.sha}
+
+    def delete_folder(self, value: str, body: dict) -> dict:
+        """Remove one of the user's folders. Previews first: the notes that move to cross."""
+        self._open()
+        if value not in st.areas() or value in st.AREAS:
+            raise ApiError(404, f"'{value}' is not one of your folders")
+        snap = self.store._snap
+        moved = [{"slug": s, "title": snap.notes[s].name or s}
+                 for s in self.store.folder_notes(value)]  # fmt: skip
+        if body.get("preview", True):
+            return {"preview": True, "delete": value, "moves": moved,
+                    "message": f"The folder goes. Its {len(moved)} note(s) move to cross; "
+                               "no note is deleted."}  # fmt: skip
+        out = self.store.delete_folder(value, "api")
+        if out.status != "written":
+            raise ApiError(409, out.message)
+        return {"done": True, "deleted": value, "moved": moved, "change_id": out.sha}
+
     def unlink(self, slug: str, body: dict) -> dict:
         self._open()
         path, text = self._note(slug, body)

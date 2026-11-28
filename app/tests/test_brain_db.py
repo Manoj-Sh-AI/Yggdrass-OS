@@ -421,3 +421,20 @@ def test_on_the_messy_brain_only_rows_the_loader_refused_differ(conn, messy):
             "words||—|2030-03-02|C:lost-book P:1 to 9",
         ),
     ]
+
+
+def test_without_area_rewrites_only_the_folder_in_frontmatter():
+    from yggdras.data.brain_db.store import without_area
+
+    text = ('---\nslug: a\narea: "20-swim"\nalso:\n  - 04-learning\n  - 20-swim\ntags: []\n'
+            "---\n\narea: 20-swim stays in the body\n")  # fmt: skip
+    out = without_area(text, "20-swim")
+    assert out == ("---\nslug: a\narea: cross\nalso:\n  - 04-learning\ntags: []\n---\n\n"
+                   "area: 20-swim stays in the body\n")  # fmt: skip
+    assert without_area("---\narea: 04-learning\nalso: [20-swim, 05-money]\n---\n", "20-swim") == (
+        "---\narea: 04-learning\nalso: [05-money]\n---\n"
+    )
+    assert (
+        without_area("no frontmatter\narea: 20-swim\n", "20-swim")
+        == "no frontmatter\narea: 20-swim\n"
+    )

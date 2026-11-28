@@ -24,6 +24,8 @@ class SyntheticBrain:
             }
         }
         self.calls, self.history = [], {}
+        self.folders = [{"code": "09", "value": "cross", "name": "cross", "notes": 1,
+                         "own": False}]  # fmt: skip
         self.markdown = False
         self.fail_at = None
         self.saved = 0
@@ -39,6 +41,8 @@ class SyntheticBrain:
                 for slug, note in sorted(self.notes.items())
                 if not query or query in (note["title"] + note["body"]).lower()
             ]
+        if path == "folders":
+            return copy.deepcopy(self.folders)
         if method == "GET":
             note = self.notes.get(path.removeprefix("note/"))
             if not note:
@@ -46,6 +50,20 @@ class SyntheticBrain:
             return copy.deepcopy(note)
         if self.markdown:
             raise NotesError(409, MARKDOWN, "brain_markdown")
+        if path == "folder":
+            value = f"{20 + len(self.folders) - 1}-{payload['name'].lower()}"
+            self.folders.append({"code": value[:2], "value": value, "name": value[3:],
+                                 "notes": 0, "own": True})  # fmt: skip
+            return {"done": True, "folder": value}
+        if path.startswith("folder/") and path.endswith("/delete"):
+            value = path.removeprefix("folder/").removesuffix("/delete")
+            if value not in [f["value"] for f in self.folders if f["own"]]:
+                raise NotesError(404, "not one of your folders")
+            moves = [{"slug": "sample", "title": "Sample"}, {"slug": "secret", "title": "Secret"}]
+            if payload.get("preview", True):
+                return {"preview": True, "delete": value, "moves": moves}
+            self.folders = [f for f in self.folders if f["value"] != value]
+            return {"done": True, "deleted": value, "moved": moves}
         if path.endswith("/delete"):
             slug = path.removeprefix("note/").removesuffix("/delete")
             if slug not in self.notes:

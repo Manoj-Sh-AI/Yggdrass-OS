@@ -32,7 +32,31 @@ const post = <T>(path: string, body = {}) =>
     method: "POST",
     body: JSON.stringify(body),
   });
+/** A Brain folder (an area). `own`: one of Manoj's, numbered from 20, removable. */
+export type BrainFolder = {
+  code: string;
+  value: string;
+  name: string;
+  notes: number;
+  own: boolean;
+};
+export type FolderPreview = {
+  delete: string;
+  moves: { slug: string; title: string }[];
+  hidden?: number;
+  message?: string;
+};
 export const notesApi = {
+  folders: () =>
+    applicationApi<{ folders: BrainFolder[] }>("notes/folders").then(
+      (r) => r.folders,
+    ),
+  addFolder: (name: string) => post<{ folder: string }>("folders", { name }),
+  /** Removing a folder moves its notes to cross; no note is deleted. */
+  folderPreview: (value: string) =>
+    post<FolderPreview>(`folders/${encodeURIComponent(value)}/delete-preview`),
+  deleteFolder: (value: string) =>
+    post<FolderPreview>(`folders/${encodeURIComponent(value)}/delete`),
   search: (q = "") =>
     applicationApi<{ notes: LiveNote[]; canUndo: boolean }>(
       `notes/search?q=${encodeURIComponent(q)}`,
@@ -63,7 +87,7 @@ export const notesApi = {
       { version },
     ),
 };
-export function blankNote(): LiveNote {
+export function blankNote(area = "cross"): LiveNote {
   const slug = `note-${crypto.randomUUID()}`;
   return {
     id: slug,
@@ -71,12 +95,12 @@ export function blankNote(): LiveNote {
     title: "",
     description: "",
     content: "## Summary\n\n## Facts\n\n## Links\n",
-    area: "cross",
+    area,
     also: [],
     tags: [],
     links: [],
     backlinks: [],
-    shelfId: "cross",
+    shelfId: area,
     updated: "",
     source: "lia",
     version: "new",

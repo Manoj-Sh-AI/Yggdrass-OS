@@ -235,7 +235,7 @@ def note_areas(slug: str, fm: dict, out: Brain, bad: list[str]) -> list[str]:
         area = st.CROSS
     codes = []
     for value in [area, *st._as_list(fm.get("also"))]:
-        code = AREA_CODES.get(value)
+        code = AREA_CODES.get(value) or (value[:2] if value in st.areas() else None)
         if code is None:
             bad.append(f"{slug}: area '{value}' fits no area")
         elif code in codes:

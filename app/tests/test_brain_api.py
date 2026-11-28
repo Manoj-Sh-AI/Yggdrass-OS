@@ -362,3 +362,72 @@ def test_delete_refuses_a_stale_version_and_an_unknown_note(env):
     status, err = post(api, "note/ada-lin/delete", {"preview": False, "version": 999})
     assert status == 409
     assert q(store, "SELECT count(*) FROM brain.notes WHERE slug = 'ada-lin'") == [(1,)]
+
+
+# ---------------------------------------------------------------- folders (Manoj, 2026-11-28)
+
+
+def test_a_new_folder_is_listed_empty_and_named_in_lias_maps(env):
+    api, store, _ = env
+    status, out = post(api, "folder", {"name": "Swimming Lessons"})
+    assert status == 200 and out["folder"] == "20-swimming-lessons"
+    status, folders = api.get("folders")
+    mine = [f for f in folders if f["own"]]
+    assert mine == [dict(code="20", value="20-swimming-lessons", name="swimming-lessons",
+                         notes=0, own=True)]  # fmt: skip
+    assert not any(f["own"] for f in folders if f["code"] < "20")
+    maps = " ".join(t for (t,) in q(store, "SELECT rendered_text FROM brain.map_cache"))
+    assert "swimming-lessons" in maps
+    assert q(store, "SELECT kind, new_text FROM brain.changes WHERE section = 'folder'") == [
+        ("add", "20-swimming-lessons")
+    ]
+    assert post(api, "folder", {"name": "swimming lessons"})[0] == 409  # same name
+    assert post(api, "folder", {"name": "learning"})[0] == 409  # a life area's name
+    assert post(api, "folder", {"name": "  !!  "})[0] == 422
+    assert post(api, "folder", {"name": "Diving"})[1]["folder"] == "21-diving"
+
+
+def test_notes_go_into_a_folder_and_move_to_cross_when_it_is_removed(env):
+    api, store, _ = env
+    post(api, "folder", {"name": "swimming"})
+    _, idea = note("breath-work", "Breath Work", "concept", "20-swimming", folder="10-ideas")
+    _, plan = note("swim-plan", "Swim Plan", "project", "04-learning", folder="04-learning",
+                   extra="also: [20-swimming]")  # fmt: skip
+    _, goal = note("swim-goal", "Swim Goal", "goal", '"20-swimming"', folder="10-ideas")
+    for text in (idea, plan, goal):
+        status, out = post(api, "note", {"text": text})
+        assert status == 200, out
+    placed = q(store, "SELECT slug, area_code, shelf_no FROM brain.notes "
+                      "WHERE area_code = '20' ORDER BY 1")  # fmt: skip
+    assert placed == [("breath-work", "20", 10), ("swim-goal", "20", 10)]
+    assert api.get("folders")[1][-1]["notes"] == 2
+
+    before = dump(store)
+    status, view = post(api, "folder/20-swimming/delete", {"preview": True})
+    assert status == 200 and view["preview"]
+    assert {n["slug"] for n in view["moves"]} == {"breath-work", "swim-goal", "swim-plan"}
+    assert dump(store) == before  # a preview writes nothing
+
+    status, out = post(api, "folder/20-swimming/delete", {"preview": False})
+    assert status == 200 and out["done"], out
+    assert q(store, "SELECT count(*) FROM brain.areas WHERE area_code = '20'") == [(0,)]
+    assert q(store, "SELECT slug, area_code FROM brain.notes WHERE slug IN "
+                    "('breath-work', 'swim-goal', 'swim-plan') ORDER BY 1") == [
+        ("breath-work", "09"), ("swim-goal", "09"), ("swim-plan", "04")]  # fmt: skip
+    assert "area: cross" in body(store, "breath-work")
+    assert "also: []" in body(store, "swim-plan")
+    assert q(store, "SELECT count(*) FROM brain.note_areas WHERE area_code = '20'") == [(0,)]
+    maps = " ".join(t for (t,) in q(store, "SELECT rendered_text FROM brain.map_cache"))
+    assert "20-swimming" not in maps and "breath-work" in maps
+    assert ("remove", "20-swimming") in q(
+        store, "SELECT kind, old_text FROM brain.changes WHERE section = 'folder'"
+    )
+    assert out["change_id"] and "undo" not in out
+
+
+def test_life_areas_and_unknown_folders_cannot_be_removed(env):
+    api, store, _ = env
+    assert post(api, "folder/04-learning/delete", {"preview": True})[0] == 404
+    assert post(api, "folder/20-nothing/delete", {"preview": False})[0] == 404
+    assert post(api, "folder/cross/delete", {})[0] == 404  # not even a folder route
+    assert q(store, "SELECT count(*) FROM brain.areas") == [(9,)]

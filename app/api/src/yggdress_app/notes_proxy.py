@@ -523,6 +523,27 @@ class NotesProxy:
                 state["undo"], state["undo_slug"] = None, None
             return {**out, "canUndo": bool(state["undo"])}
 
+    # Folders (Manoj, 2026-11-28): the Brain's areas. Only his own (from 20) can go;
+    # their notes move to cross, no note is deleted.
+    def folders(self, owner):
+        with self.lock:
+            return {"folders": self.http.call("GET", "folders")}
+
+    def add_folder(self, owner, name):
+        with self.lock:
+            return self.http.call("POST", "folder", {"name": name})
+
+    def delete_folder(self, owner, value, preview):
+        if not FOLDER_VALUE.match(value):
+            raise NotesError(404, "No such folder.")
+        with self.lock:
+            out = self.http.call("POST", f"folder/{value}/delete", {"preview": preview})
+            if not preview:
+                state = self.state(owner)
+                state["fetched"].clear()
+                state["previews"].clear()
+            return out
+
     def undo(self, owner):
         with self.lock:
             state = self.state(owner)
@@ -544,6 +565,13 @@ class Strict(BaseModel):
 class PreviewInput(Strict):
     fetchToken: str = Field(min_length=1, max_length=200)
     body: str = Field(max_length=100000)
+
+
+FOLDER_VALUE = re.compile(r"^[0-9]{2}-[a-z0-9]+(?:-[a-z0-9]+)*$")
+
+
+class FolderInput(Strict):
+    name: str = Field(min_length=1, max_length=60)
 
 
 class DeleteInput(Strict):
@@ -678,6 +706,34 @@ def notes_router(proxy, session, on_saved=None, observer=None):
         if mobile_restricted(auth):
             require_mobile_safe(proxy.get(auth["csrf"], slug)["note"], auth)
         return proxy.delete(auth["csrf"], slug, body.version)
+
+    @router.get("/folders")
+    def folders(auth=authenticated):
+        return proxy.folders(auth["csrf"])
+
+    @router.post("/folders")
+    def add_folder(body: FolderInput, auth=authenticated):
+        return proxy.add_folder(auth["csrf"], body.name)
+
+    def hidden_moves(out, auth):
+        """On a phone, notes it may not show are counted, not named."""
+        from .mobile_policy import mobile_restricted
+
+        if mobile_restricted(auth) and isinstance(out.get("moves"), list):
+            allowed = proxy.state(auth["csrf"]).get("mobile_allowed", set())
+            shown = [n for n in out["moves"] if n.get("slug") in allowed]
+            out = {**out, "moves": shown, "hidden": len(out["moves"]) - len(shown)}
+        return out
+
+    @router.post("/folders/{value}/delete-preview")
+    def delete_folder_preview(value: str, auth=authenticated):
+        return hidden_moves(proxy.delete_folder(auth["csrf"], value, True), auth)
+
+    @router.post("/folders/{value}/delete")
+    def delete_folder(value: str, auth=authenticated):
+        out = proxy.delete_folder(auth["csrf"], value, False)
+        out = {**out, "moves": out.get("moved", [])}
+        return {k: v for k, v in hidden_moves(out, auth).items() if k != "moved"}
 
     @router.post("/undo")
     def undo(auth=authenticated):
