@@ -222,14 +222,21 @@ export function NotesBrainProvider({
     },
     [accept, report, notes],
   );
-  const createNote = useCallback(async (input?: { area?: string }) => {
-    ++selectionSequence.current;
-    if (guard.current && !(await guard.current())) return false;
-    const note = blankNote(input?.area || "cross");
-    setNotes((old) => [note, ...old]);
-    setNoteId(note.id);
-    return true;
-  }, []);
+  const createNote = useCallback(
+    async (input?: { area?: string }) => {
+      ++selectionSequence.current;
+      if (guard.current && !(await guard.current())) return false;
+      // The note's frontmatter names the folder's value; the list keys it by code.
+      const folder = folderOf(folders, input?.area || "cross");
+      const note = folder
+        ? blankNote(folder.value, folder.code)
+        : blankNote(input?.area || "cross");
+      setNotes((old) => [note, ...old]);
+      setNoteId(note.id);
+      return true;
+    },
+    [folders],
+  );
   const replaceNote = useCallback(
     async (edited: BrainNote) => {
       try {
@@ -364,10 +371,13 @@ export function NotesBrainProvider({
         return false;
       }
     },
-    previewFolderDelete: (id) => notesApi.folderPreview(id),
+    previewFolderDelete: (id) =>
+      notesApi.folderPreview(folderOf(folders, id)?.value ?? id),
     deleteFolder: async (id) => {
       try {
-        const out = await notesApi.deleteFolder(id);
+        const out = await notesApi.deleteFolder(
+          folderOf(folders, id)?.value ?? id,
+        );
         await loadFolders();
         await searchBrain("");
         const moved = out.moves.length + (out.hidden || 0);
@@ -472,21 +482,31 @@ export function NotesBrainProvider({
     </Context.Provider>
   );
 }
+/** A shelf id (the area code a Brain note carries, `04`) or a folder value (`04-learning`,
+ * what a new draft carries) to its folder. */
+export function folderOf(folders: BrainFolder[], id: string) {
+  return folders.find((f) => f.code === id || f.value === id);
+}
 export function folderShelves(
   folders: BrainFolder[],
   notes: { id: string; shelfId: string }[],
 ) {
+  // Brain notes name their area by code; the list is keyed by code too.
+  const key = (shelfId: string) => folderOf(folders, shelfId)?.code ?? shelfId;
   const ids = [
-    ...folders.map((f) => f.value),
-    ...[...new Set(notes.map((n) => n.shelfId))]
-      .filter((id) => !folders.some((f) => f.value === id))
+    ...folders.map((f) => f.code),
+    ...[...new Set(notes.map((n) => key(n.shelfId)))]
+      .filter((id) => !folders.some((f) => f.code === id))
       .sort(),
   ];
-  return ids.map((id) => ({
-    id,
-    name: areaLabel(id),
-    isArea: true,
-    own: folders.some((f) => f.value === id && f.own),
-    noteIds: notes.filter((n) => n.shelfId === id).map((n) => n.id),
-  }));
+  return ids.map((id) => {
+    const folder = folderOf(folders, id);
+    return {
+      id,
+      name: areaLabel(folder ? folder.value : id),
+      isArea: true,
+      own: Boolean(folder?.own),
+      noteIds: notes.filter((n) => key(n.shelfId) === id).map((n) => n.id),
+    };
+  });
 }

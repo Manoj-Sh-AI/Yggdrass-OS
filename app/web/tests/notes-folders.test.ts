@@ -1,6 +1,9 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { blankNote, newNoteBody, notesApi } from "../src/lib/notes-api";
-import { folderShelves } from "../src/components/notes-brain-provider";
+import {
+  folderOf,
+  folderShelves,
+} from "../src/components/notes-brain-provider";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -10,25 +13,33 @@ const folders = [
   { code: "20", value: "20-swimming", name: "swimming", notes: 0, own: true },
 ];
 
-it("lists every folder, empty ones too, in the Brain's order, and marks only own ones", () => {
+it("lists every folder, empty ones too, keyed by code; Brain notes (code) and drafts (value) both land in theirs", () => {
   const shelves = folderShelves(folders, [
-    { id: "a", shelfId: "04-learning" },
-    { id: "draft", shelfId: "07-home-admin" },
+    { id: "a", shelfId: "04" }, // a Brain note names its area by code
+    { id: "draft", shelfId: "20-swimming" }, // a new draft names the value
+    { id: "old", shelfId: "07" }, // an area the folder list lacks still shows
   ]);
-  expect(shelves.map((s) => s.id)).toEqual([
-    "04-learning",
-    "cross",
-    "20-swimming",
-    "07-home-admin", // a note's area the folder list lacks still shows
+  expect(shelves.map((s) => s.id)).toEqual(["04", "09", "20", "07"]);
+  expect(shelves.map((s) => s.name)).toEqual([
+    "Learning",
+    "Cross",
+    "Swimming",
+    "Area 07",
   ]);
   expect(shelves.map((s) => s.own)).toEqual([false, false, true, false]);
-  expect(shelves[2]).toMatchObject({ name: "Swimming", noteIds: [] });
-  expect(shelves[0].noteIds).toEqual(["a"]);
+  expect(shelves.map((s) => s.noteIds)).toEqual([
+    ["a"],
+    [],
+    ["draft"],
+    ["old"],
+  ]);
+  expect(folderOf(folders, "20")?.value).toBe("20-swimming");
+  expect(folderOf(folders, "cross")?.code).toBe("09");
 });
 
 it("a new note made in a folder names that folder as its area", () => {
-  const note = blankNote("20-swimming");
-  expect(note.shelfId).toBe("20-swimming");
+  const note = blankNote("20-swimming", "20");
+  expect(note.shelfId).toBe("20");
   expect(newNoteBody(note)).toContain('area: "20-swimming"');
   expect(blankNote().area).toBe("cross");
 });
