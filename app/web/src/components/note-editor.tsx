@@ -711,8 +711,16 @@ function DocumentEditor({
         onOpenChange={(v) => {
           if (!v && !deleting) setPreview(null);
         }}
-        title="Delete this synthetic note?"
-        description="Development data only. This is not a real Brain deletion."
+        title={
+          liveNotes
+            ? "Delete this note for good?"
+            : "Delete this synthetic note?"
+        }
+        description={
+          liveNotes
+            ? "It leaves your Brain, the graph and Lia's maps. This cannot be undone."
+            : "Development data only. This is not a real Brain deletion."
+        }
       >
         <section
           aria-label="Permanent delete preview"
