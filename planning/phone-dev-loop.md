@@ -132,3 +132,7 @@ version code, same key).
   = new brain.areas rows numbered from 20 (no clash with shelves 10-15); no migration
   needed; note delete cascades (all FKs ON DELETE CASCADE / SET NULL; parent_slug needs
   handling). NEXT: write the plan + decision record, get Manoj's OK, then build.
+- 2026-11-28: permanent note delete built end to end (brain route + proxy + web trash
+  button), tests: brain 38/38, proxy 20/20, web 242/243 (CRLF license only). Decision
+  record `rationale/decisions/20261128-notes-delete-and-folders.md`. Free folders blocked
+  on a brain-schema migration (brain.folders) and Manoj's go-ahead to apply it hosted.
