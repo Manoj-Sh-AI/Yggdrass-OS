@@ -142,3 +142,14 @@ export class NoteSaveSession {
     }
   }
 }
+
+/** What a new Brain note still needs before the note checker will take it, in plain words. */
+export function newNoteGap(note: {
+  title: string;
+  description: string;
+}): string {
+  if (!note.title.trim()) return "Give the note a title before saving.";
+  if (!note.description.trim())
+    return "Add a one-line description under the title before saving.";
+  return "";
+}

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { BrainNote } from "../src/lib/brain-adapter";
-import { NoteSaveSession } from "../src/lib/note-save-session";
+import { NoteSaveSession, newNoteGap } from "../src/lib/note-save-session";
 import { documentFrom } from "../src/lib/note-document";
 const note: BrainNote = {
   id: "synthetic",
@@ -193,5 +193,17 @@ describe("revision-aware development autosave", () => {
     expect(writes).toHaveLength(0);
     expect(session.error).toContain("title");
     expect(session.snapshot.title).toBe(" ");
+  });
+});
+
+describe("newNoteGap", () => {
+  it("names the missing title or description in plain words", () => {
+    expect(newNoteGap({ title: " ", description: "x" })).toMatch(/title/);
+    expect(newNoteGap({ title: "Pools", description: "  " })).toBe(
+      "Add a one-line description under the title before saving.",
+    );
+    expect(newNoteGap({ title: "Pools", description: "Where I swim" })).toBe(
+      "",
+    );
   });
 });

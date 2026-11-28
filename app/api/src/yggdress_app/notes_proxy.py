@@ -21,6 +21,13 @@ MARKDOWN = "Writes are not live yet — the brain is still on markdown."
 STALE = "another change was saved while you were editing — please refresh."
 
 
+# A read answers fast. A write commits, then the Brain re-reads its notes and re-renders the
+# graph before it replies, which took over 6 s on Railway (2026-11-28): the note was saved
+# but the phone was told the Brain was unavailable. The web route allows 60 s for notes.
+READ_TIMEOUT = 6
+WRITE_TIMEOUT = 45
+
+
 class NotesError(Exception):
     def __init__(self, status, message, code="notes_error", **extra):
         self.status, self.message, self.code, self.extra = status, message, code, extra
@@ -78,7 +85,8 @@ class BrainNotesHTTP:
             },
         )
         try:
-            with build_opener(NoRedirect()).open(request, timeout=6) as response:
+            timeout = READ_TIMEOUT if method == "GET" else WRITE_TIMEOUT
+            with build_opener(NoRedirect()).open(request, timeout=timeout) as response:
                 raw = response.read(4_000_001)
                 if len(raw) > 4_000_000:
                     raise NotesError(502, "The Brain response exceeds the Notes response limit.")

@@ -86,6 +86,8 @@ version code, same key).
 
 ## Open items
 
+- Brain writes are slow (refresh() + render_viewers() run inside the request). Idea:
+  render the graph after replying. Measure first.
 - FIREBASE_SERVICE_ACCOUNT_JSON: Railway still has FIREBASE_SERVICE_ACCOUNT_FILE = a
   laptop path, so server pushes (reminders, call ringing) cannot work. Waiting for Manoj
   to download a new key to `C:\Users\shman\.yggdras\firebase-service-account.json`;
@@ -136,3 +138,11 @@ version code, same key).
   button), tests: brain 38/38, proxy 20/20, web 242/243 (CRLF license only). Decision
   record `rationale/decisions/20261128-notes-delete-and-folders.md`. Free folders blocked
   on a brain-schema migration (brain.folders) and Manoj's go-ahead to apply it hosted.
+- 2026-11-28 21:03: phone test of a new note. (1) Save refused with the checker's raw
+  "missing field(s): description (frontmatter)": a new Brain note needs a description.
+  (2) With one, the note WAS saved (prod brain.notes 83) but the phone showed "Brain
+  server is unavailable": `notes_proxy` waited 6 s; a write re-reads every note and
+  re-renders the graph before replying (backend log: BrokenPipeError in note_server).
+  Fix #80: writes wait 45 s, reads 6 s; Save names a missing title/description.
+  Trap: the prod DB public proxy sometimes resets the first connection; just retry.
+  Trap: Notes search is server-side, so phone-local drafts don't show in results.
